@@ -1,0 +1,41 @@
+# Fragmento Nginx — copiar a sites-available y enlazar a sites-enabled.
+# Certificados: certbot --nginx -d tu-dominio.gob.hn
+# Ajustar server_name, rutas a staticfiles/media y socket/puerto de Gunicorn.
+
+upstream simafi_app {
+    server 127.0.0.1:8001 fail_timeout=0;
+}
+
+server {
+    listen 80;
+    server_name tu-dominio.gob.hn;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name tu-dominio.gob.hn;
+
+    # ssl_certificate /etc/letsencrypt/live/tu-dominio.gob.hn/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/tu-dominio.gob.hn/privkey.pem;
+    # include /etc/letsencrypt/options-ssl-nginx.conf;
+
+    client_max_body_size 50M;
+
+    location /static/ {
+        alias /srv/simafi/venv/Scripts/tributario/staticfiles/;
+    }
+
+    location /media/ {
+        alias /var/lib/simafi/media/;
+    }
+
+    location / {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+        proxy_pass http://simafi_app;
+    }
+}

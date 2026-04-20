@@ -1,0 +1,202 @@
+{% extends 'catastro/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h1 class="display-5 fw-bold text-dark">
+                    <i class="fas fa-map me-3"></i>
+                    Terrenos
+                </h1>
+                <p class="lead text-muted">Gestión completa de terrenos catastrales</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="search-box">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" name="search" 
+                               value="{{ search }}" placeholder="Buscar por código, propietario, dirección...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="estado">
+                        <option value="">Todos los estados</option>
+                        <option value="A" {% if estado == 'A' %}selected{% endif %}>Activo</option>
+                        <option value="I" {% if estado == 'I' %}selected{% endif %}>Inactivo</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-custom w-100">
+                        <i class="fas fa-filter me-2"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-primary fs-6">
+                    <i class="fas fa-database me-2"></i>
+                    Total: {{ total_registros|default:0 }} registros
+                </span>
+            </div>
+            <div>
+                <a href="{% url 'catastro:terreno_create' %}" class="btn btn-success me-2">
+                    <i class="fas fa-plus me-2"></i>Nuevo Terreno
+                </a>
+                <a href="{% url 'catastro:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Código Terreno</th>
+                                    <th>Propietario</th>
+                                    <th>Dirección</th>
+                                    <th>Área (m²)</th>
+                                    <th>Valor Catastral</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for terreno in page_obj %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ terreno.codigo_terreno }}</strong>
+                                        </td>
+                                        <td>{{ terreno.propietario }}</td>
+                                        <td>{{ terreno.direccion|truncatechars:50 }}</td>
+                                        <td>{{ terreno.area|floatformat:2 }} m²</td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                L. {{ terreno.valor_catastral|floatformat:2 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if terreno.estado == 'A' %}
+                                                <span class="badge bg-success status-active">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger status-inactive">Inactivo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'catastro:terreno_detail' terreno.pk %}" 
+                                                   class="btn btn-sm btn-outline-primary" title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'catastro:terreno_update' terreno.pk %}" 
+                                                   class="btn btn-sm btn-outline-warning" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'catastro:terreno_delete' terreno.pk %}" 
+                                                   class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                        <nav aria-label="Navegación de páginas">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if estado %}&estado={{ estado }}{% endif %}">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-map fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No se encontraron terrenos</h4>
+                        <p class="text-muted">No hay terrenos que coincidan con los criterios de búsqueda.</p>
+                        <a href="{% url 'catastro:terreno_create' %}" class="btn btn-custom">
+                            <i class="fas fa-plus me-2"></i>Crear Primer Terreno
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+

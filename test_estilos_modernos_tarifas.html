@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Test - Estilos Modernos Tarifas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem 2.2rem;
+            align-items: flex-start;
+        }
+
+        .form-group {
+            background: #f8fafc;
+            border-radius: 13px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+            padding: 1.1rem 1rem 0.7rem 1rem;
+            margin-bottom: 0;
+            border: 1px solid #e5e7eb;
+            transition: box-shadow 0.18s;
+            flex: 1 1 auto;
+            min-width: 200px;
+        }
+
+        .form-group-small {
+            flex: 0 1 150px;
+            min-width: 150px;
+        }
+
+        .form-group-medium {
+            flex: 1 1 250px;
+            min-width: 200px;
+        }
+
+        .form-group-large {
+            flex: 2 1 350px;
+            min-width: 300px;
+        }
+
+        /* Estilos modernos para labels - igual que rubros */
+        label {
+            display: block !important;
+            margin-bottom: 10px !important;
+            font-weight: 700 !important;
+            color: #1e40af !important;
+            font-size: 1rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            position: relative !important;
+        }
+
+        label::after {
+            content: '' !important;
+            position: absolute !important;
+            bottom: -3px !important;
+            left: 0 !important;
+            width: 30px !important;
+            height: 2px !important;
+            background: linear-gradient(90deg, #1e40af, #3b82f6) !important;
+            border-radius: 1px !important;
+        }
+
+        /* Estilos modernos para inputs - igual que rubros */
+        input[type="text"], input[type="text" inputmode="decimal"], input[type="email"], select, textarea {
+            width: 100% !important;
+            padding: 15px 20px !important;
+            border: 2px solid #e5e7eb !important;
+            border-radius: 12px !important;
+            font-size: 1.1rem !important;
+            font-weight: 500 !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+            color: #1f2937 !important;
+        }
+
+        input[type="text"]:focus, input[type="text" inputmode="decimal"]:focus, input[type="email"]:focus, select:focus, textarea:focus {
+            outline: none !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 
+                0 0 0 4px rgba(59, 130, 246, 0.1),
+                0 4px 12px rgba(59, 130, 246, 0.15) !important;
+            background: #ffffff !important;
+            transform: translateY(-1px) !important;
+        }
+
+        input[type="text"]:hover, select:hover, textarea:hover {
+            border-color: #93c5fd !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        input[readonly] {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+            color: #475569 !important;
+            cursor: not-allowed !important;
+            border-color: #cbd5e1 !important;
+            font-weight: 600 !important;
+        }
+
+        select {
+            cursor: pointer !important;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 12px center !important;
+            background-size: 16px 12px !important;
+            padding-right: 40px !important;
+            appearance: none !important;
+        }
+
+        select:focus {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%233b82f6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E") !important;
+        }
+
+        /* Estilos modernos para textos de ayuda - igual que rubros */
+        small {
+            color: #64748b !important;
+            font-size: 0.875rem !important;
+            font-weight: 500 !important;
+            display: block !important;
+            margin-top: 8px !important;
+            padding: 8px 12px !important;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+            border-radius: 6px !important;
+            border-left: 3px solid #3b82f6 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        small i {
+            color: #3b82f6 !important;
+            margin-right: 6px !important;
+        }
+
+        /* Estilos modernos para placeholders - igual que rubros */
+        input::placeholder, textarea::placeholder {
+            color: #94a3b8 !important;
+            font-weight: 400 !important;
+            font-style: italic !important;
+        }
+
+        /* Estilos para opciones de select */
+        select option {
+            padding: 10px 15px !important;
+            font-weight: 500 !important;
+            color: #1f2937 !important;
+        }
+
+        select option:first-child {
+            color: #64748b !important;
+            font-style: italic !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1><i class="fas fa-palette"></i> Test - Estilos Modernos Formulario Tarifas</h1>
+            <p>Este es un test para verificar que los estilos modernos se aplicaron correctamente al formulario de tarifas.</p>
+            
+            <form>
+                <div class="form-grid">
+                    <div class="form-group form-group-small">
+                        <label for="test_municipio">Municipio <span style="color:#e11d48">*</span></label>
+                        <input type="text" id="test_municipio" name="municipio" value="TEST" readonly>
+                        <small><i class="fas fa-lock"></i> Campo de solo lectura</small>
+                    </div>
+                    
+                    <div class="form-group form-group-small">
+                        <label for="test_rubro">Rubro <span style="color:#e11d48">*</span></label>
+                        <select id="test_rubro" name="rubro">
+                            <option value="">Seleccione un rubro</option>
+                            <option value="001">001 - Impuesto Predial</option>
+                            <option value="002">002 - Tasa de Basura</option>
+                        </select>
+                        <small><i class="fas fa-search"></i> Seleccione el rubro correspondiente</small>
+                    </div>
+                    
+                    <div class="form-group form-group-small">
+                        <label for="test_ano">Año <span style="color:#e11d48">*</span></label>
+                        <input type="text" id="test_ano" name="ano" placeholder="2024">
+                        <small><i class="fas fa-calendar"></i> Ingrese el año para la tarifa</small>
+                    </div>
+                    
+                    <div class="form-group form-group-small">
+                        <label for="test_codigo">Código de Tarifa</label>
+                        <input type="text" id="test_codigo" name="codigo" placeholder="Ej: T001">
+                        <small><i class="fas fa-tag"></i> Código único de la tarifa</small>
+                    </div>
+                    
+                    <div class="form-group form-group-large">
+                        <label for="test_descripcion">Descripción <span style="color:#e11d48">*</span></label>
+                        <input type="text" id="test_descripcion" name="descripcion" placeholder="Descripción detallada de la tarifa">
+                        <small><i class="fas fa-info-circle"></i> Descripción completa de la tarifa</small>
+                    </div>
+                    
+                    <div class="form-group form-group-small">
+                        <label for="test_valor">Valor</label>
+                        <input type="text" id="test_valor" name="valor" placeholder="0.00">
+                        <small><i class="fas fa-dollar-sign"></i> Valor de la tarifa</small>
+                    </div>
+                    
+                    <div class="form-group form-group-small">
+                        <label for="test_frecuencia">Frecuencia</label>
+                        <select id="test_frecuencia" name="frecuencia">
+                            <option value="">Seleccione frecuencia</option>
+                            <option value="A">Anual</option>
+                            <option value="M">Mensual</option>
+                        </select>
+                        <small><i class="fas fa-clock"></i> Frecuencia de aplicación</small>
+                    </div>
+                    
+                    <div class="form-group form-group-small">
+                        <label for="test_tipo">Tipo</label>
+                        <select id="test_tipo" name="tipo">
+                            <option value="">Seleccione tipo</option>
+                            <option value="F">Fija</option>
+                            <option value="V">Variable</option>
+                        </select>
+                        <small><i class="fas fa-cogs"></i> Tipo de tarifa</small>
+                    </div>
+                    
+                    <div class="form-group form-group-small">
+                        <label for="test_categoria">Categoría</label>
+                        <select id="test_categoria" name="categoria">
+                            <option value="">Seleccione categoría</option>
+                            <option value="D">Doméstico</option>
+                            <option value="C">Comercial</option>
+                        </select>
+                        <small><i class="fas fa-tags"></i> Categoría de aplicación</small>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="button" style="padding: 12px 24px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        <i class="fas fa-check"></i> Test Completado
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-info-circle"></i> Verificación de Estilos</h2>
+            <ul>
+                <li><strong>Labels:</strong> Color azul (#1e40af), mayúsculas, línea decorativa inferior</li>
+                <li><strong>Inputs:</strong> Bordes redondeados (12px), sombras, efectos hover/focus</li>
+                <li><strong>Textos de ayuda:</strong> Fondo degradado, borde izquierdo azul</li>
+                <li><strong>Placeholders:</strong> Estilo italic, color suave</li>
+                <li><strong>Selects:</strong> Flecha personalizada, efectos modernos</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

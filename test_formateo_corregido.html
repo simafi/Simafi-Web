@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Formateo Corregido Separadores de Miles</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .campo-ventas {
+            border-left: 4px solid #28a745;
+            background-color: #f8fff8;
+        }
+        .resultado-formato {
+            background-color: #e8f5e8;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="text-center mb-4">
+            <h1 class="display-4">🔧 Test Formateo Corregido</h1>
+            <p class="lead">Separadores de miles funcionando correctamente</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>💰 Campos de Ventas con Formateo Corregido</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="test_ventai" class="form-label">
+                                <strong>Ventas Industria</strong>
+                            </label>
+                            <input type="text" class="form-control campo-ventas" 
+                                   id="test_ventai" name="ventai" 
+                                   placeholder="Escriba: 1234567890">
+                            <div class="resultado-formato" id="resultado_ventai">
+                                Valor formateado: <span id="display_ventai">0</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="test_ventac" class="form-label">
+                                <strong>Ventas Mercadería</strong>
+                            </label>
+                            <input type="text" class="form-control campo-ventas" 
+                                   id="test_ventac" name="ventac" 
+                                   placeholder="Escriba: 5000000.50">
+                            <div class="resultado-formato" id="resultado_ventac">
+                                Valor formateado: <span id="display_ventac">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="test_ventas" class="form-label">
+                                <strong>Ventas por Servicios</strong>
+                            </label>
+                            <input type="text" class="form-control campo-ventas" 
+                                   id="test_ventas" name="ventas" 
+                                   placeholder="Escriba: 99999999999999.99">
+                            <div class="resultado-formato" id="resultado_ventas">
+                                Valor formateado: <span id="display_ventas">0</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="test_ventap" class="form-label">
+                                <strong>Ventas Rubro Producción</strong>
+                            </label>
+                            <input type="text" class="form-control campo-ventas" 
+                                   id="test_ventap" name="ventap" 
+                                   placeholder="Escriba: 12345678901234.56">
+                            <div class="resultado-formato" id="resultado_ventap">
+                                Valor formateado: <span id="display_ventap">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h4>🎯 Pruebas Rápidas</h4>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" onclick="probar1000000()">
+                                1,000,000
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" onclick="probar1234567890()">
+                                1,234,567,890
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" onclick="probarMaximo()">
+                                Valor Máximo
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-secondary w-100" onclick="limpiarTodo()">
+                                Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4>📋 Resultados del Test</h4>
+            </div>
+            <div class="card-body">
+                <div id="test-results">
+                    <p class="text-muted">Escriba valores en los campos para ver los resultados...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función de formateo corregida
+        function formatearNumeroCorregido(input) {
+            let valor = input.value;
+            
+            // Guardar posición del cursor
+            const cursorPos = input.selectionStart;
+            
+            // Remover separadores de miles existentes para procesar
+            valor = valor.replace(/,/g, '');
+            
+            // Remover caracteres no numéricos excepto punto decimal
+            valor = valor.replace(/[^0-9.]/g, '');
+            
+            // Permitir solo un punto decimal
+            const partes = valor.split('.');
+            if (partes.length > 2) {
+                valor = partes[0] + '.' + partes.slice(1).join('');
+            }
+            
+            // Recalcular partes después de limpiar
+            const partesLimpias = valor.split('.');
+            
+            // Limitar a 14 enteros
+            if (partesLimpias[0] && partesLimpias[0].length > 14) {
+                partesLimpias[0] = partesLimpias[0].substring(0, 14);
+                valor = partesLimpias.join('.');
+            }
+            
+            // Limitar a 2 decimales
+            if (partesLimpias[1] && partesLimpias[1].length > 2) {
+                partesLimpias[1] = partesLimpias[1].substring(0, 2);
+                valor = partesLimpias[0] + '.' + partesLimpias[1];
+            }
+            
+            // Validar rango máximo DECIMAL(16,2)
+            const numeroValor = parseFloat(valor);
+            if (numeroValor > 99999999999999.99) {
+                valor = '99999999999999.99';
+            }
+            
+            // Aplicar formato con separadores de miles SIEMPRE
+            if (valor) {
+                const partesFormato = valor.split('.');
+                
+                // Formatear parte entera con separadores de miles
+                if (partesFormato[0] && partesFormato[0].length > 0) {
+                    const parteEntera = partesFormato[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    
+                    if (partesFormato[1] !== undefined) {
+                        // Tiene decimales
+                        valor = parteEntera + '.' + partesFormato[1];
+                    } else {
+                        // Solo enteros
+                        valor = parteEntera;
+                    }
+                }
+            }
+            
+            // Actualizar valor del input
+            const valorAnterior = input.value;
+            input.value = valor;
+            
+            // Actualizar display
+            actualizarDisplay(input);
+            
+            // Ajustar posición del cursor si el valor cambió
+            if (valorAnterior !== valor) {
+                const diferencia = valor.length - valorAnterior.length;
+                const nuevaPos = Math.max(0, cursorPos + diferencia);
+                setTimeout(() => {
+                    input.setSelectionRange(nuevaPos, nuevaPos);
+                }, 0);
+            }
+        }
+
+        function actualizarDisplay(input) {
+            const campo = input.name;
+            const displaySpan = document.getElementById(`display_${campo}`);
+            
+            if (displaySpan) {
+                // Obtener valor numérico limpio
+                const valorLimpio = input.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+                const numeroValor = parseFloat(valorLimpio) || 0;
+                
+                // Mostrar valor formateado
+                displaySpan.textContent = numeroValor.toLocaleString('es-CO', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+            
+            // Actualizar resultados del test
+            actualizarResultadosTest();
+        }
+
+        function actualizarResultadosTest() {
+            const campos = ['ventai', 'ventac', 'ventas', 'ventap'];
+            let resultados = '<h5>Estado Actual:</h5><ul>';
+            
+            campos.forEach(campo => {
+                const input = document.getElementById(`test_${campo}`);
+                if (input && input.value) {
+                    const valorLimpio = input.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+                    const numero = parseFloat(valorLimpio) || 0;
+                    
+                    resultados += `<li><strong>${campo}:</strong> ${input.value} → ${numero.toLocaleString('es-CO', {minimumFractionDigits: 2})}</li>`;
+                }
+            });
+            
+            resultados += '</ul>';
+            document.getElementById('test-results').innerHTML = resultados;
+        }
+
+        // Configurar listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const campos = ['test_ventai', 'test_ventac', 'test_ventas', 'test_ventap'];
+            
+            campos.forEach(campoId => {
+                const input = document.getElementById(campoId);
+                if (input) {
+                    input.addEventListener('input', function() {
+                        formatearNumeroCorregido(this);
+                    });
+                    
+                    input.addEventListener('blur', function() {
+                        formatearNumeroCorregido(this);
+                    });
+                }
+            });
+        });
+
+        // Funciones de prueba
+        function probar1000000() {
+            const input = document.getElementById('test_ventai');
+            input.value = '1000000';
+            formatearNumeroCorregido(input);
+        }
+
+        function probar1234567890() {
+            const input = document.getElementById('test_ventac');
+            input.value = '1234567890.50';
+            formatearNumeroCorregido(input);
+        }
+
+        function probarMaximo() {
+            const input = document.getElementById('test_ventap');
+            input.value = '99999999999999.99';
+            formatearNumeroCorregido(input);
+        }
+
+        function limpiarTodo() {
+            const campos = ['test_ventai', 'test_ventac', 'test_ventas', 'test_ventap'];
+            campos.forEach(campoId => {
+                const input = document.getElementById(campoId);
+                if (input) {
+                    input.value = '';
+                    actualizarDisplay(input);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 Test Proceso Unidad × Factor Completo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 500px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .form-group-ventas {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e5e7eb;
+        }
+        .paso-proceso {
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .variable-oculta {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 3px 0;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-primary">
+                    <h4>🔄 Test Proceso Completo: Unidad × Factor</h4>
+                    <p><strong>Objetivo:</strong> Verificar que el proceso completo de validación y cálculo funcione correctamente</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>📋 Proceso a Validar:</h6>
+                            <ol>
+                                <li>Validar que unidad > 0 y factor > 0</li>
+                                <li>Calcular: unidad × factor = impuesto</li>
+                                <li>Guardar en variables ocultas</li>
+                                <li>Sumar al impuesto total</li>
+                                <li>Integrar con volúmenes de venta</li>
+                            </ol>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>🔢 Formato de Campos:</h6>
+                            <ul>
+                                <li><strong>Unidad:</strong> TextInput (11 enteros)</li>
+                                <li><strong>Factor:</strong> TextInput (10.2 decimales)</li>
+                                <li><strong>Resultado:</strong> Multiplicación simple</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>🧮 Simulador del Proceso Completo</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Campos de volúmenes de venta -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group-ventas">
+                                    <label for="id_controlado">
+                                        <i class="fas fa-shield-alt"></i> Productos Controlados
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="id_controlado" name="controlado" 
+                                           placeholder="0.00" value="50,000.00">
+                                    <small class="form-text">TextInput - DECIMAL(16,2)</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group-ventas">
+                                    <label for="id_ventai">
+                                        <i class="fas fa-industry"></i> Ventas Rubro Producción
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="id_ventai" name="ventai" 
+                                           placeholder="0.00" value="0.00">
+                                    <small class="form-text">TextInput - DECIMAL(16,2)</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group-ventas">
+                                    <label for="id_impuesto">
+                                        <i class="fas fa-calculator"></i> Impuesto Total
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="id_impuesto" name="impuesto" readonly
+                                           style="background: #fff3e0; border: 2px solid #ff9800; color: #e65100; font-weight: 700; text-align: center;">
+                                    <small class="form-text">Suma de todos los impuestos</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Campos Unidad y Factor -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group-ventas">
+                                    <label for="id_unidad">
+                                        <i class="fas fa-ruler"></i> Unidad (TextInput)
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="id_unidad" name="unidad" 
+                                           placeholder="0" value="100"
+                                           maxlength="11" pattern="^\d{1,11}$" inputmode="numeric"
+                                           style="border: 3px solid #007bff; background: #e3f2fd;">
+                                    <small class="form-text text-primary">
+                                        <i class="fas fa-info-circle"></i> <strong>TextInput:</strong> 11 enteros máximo
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group-ventas">
+                                    <label for="id_factor">
+                                        <i class="fas fa-percentage"></i> Factor (TextInput)
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="id_factor" name="factor" 
+                                           placeholder="0.00" value="2.50"
+                                           maxlength="13" pattern="^\d{1,10}(\.\d{0,2})?$" inputmode="decimal"
+                                           style="border: 3px solid #007bff; background: #e3f2fd;">
+                                    <small class="form-text text-primary">
+                                        <i class="fas fa-info-circle"></i> <strong>TextInput:</strong> 10 enteros + 2 decimales
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group-ventas">
+                                    <label for="resultado_unidad_factor">
+                                        <i class="fas fa-equals"></i> Resultado (Unidad × Factor)
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="resultado_unidad_factor" readonly
+                                           style="background: #e8f5e8; border: 2px solid #28a745; color: #155724; font-weight: 700; text-align: center; font-size: 1.2em;">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-magic"></i> Unidad × Factor
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-primary" onclick="ejecutarProcesoCompleto()">
+                                        🔄 Ejecutar Proceso Completo
+                                    </button>
+                                    <button type="button" class="btn btn-warning" onclick="testValidacionCondiciones()">
+                                        ✅ Test Validación de Condiciones
+                                    </button>
+                                    <button type="button" class="btn btn-success" onclick="testIntegracionTotal()">
+                                        🧮 Test Integración con Suma Total
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5>📊 Variables Ocultas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="variables-ocultas">
+                            <p class="text-muted">Las variables aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📋 Pasos del Proceso</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="pasos-proceso">
+                            <!-- Se generarán automáticamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log Detallado del Proceso</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs del proceso...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TestProcesoUnidadFactorCompleto {
+            constructor() {
+                this.variablesOcultas = {};
+                this.setupEventListeners();
+                this.log('🚀 Test del proceso completo iniciado', 'success');
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            setupEventListeners() {
+                const campoUnidad = document.getElementById('id_unidad');
+                const campoFactor = document.getElementById('id_factor');
+                
+                if (campoUnidad) {
+                    campoUnidad.addEventListener('input', () => {
+                        this.log('📝 Unidad cambió - Ejecutando proceso', 'info');
+                        this.ejecutarProcesoCompleto();
+                    });
+                }
+                
+                if (campoFactor) {
+                    campoFactor.addEventListener('input', () => {
+                        this.log('📝 Factor cambió - Ejecutando proceso', 'info');
+                        this.ejecutarProcesoCompleto();
+                    });
+                }
+                
+                this.log('✅ Event listeners configurados', 'success');
+            }
+            
+            ejecutarProcesoCompleto() {
+                this.log('🔄 EJECUTANDO PROCESO COMPLETO', 'warning');
+                this.log('=' .repeat(50));
+                
+                // PASO 1: Obtener valores de todos los campos
+                this.log('📊 PASO 1: Obteniendo valores de campos', 'info');
+                const valoresVentas = this.obtenerValoresVentas();
+                
+                // PASO 2: Calcular impuestos independientes
+                this.log('🧮 PASO 2: Calculando impuestos independientes', 'info');
+                this.calcularYGuardarImpuestosIndependientes(valoresVentas);
+                
+                // PASO 3: Sumar desde variables ocultas
+                this.log('➕ PASO 3: Sumando desde variables ocultas', 'info');
+                const totalImpuesto = this.sumarImpuestosDesdeVariablesOcultas();
+                
+                // PASO 4: Actualizar campos
+                this.log('📝 PASO 4: Actualizando campos', 'info');
+                this.actualizarCampos(totalImpuesto);
+                
+                // PASO 5: Mostrar estado
+                this.mostrarEstadoProceso();
+                
+                this.log(`💰 PROCESO COMPLETADO - Total: L. ${totalImpuesto.toFixed(2)}`, 'success');
+            }
+            
+            obtenerValoresVentas() {
+                const campos = ['controlado', 'ventai', 'unidad', 'factor'];
+                const valores = {};
+                
+                this.log('📊 OBTENIENDO VALORES:');
+                
+                campos.forEach(campo => {
+                    const input = document.getElementById(`id_${campo}`);
+                    if (input && input.value) {
+                        let valor;
+                        if (campo === 'unidad') {
+                            valor = this.parsearUnidad(input.value);
+                        } else if (campo === 'factor') {
+                            valor = this.parsearFactor(input.value);
+                        } else {
+                            valor = this.parsearDecimal(input.value);
+                        }
+                        
+                        if (valor > 0) {
+                            valores[campo] = valor;
+                            this.log(`   ✅ ${campo}: ${valor}`, 'success');
+                        } else {
+                            this.log(`   ⚠️ ${campo}: ${valor} (cero o negativo)`, 'warning');
+                        }
+                    } else {
+                        this.log(`   ❌ ${campo}: sin valor`, 'error');
+                    }
+                });
+                
+                return valores;
+            }
+            
+            calcularYGuardarImpuestosIndependientes(valoresVentas) {
+                this.log('🧮 CALCULANDO IMPUESTOS INDEPENDIENTES:', 'warning');
+                
+                // 1. Productos Controlados
+                const valorControlado = valoresVentas.controlado || 0;
+                const impuestoControlado = valorControlado > 0 ? this.calcularImpuestoSimple(valorControlado) : 0;
+                this.variablesOcultas.controlado_base = valorControlado;
+                this.variablesOcultas.controlado_impuesto = impuestoControlado;
+                this.log(`   📊 Productos Controlados: L. ${valorControlado.toLocaleString()} → L. ${impuestoControlado.toFixed(2)}`);
+                
+                // 2. Ventas Rubro Producción
+                const valorVentai = valoresVentas.ventai || 0;
+                const impuestoVentai = valorVentai > 0 ? this.calcularImpuestoSimple(valorVentai) : 0;
+                this.variablesOcultas.ventai_base = valorVentai;
+                this.variablesOcultas.ventai_impuesto = impuestoVentai;
+                this.log(`   📊 Ventas Rubro Producción: L. ${valorVentai.toLocaleString()} → L. ${impuestoVentai.toFixed(2)}`);
+                
+                // 3. UNIDAD × FACTOR (PROCESO ESPECÍFICO)
+                const valorUnidad = valoresVentas.unidad || 0;
+                const valorFactor = valoresVentas.factor || 0;
+                
+                this.log(`🔍 VALIDANDO CONDICIONES UNIDAD × FACTOR:`);
+                this.log(`   Unidad: ${valorUnidad} (${valorUnidad > 0 ? '✅ > 0' : '❌ ≤ 0'})`);
+                this.log(`   Factor: ${valorFactor} (${valorFactor > 0 ? '✅ > 0' : '❌ ≤ 0'})`);
+                
+                let impuestoUnidadFactor = 0;
+                
+                if (valorUnidad > 0 && valorFactor > 0) {
+                    // CÁLCULO: unidad × factor = impuesto
+                    impuestoUnidadFactor = valorUnidad * valorFactor;
+                    this.log(`   ✅ AMBOS > 0: Calculando ${valorUnidad} × ${valorFactor} = ${impuestoUnidadFactor}`, 'success');
+                } else {
+                    this.log(`   ⚠️ UNO O AMBOS ≤ 0: No se calcula impuesto`, 'warning');
+                }
+                
+                // Guardar en variables ocultas
+                this.variablesOcultas.unidad_base = valorUnidad;
+                this.variablesOcultas.factor_base = valorFactor;
+                this.variablesOcultas.unidadFactor_impuesto = impuestoUnidadFactor;
+                
+                this.log(`   📊 Unidad × Factor: ${valorUnidad} × ${valorFactor} = L. ${impuestoUnidadFactor.toFixed(2)}`);
+                
+                // Actualizar campo resultado
+                document.getElementById('resultado_unidad_factor').value = `L. ${impuestoUnidadFactor.toFixed(2)}`;
+                
+                this.log('✅ Variables ocultas actualizadas:', 'success');
+                this.mostrarVariablesOcultas();
+            }
+            
+            sumarImpuestosDesdeVariablesOcultas() {
+                this.log('🎯 SUMANDO IMPUESTOS DESDE VARIABLES OCULTAS:', 'warning');
+                
+                const impuestoControlado = this.variablesOcultas.controlado_impuesto || 0;
+                const impuestoVentai = this.variablesOcultas.ventai_impuesto || 0;
+                const impuestoUnidadFactor = this.variablesOcultas.unidadFactor_impuesto || 0;
+                
+                this.log('🔢 IMPUESTOS INDIVIDUALES:');
+                this.log(`   • Productos Controlados: L. ${impuestoControlado.toFixed(2)}`);
+                this.log(`   • Ventas Rubro Producción: L. ${impuestoVentai.toFixed(2)}`);
+                this.log(`   • Unidad × Factor: L. ${impuestoUnidadFactor.toFixed(2)}`);
+                
+                // Suma total
+                const totalImpuesto = impuestoControlado + impuestoVentai + impuestoUnidadFactor;
+                
+                this.log('🎯 SUMA PASO A PASO:');
+                this.log(`   Paso 1: ${impuestoControlado.toFixed(2)}`);
+                this.log(`   Paso 2: ${impuestoControlado.toFixed(2)} + ${impuestoVentai.toFixed(2)} = ${(impuestoControlado + impuestoVentai).toFixed(2)}`);
+                this.log(`   Paso 3: ${(impuestoControlado + impuestoVentai).toFixed(2)} + ${impuestoUnidadFactor.toFixed(2)} = ${totalImpuesto.toFixed(2)}`);
+                
+                this.log(`💰 TOTAL IMPUESTO FINAL: L. ${totalImpuesto.toFixed(2)}`, 'success');
+                
+                return totalImpuesto;
+            }
+            
+            actualizarCampos(totalImpuesto) {
+                const campoImpuesto = document.getElementById('id_impuesto');
+                if (campoImpuesto) {
+                    campoImpuesto.value = totalImpuesto.toFixed(2);
+                    this.log(`✅ Campo impuesto actualizado: L. ${totalImpuesto.toFixed(2)}`, 'success');
+                }
+            }
+            
+            mostrarVariablesOcultas() {
+                const div = document.getElementById('variables-ocultas');
+                div.innerHTML = `
+                    <h6>🔧 Variables Ocultas Actuales</h6>
+                    <div class="variable-oculta">unidad_base: ${this.variablesOcultas.unidad_base || 0}</div>
+                    <div class="variable-oculta">factor_base: ${this.variablesOcultas.factor_base || 0}</div>
+                    <div class="variable-oculta">unidadFactor_impuesto: ${this.variablesOcultas.unidadFactor_impuesto || 0}</div>
+                    <div class="variable-oculta">controlado_impuesto: ${this.variablesOcultas.controlado_impuesto || 0}</div>
+                    <div class="variable-oculta">ventai_impuesto: ${this.variablesOcultas.ventai_impuesto || 0}</div>
+                `;
+            }
+            
+            mostrarEstadoProceso() {
+                const div = document.getElementById('pasos-proceso');
+                div.innerHTML = `
+                    <div class="paso-proceso">
+                        <h6>✅ PASO 1: Lectura de Campos TextInput</h6>
+                        <p>Unidad: ${this.variablesOcultas.unidad_base || 0} | Factor: ${this.variablesOcultas.factor_base || 0}</p>
+                    </div>
+                    
+                    <div class="paso-proceso">
+                        <h6>✅ PASO 2: Validación de Condiciones</h6>
+                        <p>Unidad > 0: ${(this.variablesOcultas.unidad_base || 0) > 0 ? '✅ SÍ' : '❌ NO'}</p>
+                        <p>Factor > 0: ${(this.variablesOcultas.factor_base || 0) > 0 ? '✅ SÍ' : '❌ NO'}</p>
+                    </div>
+                    
+                    <div class="paso-proceso">
+                        <h6>✅ PASO 3: Cálculo de Impuesto</h6>
+                        <p>Fórmula: unidad × factor = impuesto</p>
+                        <p>Resultado: ${this.variablesOcultas.unidad_base || 0} × ${this.variablesOcultas.factor_base || 0} = L. ${(this.variablesOcultas.unidadFactor_impuesto || 0).toFixed(2)}</p>
+                    </div>
+                    
+                    <div class="paso-proceso">
+                        <h6>✅ PASO 4: Variables Ocultas</h6>
+                        <p>unidadFactor_impuesto = ${this.variablesOcultas.unidadFactor_impuesto || 0}</p>
+                    </div>
+                    
+                    <div class="paso-proceso">
+                        <h6>✅ PASO 5: Suma Total</h6>
+                        <p>Total = Volúmenes + (Unidad × Factor)</p>
+                        <p>Incluido en impuesto total: ${(this.variablesOcultas.unidadFactor_impuesto || 0) > 0 ? '✅ SÍ' : '❌ NO'}</p>
+                    </div>
+                `;
+            }
+            
+            parsearUnidad(valor) {
+                if (!valor) return 0;
+                const valorLimpio = valor.toString().replace(/[^0-9]/g, '');
+                return parseInt(valorLimpio) || 0;
+            }
+            
+            parsearFactor(valor) {
+                if (!valor) return 0;
+                let valorLimpio = valor.toString();
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/,/g, '');
+                }
+                valorLimpio = valorLimpio.replace(/[^0-9.]/g, '');
+                return parseFloat(valorLimpio) || 0;
+            }
+            
+            parsearDecimal(valor) {
+                if (!valor) return 0;
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor.replace(/,/g, '')) || 0;
+                }
+                return parseFloat(valor.replace(/[^0-9.]/g, '')) || 0;
+            }
+            
+            calcularImpuestoSimple(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) return 0;
+                return Math.round((valorVentas * 0.10 / 1000) * 100) / 100;
+            }
+        }
+        
+        let testSistema;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs del proceso...</p>';
+        }
+        
+        function ejecutarProcesoCompleto() {
+            testSistema.log('🔄 PROCESO COMPLETO SOLICITADO MANUALMENTE', 'info');
+            testSistema.ejecutarProcesoCompleto();
+        }
+        
+        function testValidacionCondiciones() {
+            testSistema.log('✅ PROBANDO VALIDACIÓN DE CONDICIONES', 'warning');
+            
+            const casos = [
+                {unidad: 100, factor: 2.5, descripcion: 'Ambos > 0'},
+                {unidad: 0, factor: 2.5, descripcion: 'Unidad = 0'},
+                {unidad: 100, factor: 0, descripcion: 'Factor = 0'},
+                {unidad: 0, factor: 0, descripcion: 'Ambos = 0'}
+            ];
+            
+            casos.forEach((caso, index) => {
+                setTimeout(() => {
+                    testSistema.log(`CASO ${index + 1}: ${caso.descripcion}`);
+                    document.getElementById('id_unidad').value = caso.unidad;
+                    document.getElementById('id_factor').value = caso.factor;
+                    testSistema.ejecutarProcesoCompleto();
+                }, index * 2000);
+            });
+        }
+        
+        function testIntegracionTotal() {
+            testSistema.log('🧮 PROBANDO INTEGRACIÓN CON SUMA TOTAL', 'warning');
+            
+            // Configurar valores de ejemplo
+            document.getElementById('id_controlado').value = '10,000.00';
+            document.getElementById('id_ventai').value = '5,000.00';
+            document.getElementById('id_unidad').value = '50';
+            document.getElementById('id_factor').value = '3.00';
+            
+            testSistema.log('📊 Valores configurados:');
+            testSistema.log('   Productos Controlados: L. 10,000.00');
+            testSistema.log('   Ventas Rubro Producción: L. 5,000.00');
+            testSistema.log('   Unidad: 50');
+            testSistema.log('   Factor: 3.00');
+            testSistema.log('   Esperado Unidad × Factor: 50 × 3.00 = 150.00');
+            
+            testSistema.ejecutarProcesoCompleto();
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            testSistema = new TestProcesoUnidadFactorCompleto();
+            
+            // Ejecutar proceso inicial
+            setTimeout(() => {
+                testSistema.ejecutarProcesoCompleto();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

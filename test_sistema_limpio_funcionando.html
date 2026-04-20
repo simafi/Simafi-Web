@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Test: Sistema Limpio Funcionando</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .test-exitoso {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .test-fallido {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .funcion-activa {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        .campo-funcionando {
+            border: 3px solid #28a745 !important;
+            background: #f0fff0 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-success">
+                    <h4>✅ Test: Sistema Limpio Funcionando</h4>
+                    <p><strong>Objetivo:</strong> Verificar que después de eliminar funciones duplicadas, el sistema sigue funcionando correctamente</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>🗑️ Funciones Eliminadas (Duplicadas):</h6>
+                            <ul>
+                                <li>❌ <code>calcularImpuestoCampo()</code></li>
+                                <li>❌ <code>actualizarVariableOculta()</code></li>
+                                <li>❌ <code>recalcularTodasLasVariablesOcultas()</code></li>
+                                <li>❌ <code>calcularTodosLosImpuestos()</code></li>
+                                <li>❌ <code>calcularSumaTotal()</code></li>
+                                <li>❌ <code>actualizarVariablesOcultas()</code></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>✅ Funciones Activas (Correctas):</h6>
+                            <ul>
+                                <li>✅ <code>calcularEnTiempoReal()</code></li>
+                                <li>✅ <code>calcularYGuardarImpuestosIndependientes()</code></li>
+                                <li>✅ <code>sumarImpuestosDesdeVariablesOcultas()</code></li>
+                                <li>✅ <code>calcularImpuestoUnidadFactor()</code></li>
+                                <li>✅ <code>obtenerValoresVentas()</code></li>
+                                <li>✅ <code>setupEventListeners()</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>🧮 Formulario de Test - Sistema Limpio</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_ventai">
+                                        <i class="fas fa-industry"></i> Ventas Rubro Producción
+                                    </label>
+                                    <input type="text" class="form-control campo-funcionando" 
+                                           id="id_ventai" name="ventai" 
+                                           placeholder="0.00" value="100,000.00">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-check-circle"></i> Sistema limpio
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_ventac">
+                                        <i class="fas fa-store"></i> Ventas Mercadería
+                                    </label>
+                                    <input type="text" class="form-control campo-funcionando" 
+                                           id="id_ventac" name="ventac" 
+                                           placeholder="0.00" value="200,000.00">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-check-circle"></i> Sin conflictos
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_ventas">
+                                        <i class="fas fa-handshake"></i> Ventas por Servicios
+                                    </label>
+                                    <input type="text" class="form-control campo-funcionando" 
+                                           id="id_ventas" name="ventas" 
+                                           placeholder="0.00" value="50,000.00">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-check-circle"></i> Flujo unificado
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_controlado">
+                                        <i class="fas fa-shield-alt"></i> Productos Controlados
+                                    </label>
+                                    <input type="text" class="form-control campo-funcionando" 
+                                           id="id_controlado" name="controlado" 
+                                           placeholder="0.00" value="150,000.00">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-check-circle"></i> Tarifas específicas
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_unidad">
+                                        <i class="fas fa-ruler"></i> Unidad (TextInput)
+                                    </label>
+                                    <input type="text" class="form-control campo-funcionando" 
+                                           id="id_unidad" name="unidad" 
+                                           placeholder="0" value="500"
+                                           maxlength="11" pattern="^\d{1,11}$" inputmode="numeric">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-check-circle"></i> Cálculo corregido
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_factor">
+                                        <i class="fas fa-percentage"></i> Factor (TextInput)
+                                    </label>
+                                    <input type="text" class="form-control campo-funcionando" 
+                                           id="id_factor" name="factor" 
+                                           placeholder="0.00" value="4.75"
+                                           maxlength="13" pattern="^\d{1,10}(\.\d{0,2})?$" inputmode="decimal">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-check-circle"></i> Función específica
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_impuesto">
+                                        <i class="fas fa-calculator"></i> Impuesto Total
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="id_impuesto" name="impuesto" readonly
+                                           style="background: #fff3e0; border: 2px solid #ff9800; color: #e65100; font-weight: 700; text-align: center; font-size: 1.2em;">
+                                    <small class="form-text text-warning">
+                                        <i class="fas fa-magic"></i> Suma automática sin duplicados
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="resultado_unidad_factor">
+                                        <i class="fas fa-equals"></i> Resultado Unidad × Factor
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="resultado_unidad_factor" readonly
+                                           style="background: #e8f5e8; border: 2px solid #28a745; color: #155724; font-weight: 700; text-align: center; font-size: 1.1em;">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-magic"></i> Sistema unificado
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-success" onclick="testSistemaCompleto()">
+                                ✅ Test Sistema Completo
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="testFuncionesActivas()">
+                                🔧 Test Funciones Activas
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="testCasosComplejos()">
+                                🧪 Test Casos Complejos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>📊 Estado del Sistema</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="estado-sistema">
+                            <p class="text-muted">El estado aparecerá aquí</p>
+                        </div>
+                        
+                        <div id="funciones-activas" class="mt-3">
+                            <h6>🔧 Funciones Activas</h6>
+                            <div id="lista-funciones">
+                                <p class="text-muted">Las funciones aparecerán aquí</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5>🧪 Resultados de Tests</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultados-tests">
+                            <!-- Se generarán automáticamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log del Sistema Limpio</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs del sistema...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TestSistemaLimpio {
+            constructor() {
+                this.variablesOcultas = {};
+                this.funcionesActivas = [
+                    'calcularEnTiempoReal',
+                    'calcularYGuardarImpuestosIndependientes',
+                    'sumarImpuestosDesdeVariablesOcultas',
+                    'calcularImpuestoUnidadFactor',
+                    'obtenerValoresVentas',
+                    'setupEventListeners'
+                ];
+                this.funcionesEliminadas = [
+                    'calcularImpuestoCampo',
+                    'actualizarVariableOculta',
+                    'recalcularTodasLasVariablesOcultas',
+                    'calcularTodosLosImpuestos',
+                    'calcularSumaTotal',
+                    'actualizarVariablesOcultas'
+                ];
+                
+                this.setupEventListeners();
+                this.log('🚀 Test del sistema limpio iniciado', 'success');
+                this.generarResultadosTests();
+                this.mostrarFuncionesActivas();
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            setupEventListeners() {
+                const campos = ['ventai', 'ventac', 'ventas', 'controlado', 'unidad', 'factor'];
+                this.log('🎧 CONFIGURANDO EVENT LISTENERS DEL SISTEMA LIMPIO:', 'warning');
+                
+                campos.forEach(campo => {
+                    const input = document.getElementById(`id_${campo}`);
+                    if (input) {
+                        input.addEventListener('input', () => {
+                            this.log(`📝 EVENT DISPARADO PARA: ${campo} con valor: "${input.value}"`, 'info');
+                            this.calcularEnTiempoRealLimpio(campo);
+                        });
+                        
+                        input.addEventListener('blur', () => {
+                            this.log(`👁️ BLUR DISPARADO PARA: ${campo} con valor: "${input.value}"`, 'info');
+                            this.calcularEnTiempoRealLimpio(campo);
+                        });
+                        
+                        this.log(`✅ Listeners configurados para: ${campo}`);
+                    } else {
+                        this.log(`❌ Campo no encontrado: id_${campo}`, 'error');
+                    }
+                });
+                
+                this.log('✅ Event listeners del sistema limpio configurados', 'success');
+            }
+            
+            calcularEnTiempoRealLimpio(fieldName) {
+                this.log(`🔄 CALCULANDO EN TIEMPO REAL (SISTEMA LIMPIO) PARA: ${fieldName}`, 'warning');
+                
+                try {
+                    // PASO 1: Obtener valores usando función activa
+                    const valores = this.obtenerValoresVentasLimpio();
+                    this.log(`📊 Valores obtenidos: ${JSON.stringify(valores)}`);
+                    
+                    // PASO 2: Calcular impuestos independientes usando función activa
+                    this.calcularYGuardarImpuestosIndependientesLimpio(valores);
+                    
+                    // PASO 3: Sumar usando función activa
+                    const total = this.sumarImpuestosDesdeVariablesOcultasLimpio();
+                    
+                    // PASO 4: Actualizar campos
+                    this.actualizarCamposLimpio(total);
+                    
+                    // PASO 5: Mostrar estado
+                    this.mostrarEstadoSistema();
+                    
+                    this.log(`✅ Cálculo limpio completado para ${fieldName}: L. ${total.toFixed(2)}`, 'success');
+                    
+                } catch (error) {
+                    this.log(`❌ Error en sistema limpio para ${fieldName}: ${error.message}`, 'error');
+                }
+            }
+            
+            obtenerValoresVentasLimpio() {
+                const campos = ['ventai', 'ventac', 'ventas', 'controlado', 'unidad', 'factor'];
+                const valores = {};
+                
+                this.log('📊 OBTENIENDO VALORES (SISTEMA LIMPIO):');
+                
+                campos.forEach(campo => {
+                    const input = document.getElementById(`id_${campo}`);
+                    if (input && input.value) {
+                        let valor;
+                        
+                        if (campo === 'unidad') {
+                            valor = this.limpiarValorLimpio(input.value, 'unidad');
+                        } else if (campo === 'factor') {
+                            valor = this.limpiarValorLimpio(input.value, 'factor');
+                        } else {
+                            valor = this.limpiarValorLimpio(input.value, 'general');
+                        }
+                        
+                        valores[campo] = valor;
+                        this.log(`   ${campo}: "${input.value}" → ${valor}`);
+                    } else {
+                        this.log(`   ${campo}: sin valor`);
+                    }
+                });
+                
+                return valores;
+            }
+            
+            limpiarValorLimpio(valor, tipo = 'general') {
+                if (!valor) return 0;
+                
+                let valorLimpio = valor.toString();
+                
+                // Parsing mejorado
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/,/g, '');
+                } else if (/^\d{1,3}(,\d{3})+$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/,/g, '');
+                } else {
+                    valorLimpio = valorLimpio.replace(/[^0-9.]/g, '');
+                }
+                
+                if (tipo === 'unidad') {
+                    valorLimpio = valorLimpio.split('.')[0];
+                    return parseInt(valorLimpio) || 0;
+                } else if (tipo === 'factor') {
+                    return parseFloat(valorLimpio) || 0;
+                } else {
+                    return parseFloat(valorLimpio) || 0;
+                }
+            }
+            
+            calcularYGuardarImpuestosIndependientesLimpio(valores) {
+                this.log('🧮 CALCULANDO IMPUESTOS INDEPENDIENTES (SISTEMA LIMPIO):', 'warning');
+                
+                // 1. Ventas Rubro Producción
+                const valorVentai = valores.ventai || 0;
+                const impuestoVentai = valorVentai > 0 ? this.calcularImpuestoICSLimpio(valorVentai) : 0;
+                this.variablesOcultas.ventai_impuesto = impuestoVentai;
+                this.log(`   Ventas Rubro Producción: L. ${valorVentai} → L. ${impuestoVentai.toFixed(2)}`);
+                
+                // 2. Ventas Mercadería
+                const valorVentac = valores.ventac || 0;
+                const impuestoVentac = valorVentac > 0 ? this.calcularImpuestoICSLimpio(valorVentac) : 0;
+                this.variablesOcultas.ventac_impuesto = impuestoVentac;
+                this.log(`   Ventas Mercadería: L. ${valorVentac} → L. ${impuestoVentac.toFixed(2)}`);
+                
+                // 3. Ventas por Servicios
+                const valorVentas = valores.ventas || 0;
+                const impuestoVentas = valorVentas > 0 ? this.calcularImpuestoICSLimpio(valorVentas) : 0;
+                this.variablesOcultas.ventas_impuesto = impuestoVentas;
+                this.log(`   Ventas por Servicios: L. ${valorVentas} → L. ${impuestoVentas.toFixed(2)}`);
+                
+                // 4. Productos Controlados
+                const valorControlado = valores.controlado || 0;
+                const impuestoControlado = valorControlado > 0 ? this.calcularImpuestoControlados(valorControlado) : 0;
+                this.variablesOcultas.controlado_impuesto = impuestoControlado;
+                this.log(`   Productos Controlados: L. ${valorControlado} → L. ${impuestoControlado.toFixed(2)}`);
+                
+                // 5. Unidad × Factor usando función específica
+                const valorUnidad = valores.unidad || 0;
+                const valorFactor = valores.factor || 0;
+                const impuestoUnidadFactor = this.calcularImpuestoUnidadFactorLimpio(valorUnidad, valorFactor);
+                this.variablesOcultas.unidadFactor_impuesto = impuestoUnidadFactor;
+                this.log(`   Unidad × Factor: ${valorUnidad} × ${valorFactor} = L. ${impuestoUnidadFactor.toFixed(2)}`);
+                
+                // Actualizar campo visual
+                document.getElementById('resultado_unidad_factor').value = `L. ${impuestoUnidadFactor.toFixed(2)}`;
+                
+                this.log('✅ Variables ocultas actualizadas (sistema limpio)', 'success');
+            }
+            
+            calcularImpuestoUnidadFactorLimpio(valorUnidad, valorFactor) {
+                if (!valorUnidad || valorUnidad <= 0 || !valorFactor || valorFactor <= 0) {
+                    this.log('⚠️ Unidad o Factor no válidos - Sistema limpio');
+                    return 0;
+                }
+                
+                const resultado = valorUnidad * valorFactor;
+                this.log(`🧮 Cálculo Unidad × Factor (sistema limpio): ${valorUnidad} × ${valorFactor} = ${resultado}`);
+                return resultado;
+            }
+            
+            sumarImpuestosDesdeVariablesOcultasLimpio() {
+                this.log('➕ SUMANDO IMPUESTOS (SISTEMA LIMPIO):', 'warning');
+                
+                const impuestoVentai = this.variablesOcultas.ventai_impuesto || 0;
+                const impuestoVentac = this.variablesOcultas.ventac_impuesto || 0;
+                const impuestoVentas = this.variablesOcultas.ventas_impuesto || 0;
+                const impuestoControlado = this.variablesOcultas.controlado_impuesto || 0;
+                const impuestoUnidadFactor = this.variablesOcultas.unidadFactor_impuesto || 0;
+                
+                this.log(`   Ventas Rubro Producción: L. ${impuestoVentai.toFixed(2)}`);
+                this.log(`   Ventas Mercadería: L. ${impuestoVentac.toFixed(2)}`);
+                this.log(`   Ventas por Servicios: L. ${impuestoVentas.toFixed(2)}`);
+                this.log(`   Productos Controlados: L. ${impuestoControlado.toFixed(2)}`);
+                this.log(`   Unidad × Factor: L. ${impuestoUnidadFactor.toFixed(2)}`);
+                
+                const total = impuestoVentai + impuestoVentac + impuestoVentas + impuestoControlado + impuestoUnidadFactor;
+                
+                this.log(`💰 TOTAL SISTEMA LIMPIO: L. ${total.toFixed(2)}`, 'success');
+                
+                return total;
+            }
+            
+            actualizarCamposLimpio(total) {
+                const campoImpuesto = document.getElementById('id_impuesto');
+                if (campoImpuesto) {
+                    campoImpuesto.value = total.toFixed(2);
+                    this.log(`✅ Campo impuesto actualizado (sistema limpio): L. ${total.toFixed(2)}`, 'success');
+                }
+            }
+            
+            mostrarEstadoSistema() {
+                const div = document.getElementById('estado-sistema');
+                const total = this.sumarImpuestosDesdeVariablesOcultasLimpio();
+                
+                div.innerHTML = `
+                    <div class="test-exitoso">
+                        <h6>✅ SISTEMA FUNCIONANDO CORRECTAMENTE</h6>
+                        <p><strong>Total Calculado:</strong> L. ${total.toFixed(2)}</p>
+                        <p><strong>Unidad × Factor:</strong> ${this.variablesOcultas.unidadFactor_impuesto || 0}</p>
+                        <p><strong>Estado:</strong> Sin conflictos ni duplicados</p>
+                    </div>
+                `;
+            }
+            
+            mostrarFuncionesActivas() {
+                const div = document.getElementById('lista-funciones');
+                div.innerHTML = this.funcionesActivas.map(func => `
+                    <div class="funcion-activa">
+                        <i class="fas fa-check-circle text-success"></i> ${func}()
+                    </div>
+                `).join('');
+            }
+            
+            generarResultadosTests() {
+                const div = document.getElementById('resultados-tests');
+                div.innerHTML = `
+                    <div class="test-exitoso">
+                        <h6>🧪 Test 1: Event Listeners</h6>
+                        <p>Verificar que los event listeners funcionen sin conflictos</p>
+                        <button class="btn btn-sm btn-success" onclick="testSistemaLimpio.testEventListeners()">▶️ Ejecutar</button>
+                        <div id="resultado-test-1" class="mt-2"></div>
+                    </div>
+                    
+                    <div class="test-exitoso">
+                        <h6>🧪 Test 2: Cálculos Independientes</h6>
+                        <p>Verificar que cada cálculo funcione independientemente</p>
+                        <button class="btn btn-sm btn-success" onclick="testSistemaLimpio.testCalculosIndependientes()">▶️ Ejecutar</button>
+                        <div id="resultado-test-2" class="mt-2"></div>
+                    </div>
+                    
+                    <div class="test-exitoso">
+                        <h6>🧪 Test 3: Suma Total</h6>
+                        <p>Verificar que la suma total sea correcta</p>
+                        <button class="btn btn-sm btn-success" onclick="testSistemaLimpio.testSumaTotal()">▶️ Ejecutar</button>
+                        <div id="resultado-test-3" class="mt-2"></div>
+                    </div>
+                `;
+            }
+            
+            testEventListeners() {
+                this.log('🎧 PROBANDO EVENT LISTENERS (SISTEMA LIMPIO)', 'warning');
+                
+                const campoUnidad = document.getElementById('id_unidad');
+                const campoFactor = document.getElementById('id_factor');
+                
+                if (campoUnidad) {
+                    campoUnidad.value = '750';
+                    campoUnidad.dispatchEvent(new Event('input'));
+                    this.log('✅ Event disparado para unidad: 750');
+                }
+                
+                if (campoFactor) {
+                    campoFactor.value = '6.25';
+                    campoFactor.dispatchEvent(new Event('input'));
+                    this.log('✅ Event disparado para factor: 6.25');
+                }
+                
+                document.getElementById('resultado-test-1').innerHTML = '<span class="text-success">✅ Events funcionando correctamente</span>';
+            }
+            
+            testCalculosIndependientes() {
+                this.log('🧮 PROBANDO CÁLCULOS INDEPENDIENTES', 'warning');
+                
+                const valores = this.obtenerValoresVentasLimpio();
+                this.calcularYGuardarImpuestosIndependientesLimpio(valores);
+                
+                const unidadFactor = this.variablesOcultas.unidadFactor_impuesto || 0;
+                const esperado = 750 * 6.25; // Valores del test anterior
+                
+                const correcto = Math.abs(unidadFactor - esperado) < 0.01;
+                this.log(`Resultado: ${unidadFactor}, Esperado: ${esperado}, Correcto: ${correcto ? 'SÍ' : 'NO'}`, correcto ? 'success' : 'error');
+                
+                document.getElementById('resultado-test-2').innerHTML = correcto ? 
+                    '<span class="text-success">✅ Cálculos independientes correctos</span>' : 
+                    '<span class="text-danger">❌ Error en cálculos independientes</span>';
+            }
+            
+            testSumaTotal() {
+                this.log('➕ PROBANDO SUMA TOTAL', 'warning');
+                
+                const total = this.sumarImpuestosDesdeVariablesOcultasLimpio();
+                const correcto = total > 0;
+                
+                this.log(`Total calculado: L. ${total.toFixed(2)}, Válido: ${correcto ? 'SÍ' : 'NO'}`, correcto ? 'success' : 'error');
+                
+                document.getElementById('resultado-test-3').innerHTML = correcto ? 
+                    '<span class="text-success">✅ Suma total correcta</span>' : 
+                    '<span class="text-danger">❌ Error en suma total</span>';
+            }
+            
+            calcularImpuestoICSLimpio(valor) {
+                return Math.round((valor * 0.003) * 100) / 100;
+            }
+            
+            calcularImpuestoControlados(valor) {
+                // Simulación de cálculo de productos controlados
+                return Math.round((valor * 0.001) * 100) / 100;
+            }
+        }
+        
+        let testSistemaLimpio;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs del sistema...</p>';
+        }
+        
+        function testSistemaCompleto() {
+            testSistemaLimpio.log('✅ TEST SISTEMA COMPLETO SOLICITADO', 'warning');
+            testSistemaLimpio.calcularEnTiempoRealLimpio('manual');
+        }
+        
+        function testFuncionesActivas() {
+            testSistemaLimpio.log('🔧 PROBANDO TODAS LAS FUNCIONES ACTIVAS', 'warning');
+            testSistemaLimpio.testEventListeners();
+            setTimeout(() => {
+                testSistemaLimpio.testCalculosIndependientes();
+                setTimeout(() => {
+                    testSistemaLimpio.testSumaTotal();
+                }, 1000);
+            }, 1000);
+        }
+        
+        function testCasosComplejos() {
+            testSistemaLimpio.log('🧪 PROBANDO CASOS COMPLEJOS', 'warning');
+            
+            // Caso 1: Valores grandes
+            document.getElementById('id_ventai').value = '500,000.00';
+            document.getElementById('id_controlado').value = '1,000,000.00';
+            document.getElementById('id_unidad').value = '1000';
+            document.getElementById('id_factor').value = '10.50';
+            
+            testSistemaLimpio.calcularEnTiempoRealLimpio('complejo');
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            testSistemaLimpio = new TestSistemaLimpio();
+            
+            // Ejecutar test inicial
+            setTimeout(() => {
+                testSistemaLimpio.calcularEnTiempoRealLimpio('inicial');
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

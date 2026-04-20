@@ -1,0 +1,402 @@
+#!/usr/bin/env python3
+"""
+Script para probar los formatos actualizados de Unidad y Factor
+"""
+
+def crear_test_formatos_actualizados():
+    """Crea un test HTML para verificar los formatos actualizados"""
+    
+    test_html = '''<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Formatos Actualizados Unidad y Factor</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        input { margin: 5px; padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .form-text { font-size: 0.875em; color: #6c757d; margin-top: 0.25rem; }
+        .form-text i { margin-right: 0.3rem; }
+        .log { background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+        .test-case { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }
+        .test-result { font-weight: bold; margin-top: 5px; }
+        .pass { color: #28a745; }
+        .fail { color: #dc3545; }
+        .calculation { background: #e8f5e8; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #28a745; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test - Formatos Actualizados Unidad y Factor</h1>
+    
+    <div class="test-section info">
+        <h3>📋 Especificaciones Actualizadas</h3>
+        <ul>
+            <li><strong>Unidad:</strong> DECIMAL(16,2) - 14 enteros, 2 decimales (mismo formato que campos de volumen)</li>
+            <li><strong>Factor:</strong> DECIMAL(10,2) - 10 enteros, 2 decimales</li>
+            <li><strong>Cálculo:</strong> Solo cuando Unidad > 0 Y Factor > 0</li>
+            <li><strong>Multiplicación:</strong> Unidad × Factor (redondeado a 2 decimales)</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h3>🧮 Campos de Prueba</h3>
+        
+        <div class="test-case">
+            <label><strong>Unidad (DECIMAL 16,2):</strong></label>
+            <input type="text" id="id_unidad" placeholder="Ej: 1000.50" oninput="validarUnidad()">
+            <div class="form-text">
+                <i class="fas fa-info-circle"></i> Formato: 14 enteros, 2 decimales (ej: 12345678901234.99)
+            </div>
+            <div id="resultado_unidad" class="test-result"></div>
+        </div>
+        
+        <div class="test-case">
+            <label><strong>Factor (DECIMAL 10,2):</strong></label>
+            <input type="text" id="id_factor" placeholder="Ej: 1.50" oninput="validarFactor()">
+            <div class="form-text">
+                <i class="fas fa-info-circle"></i> Formato: 10 enteros, 2 decimales (ej: 1234567890.99)
+            </div>
+            <div id="resultado_factor" class="test-result"></div>
+        </div>
+        
+        <div class="calculation">
+            <h4>🧮 Cálculo de Impuesto</h4>
+            <div id="calculo_impuesto">Ingrese valores en Unidad y Factor para ver el cálculo</div>
+        </div>
+        
+        <button onclick="probarCasos()">🧪 Probar Casos de Prueba</button>
+        <button onclick="probarCalculo()">💰 Probar Cálculo de Impuesto</button>
+        <button onclick="limpiarCampos()">🧹 Limpiar Campos</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>📊 Casos de Prueba</h3>
+        <div id="casos_prueba"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>📝 Logs del Sistema</h3>
+        <div id="logs">Los logs del sistema aparecerán aquí...</div>
+    </div>
+
+    <script>
+        // Función para limpiar valor según tipo
+        function limpiarValor(valor, tipo = 'general') {
+            if (!valor) return 0;
+            
+            // Limpiar caracteres no numéricos excepto punto decimal
+            let valorLimpio = valor.toString().replace(/[^0-9.]/g, '');
+            
+            if (tipo === 'unidad') {
+                // Para Unidad: mismo formato que campos de volumen (DECIMAL(16,2))
+                const partes = valorLimpio.split('.');
+                let parteEntera = partes[0] || '0';
+                let parteDecimal = partes[1] || '00';
+                
+                // Limitar a 14 enteros (DECIMAL(16,2) = 14 enteros + 2 decimales)
+                if (parteEntera.length > 14) {
+                    parteEntera = parteEntera.substring(0, 14);
+                }
+                
+                // Limitar a 2 decimales
+                if (parteDecimal.length > 2) {
+                    parteDecimal = parteDecimal.substring(0, 2);
+                }
+                
+                const numero = parseFloat(parteEntera + '.' + parteDecimal) || 0;
+                return numero;
+            } else if (tipo === 'factor') {
+                // Para Factor: 10 enteros, 2 decimales (DECIMAL(10,2))
+                const partes = valorLimpio.split('.');
+                let parteEntera = partes[0] || '0';
+                let parteDecimal = partes[1] || '00';
+                
+                // Limitar a 10 enteros
+                if (parteEntera.length > 10) {
+                    parteEntera = parteEntera.substring(0, 10);
+                }
+                
+                // Limitar a 2 decimales
+                if (parteDecimal.length > 2) {
+                    parteDecimal = parteDecimal.substring(0, 2);
+                }
+                
+                const numero = parseFloat(parteEntera + '.' + parteDecimal) || 0;
+                return numero;
+            } else {
+                // Para otros campos: comportamiento general
+                const numero = parseFloat(valorLimpio) || 0;
+                return numero;
+            }
+        }
+
+        function validarUnidad() {
+            const campo = document.getElementById('id_unidad');
+            const valorOriginal = campo.value;
+            
+            // Aplicar validación DECIMAL(16,2)
+            let valor = valorOriginal.replace(/[^0-9.]/g, '');
+            
+            // Asegurar solo un punto decimal
+            const partes = valor.split('.');
+            if (partes.length > 2) {
+                valor = partes[0] + '.' + partes.slice(1).join('');
+            }
+            
+            // Recalcular partes después de la limpieza
+            const partesLimpias = valor.split('.');
+            
+            // Limitar a 14 enteros
+            if (partesLimpias[0].length > 14) {
+                partesLimpias[0] = partesLimpias[0].substring(0, 14);
+            }
+            
+            // Limitar a 2 decimales
+            if (partesLimpias.length === 2 && partesLimpias[1].length > 2) {
+                partesLimpias[1] = partesLimpias[1].substring(0, 2);
+            }
+            
+            // Reconstruir el valor
+            valor = partesLimpias[0] + (partesLimpias.length === 2 ? '.' + partesLimpias[1] : '');
+            
+            campo.value = valor;
+            
+            const valorLimpio = limpiarValor(valor, 'unidad');
+            const resultado = document.getElementById('resultado_unidad');
+            
+            if (valorOriginal !== valor) {
+                resultado.innerHTML = `<span class="warning">⚠️ Valor corregido: "${valorOriginal}" → "${valor}"</span>`;
+            } else if (valorLimpio > 0) {
+                resultado.innerHTML = `<span class="pass">✅ Valor válido: ${valorLimpio}</span>`;
+            } else {
+                resultado.innerHTML = `<span class="fail">❌ Valor inválido</span>`;
+            }
+            
+            log(`Campo Unidad: "${valorOriginal}" → "${valor}" → ${valorLimpio}`);
+            actualizarCalculo();
+        }
+
+        function validarFactor() {
+            const campo = document.getElementById('id_factor');
+            const valorOriginal = campo.value;
+            
+            // Aplicar validación DECIMAL(10,2)
+            let valor = valorOriginal.replace(/[^0-9.]/g, '');
+            
+            // Asegurar solo un punto decimal
+            const partes = valor.split('.');
+            if (partes.length > 2) {
+                valor = partes[0] + '.' + partes.slice(1).join('');
+            }
+            
+            // Recalcular partes después de la limpieza
+            const partesLimpias = valor.split('.');
+            
+            // Limitar a 10 enteros
+            if (partesLimpias[0].length > 10) {
+                partesLimpias[0] = partesLimpias[0].substring(0, 10);
+            }
+            
+            // Limitar a 2 decimales
+            if (partesLimpias.length === 2 && partesLimpias[1].length > 2) {
+                partesLimpias[1] = partesLimpias[1].substring(0, 2);
+            }
+            
+            // Reconstruir el valor
+            valor = partesLimpias[0] + (partesLimpias.length === 2 ? '.' + partesLimpias[1] : '');
+            
+            campo.value = valor;
+            
+            const valorLimpio = limpiarValor(valor, 'factor');
+            const resultado = document.getElementById('resultado_factor');
+            
+            if (valorOriginal !== valor) {
+                resultado.innerHTML = `<span class="warning">⚠️ Valor corregido: "${valorOriginal}" → "${valor}"</span>`;
+            } else if (valorLimpio > 0) {
+                resultado.innerHTML = `<span class="pass">✅ Valor válido: ${valorLimpio}</span>`;
+            } else {
+                resultado.innerHTML = `<span class="fail">❌ Valor inválido</span>`;
+            }
+            
+            log(`Campo Factor: "${valorOriginal}" → "${valor}" → ${valorLimpio}`);
+            actualizarCalculo();
+        }
+
+        function actualizarCalculo() {
+            const unidad = limpiarValor(document.getElementById('id_unidad').value, 'unidad');
+            const factor = limpiarValor(document.getElementById('id_factor').value, 'factor');
+            const calculoDiv = document.getElementById('calculo_impuesto');
+            
+            if (unidad > 0 && factor > 0) {
+                const valorCalculado = Math.round((unidad * factor) * 100) / 100;
+                calculoDiv.innerHTML = `
+                    <strong>🧮 Cálculo Unidad × Factor:</strong><br>
+                    Unidad: ${unidad}<br>
+                    Factor: ${factor}<br>
+                    <strong>Resultado: ${unidad} × ${factor} = ${valorCalculado} (redondeado a 2 decimales)</strong><br>
+                    <em>✅ Se calculará impuesto sobre este valor</em>
+                `;
+                log(`Cálculo: ${unidad} × ${factor} = ${valorCalculado}`);
+            } else {
+                calculoDiv.innerHTML = `
+                    <em>⚠️ Ingrese valores en Unidad y Factor (ambos > 0) para calcular impuesto</em>
+                `;
+            }
+        }
+
+        function probarCasos() {
+            const casos = [
+                // Casos para Unidad (DECIMAL 16,2)
+                { input: '1000.50', tipo: 'unidad', esperado: 1000.5, descripcion: 'Decimal válido' },
+                { input: '12345678901234.99', tipo: 'unidad', esperado: 12345678901234.99, descripcion: 'Máximo permitido' },
+                { input: '123456789012345.999', tipo: 'unidad', esperado: 12345678901234.99, descripcion: 'Más de 14 enteros y 2 decimales' },
+                { input: '1000', tipo: 'unidad', esperado: 1000, descripcion: 'Entero sin decimales' },
+                { input: 'abc1000.50def', tipo: 'unidad', esperado: 1000.5, descripcion: 'Caracteres no numéricos removidos' },
+                { input: '', tipo: 'unidad', esperado: 0, descripcion: 'Campo vacío' },
+                
+                // Casos para Factor (DECIMAL 10,2)
+                { input: '1.50', tipo: 'factor', esperado: 1.5, descripcion: 'Decimal válido' },
+                { input: '1234567890.99', tipo: 'factor', esperado: 1234567890.99, descripcion: 'Máximo permitido' },
+                { input: '12345678901.999', tipo: 'factor', esperado: 1234567890.99, descripcion: 'Más de 10 enteros y 2 decimales' },
+                { input: '1000', tipo: 'factor', esperado: 1000, descripcion: 'Entero sin decimales' },
+                { input: 'abc1.50def', tipo: 'factor', esperado: 1.5, descripcion: 'Caracteres no numéricos removidos' },
+                { input: '', tipo: 'factor', esperado: 0, descripcion: 'Campo vacío' }
+            ];
+            
+            const resultados = document.getElementById('casos_prueba');
+            resultados.innerHTML = '<h4>Resultados de Pruebas:</h4>';
+            
+            casos.forEach((caso, index) => {
+                const resultado = limpiarValor(caso.input, caso.tipo);
+                const esCorrecto = resultado === caso.esperado;
+                
+                const div = document.createElement('div');
+                div.className = 'test-case';
+                div.innerHTML = `
+                    <strong>Prueba ${index + 1}:</strong> ${caso.descripcion}<br>
+                    <strong>Entrada:</strong> "${caso.input}" | <strong>Tipo:</strong> ${caso.tipo}<br>
+                    <strong>Esperado:</strong> ${caso.esperado} | <strong>Obtenido:</strong> ${resultado}<br>
+                    <span class="${esCorrecto ? 'pass' : 'fail'}">${esCorrecto ? '✅ PASÓ' : '❌ FALLÓ'}</span>
+                `;
+                resultados.appendChild(div);
+                
+                log(`Prueba ${index + 1}: "${caso.input}" (${caso.tipo}) → ${resultado} ${esCorrecto ? '✅' : '❌'}`);
+            });
+        }
+
+        function probarCalculo() {
+            const casosCalculo = [
+                { unidad: 1000, factor: 1.5, esperado: 1500 },
+                { unidad: 1000.50, factor: 2.25, esperado: 2251.13 },
+                { unidad: 12345678901234.99, factor: 0.01, esperado: 123456789012.35 },
+                { unidad: 0, factor: 1.5, esperado: 0, descripcion: 'Unidad = 0, no calcula' },
+                { unidad: 1000, factor: 0, esperado: 0, descripcion: 'Factor = 0, no calcula' },
+                { unidad: 0, factor: 0, esperado: 0, descripcion: 'Ambos = 0, no calcula' }
+            ];
+            
+            const calculoDiv = document.getElementById('calculo_impuesto');
+            calculoDiv.innerHTML = '<h4>🧪 Pruebas de Cálculo:</h4>';
+            
+            casosCalculo.forEach((caso, index) => {
+                const valorCalculado = caso.unidad > 0 && caso.factor > 0 ? 
+                    Math.round((caso.unidad * caso.factor) * 100) / 100 : 0;
+                const esCorrecto = valorCalculado === caso.esperado;
+                
+                calculoDiv.innerHTML += `
+                    <div class="test-case">
+                        <strong>Prueba ${index + 1}:</strong> ${caso.descripcion || 'Cálculo normal'}<br>
+                        Unidad: ${caso.unidad} | Factor: ${caso.factor}<br>
+                        <strong>Esperado:</strong> ${caso.esperado} | <strong>Obtenido:</strong> ${valorCalculado}<br>
+                        <span class="${esCorrecto ? 'pass' : 'fail'}">${esCorrecto ? '✅ PASÓ' : '❌ FALLÓ'}</span>
+                    </div>
+                `;
+                
+                log(`Cálculo ${index + 1}: ${caso.unidad} × ${caso.factor} = ${valorCalculado} ${esCorrecto ? '✅' : '❌'}`);
+            });
+        }
+
+        function limpiarCampos() {
+            document.getElementById('id_unidad').value = '';
+            document.getElementById('id_factor').value = '';
+            document.getElementById('resultado_unidad').innerHTML = '';
+            document.getElementById('resultado_factor').innerHTML = '';
+            document.getElementById('calculo_impuesto').innerHTML = 'Ingrese valores en Unidad y Factor para ver el cálculo';
+            document.getElementById('casos_prueba').innerHTML = '';
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        function log(mensaje) {
+            console.log(mensaje);
+            const logsDiv = document.getElementById('logs');
+            if (logsDiv) {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log';
+                logEntry.textContent = mensaje;
+                logsDiv.appendChild(logEntry);
+                logsDiv.scrollTop = logsDiv.scrollHeight;
+            }
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Test de formatos actualizados Unidad y Factor iniciado');
+        });
+    </script>
+</body>
+</html>'''
+    
+    with open('test_formatos_actualizados.html', 'w', encoding='utf-8') as f:
+        f.write(test_html)
+    
+    print("✅ Test de formatos actualizados creado: test_formatos_actualizados.html")
+    print("📝 Para probar: abra el archivo en un navegador web")
+
+def mostrar_instrucciones():
+    """Muestra las instrucciones para probar los formatos actualizados"""
+    
+    print("\n" + "=" * 60)
+    print("🎯 INSTRUCCIONES PARA PROBAR FORMATOS ACTUALIZADOS:")
+    print("=" * 60)
+    
+    print("\n1️⃣ TEST INDEPENDIENTE:")
+    print("   • Abrir 'test_formatos_actualizados.html' en el navegador")
+    print("   • Probar diferentes valores en los campos")
+    print("   • Ejecutar 'Probar Casos de Prueba' para verificación automática")
+    print("   • Ejecutar 'Probar Cálculo de Impuesto' para verificar multiplicación")
+    
+    print("\n2️⃣ FORMATOS ACTUALIZADOS:")
+    print("   • <strong>Unidad:</strong> DECIMAL(16,2) - 14 enteros, 2 decimales")
+    print("     - Ejemplos válidos: 1000.50, 12345678901234.99")
+    print("     - Mismo formato que campos de volumen")
+    print("     - Máximo 14 dígitos enteros + 2 decimales")
+    
+    print("\n   • <strong>Factor:</strong> DECIMAL(10,2) - 10 enteros, 2 decimales")
+    print("     - Ejemplos válidos: 1.50, 1234567890.99")
+    print("     - Máximo 10 dígitos enteros + 2 decimales")
+    
+    print("\n3️⃣ CÁLCULO DE IMPUESTO:")
+    print("   • Solo se calcula cuando Unidad > 0 Y Factor > 0")
+    print("   • Fórmula: valorCalculado = Unidad × Factor (redondeado a 2 decimales)")
+    print("   • Se aplican las mismas tarifas ICS que otros tipos de venta")
+    print("   • Se suma al total de impuestos calculados")
+    
+    print("\n4️⃣ VALIDACIÓN EN TIEMPO REAL:")
+    print("   • Los campos se validan mientras se escribe")
+    print("   • Se corrigen automáticamente valores inválidos")
+    print("   • Se muestran mensajes de corrección")
+    print("   • Se actualiza el cálculo automáticamente")
+    
+    print("\n✅ RESULTADO ESPERADO:")
+    print("   Los campos deben aceptar los formatos especificados")
+    print("   y calcular impuesto solo cuando ambos valores sean > 0.")
+
+if __name__ == "__main__":
+    crear_test_formatos_actualizados()
+    mostrar_instrucciones()

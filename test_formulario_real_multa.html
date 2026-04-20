@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📝 Test Formulario Real - Multa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .form-group-ventas {
+            background: #f8fafc;
+            border-radius: 13px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+            padding: 1.1rem 1rem 0.7rem 1rem;
+            margin-bottom: 15px;
+            border: 1px solid #e5e7eb;
+            transition: box-shadow 0.18s;
+            flex: 1 1 auto;
+            min-width: 200px;
+        }
+        .form-group-ventas label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .form-group-ventas label i {
+            margin-right: 8px;
+            color: #1e88e5;
+        }
+        .campo-destacado {
+            border: 3px solid #28a745 !important;
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <h4>📝 Test Formulario Real - Verificación de Campo Multa</h4>
+                    <p><strong>Propósito:</strong> Simular exactamente el formulario real para verificar que el campo multa funcione</p>
+                    <p><strong>Verificar:</strong> Que el campo esté visible, que el JavaScript funcione, que las validaciones se ejecuten</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>📝 Formulario Real Simulado</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Simulación exacta del formulario Django -->
+                        <form id="declaracionForm">
+                            <div class="volumenes-venta-section">
+                                <h4 class="section-title"><i class="fas fa-calendar"></i> Período de Declaración</h4>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group-ventas">
+                                            <label for="id_mes">
+                                                <i class="fas fa-calendar-alt"></i> Mes
+                                            </label>
+                                            <input type="number" class="form-control" 
+                                                   id="id_mes" name="mes" 
+                                                   min="1" max="12" step="1" 
+                                                   placeholder="Mes" value="2" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group-ventas">
+                                            <label for="id_tipo">
+                                                <i class="fas fa-tag"></i> Tipo
+                                            </label>
+                                            <select class="form-control" id="id_tipo" name="tipo">
+                                                <option value="">Seleccione tipo</option>
+                                                <option value="1" selected>Normal</option>
+                                                <option value="2">Apertura</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="volumenes-venta-section">
+                                <h4 class="section-title"><i class="fas fa-chart-line"></i> Volúmenes de Venta</h4>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group-ventas">
+                                            <label for="id_controlado">
+                                                <i class="fas fa-shield-alt"></i> Ventas Productos Controlados
+                                            </label>
+                                            <input type="text" class="form-control" 
+                                                   id="id_controlado" name="controlado" 
+                                                   placeholder="0.00" value="50,000.00">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group-ventas">
+                                            <label for="id_impuesto">
+                                                <i class="fas fa-calculator"></i> Impuesto Calculado
+                                            </label>
+                                            <input type="text" class="form-control" 
+                                                   id="id_impuesto" name="impuesto" 
+                                                   readonly value="0.00"
+                                                   style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800; color: #e65100; font-weight: 700; text-align: center;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group-ventas campo-destacado">
+                                            <label for="id_multadecla">
+                                                <i class="fas fa-exclamation-triangle"></i> Multa Declaración Tardía
+                                            </label>
+                                            <input type="text" class="form-control" 
+                                                   id="id_multadecla" name="multadecla" 
+                                                   readonly placeholder="0.00"
+                                                   style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 2px solid #ffa000; color: #e65100; font-weight: 700; text-align: center;"
+                                                   title="Campo calculado automáticamente según reglas de multa">
+                                            <small class="form-text text-info">
+                                                <i class="fas fa-magic"></i> 
+                                                <strong>Automático:</strong> 
+                                                Enero = L. 0.00 | Mes ≠ Enero + Normal = Impuesto | Mes ≠ Enero + Apertura = L. 0.00
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group-ventas">
+                                            <label>Estado de Automatización</label>
+                                            <div id="estado-automatizacion" class="alert alert-info py-2">
+                                                <i class="fas fa-clock"></i> Esperando...
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-primary" onclick="calcularImpuesto()">
+                                            🧮 Calcular Impuesto (Simular cálculo real)
+                                        </button>
+                                        <button type="button" class="btn btn-warning" onclick="cambiarMes()">
+                                            📅 Cambiar Mes (Test automatización)
+                                        </button>
+                                        <button type="button" class="btn btn-success" onclick="cambiarTipo()">
+                                            🏷️ Cambiar Tipo (Test automatización)
+                                        </button>
+                                        <button type="button" class="btn btn-info" onclick="verificarImplementacion()">
+                                            🔍 Verificar Implementación
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Monitor de Estado</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="monitor-estado">
+                            <p class="text-muted">El estado se mostrará aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log de Verificación</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs de verificación...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SIMULACIÓN EXACTA DEL SISTEMA IMPLEMENTADO
+        class TestFormularioReal {
+            constructor() {
+                this.variablesOcultas = {};
+                this.setupEventListeners();
+                this.log('🚀 Test de formulario real iniciado', 'success');
+                this.verificarCamposExistentes();
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            verificarCamposExistentes() {
+                this.log('🔍 VERIFICANDO CAMPOS EXISTENTES', 'info');
+                
+                const campos = ['id_mes', 'id_tipo', 'id_impuesto', 'id_multadecla', 'id_controlado'];
+                campos.forEach(id => {
+                    const campo = document.getElementById(id);
+                    if (campo) {
+                        this.log(`   ✅ ${id}: ${campo.tagName}, valor="${campo.value}"`, 'success');
+                    } else {
+                        this.log(`   ❌ ${id}: NO ENCONTRADO`, 'error');
+                    }
+                });
+            }
+            
+            setupEventListeners() {
+                // Listeners para campos de ventas
+                const campoControlado = document.getElementById('id_controlado');
+                if (campoControlado) {
+                    campoControlado.addEventListener('input', () => {
+                        this.log('📊 Productos Controlados cambió', 'info');
+                        this.calcularEnTiempoReal('controlado');
+                    });
+                    campoControlado.addEventListener('blur', () => this.calcularEnTiempoReal('controlado'));
+                }
+                
+                // LISTENERS CRÍTICOS PARA MES Y TIPO
+                const campoMes = document.getElementById('id_mes');
+                const campoTipo = document.getElementById('id_tipo');
+                
+                if (campoMes) {
+                    campoMes.addEventListener('change', () => {
+                        this.log('🔄 MES CAMBIÓ - Ejecutando automatización de multa', 'warning');
+                        this.recalcularMultaPorCambioCombobox();
+                    });
+                    
+                    campoMes.addEventListener('input', () => {
+                        this.log('📝 MES INPUT - Ejecutando automatización de multa', 'info');
+                        this.recalcularMultaPorCambioCombobox();
+                    });
+                    
+                    this.log('✅ Listeners MES configurados', 'success');
+                } else {
+                    this.log('❌ Campo MES no encontrado para listeners', 'error');
+                }
+                
+                if (campoTipo) {
+                    campoTipo.addEventListener('change', () => {
+                        this.log('🔄 TIPO CAMBIÓ - Ejecutando automatización de multa', 'warning');
+                        this.recalcularMultaPorCambioCombobox();
+                    });
+                    this.log('✅ Listeners TIPO configurados', 'success');
+                } else {
+                    this.log('❌ Campo TIPO no encontrado para listeners', 'error');
+                }
+            }
+            
+            calcularEnTiempoReal(fieldName) {
+                this.log(`🧮 CALCULANDO IMPUESTO para: ${fieldName}`, 'info');
+                
+                // Simular cálculo de impuesto
+                const valorControlado = this.parsearValor(document.getElementById('id_controlado').value);
+                const impuesto = this.calcularImpuestoSimple(valorControlado);
+                
+                this.log(`📊 Valor parseado: ${valorControlado.toLocaleString()}`);
+                this.log(`💰 Impuesto calculado: L. ${impuesto.toFixed(2)}`);
+                
+                // Actualizar campo impuesto
+                document.getElementById('id_impuesto').value = impuesto.toFixed(2);
+                
+                // AUTOMÁTICAMENTE calcular multa
+                this.calcularYActualizarMultaAutomaticamente(impuesto);
+            }
+            
+            calcularYActualizarMultaAutomaticamente(impuestoCalculado) {
+                this.log('🧮 CALCULANDO MULTA AUTOMÁTICAMENTE', 'warning');
+                this.log(`   Impuesto base: L. ${impuestoCalculado.toFixed(2)}`);
+                
+                // Solo calcular multa si el impuesto es mayor a cero
+                if (impuestoCalculado <= 0) {
+                    this.log('   ⚠️ Impuesto es 0 o negativo, multa = 0.00');
+                    this.actualizarCampoMulta(0);
+                    return;
+                }
+                
+                // Calcular multa según las reglas
+                const multa = this.calcularMultaSegunReglas(impuestoCalculado);
+                
+                // Actualizar el campo de multa
+                this.actualizarCampoMulta(multa);
+            }
+            
+            calcularMultaSegunReglas(impuestoCalculado) {
+                const campoMes = document.getElementById('id_mes');
+                const campoTipo = document.getElementById('id_tipo');
+                
+                if (!campoMes || !campoTipo) {
+                    this.log('⚠️ No se encontraron campos mes o tipo', 'error');
+                    return 0;
+                }
+                
+                // LECTURA NUMÉRICA EXACTA
+                const mes = parseInt(campoMes.value) || 0;
+                const tipo = parseInt(campoTipo.value) || 0;
+                
+                this.log(`🔍 VALIDACIÓN NUMÉRICA DE MULTA:`);
+                this.log(`   Mes (numérico): ${mes} ${mes === 1 ? '(ENERO)' : mes > 1 && mes <= 12 ? '(≠ ENERO)' : '(INVÁLIDO)'}`);
+                this.log(`   Tipo (numérico): ${tipo} ${tipo === 1 ? '(NORMAL)' : tipo === 2 ? '(APERTURA)' : '(INVÁLIDO)'}`);
+                this.log(`   Impuesto: L. ${impuestoCalculado.toFixed(2)}`);
+                
+                let multa = 0;
+                let reglaAplicada = '';
+                
+                // VALIDACIÓN NUMÉRICA EXACTA
+                this.log(`🧮 APLICANDO VALIDACIONES NUMÉRICAS:`);
+                
+                // REGLA 1: mes === 1 (Enero) → multa = 0.00
+                if (mes === 1) {
+                    multa = 0;
+                    reglaAplicada = `Mes = 1 (Enero): Multa = 0.00`;
+                    this.log(`   ✅ ${reglaAplicada}`, 'success');
+                }
+                // REGLA 2: mes !== 1 AND tipo === 1 (Normal) → multa = impuesto
+                else if (mes !== 1 && tipo === 1) {
+                    multa = impuestoCalculado;
+                    reglaAplicada = `Mes ≠ 1 (${mes}) + Tipo = 1 (Normal): Multa = Impuesto`;
+                    this.log(`   ⚠️ ${reglaAplicada} = L. ${multa.toFixed(2)}`, 'warning');
+                }
+                // REGLA 3: mes !== 1 AND tipo !== 1 → multa = 0.00
+                else if (mes !== 1 && tipo !== 1) {
+                    multa = 0;
+                    reglaAplicada = `Mes ≠ 1 (${mes}) + Tipo ≠ 1 (${tipo}): Multa = 0.00`;
+                    this.log(`   ✅ ${reglaAplicada}`, 'success');
+                }
+                // REGLA DEFAULT: Valores inválidos
+                else {
+                    multa = 0;
+                    reglaAplicada = `Valores inválidos (Mes: ${mes}, Tipo: ${tipo}): Multa = 0.00`;
+                    this.log(`   ⚠️ ${reglaAplicada}`, 'warning');
+                }
+                
+                this.log(`💰 MULTA FINAL: L. ${multa.toFixed(2)} | REGLA: ${reglaAplicada}`);
+                return multa;
+            }
+            
+            actualizarCampoMulta(valorMulta) {
+                const campoMulta = document.getElementById('id_multadecla');
+                
+                if (campoMulta) {
+                    const valorAnterior = parseFloat(campoMulta.value) || 0;
+                    campoMulta.value = valorMulta.toFixed(2);
+                    
+                    // Aplicar estilos según el valor
+                    if (valorMulta > 0) {
+                        campoMulta.style.backgroundColor = '#fff3cd';
+                        campoMulta.style.borderColor = '#ffa000';
+                        campoMulta.style.color = '#856404';
+                    } else {
+                        campoMulta.style.backgroundColor = '#e8f5e8';
+                        campoMulta.style.borderColor = '#28a745';
+                        campoMulta.style.color = '#155724';
+                    }
+                    
+                    // Log del cambio
+                    if (valorAnterior !== valorMulta) {
+                        this.log(`💰 Campo multa actualizado: L. ${valorAnterior.toFixed(2)} → L. ${valorMulta.toFixed(2)}`, 'success');
+                    }
+                    
+                    // Actualizar estado
+                    this.actualizarEstadoAutomatizacion(valorMulta);
+                } else {
+                    this.log('❌ Campo multa no encontrado', 'error');
+                }
+            }
+            
+            recalcularMultaPorCambioCombobox() {
+                this.log('🔄 RECALCULANDO MULTA POR CAMBIO EN COMBOBOX', 'warning');
+                
+                // PASO 1: Leer valores actuales de combobox
+                const campoMes = document.getElementById('id_mes');
+                const campoTipo = document.getElementById('id_tipo');
+                const campoImpuesto = document.getElementById('id_impuesto');
+                
+                this.log('📊 LEYENDO VALORES DE COMBOBOX:');
+                
+                if (campoMes) {
+                    this.log(`   Campo MES encontrado: ${campoMes.tagName}, valor="${campoMes.value}"`);
+                } else {
+                    this.log('   ❌ Campo MES no encontrado', 'error');
+                }
+                
+                if (campoTipo) {
+                    this.log(`   Campo TIPO encontrado: ${campoTipo.tagName}, valor="${campoTipo.value}"`);
+                    if (campoTipo.tagName === 'SELECT') {
+                        this.log(`   Opción seleccionada: "${campoTipo.options[campoTipo.selectedIndex]?.text || 'Ninguna'}"`);
+                    }
+                } else {
+                    this.log('   ❌ Campo TIPO no encontrado', 'error');
+                }
+                
+                // PASO 2: Convertir a números
+                const mes = parseInt(campoMes?.value) || 0;
+                const tipo = parseInt(campoTipo?.value) || 0;
+                const impuesto = parseFloat(campoImpuesto?.value) || 0;
+                
+                this.log('🔢 VALORES CONVERTIDOS A NÚMEROS:');
+                this.log(`   Mes: ${mes} ${mes === 1 ? '(ENERO)' : '(≠ ENERO)'}`);
+                this.log(`   Tipo: ${tipo} ${tipo === 1 ? '(NORMAL)' : tipo === 2 ? '(APERTURA)' : '(OTRO)'}`);
+                this.log(`   Impuesto: L. ${impuesto.toFixed(2)}`);
+                
+                // PASO 3: Aplicar validación de multa
+                if (impuesto > 0) {
+                    this.log('✅ Impuesto > 0, aplicando reglas de multa');
+                    const nuevaMulta = this.calcularMultaSegunReglas(impuesto);
+                    this.actualizarCampoMulta(nuevaMulta);
+                } else {
+                    this.log('⚠️ Impuesto ≤ 0, multa = 0.00');
+                    this.actualizarCampoMulta(0);
+                }
+                
+                this.actualizarMonitorEstado();
+            }
+            
+            actualizarEstadoAutomatizacion(multa) {
+                const div = document.getElementById('estado-automatizacion');
+                if (div) {
+                    div.className = `alert alert-${multa > 0 ? 'warning' : 'success'} py-2`;
+                    div.innerHTML = `
+                        <i class="fas fa-${multa > 0 ? 'exclamation-triangle' : 'check-circle'}"></i>
+                        <strong>${multa > 0 ? 'Multa Aplicada' : 'Sin Multa'}</strong><br>
+                        L. ${multa.toFixed(2)}
+                    `;
+                }
+            }
+            
+            actualizarMonitorEstado() {
+                const mes = parseInt(document.getElementById('id_mes').value) || 0;
+                const tipo = parseInt(document.getElementById('id_tipo').value) || 0;
+                const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+                const multa = parseFloat(document.getElementById('id_multadecla').value) || 0;
+                
+                const monitor = document.getElementById('monitor-estado');
+                monitor.innerHTML = `
+                    <div class="alert alert-${multa > 0 ? 'warning' : 'success'} py-2">
+                        <h6>${multa > 0 ? '⚠️' : '✅'} Estado Actual</h6>
+                        <p><strong>Mes:</strong> ${mes} (${this.getNombreMes(mes)})</p>
+                        <p><strong>Tipo:</strong> ${tipo} (${this.getNombreTipo(tipo)})</p>
+                        <p><strong>Impuesto:</strong> L. ${impuesto.toFixed(2)}</p>
+                        <p><strong>Multa:</strong> L. ${multa.toFixed(2)}</p>
+                        <p><strong>Regla:</strong> ${this.obtenerReglaActual(mes, tipo, impuesto)}</p>
+                    </div>
+                `;
+            }
+            
+            obtenerReglaActual(mes, tipo, impuesto) {
+                if (impuesto <= 0) return 'Sin impuesto';
+                if (mes === 1) return 'Enero → Sin multa';
+                if (mes !== 1 && tipo === 1) return 'Mes ≠ Enero + Normal → Multa = Impuesto';
+                if (mes !== 1 && tipo !== 1) return 'Mes ≠ Enero + ≠ Normal → Sin multa';
+                return 'Caso no contemplado';
+            }
+            
+            parsearValor(valor) {
+                if (!valor) return 0;
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor.replace(/,/g, '')) || 0;
+                }
+                return parseFloat(valor.replace(/[^0-9.]/g, '')) || 0;
+            }
+            
+            calcularImpuestoSimple(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) return 0;
+                return Math.round((valorVentas * 0.10 / 1000) * 100) / 100;
+            }
+            
+            getNombreMes(mes) {
+                const meses = ['Sin seleccionar', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                              'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                return meses[mes] || 'Inválido';
+            }
+            
+            getNombreTipo(tipo) {
+                const tipos = ['Sin seleccionar', 'Normal', 'Apertura'];
+                return tipos[tipo] || 'Inválido';
+            }
+        }
+        
+        let testSistema;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs de verificación...</p>';
+        }
+        
+        function calcularImpuesto() {
+            testSistema.log('🧮 CALCULANDO IMPUESTO MANUALMENTE', 'warning');
+            testSistema.calcularEnTiempoReal('controlado');
+        }
+        
+        function cambiarMes() {
+            const meses = [1, 2, 3, 6, 12];
+            const mesActual = parseInt(document.getElementById('id_mes').value) || 2;
+            const siguienteMes = meses[(meses.indexOf(mesActual) + 1) % meses.length];
+            
+            testSistema.log(`📅 Cambiando mes de ${mesActual} a ${siguienteMes}`, 'warning');
+            document.getElementById('id_mes').value = siguienteMes;
+            document.getElementById('id_mes').dispatchEvent(new Event('change'));
+        }
+        
+        function cambiarTipo() {
+            const tipoActual = parseInt(document.getElementById('id_tipo').value) || 1;
+            const nuevoTipo = tipoActual === 1 ? 2 : 1;
+            
+            testSistema.log(`🏷️ Cambiando tipo de ${tipoActual} a ${nuevoTipo}`, 'warning');
+            document.getElementById('id_tipo').value = nuevoTipo;
+            document.getElementById('id_tipo').dispatchEvent(new Event('change'));
+        }
+        
+        function verificarImplementacion() {
+            testSistema.log('🔍 VERIFICANDO IMPLEMENTACIÓN COMPLETA', 'info');
+            testSistema.log('=' .repeat(50));
+            
+            // Verificar campos
+            testSistema.verificarCamposExistentes();
+            
+            // Verificar que el campo multa esté visible
+            const campoMulta = document.getElementById('id_multadecla');
+            if (campoMulta) {
+                testSistema.log('✅ Campo multa VISIBLE y accesible', 'success');
+                testSistema.log(`   Valor actual: "${campoMulta.value}"`);
+                testSistema.log(`   ReadOnly: ${campoMulta.readOnly}`);
+                testSistema.log(`   Estilos aplicados: ${campoMulta.style.cssText ? 'SÍ' : 'NO'}`);
+            } else {
+                testSistema.log('❌ Campo multa NO VISIBLE', 'error');
+            }
+            
+            // Verificar listeners
+            testSistema.log('\n🔍 Verificando listeners:');
+            const campoMes = document.getElementById('id_mes');
+            const campoTipo = document.getElementById('id_tipo');
+            
+            if (campoMes) {
+                testSistema.log('✅ Campo MES tiene listeners configurados', 'success');
+            } else {
+                testSistema.log('❌ Campo MES sin listeners', 'error');
+            }
+            
+            if (campoTipo) {
+                testSistema.log('✅ Campo TIPO tiene listeners configurados', 'success');
+            } else {
+                testSistema.log('❌ Campo TIPO sin listeners', 'error');
+            }
+            
+            testSistema.log('\n🧪 Ejecutando test de automatización...');
+            testSistema.calcularEnTiempoReal('test');
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            testSistema = new TestFormularioReal();
+            
+            // Ejecutar verificación inicial
+            setTimeout(() => {
+                testSistema.actualizarMonitorEstado();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

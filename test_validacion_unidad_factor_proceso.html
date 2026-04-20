@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Test Validación Proceso Unidad × Factor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .validacion-paso {
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+        }
+        .resultado-correcto { background: #d4edda; border-color: #c3e6cb; }
+        .resultado-incorrecto { background: #f8d7da; border-color: #f5c6cb; }
+        .variable-oculta {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 2px 0;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-success">
+                    <h4>✅ Test Validación del Proceso: Unidad × Factor</h4>
+                    <p><strong>Validaciones a Verificar:</strong></p>
+                    <ol>
+                        <li>✅ <strong>Condición:</strong> unidad > 0 AND factor > 0</li>
+                        <li>🧮 <strong>Cálculo:</strong> impuesto = unidad × factor</li>
+                        <li>🔧 <strong>Variables Ocultas:</strong> Guardar en unidadFactor_impuesto</li>
+                        <li>➕ <strong>Suma Total:</strong> Incluir en impuesto total</li>
+                        <li>🔄 <strong>Integración:</strong> Con volúmenes de venta existentes</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>🎛️ Controles de Test</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_unidad">
+                                        <i class="fas fa-ruler"></i> Unidad
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="id_unidad" name="unidad" 
+                                           placeholder="0" value="100"
+                                           maxlength="11" pattern="^\d{1,11}$" inputmode="numeric">
+                                    <small class="form-text">TextInput - Enteros</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_factor">
+                                        <i class="fas fa-percentage"></i> Factor
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="id_factor" name="factor" 
+                                           placeholder="0.00" value="2.50"
+                                           maxlength="13" pattern="^\d{1,10}(\.\d{0,2})?$" inputmode="decimal">
+                                    <small class="form-text">TextInput - Decimales</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_controlado">Productos Controlados</label>
+                                    <input type="text" class="form-control" 
+                                           id="id_controlado" name="controlado" 
+                                           placeholder="0.00" value="10,000.00">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_impuesto">Impuesto Total</label>
+                                    <input type="text" class="form-control" 
+                                           id="id_impuesto" name="impuesto" readonly
+                                           style="background: #fff3e0; border: 2px solid #ff9800; color: #e65100; font-weight: 700; text-align: center;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-success" onclick="validarProcesoCompleto()">
+                                ✅ Validar Proceso Completo
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="testCondicionesValidacion()">
+                                🔍 Test Condiciones de Validación
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="testIntegracionSuma()">
+                                ➕ Test Integración con Suma
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Estado de Validación</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="estado-validacion">
+                            <p class="text-muted">El estado aparecerá aquí</p>
+                        </div>
+                        
+                        <div id="variables-ocultas-estado" class="mt-3">
+                            <h6>🔧 Variables Ocultas</h6>
+                            <div id="variables-lista">
+                                <p class="text-muted">Variables aparecerán aquí</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5>🧪 Casos de Validación</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="casos-validacion">
+                            <!-- Se generarán automáticamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log del Proceso</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs del proceso...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TestValidacionProcesoUnidadFactor {
+            constructor() {
+                this.variablesOcultas = {};
+                this.setupEventListeners();
+                this.generarCasosValidacion();
+                this.log('🚀 Test de validación del proceso iniciado', 'success');
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            setupEventListeners() {
+                const campoUnidad = document.getElementById('id_unidad');
+                const campoFactor = document.getElementById('id_factor');
+                
+                if (campoUnidad) {
+                    campoUnidad.addEventListener('input', () => {
+                        this.log('📝 Unidad cambió - Validando proceso', 'info');
+                        this.validarProcesoCompleto();
+                    });
+                }
+                
+                if (campoFactor) {
+                    campoFactor.addEventListener('input', () => {
+                        this.log('📝 Factor cambió - Validando proceso', 'info');
+                        this.validarProcesoCompleto();
+                    });
+                }
+            }
+            
+            validarProcesoCompleto() {
+                this.log('✅ VALIDANDO PROCESO COMPLETO', 'warning');
+                this.log('=' .repeat(50));
+                
+                // PASO 1: Obtener valores de campos TextInput
+                this.log('📊 PASO 1: Leyendo campos TextInput', 'info');
+                const unidadRaw = document.getElementById('id_unidad').value;
+                const factorRaw = document.getElementById('id_factor').value;
+                const controladoRaw = document.getElementById('id_controlado').value;
+                
+                this.log(`   Unidad raw: "${unidadRaw}"`);
+                this.log(`   Factor raw: "${factorRaw}"`);
+                this.log(`   Controlado raw: "${controladoRaw}"`);
+                
+                // PASO 2: Parsear valores
+                this.log('🔢 PASO 2: Parseando valores', 'info');
+                const unidad = this.parsearUnidad(unidadRaw);
+                const factor = this.parsearFactor(factorRaw);
+                const controlado = this.parsearDecimal(controladoRaw);
+                
+                this.log(`   Unidad parseada: ${unidad}`);
+                this.log(`   Factor parseado: ${factor}`);
+                this.log(`   Controlado parseado: ${controlado}`);
+                
+                // PASO 3: Validar condiciones
+                this.log('🔍 PASO 3: Validando condiciones', 'info');
+                const unidadValida = unidad > 0;
+                const factorValido = factor > 0;
+                const ambasCondiciones = unidadValida && factorValido;
+                
+                this.log(`   Unidad > 0: ${unidadValida ? '✅ SÍ' : '❌ NO'} (${unidad})`);
+                this.log(`   Factor > 0: ${factorValido ? '✅ SÍ' : '❌ NO'} (${factor})`);
+                this.log(`   Ambas condiciones: ${ambasCondiciones ? '✅ SÍ' : '❌ NO'}`, ambasCondiciones ? 'success' : 'warning');
+                
+                // PASO 4: Calcular impuesto
+                this.log('🧮 PASO 4: Calculando impuesto', 'info');
+                let impuestoUnidadFactor = 0;
+                
+                if (ambasCondiciones) {
+                    impuestoUnidadFactor = unidad * factor;
+                    this.log(`   ✅ Cálculo: ${unidad} × ${factor} = ${impuestoUnidadFactor}`, 'success');
+                } else {
+                    this.log(`   ⚠️ No se puede calcular (condiciones no cumplidas)`, 'warning');
+                }
+                
+                // PASO 5: Guardar en variables ocultas
+                this.log('🔧 PASO 5: Guardando en variables ocultas', 'info');
+                this.variablesOcultas.unidad_base = unidad;
+                this.variablesOcultas.factor_base = factor;
+                this.variablesOcultas.unidadFactor_impuesto = impuestoUnidadFactor;
+                this.variablesOcultas.controlado_impuesto = controlado > 0 ? this.calcularImpuestoSimple(controlado) : 0;
+                
+                this.log(`   unidad_base: ${this.variablesOcultas.unidad_base}`);
+                this.log(`   factor_base: ${this.variablesOcultas.factor_base}`);
+                this.log(`   unidadFactor_impuesto: ${this.variablesOcultas.unidadFactor_impuesto}`);
+                
+                // PASO 6: Sumar total
+                this.log('➕ PASO 6: Sumando al total', 'info');
+                const totalImpuesto = this.sumarImpuestosTotal();
+                
+                // PASO 7: Actualizar campos
+                this.log('📝 PASO 7: Actualizando campos', 'info');
+                this.actualizarCampos(totalImpuesto);
+                
+                // PASO 8: Mostrar estado
+                this.mostrarEstadoValidacion(unidad, factor, impuestoUnidadFactor, totalImpuesto, ambasCondiciones);
+                
+                this.log(`✅ PROCESO COMPLETADO - Total: L. ${totalImpuesto.toFixed(2)}`, 'success');
+                
+                return {
+                    unidad: unidad,
+                    factor: factor,
+                    impuestoUnidadFactor: impuestoUnidadFactor,
+                    totalImpuesto: totalImpuesto,
+                    condicionesValidas: ambasCondiciones
+                };
+            }
+            
+            sumarImpuestosTotal() {
+                const impuestoControlado = this.variablesOcultas.controlado_impuesto || 0;
+                const impuestoUnidadFactor = this.variablesOcultas.unidadFactor_impuesto || 0;
+                
+                this.log('🔢 SUMANDO IMPUESTOS:');
+                this.log(`   Productos Controlados: L. ${impuestoControlado.toFixed(2)}`);
+                this.log(`   Unidad × Factor: L. ${impuestoUnidadFactor.toFixed(2)}`);
+                
+                const total = impuestoControlado + impuestoUnidadFactor;
+                
+                this.log(`   TOTAL: ${impuestoControlado.toFixed(2)} + ${impuestoUnidadFactor.toFixed(2)} = ${total.toFixed(2)}`);
+                
+                return total;
+            }
+            
+            actualizarCampos(totalImpuesto) {
+                const campoImpuesto = document.getElementById('id_impuesto');
+                if (campoImpuesto) {
+                    campoImpuesto.value = totalImpuesto.toFixed(2);
+                }
+            }
+            
+            mostrarEstadoValidacion(unidad, factor, impuestoUF, total, condicionesValidas) {
+                const div = document.getElementById('estado-validacion');
+                div.innerHTML = `
+                    <div class="alert alert-${condicionesValidas ? 'success' : 'warning'}">
+                        <h6>${condicionesValidas ? '✅' : '⚠️'} Estado de Validación</h6>
+                        <p><strong>Unidad:</strong> ${unidad} ${unidad > 0 ? '(✅ > 0)' : '(❌ ≤ 0)'}</p>
+                        <p><strong>Factor:</strong> ${factor} ${factor > 0 ? '(✅ > 0)' : '(❌ ≤ 0)'}</p>
+                        <p><strong>Condiciones:</strong> ${condicionesValidas ? '✅ Cumplidas' : '❌ No cumplidas'}</p>
+                        <p><strong>Impuesto U×F:</strong> L. ${impuestoUF.toFixed(2)}</p>
+                        <p><strong>Total:</strong> L. ${total.toFixed(2)}</p>
+                    </div>
+                `;
+                
+                const variablesDiv = document.getElementById('variables-lista');
+                variablesDiv.innerHTML = `
+                    <div class="variable-oculta">unidad_base: ${this.variablesOcultas.unidad_base || 0}</div>
+                    <div class="variable-oculta">factor_base: ${this.variablesOcultas.factor_base || 0}</div>
+                    <div class="variable-oculta">unidadFactor_impuesto: ${this.variablesOcultas.unidadFactor_impuesto || 0}</div>
+                    <div class="variable-oculta">controlado_impuesto: ${this.variablesOcultas.controlado_impuesto || 0}</div>
+                `;
+            }
+            
+            generarCasosValidacion() {
+                const casos = [
+                    {unidad: 100, factor: 2.50, esperadoUF: 250, descripcion: 'Ambos > 0: Debe calcular'},
+                    {unidad: 0, factor: 2.50, esperadoUF: 0, descripcion: 'Unidad = 0: No debe calcular'},
+                    {unidad: 100, factor: 0, esperadoUF: 0, descripcion: 'Factor = 0: No debe calcular'},
+                    {unidad: 0, factor: 0, esperadoUF: 0, descripcion: 'Ambos = 0: No debe calcular'},
+                    {unidad: 50, factor: 4.00, esperadoUF: 200, descripcion: 'Caso normal: 50 × 4.00'},
+                    {unidad: 1000, factor: 0.75, esperadoUF: 750, descripcion: 'Factor decimal: 1000 × 0.75'}
+                ];
+                
+                const casosDiv = document.getElementById('casos-validacion');
+                casosDiv.innerHTML = casos.map((caso, index) => `
+                    <div class="validacion-paso">
+                        <h6>📋 Caso ${index + 1}: ${caso.descripcion}</h6>
+                        <p><strong>Entrada:</strong> Unidad=${caso.unidad}, Factor=${caso.factor}</p>
+                        <p><strong>Esperado Unidad×Factor:</strong> L. ${caso.esperadoUF.toFixed(2)}</p>
+                        <button class="btn btn-sm btn-outline-primary" onclick="ejecutarCasoValidacion(${index})">
+                            ▶️ Ejecutar
+                        </button>
+                        <div id="resultado-validacion-${index}" class="mt-2"></div>
+                    </div>
+                `).join('');
+                
+                this.casosValidacion = casos;
+            }
+            
+            ejecutarCasoValidacion(indice) {
+                const caso = this.casosValidacion[indice];
+                this.log(`🧪 EJECUTANDO CASO VALIDACIÓN ${indice + 1}: ${caso.descripcion}`, 'warning');
+                
+                // Configurar valores
+                document.getElementById('id_unidad').value = caso.unidad;
+                document.getElementById('id_factor').value = caso.factor.toFixed(2);
+                
+                // Ejecutar proceso
+                const resultado = this.validarProcesoCompleto();
+                
+                // Verificar resultado
+                const esCorrecta = Math.abs(resultado.impuestoUnidadFactor - caso.esperadoUF) < 0.01;
+                const condicionesCorrectas = resultado.condicionesValidas === (caso.unidad > 0 && caso.factor > 0);
+                
+                const resultadoDiv = document.getElementById(`resultado-validacion-${indice}`);
+                resultadoDiv.className = `validacion-paso ${esCorrecta && condicionesCorrectas ? 'resultado-correcto' : 'resultado-incorrecto'}`;
+                resultadoDiv.innerHTML = `
+                    <strong>${esCorrecta && condicionesCorrectas ? '✅ CORRECTO' : '❌ ERROR'}</strong><br>
+                    Esperado U×F: L. ${caso.esperadoUF.toFixed(2)} | Obtenido: L. ${resultado.impuestoUnidadFactor.toFixed(2)}<br>
+                    Condiciones: ${condicionesCorrectas ? '✅ Correctas' : '❌ Incorrectas'}
+                `;
+                
+                this.log(`${esCorrecta && condicionesCorrectas ? '✅' : '❌'} Caso ${indice + 1}: ${esCorrecta && condicionesCorrectas ? 'CORRECTO' : 'ERROR'}`, 
+                         esCorrecta && condicionesCorrectas ? 'success' : 'error');
+            }
+            
+            parsearUnidad(valor) {
+                if (!valor) return 0;
+                const valorLimpio = valor.toString().replace(/[^0-9]/g, '');
+                return parseInt(valorLimpio) || 0;
+            }
+            
+            parsearFactor(valor) {
+                if (!valor) return 0;
+                let valorLimpio = valor.toString();
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/,/g, '');
+                }
+                valorLimpio = valorLimpio.replace(/[^0-9.]/g, '');
+                return parseFloat(valorLimpio) || 0;
+            }
+            
+            parsearDecimal(valor) {
+                if (!valor) return 0;
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor.replace(/,/g, '')) || 0;
+                }
+                return parseFloat(valor.replace(/[^0-9.]/g, '')) || 0;
+            }
+            
+            calcularImpuestoSimple(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) return 0;
+                return Math.round((valorVentas * 0.10 / 1000) * 100) / 100;
+            }
+        }
+        
+        let testSistema;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs del proceso...</p>';
+        }
+        
+        function validarProcesoCompleto() {
+            testSistema.log('✅ VALIDACIÓN COMPLETA SOLICITADA', 'info');
+            testSistema.validarProcesoCompleto();
+        }
+        
+        function testCondicionesValidacion() {
+            testSistema.log('🔍 PROBANDO CONDICIONES DE VALIDACIÓN', 'warning');
+            
+            const condiciones = [
+                {unidad: 100, factor: 2.5, descripcion: 'Ambos > 0'},
+                {unidad: 0, factor: 2.5, descripcion: 'Unidad = 0'},
+                {unidad: 100, factor: 0, descripcion: 'Factor = 0'},
+                {unidad: -10, factor: 2.5, descripcion: 'Unidad negativa'},
+                {unidad: 100, factor: -1.5, descripcion: 'Factor negativo'}
+            ];
+            
+            condiciones.forEach((condicion, index) => {
+                setTimeout(() => {
+                    testSistema.log(`CONDICIÓN ${index + 1}: ${condicion.descripcion}`);
+                    document.getElementById('id_unidad').value = condicion.unidad;
+                    document.getElementById('id_factor').value = condicion.factor;
+                    testSistema.validarProcesoCompleto();
+                }, index * 2000);
+            });
+        }
+        
+        function testIntegracionSuma() {
+            testSistema.log('➕ PROBANDO INTEGRACIÓN CON SUMA TOTAL', 'warning');
+            
+            // Configurar valores que generen impuestos
+            document.getElementById('id_controlado').value = '20,000.00';  // Generará ~2.00 de impuesto
+            document.getElementById('id_unidad').value = '100';
+            document.getElementById('id_factor').value = '5.00';  // 100 × 5.00 = 500.00
+            
+            testSistema.log('📊 Configuración para integración:');
+            testSistema.log('   Productos Controlados: L. 20,000.00 (generará ~2.00 de impuesto)');
+            testSistema.log('   Unidad: 100');
+            testSistema.log('   Factor: 5.00');
+            testSistema.log('   Esperado Unidad×Factor: 500.00');
+            testSistema.log('   Esperado Total: ~502.00 (2.00 + 500.00)');
+            
+            testSistema.validarProcesoCompleto();
+        }
+        
+        function ejecutarCasoValidacion(indice) {
+            testSistema.ejecutarCasoValidacion(indice);
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            testSistema = new TestValidacionProcesoUnidadFactor();
+            
+            // Ejecutar validación inicial
+            setTimeout(() => {
+                testSistema.validarProcesoCompleto();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

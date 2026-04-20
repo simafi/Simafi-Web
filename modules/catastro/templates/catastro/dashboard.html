@@ -1,0 +1,242 @@
+{% extends 'catastro/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h1 class="display-4 fw-bold text-dark">
+                    <i class="fas fa-chart-line me-3"></i>
+                    Dashboard Catastral
+                </h1>
+                <p class="lead text-muted">Panel de control del Sistema de Gestión Catastral</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-building stat-icon mb-3"></i>
+                <h3 class="fw-bold">{{ total_propiedades|default:0 }}</h3>
+                <p class="mb-0">Propiedades Inmuebles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-map stat-icon mb-3"></i>
+                <h3 class="fw-bold">{{ total_terrenos|default:0 }}</h3>
+                <p class="mb-0">Terrenos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-hammer stat-icon mb-3"></i>
+                <h3 class="fw-bold">{{ total_construcciones|default:0 }}</h3>
+                <p class="mb-0">Construcciones</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-car stat-icon mb-3"></i>
+                <h3 class="fw-bold">{{ total_vehiculos|default:0 }}</h3>
+                <p class="mb-0">Vehículos</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-store stat-icon mb-3"></i>
+                <h3 class="fw-bold">{{ total_establecimientos|default:0 }}</h3>
+                <p class="mb-0">Establecimientos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-dollar-sign stat-icon mb-3"></i>
+                <h3 class="fw-bold">L. {{ valor_total|floatformat:2|default:"0.00" }}</h3>
+                <p class="mb-0">Valor Total</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-map-marker-alt stat-icon mb-3"></i>
+                <h3 class="fw-bold">{{ municipios_unicos|default:0 }}</h3>
+                <p class="mb-0">Municipios</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle stat-icon mb-3"></i>
+                <h3 class="fw-bold">{{ total_propiedades|add:total_terrenos|add:total_construcciones|add:total_vehiculos|add:total_establecimientos|default:0 }}</h3>
+                <p class="mb-0">Total Registros</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="quick-action">
+            <h4 class="mb-4">
+                <i class="fas fa-bolt me-2"></i>
+                Acciones Rápidas
+            </h4>
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <a href="{% url 'catastro:propiedad_create' %}" class="btn btn-custom btn-lg w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        Nueva Propiedad
+                    </a>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'catastro:terreno_create' %}" class="btn btn-custom btn-lg w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        Nuevo Terreno
+                    </a>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'catastro:construccion_create' %}" class="btn btn-custom btn-lg w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        Nueva Construcción
+                    </a>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'catastro:vehiculo_create' %}" class="btn btn-custom btn-lg w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        Nuevo Vehículo
+                    </a>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'catastro:establecimiento_create' %}" class="btn btn-custom btn-lg w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        Nuevo Establecimiento
+                    </a>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'catastro:reportes' %}" class="btn btn-outline-primary btn-lg w-100">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Ver Reportes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Propiedades Recientes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for propiedad in propiedades_recientes|slice:":5" %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ propiedad.codigo_catastral }}</h6>
+                                <small class="text-muted">{{ propiedad.propietario }}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">L. {{ propiedad.valor_catastral|floatformat:2 }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted text-center">No hay propiedades registradas</p>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'catastro:propiedades_list' %}" class="btn btn-outline-primary">
+                        Ver Todas las Propiedades
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-car me-2"></i>
+                    Vehículos Recientes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for vehiculo in vehiculos_recientes|slice:":5" %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ vehiculo.placa }}</h6>
+                                <small class="text-muted">{{ vehiculo.marca }} {{ vehiculo.modelo }}</small>
+                            </div>
+                            <span class="badge bg-success rounded-pill">L. {{ vehiculo.valor_catastral|floatformat:2 }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted text-center">No hay vehículos registrados</p>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'catastro:vehiculos_list' %}" class="btn btn-outline-success">
+                        Ver Todos los Vehículos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

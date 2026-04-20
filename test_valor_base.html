@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Valor Base - Debugging</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .warning { border-left: 4px solid #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test de Debugging - Valor Base</h1>
+        <p>Este archivo permite probar las funciones de debugging del valor base sin necesidad de abrir la consola del navegador.</p>
+        
+        <div class="test-section">
+            <h3>📋 Paso 1: Verificar Elementos DOM</h3>
+            <button onclick="verificarElementosDOM()">Verificar Elementos DOM</button>
+            <div id="resultado-dom" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Paso 2: Probar con Datos Específicos</h3>
+            <button onclick="probarConDatos()">Probar con Datos (1000+2000+3000+500+100=6600)</button>
+            <div id="resultado-datos" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔍 Paso 3: Debugging Completo</h3>
+            <button onclick="debugCompleto()">Ejecutar Debugging Completo</button>
+            <div id="resultado-debug" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔗 Paso 4: Verificar Event Listeners</h3>
+            <button onclick="verificarListeners()">Verificar Event Listeners</button>
+            <div id="resultado-listeners" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🌐 Paso 5: Abrir Página Principal</h3>
+            <button onclick="abrirPaginaPrincipal()">Abrir Declaración de Volumen</button>
+            <p><small>Esto abrirá la página principal donde puedes ejecutar las funciones de debugging en la consola del navegador.</small></p>
+        </div>
+    </div>
+
+    <script>
+        // Función para verificar elementos DOM
+        function verificarElementosDOM() {
+            const resultado = document.getElementById('resultado-dom');
+            resultado.innerHTML = 'Verificando elementos DOM...\n';
+            
+            // Simular verificación de elementos
+            const camposVentas = [
+                {id: 'id_ventai', nombre: 'Ventas Rubro Producción'},
+                {id: 'id_ventac', nombre: 'Ventas Mercadería'},
+                {id: 'id_ventas', nombre: 'Ventas por Servicios'},
+                {id: 'id_valorexcento', nombre: 'Valores Exentos'},
+                {id: 'id_controlado', nombre: 'Ventas Productos Controlados'}
+            ];
+            
+            let html = '📋 VERIFICACIÓN DE ELEMENTOS DOM:\n';
+            html += '=====================================\n\n';
+            
+            camposVentas.forEach(campo => {
+                html += `${campo.nombre} (${campo.id}): ❌ No disponible en esta página\n`;
+            });
+            
+            html += '\n📊 ELEMENTOS DE RESULTADO:\n';
+            html += 'valor_base_total: ❌ No disponible en esta página\n';
+            html += 'valor_base: ❌ No disponible en esta página\n';
+            
+            html += '\n⚠️ NOTA: Esta es una página de prueba. Para verificar elementos reales, abre la página principal.';
+            
+            resultado.innerHTML = html;
+            resultado.className = 'result warning';
+        }
+        
+        // Función para probar con datos específicos
+        function probarConDatos() {
+            const resultado = document.getElementById('resultado-datos');
+            resultado.innerHTML = 'Probando con datos específicos...\n';
+            
+            const ventai = 1000;
+            const ventac = 2000;
+            const ventas = 3000;
+            const valorexcento = 500;
+            const controlado = 100;
+            const sumaEsperada = ventai + ventac + ventas + valorexcento + controlado;
+            
+            let html = '🧪 PRUEBA CON DATOS ESPECÍFICOS:\n';
+            html += '===================================\n\n';
+            html += `Ventas Rubro Producción: ${ventai}\n`;
+            html += `Ventas Mercadería: ${ventac}\n`;
+            html += `Ventas por Servicios: ${ventas}\n`;
+            html += `Valores Exentos: ${valorexcento}\n`;
+            html += `Ventas Productos Controlados: ${controlado}\n\n`;
+            html += `📊 SUMA ESPERADA: ${sumaEsperada}\n\n`;
+            html += '⚠️ NOTA: Esta es una página de prueba. Para probar con datos reales, abre la página principal y ejecuta:\n';
+            html += 'probarValorBaseConDatos(1000, 2000, 3000, 500, 100);';
+            
+            resultado.innerHTML = html;
+            resultado.className = 'result warning';
+        }
+        
+        // Función para debugging completo
+        function debugCompleto() {
+            const resultado = document.getElementById('resultado-debug');
+            resultado.innerHTML = 'Ejecutando debugging completo...\n';
+            
+            let html = '🔍 DEBUGGING COMPLETO:\n';
+            html += '=======================\n\n';
+            html += '📋 PASO 1: Verificando elementos DOM...\n';
+            html += '   ❌ Elementos no disponibles en esta página de prueba\n\n';
+            html += '📋 PASO 2: Verificando elementos de resultado...\n';
+            html += '   ❌ Elementos no disponibles en esta página de prueba\n\n';
+            html += '📋 PASO 3: Verificando funciones disponibles...\n';
+            html += '   ❌ Funciones no disponibles en esta página de prueba\n\n';
+            html += '📋 PASO 4: Ejecutando cálculo manual...\n';
+            html += '   ❌ No se puede ejecutar en esta página de prueba\n\n';
+            html += '📋 PASO 5: Verificando resultado después del cálculo...\n';
+            html += '   ❌ No se puede verificar en esta página de prueba\n\n';
+            html += '⚠️ NOTA: Esta es una página de prueba. Para debugging real, abre la página principal y ejecuta:\n';
+            html += 'debugValorBaseCompleto();';
+            
+            resultado.innerHTML = html;
+            resultado.className = 'result warning';
+        }
+        
+        // Función para verificar event listeners
+        function verificarListeners() {
+            const resultado = document.getElementById('resultado-listeners');
+            resultado.innerHTML = 'Verificando event listeners...\n';
+            
+            let html = '🔍 VERIFICACIÓN DE EVENT LISTENERS:\n';
+            html += '====================================\n\n';
+            html += '📋 Campos de ventas:\n';
+            html += '   ❌ Elementos no disponibles en esta página de prueba\n\n';
+            html += '📋 Sistema de cálculo:\n';
+            html += '   ❌ Sistema no inicializado en esta página de prueba\n\n';
+            html += '⚠️ NOTA: Esta es una página de prueba. Para verificar listeners reales, abre la página principal y ejecuta:\n';
+            html += 'verificarEventListeners();';
+            
+            resultado.innerHTML = html;
+            resultado.className = 'result warning';
+        }
+        
+        // Función para abrir la página principal
+        function abrirPaginaPrincipal() {
+            window.open('http://127.0.0.1:8080/tributario/declaraciones/?rtm=114-03-23&expe=1151', '_blank');
+        }
+        
+        // Mostrar instrucciones al cargar la página
+        window.onload = function() {
+            console.log('🔍 Página de prueba de debugging cargada');
+            console.log('📋 Instrucciones:');
+            console.log('1. Haz clic en "Abrir Declaración de Volumen" para abrir la página principal');
+            console.log('2. En la página principal, abre la consola del navegador (F12)');
+            console.log('3. Ejecuta las siguientes funciones en la consola:');
+            console.log('   - debugValorBaseCompleto()');
+            console.log('   - probarValorBaseConDatos(1000, 2000, 3000, 500, 100)');
+            console.log('   - verificarEventListeners()');
+        };
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

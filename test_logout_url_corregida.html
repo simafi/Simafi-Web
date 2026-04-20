@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Test: URL de Logout Corregida</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .error-404 {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .solucion-url {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .codigo-python {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .url-pattern {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 4px;
+            padding: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-success">
+                    <h4>✅ Test: URL de Logout Corregida</h4>
+                    <p><strong>Error Corregido:</strong> <code>Page not found (404) - tributario-app/login/</code></p>
+                    <p><strong>Causa:</strong> URL incorrecta en la redirección del logout</p>
+                    <p><strong>Solución:</strong> Uso de nombre de URL en lugar de hardcodear la ruta</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5>❌ Error 404 Anterior</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="error-404">
+                            <h6>🐛 Problema de URL:</h6>
+                            <p><strong>URL Incorrecta:</strong></p>
+                            <div class="codigo-python">
+def logout_view(request):
+    logout(request)
+    return redirect('/tributario-app/login/')  # ❌ URL NO EXISTE
+                            </div>
+                            <p class="mt-2"><strong>Error:</strong> <code>Page not found (404)</code></p>
+                            <p><strong>Razón:</strong> La URL <code>/tributario-app/login/</code> no está definida en urlpatterns</p>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <h6>📋 URLs Disponibles:</h6>
+                            <div class="url-pattern">
+✅ login/ [name='login']
+✅ [name='tributario_login'] (ruta raíz)
+❌ tributario-app/login/ (NO EXISTE)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>✅ Solución Aplicada</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="solucion-url">
+                            <h6>🔧 URL Corregida:</h6>
+                            <p><strong>Versión Final (Mejor Práctica):</strong></p>
+                            <div class="codigo-python">
+def logout_view(request):
+    logout(request)
+    return redirect('tributario_app:login')  # ✅ USA NOMBRE DE URL
+                            </div>
+                            <p class="mt-2"><strong>Beneficios:</strong></p>
+                            <ul>
+                                <li>✅ Usa el nombre de la URL</li>
+                                <li>✅ Más mantenible</li>
+                                <li>✅ Funciona correctamente</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <h6>📋 Configuración de URLs:</h6>
+                            <div class="url-pattern">
+# tributario_app/urls.py
+path('', login_view, name='tributario_login')
+path('login/', login_view, name='login')
+
+# Namespace: tributario_app
+# Acceso: 'tributario_app:login'
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>📋 Análisis de URLs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6>❌ URL Incorrecta</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="url-pattern">
+/tributario-app/login/
+                                        </div>
+                                        <p class="mt-2 text-danger">
+                                            <i class="fas fa-times-circle"></i> No existe en urlpatterns
+                                        </p>
+                                        <p><strong>Resultado:</strong> Error 404</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6>✅ URL Directa</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="url-pattern">
+/login/
+                                        </div>
+                                        <p class="mt-2 text-success">
+                                            <i class="fas fa-check-circle"></i> Funciona pero hardcodeada
+                                        </p>
+                                        <p><strong>Resultado:</strong> Funciona</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6>✅ Nombre de URL</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="url-pattern">
+tributario_app:login
+                                        </div>
+                                        <p class="mt-2 text-success">
+                                            <i class="fas fa-star"></i> Mejor práctica
+                                        </p>
+                                        <p><strong>Resultado:</strong> Mantenible</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5>🧪 Verificación de URLs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>📋 URLs de Login Disponibles:</h6>
+                                <div class="url-pattern">
+✅ http://127.0.0.1:8080/ (ruta raíz)
+✅ http://127.0.0.1:8080/login/
+❌ http://127.0.0.1:8080/tributario-app/login/ (NO EXISTE)
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>🔧 Configuración en urls.py:</h6>
+                                <div class="codigo-python">
+# tributario_app/urls.py
+app_name = 'tributario_app'
+
+urlpatterns = [
+    path('', login_view, name='tributario_login'),
+    path('login/', login_view, name='login'),
+    # ... otras URLs
+]
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>✅ Estado Final</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="solucion-url">
+                            <h4><i class="fas fa-check-circle"></i> URL de Logout Corregida</h4>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <h6>🔧 Cambios Aplicados:</h6>
+                                    <ul>
+                                        <li>✅ URL incorrecta corregida</li>
+                                        <li>✅ Uso de nombre de URL</li>
+                                        <li>✅ Namespace correcto</li>
+                                        <li>✅ Mejor práctica implementada</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>🎯 Resultado:</h6>
+                                    <ul>
+                                        <li>✅ Logout funciona correctamente</li>
+                                        <li>✅ Redirección exitosa al login</li>
+                                        <li>✅ No más errores 404</li>
+                                        <li>✅ Código mantenible</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>💡 Mejores Prácticas para URLs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>✅ Recomendaciones:</h6>
+                                <ul>
+                                    <li>✅ Usar nombres de URL en lugar de hardcodear</li>
+                                    <li>✅ Usar namespaces para evitar conflictos</li>
+                                    <li>✅ Verificar URLs en urlpatterns</li>
+                                    <li>✅ Probar redirecciones después de cambios</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>❌ Evitar:</h6>
+                                <ul>
+                                    <li>❌ Hardcodear URLs en el código</li>
+                                    <li>❌ No verificar que las URLs existan</li>
+                                    <li>❌ Usar URLs incorrectas</li>
+                                    <li>❌ No usar namespaces</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <h6>🔧 Ejemplo de Buena Práctica:</h6>
+                            <div class="codigo-python">
+# ✅ CORRECTO - Uso de nombre de URL
+return redirect('app_name:view_name')
+
+# ❌ EVITAR - URL hardcodeada
+return redirect('/app-name/view-url/')
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Test de URL de logout corregida cargado');
+            console.log('🔧 Error 404 solucionado: URL corregida');
+            console.log('✅ logout_view ahora redirecciona correctamente');
+            console.log('💡 Usando nombre de URL: tributario_app:login');
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

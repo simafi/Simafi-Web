@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📤 Test Envío Formulario Multa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .form-group-ventas {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="alert alert-info">
+            <h4>📤 Test Envío de Formulario - Campo Multa</h4>
+            <p><strong>Objetivo:</strong> Verificar que el formulario envíe correctamente el campo multadecla</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>📝 Formulario de Test</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="testForm" method="post" action="#">
+                            <!-- Token CSRF simulado -->
+                            <input type="hidden" name="csrfmiddlewaretoken" value="test-token">
+                            
+                            <!-- Campos básicos -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group-ventas">
+                                        <label for="id_idneg">ID Negocio</label>
+                                        <input type="number" class="form-control" id="id_idneg" name="idneg" value="123" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group-ventas">
+                                        <label for="id_rtm">RTM</label>
+                                        <input type="text" class="form-control" id="id_rtm" name="rtm" value="114-03-23" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group-ventas">
+                                        <label for="id_expe">Expediente</label>
+                                        <input type="text" class="form-control" id="id_expe" name="expe" value="1151:2582" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Período -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group-ventas">
+                                        <label for="id_ano">Año</label>
+                                        <input type="number" class="form-control" id="id_ano" name="ano" value="2024" step="1" placeholder="Año">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group-ventas">
+                                        <label for="id_mes">Mes</label>
+                                        <input type="number" class="form-control" id="id_mes" name="mes" min="1" max="12" step="1" value="2" placeholder="Mes">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group-ventas">
+                                        <label for="id_tipo">Tipo de Declaración</label>
+                                        <select class="form-control" id="id_tipo" name="tipo">
+                                            <option value="">Seleccione tipo</option>
+                                            <option value="1" selected>Normal</option>
+                                            <option value="2">Apertura</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Volúmenes de Venta -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-ventas">
+                                        <label for="id_controlado">Ventas Productos Controlados</label>
+                                        <input type="text" class="form-control" id="id_controlado" name="controlado" placeholder="0.00" value="50,000.00">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-ventas">
+                                        <label for="id_ventai">Ventas Rubro Producción</label>
+                                        <input type="text" class="form-control" id="id_ventai" name="ventai" placeholder="0.00" value="0.00">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-ventas">
+                                        <label for="id_ventac">Ventas Mercadería</label>
+                                        <input type="text" class="form-control" id="id_ventac" name="ventac" placeholder="0.00" value="0.00">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-ventas">
+                                        <label for="id_ventas">Ventas por Servicios</label>
+                                        <input type="text" class="form-control" id="id_ventas" name="ventas" placeholder="0.00" value="0.00">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group-ventas">
+                                        <label for="id_valorexcento">Valores Exentos</label>
+                                        <input type="text" class="form-control" id="id_valorexcento" name="valorexcento" placeholder="0.00" value="0.00">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group-ventas">
+                                        <label for="id_unidad">Unidad</label>
+                                        <input type="number" class="form-control" id="id_unidad" name="unidad" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group-ventas">
+                                        <label for="id_factor">Factor</label>
+                                        <input type="text" class="form-control" id="id_factor" name="factor" placeholder="0.00" value="0.00">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group-ventas">
+                                        <label for="id_multadecla">
+                                            <i class="fas fa-exclamation-triangle"></i> Multa Declaración Tardía
+                                        </label>
+                                        <input type="text" class="form-control" id="id_multadecla" name="multadecla" readonly placeholder="0.00" value="0.00"
+                                               style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 2px solid #ffa000; color: #e65100; font-weight: 700; text-align: center;">
+                                        <small class="form-text text-info">
+                                            <i class="fas fa-magic"></i> <strong>Automático</strong>
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-group-ventas">
+                                        <label for="id_impuesto">Impuesto Calculado</label>
+                                        <input type="text" class="form-control" id="id_impuesto" name="impuesto" readonly placeholder="0.00" value="0.00"
+                                               style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800; color: #e65100; font-weight: 700; text-align: center;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Botones -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-success" onclick="simularCalculoCompleto()">
+                                            🧮 Simular Cálculo Completo
+                                        </button>
+                                        <button type="button" class="btn btn-warning" onclick="verificarDatosEnvio()">
+                                            📤 Verificar Datos de Envío
+                                        </button>
+                                        <button type="button" class="btn btn-primary" onclick="simularEnvioFormulario()">
+                                            📨 Simular Envío de Formulario
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Estado del Formulario</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="estado-formulario">
+                            <p class="text-muted">El estado aparecerá aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log de Verificación</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs de verificación...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(mensaje, tipo = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${mensaje}`;
+            
+            const logElement = document.getElementById('debug-log');
+            const colorClass = tipo === 'error' ? 'text-danger' : 
+                              tipo === 'success' ? 'text-success' : 
+                              tipo === 'warning' ? 'text-warning' : 'text-info';
+            
+            logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs de verificación...</p>';
+        }
+        
+        function simularCalculoCompleto() {
+            log('🧮 SIMULANDO CÁLCULO COMPLETO', 'warning');
+            
+            // 1. Calcular impuesto
+            const valorControlado = parsearValor(document.getElementById('id_controlado').value);
+            const impuesto = calcularImpuestoSimple(valorControlado);
+            
+            log(`📊 Productos Controlados: ${valorControlado.toLocaleString()}`);
+            log(`💰 Impuesto calculado: L. ${impuesto.toFixed(2)}`);
+            
+            // 2. Actualizar campo impuesto
+            document.getElementById('id_impuesto').value = impuesto.toFixed(2);
+            
+            // 3. Calcular multa automáticamente
+            calcularYActualizarMulta(impuesto);
+            
+            // 4. Actualizar estado
+            actualizarEstadoFormulario();
+        }
+        
+        function calcularYActualizarMulta(impuesto) {
+            log('🤖 CALCULANDO MULTA AUTOMÁTICAMENTE', 'warning');
+            
+            if (impuesto <= 0) {
+                log('   Impuesto ≤ 0 → multa = 0.00');
+                actualizarCampoMulta(0);
+                return;
+            }
+            
+            const mes = parseInt(document.getElementById('id_mes').value) || 0;
+            const tipo = parseInt(document.getElementById('id_tipo').value) || 0;
+            
+            log(`   Mes: ${mes}, Tipo: ${tipo}, Impuesto: ${impuesto.toFixed(2)}`);
+            
+            let multa = 0;
+            
+            if (mes === 1) {
+                multa = 0;
+                log('   mes === 1 (Enero) → multa = 0.00', 'success');
+            } else if (mes !== 1 && tipo === 1) {
+                multa = impuesto;
+                log(`   mes !== 1 && tipo === 1 → multa = impuesto = ${multa.toFixed(2)}`, 'warning');
+            } else if (mes !== 1 && tipo !== 1) {
+                multa = 0;
+                log('   mes !== 1 && tipo !== 1 → multa = 0.00', 'success');
+            } else {
+                multa = 0;
+                log('   Caso default → multa = 0.00', 'info');
+            }
+            
+            actualizarCampoMulta(multa);
+        }
+        
+        function actualizarCampoMulta(valor) {
+            const campo = document.getElementById('id_multadecla');
+            if (campo) {
+                campo.value = valor.toFixed(2);
+                log(`💰 Campo multa actualizado: L. ${valor.toFixed(2)}`, 'success');
+                
+                if (valor > 0) {
+                    campo.style.backgroundColor = '#fff3cd';
+                    campo.style.borderColor = '#ffa000';
+                } else {
+                    campo.style.backgroundColor = '#e8f5e8';
+                    campo.style.borderColor = '#28a745';
+                }
+            }
+        }
+        
+        function verificarDatosEnvio() {
+            log('📤 VERIFICANDO DATOS QUE SE ENVIARÍAN', 'info');
+            log('=' .repeat(40));
+            
+            const formData = new FormData(document.getElementById('testForm'));
+            
+            // Verificar todos los campos
+            const campos = [
+                'idneg', 'rtm', 'expe', 'ano', 'mes', 'tipo',
+                'ventai', 'ventac', 'ventas', 'valorexcento', 'controlado',
+                'unidad', 'factor', 'multadecla', 'impuesto'
+            ];
+            
+            log('📋 DATOS DEL FORMULARIO:');
+            campos.forEach(campo => {
+                const valor = formData.get(campo) || 'N/A';
+                const elemento = document.getElementById(`id_${campo}`);
+                
+                if (elemento) {
+                    log(`   ✅ ${campo}: "${valor}" (elemento existe)`, 'success');
+                } else {
+                    log(`   ❌ ${campo}: "${valor}" (elemento NO existe)`, 'error');
+                }
+            });
+            
+            // Verificar específicamente el campo multa
+            const multadecla = formData.get('multadecla');
+            log(`\n💰 VERIFICACIÓN ESPECÍFICA CAMPO MULTA:`, 'warning');
+            log(`   Valor en FormData: "${multadecla}"`);
+            log(`   Tipo de dato: ${typeof multadecla}`);
+            log(`   Es válido: ${multadecla !== null && multadecla !== undefined}`);
+            
+            // Mostrar en UI
+            actualizarEstadoFormulario();
+        }
+        
+        function simularEnvioFormulario() {
+            log('📨 SIMULANDO ENVÍO DE FORMULARIO', 'warning');
+            
+            const form = document.getElementById('testForm');
+            const formData = new FormData(form);
+            
+            // Simular el procesamiento del backend
+            log('🔄 Simulando procesamiento del backend...');
+            
+            const datos = {
+                idneg: formData.get('idneg'),
+                rtm: formData.get('rtm'),
+                expe: formData.get('expe'),
+                ano: formData.get('ano'),
+                mes: formData.get('mes'),
+                tipo: formData.get('tipo'),
+                ventai: formData.get('ventai'),
+                ventac: formData.get('ventac'),
+                ventas: formData.get('ventas'),
+                valorexcento: formData.get('valorexcento'),
+                controlado: formData.get('controlado'),
+                unidad: formData.get('unidad'),
+                factor: formData.get('factor'),
+                multadecla: formData.get('multadecla'),
+                impuesto: formData.get('impuesto')
+            };
+            
+            log('📦 DATOS ENVIADOS AL BACKEND:');
+            Object.entries(datos).forEach(([key, value]) => {
+                log(`   ${key}: "${value}"`, value ? 'success' : 'warning');
+            });
+            
+            // Verificar campo crítico
+            if (datos.multadecla) {
+                log(`✅ Campo multadecla se enviaría correctamente: L. ${datos.multadecla}`, 'success');
+            } else {
+                log('❌ Campo multadecla NO se enviaría', 'error');
+            }
+        }
+        
+        function actualizarEstadoFormulario() {
+            const mes = parseInt(document.getElementById('id_mes').value) || 0;
+            const tipo = parseInt(document.getElementById('id_tipo').value) || 0;
+            const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+            const multa = parseFloat(document.getElementById('id_multadecla').value) || 0;
+            
+            const estadoDiv = document.getElementById('estado-formulario');
+            estadoDiv.innerHTML = `
+                <div class="alert alert-${multa > 0 ? 'warning' : 'success'} py-2">
+                    <h6>📊 Estado Actual</h6>
+                    <p><strong>Mes:</strong> ${mes} ${mes === 1 ? '(Enero)' : '(≠ Enero)'}</p>
+                    <p><strong>Tipo:</strong> ${tipo} ${tipo === 1 ? '(Normal)' : tipo === 2 ? '(Apertura)' : '(Otro)'}</p>
+                    <p><strong>Impuesto:</strong> L. ${impuesto.toFixed(2)}</p>
+                    <p><strong>Multa:</strong> L. ${multa.toFixed(2)}</p>
+                    <p><strong>Listo para enviar:</strong> ${impuesto > 0 ? '✅ SÍ' : '⚠️ Falta calcular impuesto'}</p>
+                </div>
+            `;
+        }
+        
+        function parsearValor(valor) {
+            if (!valor) return 0;
+            if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                return parseFloat(valor.replace(/,/g, '')) || 0;
+            }
+            return parseFloat(valor.replace(/[^0-9.]/g, '')) || 0;
+        }
+        
+        function calcularImpuestoSimple(valorVentas) {
+            if (!valorVentas || valorVentas <= 0) return 0;
+            return Math.round((valorVentas * 0.10 / 1000) * 100) / 100;
+        }
+        
+        // Configurar listeners automáticos
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Test de envío de formulario iniciado', 'success');
+            
+            const campoMes = document.getElementById('id_mes');
+            const campoTipo = document.getElementById('id_tipo');
+            
+            if (campoMes) {
+                campoMes.addEventListener('change', () => {
+                    log('🔄 Mes cambió - Recalculando multa', 'warning');
+                    const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+                    calcularYActualizarMulta(impuesto);
+                    actualizarEstadoFormulario();
+                });
+            }
+            
+            if (campoTipo) {
+                campoTipo.addEventListener('change', () => {
+                    log('🔄 Tipo cambió - Recalculando multa', 'warning');
+                    const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+                    calcularYActualizarMulta(impuesto);
+                    actualizarEstadoFormulario();
+                });
+            }
+            
+            // Estado inicial
+            actualizarEstadoFormulario();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

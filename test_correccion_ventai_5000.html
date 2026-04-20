@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Corrección Ventai 5000.00</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .resultado {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 Test Corrección Ventai 5000.00</h1>
+        <p>Este test verifica que la corrección del problema de "Otros Impuestos" funcione correctamente.</p>
+        
+        <div class="form-group">
+            <label for="ventai">Ventas Rubro Producción:</label>
+            <input type="text" id="ventai" value="500000" placeholder="500000">
+        </div>
+        
+        <div class="form-group">
+            <label for="controlado">Productos Controlados:</label>
+            <input type="text" id="controlado" value="500000" placeholder="500000">
+        </div>
+        
+        <button onclick="testarCalculo()">🧪 Testar Cálculo</button>
+        <button onclick="limpiarLogs()">🧹 Limpiar Logs</button>
+        
+        <div id="resultado" class="resultado" style="display: none;">
+            <h3>📊 Resultados del Test:</h3>
+            <div id="resultadoDetalle"></div>
+        </div>
+        
+        <div id="logs" class="log" style="display: none;">
+            <h4>📋 Logs de Consola:</h4>
+            <div id="logContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simular la clase DeclaracionVolumenInteractivo con las correcciones
+        class TestDeclaracionVolumenInteractivo {
+            constructor() {
+                this.tarifas = [
+                    {"rango1": 0.0, "rango2": 1000000.0, "valor": 0.3, "categoria": "1", "descripcion": "ICS $0 - $1,000,000"},
+                    {"rango1": 1000000.01, "rango2": 5000000.0, "valor": 0.15, "categoria": "1", "descripcion": "ICS $1,000,000 - $5,000,000"},
+                    {"rango1": 5000000.01, "rango2": 9999999999.0, "valor": 0.3, "categoria": "1", "descripcion": "ICS $5,000,000+"}
+                ];
+                
+                this.tarifasControlados = [
+                    {"rango1": 0.0, "rango2": 1000000.0, "valor": 0.1, "categoria": "2", "descripcion": "Controlados $0 - $1,000,000"},
+                    {"rango1": 1000000.01, "rango2": 5000000.0, "valor": 0.05, "categoria": "2", "descripcion": "Controlados $1,000,000 - $5,000,000"},
+                    {"rango1": 5000000.01, "rango2": 9999999999.0, "valor": 0.1, "categoria": "2", "descripcion": "Controlados $5,000,000+"}
+                ];
+                
+                this.logs = [];
+            }
+            
+            log(mensaje) {
+                console.log(mensaje);
+                this.logs.push(mensaje);
+            }
+            
+            obtenerValoresVentas() {
+                const campos = ['ventai', 'controlado'];
+                const valores = {};
+
+                this.log('🔍 OBTENIENDO VALORES DE TODOS LOS CAMPOS:');
+                this.log('📊 Campos a verificar: ' + campos.join(', '));
+
+                campos.forEach(campo => {
+                    const input = document.getElementById(campo);
+                    this.log(`🔍 Verificando campo ${campo}:`);
+                    this.log(`   Elemento encontrado: ${input ? 'SÍ' : 'NO'}`);
+                    if (input) {
+                        this.log(`   Valor en input: "${input.value}"`);
+                        this.log(`   Valor vacío: ${!input.value}`);
+                    }
+                    
+                    if (input && input.value) {
+                        const valor = this.limpiarValor(input.value, 'general');
+                        this.log(`   Valor limpiado: ${valor} (tipo: general)`);
+                        this.log(`   Valor > 0: ${valor > 0}`);
+                        
+                        // Validación específica para ventai para detectar valores anómalos
+                        if (campo === 'ventai') {
+                            this.log(`🔍 VALIDACIÓN ESPECÍFICA VENTAI:`);
+                            this.log(`   Valor original: "${input.value}"`);
+                            this.log(`   Valor limpiado: ${valor}`);
+                            this.log(`   Valor > 1000000: ${valor > 1000000}`);
+                            
+                            // Detectar valores anómalos que podrían causar el problema de 5000.00
+                            if (valor > 1000000) {
+                                this.log(`⚠️ ALERTA: Valor de ventai parece anómalo: ${valor}`);
+                                this.log(`   Posible causa: formato incorrecto o lectura duplicada`);
+                                this.log(`   Este valor produciría un impuesto de: L. ${(valor * 0.003).toFixed(2)}`);
+                            }
+                        }
+                        
+                        if (valor > 0) {
+                            valores[campo] = valor;
+                            this.log(`✅ Campo ${campo} detectado con valor: ${valor} (tipo: general)`);
+                        } else {
+                            this.log(`⚠️ Campo ${campo} tiene valor 0 o negativo: ${valor}`);
+                        }
+                    } else {
+                        this.log(`❌ Campo ${campo} no tiene valor o no existe`);
+                    }
+                });
+
+                this.log('📋 Valores finales de ventas: ' + JSON.stringify(valores));
+                this.log('🔍 Verificación específica de campos críticos:');
+                this.log(`   ventai en valores: ${valores.hasOwnProperty('ventai') ? 'SÍ' : 'NO'}`);
+                this.log(`   controlado en valores: ${valores.hasOwnProperty('controlado') ? 'SÍ' : 'NO'}`);
+                if (valores.hasOwnProperty('ventai')) {
+                    this.log(`   Valor de ventai: ${valores.ventai}`);
+                }
+                if (valores.hasOwnProperty('controlado')) {
+                    this.log(`   Valor de controlado: ${valores.controlado}`);
+                }
+                
+                return valores;
+            }
+            
+            limpiarValor(valor, tipo = 'general') {
+                if (!valor) return 0;
+                
+                // Limpiar caracteres no numéricos excepto punto decimal
+                let valorLimpio = valor.toString().replace(/[^0-9.]/g, '');
+                
+                if (tipo === 'unidad') {
+                    // Para Unidad: solo enteros (11 dígitos máximo)
+                    valorLimpio = valorLimpio.split('.')[0]; // Remover parte decimal
+                    if (valorLimpio.length > 11) {
+                        valorLimpio = valorLimpio.substring(0, 11);
+                    }
+                    const numero = parseInt(valorLimpio) || 0;
+                    return numero;
+                } else if (tipo === 'factor') {
+                    // Para Factor: 10 enteros, 2 decimales (DECIMAL(10,2))
+                    const partes = valorLimpio.split('.');
+                    let parteEntera = partes[0] || '0';
+                    let parteDecimal = partes[1] || '00';
+                    
+                    // Limitar a 10 enteros
+                    if (parteEntera.length > 10) {
+                        parteEntera = parteEntera.substring(0, 10);
+                    }
+                    
+                    // Limitar a 2 decimales
+                    if (parteDecimal.length > 2) {
+                        parteDecimal = parteDecimal.substring(0, 2);
+                    }
+                    
+                    const numero = parseFloat(parteEntera + '.' + parteDecimal) || 0;
+                    return numero;
+                } else {
+                    // Para otros campos: comportamiento general
+                    const numero = parseFloat(valorLimpio) || 0;
+                    return numero;
+                }
+            }
+            
+            calcularImpuestoICS(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) {
+                    return { impuestoTotal: 0, detalleCalculo: [], valorVentas: 0 };
+                }
+
+                let impuestoTotal = 0;
+                let valorRestante = valorVentas;
+                const detalleCalculo = [];
+
+                for (const tarifa of this.tarifas) {
+                    if (valorRestante <= 0) break;
+                    
+                    const rangoAplicable = Math.min(valorRestante, tarifa.rango2 - tarifa.rango1 + 0.01);
+                    const impuesto = (rangoAplicable / 1000) * tarifa.valor;
+                    
+                    impuestoTotal += impuesto;
+                    detalleCalculo.push({
+                        rango: `${tarifa.rango1.toLocaleString()} - ${tarifa.rango2.toLocaleString()}`,
+                        valor: rangoAplicable,
+                        tarifa: tarifa.valor,
+                        impuesto: impuesto
+                    });
+                    
+                    valorRestante -= rangoAplicable;
+                }
+
+                return { impuestoTotal, detalleCalculo, valorVentas };
+            }
+            
+            calcularImpuestoICSControlados(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) {
+                    return { impuestoTotal: 0, detalleCalculo: [], valorVentas: 0 };
+                }
+
+                let impuestoTotal = 0;
+                let valorRestante = valorVentas;
+                const detalleCalculo = [];
+
+                for (const tarifa of this.tarifasControlados) {
+                    if (valorRestante <= 0) break;
+                    
+                    const rangoAplicable = Math.min(valorRestante, tarifa.rango2 - tarifa.rango1 + 0.01);
+                    const impuesto = (rangoAplicable / 1000) * tarifa.valor;
+                    
+                    impuestoTotal += impuesto;
+                    detalleCalculo.push({
+                        rango: `${tarifa.rango1.toLocaleString()} - ${tarifa.rango2.toLocaleString()}`,
+                        valor: rangoAplicable,
+                        tarifa: tarifa.valor,
+                        impuesto: impuesto
+                    });
+                    
+                    valorRestante -= rangoAplicable;
+                }
+
+                return { impuestoTotal, detalleCalculo, valorVentas };
+            }
+            
+            calcularSumaTotalIndependientes() {
+                this.log('🔍 CALCULANDO SUMA TOTAL DE IMPUESTOS INDEPENDIENTES:');
+                
+                // Obtener todos los valores actuales DIRECTAMENTE de los campos
+                const valoresVentas = this.obtenerValoresVentas();
+                this.log('📊 Valores actuales obtenidos: ' + JSON.stringify(valoresVentas));
+                
+                // Verificación específica de valores críticos
+                this.log('🔍 VERIFICACIÓN DE VALORES CRÍTICOS:');
+                this.log(`   Ventas Rubro Producción: ${valoresVentas.ventai || 'NO ENCONTRADO'}`);
+                this.log(`   Productos Controlados: ${valoresVentas.controlado || 'NO ENCONTRADO'}`);
+                
+                // Calcular impuesto para cada campo independientemente
+                const impuestoVentai = this.calcularImpuestoICS(valoresVentas.ventai || 0).impuestoTotal;
+                const impuestoControlado = this.calcularImpuestoICSControlados(valoresVentas.controlado || 0).impuestoTotal;
+                
+                this.log('💰 IMPUESTOS INDIVIDUALES CALCULADOS:');
+                this.log(`   Ventas Rubro Producción: L. ${impuestoVentai.toFixed(2)}`);
+                this.log(`   Ventas Productos Controlados: L. ${impuestoControlado.toFixed(2)}`);
+                
+                // Verificación específica para detectar el valor 5000.00
+                if (impuestoVentai > 1000) {
+                    this.log('⚠️ ALERTA: Impuesto ventai es mayor a 1000, posible error:');
+                    this.log(`   Valor ventai: ${valoresVentas.ventai}`);
+                    this.log(`   Impuesto calculado: ${impuestoVentai}`);
+                    this.log(`   Posible causa: valor incorrecto o tarifa incorrecta`);
+                    
+                    // Verificación específica para el problema reportado de 5000.00
+                    if (impuestoVentai >= 5000) {
+                        this.log('❌ PROBLEMA DETECTADO: Impuesto ventai >= 5000.00');
+                        this.log(`   Esto sugiere que el valor de ventai se está leyendo como: ${(impuestoVentai / 0.003).toFixed(2)}`);
+                        this.log(`   Valor esperado para 500,000: L. 150.00`);
+                        this.log(`   Valor actual: L. ${impuestoVentai.toFixed(2)}`);
+                        this.log(`   Diferencia: L. ${(impuestoVentai - 150).toFixed(2)}`);
+                    }
+                }
+                
+                // Calcular "Otros Impuestos" (solo Ventas Rubro Producción en este test)
+                const otrosImpuestos = impuestoVentai;
+                this.log(`   Otros Impuestos (Ventas Rubro Producción): L. ${otrosImpuestos.toFixed(2)}`);
+                
+                // Verificación específica para el problema reportado (5000.00)
+                if (otrosImpuestos > 1000) {
+                    this.log('❌ PROBLEMA DETECTADO: Otros Impuestos es mayor a 1000');
+                    this.log(`   Valor obtenido: L. ${otrosImpuestos.toFixed(2)}`);
+                    this.log(`   Valor esperado: L. 150.00 (para 500,000 en Ventas Rubro Producción)`);
+                    this.log(`   Posible causa: valor de Ventas Rubro Producción incorrecto`);
+                }
+                
+                // Sumar todos los impuestos independientes
+                const sumaTotal = impuestoVentai + impuestoControlado;
+                
+                this.log('🎯 SUMA TOTAL DE IMPUESTOS INDEPENDIENTES:');
+                this.log(`   ${impuestoVentai.toFixed(2)} + ${impuestoControlado.toFixed(2)} = L. ${sumaTotal.toFixed(2)}`);
+                
+                return sumaTotal;
+            }
+        }
+        
+        let testInstance = new TestDeclaracionVolumenInteractivo();
+        
+        function testarCalculo() {
+            // Limpiar logs anteriores
+            testInstance.logs = [];
+            
+            // Realizar el cálculo
+            const sumaTotal = testInstance.calcularSumaTotalIndependientes();
+            
+            // Mostrar resultados
+            const resultado = document.getElementById('resultado');
+            const resultadoDetalle = document.getElementById('resultadoDetalle');
+            
+            let html = `
+                <p><strong>Suma Total:</strong> L. ${sumaTotal.toFixed(2)}</p>
+                <p><strong>Resultado Esperado:</strong> L. 200.00</p>
+                <p><strong>Estado:</strong> ${sumaTotal === 200 ? '✅ CORRECTO' : '❌ INCORRECTO'}</p>
+            `;
+            
+            if (sumaTotal !== 200) {
+                html += `<p><strong>Diferencia:</strong> L. ${(sumaTotal - 200).toFixed(2)}</p>`;
+            }
+            
+            resultadoDetalle.innerHTML = html;
+            resultado.style.display = 'block';
+            
+            // Mostrar logs
+            const logs = document.getElementById('logs');
+            const logContent = document.getElementById('logContent');
+            logContent.innerHTML = testInstance.logs.join('<br>');
+            logs.style.display = 'block';
+        }
+        
+        function limpiarLogs() {
+            document.getElementById('logs').style.display = 'none';
+            document.getElementById('resultado').style.display = 'none';
+            testInstance.logs = [];
+        }
+    </script>
+</body>
+</html>

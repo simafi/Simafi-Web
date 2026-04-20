@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Negocios con Ingresos Altos DECIMAL(16,2)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .campo-ingresos-altos {
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+            font-size: 1.1em;
+        }
+        .resultado-calculo {
+            background-color: #e8f5e8;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        .valor-alto {
+            font-family: monospace;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #155724;
+        }
+        .caso-empresa {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+        }
+        .impuesto-calculado {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 10px;
+            font-weight: bold;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="text-center mb-4">
+            <h1 class="display-4">💼 Test Negocios con Ingresos Altos</h1>
+            <p class="lead">Formulario Declaración Volumen - DECIMAL(16,2)</p>
+            <p class="text-muted">Soporte hasta: <strong>99,999,999,999,999.99</strong> (99 billones)</p>
+        </div>
+
+        <!-- Formulario Principal -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3>📊 Formulario Declaración Volumen - Ingresos Altos</h3>
+                <small>DECIMAL(16,2): 14 enteros + 2 decimales</small>
+            </div>
+            <div class="card-body">
+                <form id="form-ingresos-altos">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ventai_alto" class="form-label">
+                                    <strong>Ventas Industria</strong>
+                                    <small class="text-muted">(DECIMAL 16,2)</small>
+                                </label>
+                                <input type="text" class="form-control campo-ingresos-altos" 
+                                       id="ventai_alto" name="ventai" 
+                                       placeholder="Ej: 12,345,678,901,234.56"
+                                       maxlength="20" 
+                                       title="DECIMAL(16,2): Máximo 14 enteros + 2 decimales - Para negocios con ingresos altos"
+                                       inputmode="decimal">
+                                <div class="resultado-calculo" id="resultado_ventai">
+                                    <strong>Valor procesado:</strong> <span class="valor-alto" id="display_ventai">$0.00</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="ventac_alto" class="form-label">
+                                    <strong>Ventas Mercadería</strong>
+                                    <small class="text-muted">(DECIMAL 16,2)</small>
+                                </label>
+                                <input type="text" class="form-control campo-ingresos-altos" 
+                                       id="ventac_alto" name="ventac" 
+                                       placeholder="Ej: 98,765,432,109,876.54"
+                                       maxlength="20" 
+                                       title="DECIMAL(16,2): Máximo 14 enteros + 2 decimales - Para negocios con ingresos altos"
+                                       inputmode="decimal">
+                                <div class="resultado-calculo" id="resultado_ventac">
+                                    <strong>Valor procesado:</strong> <span class="valor-alto" id="display_ventac">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ventas_alto" class="form-label">
+                                    <strong>Ventas por Servicios</strong>
+                                    <small class="text-muted">(DECIMAL 16,2)</small>
+                                </label>
+                                <input type="text" class="form-control campo-ingresos-altos" 
+                                       id="ventas_alto" name="ventas" 
+                                       placeholder="Ej: 55,555,555,555,555.55"
+                                       maxlength="20" 
+                                       title="DECIMAL(16,2): Máximo 14 enteros + 2 decimales - Para negocios con ingresos altos"
+                                       inputmode="decimal">
+                                <div class="resultado-calculo" id="resultado_ventas">
+                                    <strong>Valor procesado:</strong> <span class="valor-alto" id="display_ventas">$0.00</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="ventap_alto" class="form-label">
+                                    <strong>Ventas Rubro Producción</strong>
+                                    <small class="text-success">(Campo Principal)</small>
+                                </label>
+                                <input type="text" class="form-control campo-ingresos-altos" 
+                                       id="ventap_alto" name="ventap" 
+                                       placeholder="Ej: 88,888,888,888,888.88"
+                                       maxlength="20" 
+                                       title="DECIMAL(16,2): Máximo 14 enteros + 2 decimales - Para negocios con ingresos altos"
+                                       inputmode="decimal">
+                                <div class="resultado-calculo" id="resultado_ventap">
+                                    <strong>Valor procesado:</strong> <span class="valor-alto" id="display_ventap">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total e Impuesto -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="impuesto-calculado">
+                                <h5>💰 Total Ventas:</h5>
+                                <div class="valor-alto" id="total_ventas">$0.00</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="impuesto-calculado">
+                                <h5>🧾 Impuesto ICS Calculado:</h5>
+                                <div class="valor-alto" id="impuesto_calculado">$0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Casos de Prueba para Diferentes Tipos de Empresas -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4>🏢 Casos de Prueba por Tipo de Empresa</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="caso-empresa">
+                            <h5>🏪 Pequeña Empresa</h5>
+                            <button class="btn btn-outline-primary w-100" onclick="cargarPequenaEmpresa()">
+                                Cargar Valores<br>
+                                <small>Ventas: ~$4.5 millones</small>
+                            </button>
+                        </div>
+
+                        <div class="caso-empresa">
+                            <h5>🏭 Empresa Mediana</h5>
+                            <button class="btn btn-outline-primary w-100" onclick="cargarEmpresaMediana()">
+                                Cargar Valores<br>
+                                <small>Ventas: ~$250 millones</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="caso-empresa">
+                            <h5>🏢 Gran Empresa</h5>
+                            <button class="btn btn-outline-primary w-100" onclick="cargarGranEmpresa()">
+                                Cargar Valores<br>
+                                <small>Ventas: ~$10.3 mil millones</small>
+                            </button>
+                        </div>
+
+                        <div class="caso-empresa">
+                            <h5>🌍 Corporación Multinacional</h5>
+                            <button class="btn btn-outline-primary w-100" onclick="cargarCorporacion()">
+                                Cargar Valores<br>
+                                <small>Ventas: ~$100 billones</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-3">
+                    <button class="btn btn-secondary" onclick="limpiarFormulario()">
+                        🗑️ Limpiar Formulario
+                    </button>
+                    <button class="btn btn-success" onclick="calcularImpuestos()">
+                        🧮 Calcular Impuestos
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de Validación -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4>📋 Validación DECIMAL(16,2) para Ingresos Altos</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h5>✅ Especificaciones:</h5>
+                        <ul>
+                            <li><strong>Formato:</strong> DECIMAL(16,2)</li>
+                            <li><strong>Enteros:</strong> Máximo 14 dígitos</li>
+                            <li><strong>Decimales:</strong> Máximo 2 dígitos</li>
+                            <li><strong>Valor máximo:</strong> 99,999,999,999,999.99</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>💼 Casos de Uso:</h5>
+                        <ul>
+                            <li>Pequeñas empresas: Millones</li>
+                            <li>Empresas medianas: Cientos de millones</li>
+                            <li>Grandes empresas: Miles de millones</li>
+                            <li>Corporaciones: Billones</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>🎨 Formato Visual:</h5>
+                        <ul>
+                            <li><strong>Separadores:</strong> Comas (,)</li>
+                            <li><strong>Decimales:</strong> Punto (.)</li>
+                            <li><strong>Ejemplo:</strong> 1,234,567,890.50</li>
+                            <li><strong>Tiempo real:</strong> Formateo automático</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función de formateo para ingresos altos
+        function formatearIngresosAltos(input) {
+            let valor = input.value;
+            
+            // Guardar posición del cursor
+            const cursorPos = input.selectionStart;
+            
+            // Remover separadores de miles existentes para procesar
+            valor = valor.replace(/,/g, '');
+            
+            // Remover caracteres no numéricos excepto punto decimal
+            valor = valor.replace(/[^0-9.]/g, '');
+            
+            // Permitir solo un punto decimal
+            const partes = valor.split('.');
+            if (partes.length > 2) {
+                valor = partes[0] + '.' + partes.slice(1).join('');
+            }
+            
+            // Recalcular partes después de limpiar
+            const partesLimpias = valor.split('.');
+            
+            // Limitar a 14 enteros
+            if (partesLimpias[0] && partesLimpias[0].length > 14) {
+                partesLimpias[0] = partesLimpias[0].substring(0, 14);
+                valor = partesLimpias.join('.');
+            }
+            
+            // Limitar a 2 decimales
+            if (partesLimpias[1] && partesLimpias[1].length > 2) {
+                partesLimpias[1] = partesLimpias[1].substring(0, 2);
+                valor = partesLimpias[0] + '.' + partesLimpias[1];
+            }
+            
+            // Validar rango máximo DECIMAL(16,2)
+            const numeroValor = parseFloat(valor);
+            if (numeroValor > 99999999999999.99) {
+                valor = '99999999999999.99';
+            }
+            
+            // Aplicar formato con separadores de miles
+            if (valor) {
+                const partesFormato = valor.split('.');
+                
+                if (partesFormato[0] && partesFormato[0].length > 0) {
+                    const parteEntera = partesFormato[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    
+                    if (partesFormato[1] !== undefined) {
+                        valor = parteEntera + '.' + partesFormato[1];
+                    } else {
+                        valor = parteEntera;
+                    }
+                }
+            }
+            
+            // Actualizar valor del input
+            const valorAnterior = input.value;
+            input.value = valor;
+            
+            // Actualizar display
+            actualizarDisplay(input);
+            
+            // Ajustar posición del cursor
+            if (valorAnterior !== valor) {
+                const diferencia = valor.length - valorAnterior.length;
+                const nuevaPos = Math.max(0, cursorPos + diferencia);
+                setTimeout(() => {
+                    input.setSelectionRange(nuevaPos, nuevaPos);
+                }, 0);
+            }
+        }
+
+        function actualizarDisplay(input) {
+            const campo = input.name;
+            const displaySpan = document.getElementById(`display_${campo}`);
+            
+            if (displaySpan) {
+                const valorLimpio = input.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+                const numeroValor = parseFloat(valorLimpio) || 0;
+                
+                displaySpan.textContent = '$' + numeroValor.toLocaleString('es-CO', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+            
+            calcularTotales();
+        }
+
+        function calcularTotales() {
+            const campos = ['ventai', 'ventac', 'ventas', 'ventap'];
+            let totalVentas = 0;
+            
+            campos.forEach(campo => {
+                const input = document.getElementById(`${campo}_alto`);
+                if (input && input.value) {
+                    const valorLimpio = input.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+                    const numero = parseFloat(valorLimpio) || 0;
+                    totalVentas += numero;
+                }
+            });
+            
+            // Actualizar total
+            document.getElementById('total_ventas').textContent = '$' + totalVentas.toLocaleString('es-CO', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            
+            // Calcular impuesto aproximado (0.3‰ promedio)
+            const impuestoAproximado = totalVentas * 0.0003;
+            document.getElementById('impuesto_calculado').textContent = '$' + impuestoAproximado.toLocaleString('es-CO', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        // Configurar listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const campos = ['ventai_alto', 'ventac_alto', 'ventas_alto', 'ventap_alto'];
+            
+            campos.forEach(campoId => {
+                const input = document.getElementById(campoId);
+                if (input) {
+                    input.addEventListener('input', function() {
+                        formatearIngresosAltos(this);
+                    });
+                    
+                    input.addEventListener('blur', function() {
+                        formatearIngresosAltos(this);
+                    });
+                }
+            });
+        });
+
+        // Casos de prueba
+        function cargarPequenaEmpresa() {
+            document.getElementById('ventai_alto').value = '500000.00';
+            document.getElementById('ventac_alto').value = '1200000.50';
+            document.getElementById('ventas_alto').value = '800000.75';
+            document.getElementById('ventap_alto').value = '2000000.25';
+            
+            ['ventai_alto', 'ventac_alto', 'ventas_alto', 'ventap_alto'].forEach(id => {
+                formatearIngresosAltos(document.getElementById(id));
+            });
+        }
+
+        function cargarEmpresaMediana() {
+            document.getElementById('ventai_alto').value = '50000000.00';
+            document.getElementById('ventac_alto').value = '75000000.50';
+            document.getElementById('ventas_alto').value = '25000000.75';
+            document.getElementById('ventap_alto').value = '100000000.00';
+            
+            ['ventai_alto', 'ventac_alto', 'ventas_alto', 'ventap_alto'].forEach(id => {
+                formatearIngresosAltos(document.getElementById(id));
+            });
+        }
+
+        function cargarGranEmpresa() {
+            document.getElementById('ventai_alto').value = '1000000000.00';
+            document.getElementById('ventac_alto').value = '2500000000.50';
+            document.getElementById('ventas_alto').value = '1800000000.25';
+            document.getElementById('ventap_alto').value = '5000000000.75';
+            
+            ['ventai_alto', 'ventac_alto', 'ventas_alto', 'ventap_alto'].forEach(id => {
+                formatearIngresosAltos(document.getElementById(id));
+            });
+        }
+
+        function cargarCorporacion() {
+            document.getElementById('ventai_alto').value = '10000000000000.00';
+            document.getElementById('ventac_alto').value = '25000000000000.50';
+            document.getElementById('ventas_alto').value = '15000000000000.25';
+            document.getElementById('ventap_alto').value = '49999999999999.99';
+            
+            ['ventai_alto', 'ventac_alto', 'ventas_alto', 'ventap_alto'].forEach(id => {
+                formatearIngresosAltos(document.getElementById(id));
+            });
+        }
+
+        function limpiarFormulario() {
+            ['ventai_alto', 'ventac_alto', 'ventas_alto', 'ventap_alto'].forEach(id => {
+                const input = document.getElementById(id);
+                input.value = '';
+                actualizarDisplay(input);
+            });
+        }
+
+        function calcularImpuestos() {
+            calcularTotales();
+            alert('Impuestos calculados! Revise los totales en la parte inferior del formulario.');
+        }
+    </script>
+</body>
+</html>

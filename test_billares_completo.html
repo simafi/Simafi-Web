@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎱 Test Específico: Billares (Unidad × Factor)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        .billar-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .section {
+            background: #f8f9fa;
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #007bff;
+        }
+        .section.success {
+            border-left-color: #28a745;
+            background: #e8f5e8;
+        }
+        .section.warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        .section.danger {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+        input[readonly] {
+            background-color: #e9ecef;
+            font-weight: bold;
+        }
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+        }
+        .btn.success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+        .btn.warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+        }
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+        .resultado {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .resultado.correcto {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        .resultado.incorrecto {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        .log {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .log-success { background: rgba(72, 187, 120, 0.2); }
+        .log-warning { background: rgba(236, 201, 75, 0.2); }
+        .log-error { background: rgba(245, 101, 101, 0.2); }
+        .log-info { background: rgba(66, 153, 225, 0.2); }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-ok { background: #28a745; }
+        .status-warning { background: #ffc107; }
+        .status-error { background: #dc3545; }
+        .status-pending { background: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="billar-icon">🎱</div>
+        <h1>Test Específico: Billares</h1>
+        <p style="text-align: center; font-size: 1.2rem; color: #6c757d;">
+            Verificación del cálculo Unidad × Factor para negocios de billares
+        </p>
+        
+        <!-- Escenario de Prueba -->
+        <div class="section">
+            <h3>📋 Escenario de Prueba: Billar</h3>
+            <p><strong>Descripción:</strong> Un negocio de billares con 10 mesas, cada mesa genera L. 255.00 mensuales</p>
+            <p><strong>Cálculo esperado:</strong> 10 mesas × L. 255.00 = L. 2,550.00</p>
+            <p><strong>Validaciones:</strong> Ambos valores deben ser > 0, resultado redondeado a 2 decimales</p>
+        </div>
+
+        <!-- Campos de Entrada -->
+        <div class="grid">
+            <div class="section">
+                <h3>📝 Entrada de Datos</h3>
+                
+                <div class="form-group">
+                    <label for="id_unidad">🎯 Unidad (Número de Mesas):</label>
+                    <input type="number" id="id_unidad" name="unidad" placeholder="10" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_factor">💰 Factor (Ingresos por Mesa):</label>
+                    <input type="number" id="id_factor" name="factor" step="0.01" placeholder="255.00" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_ventai">🏭 Ventas Industria (opcional):</label>
+                    <input type="number" id="id_ventai" name="ventai" step="0.01" value="0">
+                </div>
+            </div>
+
+            <div class="section success">
+                <h3>📊 Resultados Calculados</h3>
+                
+                <div class="form-group">
+                    <label for="resultado_unidad_factor">🎱 Impuesto Unidad × Factor:</label>
+                    <input type="text" id="resultado_unidad_factor" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_impuesto">💵 Impuesto Total:</label>
+                    <input type="text" id="id_impuesto" name="impuesto" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_multadecla">⚖️ Multa Calculada:</label>
+                    <input type="text" id="id_multadecla" name="multadecla" readonly>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado del Sistema -->
+        <div class="section warning">
+            <h3>🔧 Estado del Sistema</h3>
+            <div class="grid">
+                <div>
+                    <p><span class="status-indicator status-pending" id="status-sistema"></span><strong>Sistema Cargado:</strong> <span id="estado-sistema">Verificando...</span></p>
+                    <p><span class="status-indicator status-pending" id="status-listeners"></span><strong>Event Listeners:</strong> <span id="estado-listeners">Verificando...</span></p>
+                    <p><span class="status-indicator status-pending" id="status-campos"></span><strong>Campos Detectados:</strong> <span id="estado-campos">Verificando...</span></p>
+                </div>
+                <div>
+                    <p><span class="status-indicator status-pending" id="status-calculo"></span><strong>Último Cálculo:</strong> <span id="estado-calculo">Pendiente</span></p>
+                    <p><span class="status-indicator status-pending" id="status-variables"></span><strong>Variables Ocultas:</strong> <span id="estado-variables">Pendiente</span></p>
+                    <p><span class="status-indicator status-pending" id="status-campos-html"></span><strong>Campos HTML:</strong> <span id="estado-campos-html">Pendiente</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="section">
+            <h3>🎮 Controles de Prueba</h3>
+            <button class="btn success" onclick="testBillarBasico()">🎱 Test Billar Básico (10 × 255)</button>
+            <button class="btn" onclick="testBillarGrande()">🏢 Test Billar Grande (25 × 300)</button>
+            <button class="btn" onclick="testBillarPequeno()">🏠 Test Billar Pequeño (5 × 150)</button>
+            <button class="btn warning" onclick="testCasoInvalido()">❌ Test Inválido (0 × 255)</button>
+            <button class="btn danger" onclick="limpiarTodo()">🧹 Limpiar Todo</button>
+            <button class="btn" onclick="verificarEstado()">🔍 Verificar Estado</button>
+        </div>
+
+        <!-- Resultado Visual -->
+        <div id="resultado-visual" style="display: none;"></div>
+
+        <!-- Log de Eventos -->
+        <div class="log" id="log"></div>
+
+        <!-- Campos Ocultos (simulando el formulario real) -->
+        <input type="hidden" id="hidden_unidad_base" name="unidad_base" value="0">
+        <input type="hidden" id="hidden_factor_base" name="factor_base" value="0">
+        <input type="hidden" id="hidden_unidadFactor_impuesto" name="unidadFactor_impuesto" value="0">
+        <input type="hidden" id="hidden_ventai_base" name="ventai_base" value="0">
+        <input type="hidden" id="hidden_ventai_impuesto" name="ventai_impuesto" value="0">
+        
+        <!-- Campos para multa -->
+        <input type="hidden" id="id_mes" name="mes" value="2">
+        <input type="hidden" id="id_tipo" name="tipo" value="1">
+    </div>
+
+    <!-- JavaScript del Sistema -->
+    <script src="declaracion_volumen_interactivo.js"></script>
+    
+    <script>
+        let sistemaCalculadora;
+        let testEnProgreso = false;
+        
+        // Función de logging mejorada
+        function log(mensaje, tipo = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${tipo}`;
+            entry.innerHTML = `<strong>[${timestamp}]</strong> ${mensaje}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${timestamp}] ${mensaje}`);
+        }
+        
+        // Actualizar estado visual
+        function actualizarEstado(elemento, estado, texto) {
+            const indicator = document.getElementById(`status-${elemento}`);
+            const textSpan = document.getElementById(`estado-${elemento}`);
+            
+            if (indicator && textSpan) {
+                indicator.className = `status-indicator status-${estado}`;
+                textSpan.textContent = texto;
+            }
+        }
+        
+        // Verificar estado del sistema
+        function verificarEstado() {
+            log('🔍 VERIFICANDO ESTADO COMPLETO DEL SISTEMA', 'info');
+            
+            // Verificar sistema cargado
+            if (window.declaracionVolumenInteractivo) {
+                sistemaCalculadora = window.declaracionVolumenInteractivo;
+                actualizarEstado('sistema', 'ok', 'Cargado correctamente');
+                log('✅ Sistema calculadora encontrado y asignado', 'success');
+            } else {
+                actualizarEstado('sistema', 'error', 'No encontrado');
+                log('❌ Sistema calculadora NO encontrado', 'error');
+                return;
+            }
+            
+            // Verificar campos
+            const camposRequeridos = ['id_unidad', 'id_factor', 'id_impuesto'];
+            const camposEncontrados = camposRequeridos.filter(id => document.getElementById(id));
+            
+            if (camposEncontrados.length === camposRequeridos.length) {
+                actualizarEstado('campos', 'ok', `${camposEncontrados.length}/${camposRequeridos.length} encontrados`);
+                log('✅ Todos los campos requeridos encontrados', 'success');
+            } else {
+                actualizarEstado('campos', 'warning', `${camposEncontrados.length}/${camposRequeridos.length} encontrados`);
+                log(`⚠️ Solo ${camposEncontrados.length} de ${camposRequeridos.length} campos encontrados`, 'warning');
+            }
+            
+            // Verificar variables ocultas
+            if (sistemaCalculadora.variablesOcultas) {
+                const numVariables = Object.keys(sistemaCalculadora.variablesOcultas).length;
+                actualizarEstado('variables', 'ok', `${numVariables} variables`);
+                log(`✅ Variables ocultas: ${numVariables} encontradas`, 'success');
+            } else {
+                actualizarEstado('variables', 'warning', 'No inicializadas');
+                log('⚠️ Variables ocultas no inicializadas', 'warning');
+            }
+            
+            // Verificar campos HTML ocultos
+            const camposOcultos = ['hidden_unidad_base', 'hidden_factor_base', 'hidden_unidadFactor_impuesto'];
+            const ocultosEncontrados = camposOcultos.filter(id => document.getElementById(id));
+            
+            if (ocultosEncontrados.length === camposOcultos.length) {
+                actualizarEstado('campos-html', 'ok', `${ocultosEncontrados.length}/${camposOcultos.length} campos`);
+                log('✅ Todos los campos ocultos HTML encontrados', 'success');
+            } else {
+                actualizarEstado('campos-html', 'error', `${ocultosEncontrados.length}/${camposOcultos.length} campos`);
+                log(`❌ Solo ${ocultosEncontrados.length} de ${camposOcultos.length} campos ocultos encontrados`, 'error');
+            }
+            
+            actualizarEstado('listeners', 'ok', 'Configurados');
+            log('🎧 Event listeners configurados', 'success');
+        }
+        
+        // Función para mostrar resultado visual
+        function mostrarResultado(esperado, obtenido, valido) {
+            const div = document.getElementById('resultado-visual');
+            const esCorrect = Math.abs(parseFloat(obtenido) - esperado) < 0.01;
+            
+            div.style.display = 'block';
+            div.className = `resultado ${esCorrect && valido ? 'correcto' : 'incorrecto'}`;
+            div.innerHTML = `
+                <div>
+                    <h3>${esCorrect && valido ? '✅ RESULTADO CORRECTO' : '❌ RESULTADO INCORRECTO'}</h3>
+                    <p><strong>Esperado:</strong> L. ${esperado.toFixed(2)}</p>
+                    <p><strong>Obtenido:</strong> L. ${parseFloat(obtenido || 0).toFixed(2)}</p>
+                    <p><strong>Válido:</strong> ${valido ? 'SÍ' : 'NO'}</p>
+                </div>
+            `;
+        }
+        
+        // Tests específicos
+        function testBillarBasico() {
+            if (testEnProgreso) return;
+            testEnProgreso = true;
+            
+            log('🎱 INICIANDO TEST BILLAR BÁSICO', 'success');
+            log('   Configuración: 10 mesas × L. 255.00 = L. 2,550.00', 'info');
+            
+            // Configurar valores
+            document.getElementById('id_unidad').value = '10';
+            document.getElementById('id_factor').value = '255.00';
+            document.getElementById('id_ventai').value = '0';
+            
+            // Simular eventos
+            document.getElementById('id_unidad').dispatchEvent(new Event('input', { bubbles: true }));
+            document.getElementById('id_factor').dispatchEvent(new Event('input', { bubbles: true }));
+            
+            // Verificar resultado después de un delay
+            setTimeout(() => {
+                const resultado = document.getElementById('resultado_unidad_factor').value;
+                const impuestoTotal = document.getElementById('id_impuesto').value;
+                
+                log(`📊 Resultado Unidad × Factor: ${resultado}`, 'info');
+                log(`💰 Impuesto Total: ${impuestoTotal}`, 'info');
+                
+                mostrarResultado(2550.00, resultado, true);
+                actualizarEstado('calculo', 'ok', `L. ${parseFloat(resultado || 0).toFixed(2)}`);
+                
+                testEnProgreso = false;
+                log('✅ Test Billar Básico completado', 'success');
+            }, 1500);
+        }
+        
+        function testBillarGrande() {
+            if (testEnProgreso) return;
+            testEnProgreso = true;
+            
+            log('🏢 INICIANDO TEST BILLAR GRANDE', 'success');
+            log('   Configuración: 25 mesas × L. 300.00 = L. 7,500.00', 'info');
+            
+            document.getElementById('id_unidad').value = '25';
+            document.getElementById('id_factor').value = '300.00';
+            document.getElementById('id_ventai').value = '0';
+            
+            document.getElementById('id_unidad').dispatchEvent(new Event('input', { bubbles: true }));
+            document.getElementById('id_factor').dispatchEvent(new Event('input', { bubbles: true }));
+            
+            setTimeout(() => {
+                const resultado = document.getElementById('resultado_unidad_factor').value;
+                mostrarResultado(7500.00, resultado, true);
+                actualizarEstado('calculo', 'ok', `L. ${parseFloat(resultado || 0).toFixed(2)}`);
+                testEnProgreso = false;
+                log('✅ Test Billar Grande completado', 'success');
+            }, 1500);
+        }
+        
+        function testBillarPequeno() {
+            if (testEnProgreso) return;
+            testEnProgreso = true;
+            
+            log('🏠 INICIANDO TEST BILLAR PEQUEÑO', 'success');
+            log('   Configuración: 5 mesas × L. 150.00 = L. 750.00', 'info');
+            
+            document.getElementById('id_unidad').value = '5';
+            document.getElementById('id_factor').value = '150.00';
+            document.getElementById('id_ventai').value = '0';
+            
+            document.getElementById('id_unidad').dispatchEvent(new Event('input', { bubbles: true }));
+            document.getElementById('id_factor').dispatchEvent(new Event('input', { bubbles: true }));
+            
+            setTimeout(() => {
+                const resultado = document.getElementById('resultado_unidad_factor').value;
+                mostrarResultado(750.00, resultado, true);
+                actualizarEstado('calculo', 'ok', `L. ${parseFloat(resultado || 0).toFixed(2)}`);
+                testEnProgreso = false;
+                log('✅ Test Billar Pequeño completado', 'success');
+            }, 1500);
+        }
+        
+        function testCasoInvalido() {
+            if (testEnProgreso) return;
+            testEnProgreso = true;
+            
+            log('❌ INICIANDO TEST CASO INVÁLIDO', 'warning');
+            log('   Configuración: 0 mesas × L. 255.00 = L. 0.00 (no válido)', 'warning');
+            
+            document.getElementById('id_unidad').value = '0';
+            document.getElementById('id_factor').value = '255.00';
+            document.getElementById('id_ventai').value = '0';
+            
+            document.getElementById('id_unidad').dispatchEvent(new Event('input', { bubbles: true }));
+            document.getElementById('id_factor').dispatchEvent(new Event('input', { bubbles: true }));
+            
+            setTimeout(() => {
+                const resultado = document.getElementById('resultado_unidad_factor').value;
+                mostrarResultado(0.00, resultado, false);
+                actualizarEstado('calculo', 'warning', 'Caso inválido');
+                testEnProgreso = false;
+                log('⚠️ Test Caso Inválido completado', 'warning');
+            }, 1500);
+        }
+        
+        function limpiarTodo() {
+            document.getElementById('id_unidad').value = '';
+            document.getElementById('id_factor').value = '';
+            document.getElementById('id_ventai').value = '';
+            document.getElementById('resultado_unidad_factor').value = '';
+            document.getElementById('id_impuesto').value = '';
+            document.getElementById('id_multadecla').value = '';
+            document.getElementById('resultado-visual').style.display = 'none';
+            document.getElementById('log').innerHTML = '';
+            
+            // Resetear estados
+            actualizarEstado('calculo', 'pending', 'Pendiente');
+            actualizarEstado('variables', 'pending', 'Pendiente');
+            
+            log('🧹 Todos los campos y resultados limpiados', 'info');
+        }
+        
+        // Event listeners para actualización automática
+        document.addEventListener('calculoICSRealizado', function(event) {
+            log('🔄 Evento calculoICSRealizado recibido', 'success');
+            
+            // Actualizar campo resultado específico
+            if (sistemaCalculadora && sistemaCalculadora.variablesOcultas) {
+                const resultadoUnidadFactor = sistemaCalculadora.variablesOcultas.unidadFactor_impuesto || 0;
+                document.getElementById('resultado_unidad_factor').value = `L. ${parseFloat(resultadoUnidadFactor).toFixed(2)}`;
+                
+                log(`📊 Resultado actualizado: L. ${parseFloat(resultadoUnidadFactor).toFixed(2)}`, 'info');
+            }
+        });
+        
+        // Inicialización
+        window.addEventListener('load', function() {
+            log('🚀 Sistema de Test Billares cargado', 'success');
+            
+            // Esperar a que el sistema se inicialice
+            setTimeout(() => {
+                verificarEstado();
+                
+                // Test automático inicial
+                setTimeout(() => {
+                    testBillarBasico();
+                }, 1000);
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

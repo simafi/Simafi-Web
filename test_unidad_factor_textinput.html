@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔢 Test Unidad × Factor - TextInput</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .form-group-ventas {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e5e7eb;
+        }
+        .campo-textinput {
+            border: 3px solid #007bff !important;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+        }
+        .resultado-calculo {
+            border: 3px solid #28a745 !important;
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%) !important;
+            font-weight: bold !important;
+            color: #2e7d32 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-primary">
+                    <h4>🔢 Test Unidad × Factor con TextInput</h4>
+                    <p><strong>Cambios Aplicados:</strong></p>
+                    <ul>
+                        <li>✅ Campo <strong>Unidad</strong>: NumberInput → TextInput</li>
+                        <li>✅ Campo <strong>Factor</strong>: NumberInput → TextInput</li>
+                        <li>✅ Función <strong>calcularImpuestoUnidadFactor</strong> implementada</li>
+                    </ul>
+                    <p><strong>Objetivo:</strong> Verificar que el cálculo Unidad × Factor funcione correctamente</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>🧮 Calculadora Unidad × Factor</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group-ventas">
+                                    <label for="id_unidad">
+                                        <i class="fas fa-ruler"></i> Unidad (TextInput)
+                                    </label>
+                                    <input type="text" class="form-control campo-textinput" 
+                                           id="id_unidad" name="unidad" 
+                                           placeholder="0" value="100"
+                                           maxlength="11" pattern="^\d{1,11}$" inputmode="numeric">
+                                    <small class="form-text text-info">
+                                        <i class="fas fa-info-circle"></i> Formato: 11 enteros (ej: 12345678901)
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group-ventas">
+                                    <label for="id_factor">
+                                        <i class="fas fa-percentage"></i> Factor (TextInput)
+                                    </label>
+                                    <input type="text" class="form-control campo-textinput" 
+                                           id="id_factor" name="factor" 
+                                           placeholder="0.00" value="2.50"
+                                           maxlength="13" pattern="^\d{1,10}(\.\d{0,2})?$" inputmode="decimal">
+                                    <small class="form-text text-info">
+                                        <i class="fas fa-info-circle"></i> Formato: 10 enteros, 2 decimales (ej: 1234567890.99)
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group-ventas">
+                                    <label for="resultado_calculo">
+                                        <i class="fas fa-calculator"></i> Resultado (Unidad × Factor)
+                                    </label>
+                                    <input type="text" class="form-control resultado-calculo" 
+                                           id="resultado_calculo" readonly
+                                           style="font-size: 1.2em; text-align: center;">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-magic"></i> Calculado automáticamente
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-primary" onclick="calcularUnidadFactor()">
+                                        🧮 Calcular Unidad × Factor
+                                    </button>
+                                    <button type="button" class="btn btn-warning" onclick="testCasosEspeciales()">
+                                        🧪 Test Casos Especiales
+                                    </button>
+                                    <button type="button" class="btn btn-success" onclick="testValidacionFormato()">
+                                        📝 Test Validación de Formato
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Resultado del Cálculo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultado-detallado">
+                            <p class="text-muted">El resultado aparecerá aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5>🧪 Casos de Test</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="casos-test">
+                            <!-- Se generarán automáticamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log de Cálculo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs de cálculo...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TestUnidadFactorTextInput {
+            constructor() {
+                this.setupEventListeners();
+                this.generarCasosTest();
+                this.log('🚀 Test de Unidad × Factor con TextInput iniciado', 'success');
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            setupEventListeners() {
+                const campoUnidad = document.getElementById('id_unidad');
+                const campoFactor = document.getElementById('id_factor');
+                
+                if (campoUnidad) {
+                    campoUnidad.addEventListener('input', () => {
+                        this.log('📝 Unidad cambió - Recalculando', 'info');
+                        this.calcularUnidadFactorAutomatico();
+                    });
+                    
+                    campoUnidad.addEventListener('blur', () => {
+                        this.log('🔄 Unidad perdió foco - Recalculando', 'warning');
+                        this.calcularUnidadFactorAutomatico();
+                    });
+                }
+                
+                if (campoFactor) {
+                    campoFactor.addEventListener('input', () => {
+                        this.log('📝 Factor cambió - Recalculando', 'info');
+                        this.calcularUnidadFactorAutomatico();
+                    });
+                    
+                    campoFactor.addEventListener('blur', () => {
+                        this.log('🔄 Factor perdió foco - Recalculando', 'warning');
+                        this.calcularUnidadFactorAutomatico();
+                    });
+                }
+                
+                this.log('✅ Event listeners configurados', 'success');
+            }
+            
+            calcularUnidadFactorAutomatico() {
+                this.log('🤖 CALCULANDO AUTOMÁTICAMENTE', 'warning');
+                this.calcularUnidadFactor();
+            }
+            
+            calcularUnidadFactor() {
+                this.log('🧮 EJECUTANDO CÁLCULO UNIDAD × FACTOR', 'warning');
+                
+                // PASO 1: Leer valores de campos TextInput
+                const campoUnidad = document.getElementById('id_unidad');
+                const campoFactor = document.getElementById('id_factor');
+                
+                this.log('📊 LEYENDO CAMPOS TEXTINPUT:');
+                this.log(`   Campo Unidad: ${campoUnidad ? 'Encontrado' : 'NO ENCONTRADO'} (${campoUnidad?.tagName})`);
+                this.log(`   Campo Factor: ${campoFactor ? 'Encontrado' : 'NO ENCONTRADO'} (${campoFactor?.tagName})`);
+                
+                if (!campoUnidad || !campoFactor) {
+                    this.log('❌ Faltan campos necesarios', 'error');
+                    return;
+                }
+                
+                // PASO 2: Leer y parsear valores
+                const valorUnidadRaw = campoUnidad.value;
+                const valorFactorRaw = campoFactor.value;
+                
+                this.log(`📝 VALORES RAW:`);
+                this.log(`   Unidad raw: "${valorUnidadRaw}"`);
+                this.log(`   Factor raw: "${valorFactorRaw}"`);
+                
+                // Parsear valores
+                const valorUnidad = this.parsearUnidad(valorUnidadRaw);
+                const valorFactor = this.parsearFactor(valorFactorRaw);
+                
+                this.log(`🔢 VALORES PARSEADOS:`);
+                this.log(`   Unidad parseada: ${valorUnidad} (${typeof valorUnidad})`);
+                this.log(`   Factor parseado: ${valorFactor} (${typeof valorFactor})`);
+                
+                // PASO 3: Aplicar función de cálculo
+                const resultado = this.calcularImpuestoUnidadFactor(valorUnidad, valorFactor);
+                
+                // PASO 4: Mostrar resultado
+                this.mostrarResultado(resultado);
+                
+                return resultado;
+            }
+            
+            parsearUnidad(valor) {
+                if (!valor) return 0;
+                
+                // Para Unidad: solo enteros (11 dígitos máximo)
+                const valorLimpio = valor.toString().replace(/[^0-9]/g, '');
+                const numero = parseInt(valorLimpio) || 0;
+                
+                this.log(`   Unidad: "${valor}" → "${valorLimpio}" → ${numero}`);
+                return numero;
+            }
+            
+            parsearFactor(valor) {
+                if (!valor) return 0;
+                
+                // Para Factor: decimal (10 enteros, 2 decimales)
+                let valorLimpio = valor.toString();
+                
+                // Manejar formato con comas (ej: 1,234.56)
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/,/g, '');
+                }
+                // Limpiar caracteres no numéricos excepto punto
+                else {
+                    valorLimpio = valorLimpio.replace(/[^0-9.]/g, '');
+                }
+                
+                const numero = parseFloat(valorLimpio) || 0;
+                
+                this.log(`   Factor: "${valor}" → "${valorLimpio}" → ${numero}`);
+                return numero;
+            }
+            
+            calcularImpuestoUnidadFactor(valorUnidad, valorFactor) {
+                this.log('🧮 FUNCIÓN CALCULAR IMPUESTO UNIDAD FACTOR', 'warning');
+                
+                // Validar que ambos valores sean mayores a cero
+                if (!valorUnidad || valorUnidad <= 0 || !valorFactor || valorFactor <= 0) {
+                    this.log(`⚠️ Unidad o Factor no válidos - Unidad: ${valorUnidad}, Factor: ${valorFactor}`, 'warning');
+                    return { 
+                        impuestoTotal: 0, 
+                        detalleCalculo: [], 
+                        valorUnidad: valorUnidad || 0, 
+                        valorFactor: valorFactor || 0,
+                        valorCalculado: 0
+                    };
+                }
+
+                // Multiplicación simple: Factor × Unidad
+                const valorCalculado = valorFactor * valorUnidad;
+                
+                this.log(`🧮 Cálculo Factor × Unidad:`);
+                this.log(`   Factor: ${valorFactor}`);
+                this.log(`   Unidad: ${valorUnidad}`);
+                this.log(`   Resultado: ${valorFactor} × ${valorUnidad} = ${valorCalculado}`);
+
+                // NO aplicar tarifas ICS - es una multiplicación simple
+                // El resultado se suma directamente al total de impuestos
+                const impuestoTotal = valorCalculado;
+                
+                const detalleCalculo = [{
+                    descripcion: `Factor × Unidad (${valorFactor} × ${valorUnidad})`,
+                    valorUnidad: valorUnidad,
+                    valorFactor: valorFactor,
+                    valorCalculado: valorCalculado,
+                    impuestoAplicado: impuestoTotal
+                }];
+
+                this.log(`✅ Valor calculado para Factor × Unidad: L. ${impuestoTotal.toFixed(2)}`, 'success');
+
+                return {
+                    impuestoTotal: impuestoTotal,
+                    detalleCalculo: detalleCalculo,
+                    valorUnidad: valorUnidad,
+                    valorFactor: valorFactor,
+                    valorCalculado: valorCalculado
+                };
+            }
+            
+            mostrarResultado(resultado) {
+                const campoResultado = document.getElementById('resultado_calculo');
+                if (campoResultado) {
+                    campoResultado.value = `L. ${resultado.impuestoTotal.toFixed(2)}`;
+                }
+                
+                const divDetallado = document.getElementById('resultado-detallado');
+                divDetallado.innerHTML = `
+                    <div class="alert alert-${resultado.impuestoTotal > 0 ? 'success' : 'warning'} py-2">
+                        <h6>${resultado.impuestoTotal > 0 ? '✅' : '⚠️'} Resultado del Cálculo</h6>
+                        <p><strong>Unidad:</strong> ${resultado.valorUnidad}</p>
+                        <p><strong>Factor:</strong> ${resultado.valorFactor}</p>
+                        <p><strong>Cálculo:</strong> ${resultado.valorUnidad} × ${resultado.valorFactor}</p>
+                        <p><strong>Resultado:</strong> L. ${resultado.impuestoTotal.toFixed(2)}</p>
+                        <p><strong>Descripción:</strong> ${resultado.detalleCalculo[0]?.descripcion || 'N/A'}</p>
+                    </div>
+                `;
+            }
+            
+            generarCasosTest() {
+                const casos = [
+                    {unidad: 100, factor: 2.50, esperado: 250, descripcion: 'Caso básico: 100 × 2.50'},
+                    {unidad: 1000, factor: 1.75, esperado: 1750, descripcion: 'Caso medio: 1000 × 1.75'},
+                    {unidad: 50, factor: 10.00, esperado: 500, descripcion: 'Factor entero: 50 × 10.00'},
+                    {unidad: 12345, factor: 0.50, esperado: 6172.50, descripcion: 'Unidad grande: 12345 × 0.50'},
+                    {unidad: 1, factor: 999.99, esperado: 999.99, descripcion: 'Factor máximo: 1 × 999.99'},
+                    {unidad: 0, factor: 5.00, esperado: 0, descripcion: 'Unidad cero: 0 × 5.00'},
+                    {unidad: 100, factor: 0, esperado: 0, descripcion: 'Factor cero: 100 × 0'},
+                    {unidad: 0, factor: 0, esperado: 0, descripcion: 'Ambos cero: 0 × 0'}
+                ];
+                
+                const casosDiv = document.getElementById('casos-test');
+                casosDiv.innerHTML = casos.map((caso, index) => `
+                    <div class="form-group-ventas">
+                        <h6>📋 Caso ${index + 1}: ${caso.descripcion}</h6>
+                        <p><strong>Entrada:</strong> Unidad=${caso.unidad}, Factor=${caso.factor}</p>
+                        <p><strong>Esperado:</strong> L. ${caso.esperado.toFixed(2)}</p>
+                        <button class="btn btn-sm btn-outline-primary" onclick="ejecutarCaso(${index})">
+                            ▶️ Ejecutar
+                        </button>
+                        <div id="resultado-caso-${index}" class="mt-2"></div>
+                    </div>
+                `).join('');
+                
+                this.casosTest = casos;
+            }
+            
+            ejecutarCaso(indice) {
+                const caso = this.casosTest[indice];
+                this.log(`🧪 EJECUTANDO CASO ${indice + 1}: ${caso.descripcion}`, 'warning');
+                
+                // Configurar valores
+                document.getElementById('id_unidad').value = caso.unidad;
+                document.getElementById('id_factor').value = caso.factor.toFixed(2);
+                
+                // Calcular
+                const resultado = this.calcularUnidadFactor();
+                
+                // Verificar
+                const esCorrecta = Math.abs(resultado.impuestoTotal - caso.esperado) < 0.01;
+                
+                const resultadoDiv = document.getElementById(`resultado-caso-${indice}`);
+                resultadoDiv.innerHTML = `
+                    <div class="alert alert-${esCorrecta ? 'success' : 'danger'} py-1">
+                        <strong>${esCorrecta ? '✅ CORRECTO' : '❌ ERROR'}</strong><br>
+                        Esperado: L. ${caso.esperado.toFixed(2)} | Obtenido: L. ${resultado.impuestoTotal.toFixed(2)}
+                    </div>
+                `;
+                
+                this.log(`${esCorrecta ? '✅' : '❌'} Caso ${indice + 1}: ${esCorrecta ? 'CORRECTO' : 'ERROR'}`, esCorrecta ? 'success' : 'error');
+            }
+        }
+        
+        let testSistema;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs de cálculo...</p>';
+        }
+        
+        function calcularUnidadFactor() {
+            testSistema.log('🧮 CÁLCULO MANUAL SOLICITADO', 'info');
+            return testSistema.calcularUnidadFactor();
+        }
+        
+        function testCasosEspeciales() {
+            testSistema.log('🧪 EJECUTANDO TODOS LOS CASOS DE TEST', 'warning');
+            
+            for (let i = 0; i < testSistema.casosTest.length; i++) {
+                setTimeout(() => {
+                    testSistema.ejecutarCaso(i);
+                }, i * 1000);
+            }
+        }
+        
+        function testValidacionFormato() {
+            testSistema.log('📝 PROBANDO VALIDACIÓN DE FORMATO', 'warning');
+            
+            // Test formato unidad (solo enteros)
+            testSistema.log('FORMATO UNIDAD (solo enteros):');
+            const testUnidad = ['123', '12345678901', '123.45', 'abc123', '1,234'];
+            testUnidad.forEach(valor => {
+                const resultado = testSistema.parsearUnidad(valor);
+                testSistema.log(`   "${valor}" → ${resultado}`, 'info');
+            });
+            
+            // Test formato factor (decimal)
+            testSistema.log('\nFORMATO FACTOR (decimal):');
+            const testFactor = ['123.45', '1,234.56', '999.99', 'abc123.45', '123'];
+            testFactor.forEach(valor => {
+                const resultado = testSistema.parsearFactor(valor);
+                testSistema.log(`   "${valor}" → ${resultado}`, 'info');
+            });
+        }
+        
+        function ejecutarCaso(indice) {
+            testSistema.ejecutarCaso(indice);
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            testSistema = new TestUnidadFactorTextInput();
+            
+            // Cálculo inicial
+            setTimeout(() => {
+                testSistema.calcularUnidadFactor();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

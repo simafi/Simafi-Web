@@ -1,0 +1,72 @@
+
+🎯 RESUMEN DE FORMATOS IMPLEMENTADOS - UNIDAD Y FACTOR
+
+FORMATOS APLICADOS:
+==================
+
+1. CAMPO UNIDAD:
+   - Formato: Solo números enteros
+   - Máximo: 10 dígitos
+   - Validación: Remueve automáticamente decimales
+   - Atributos HTML:
+     * maxlength="10"
+     * pattern="^\d{1,10}$"
+     * inputmode="numeric"
+     * data-format="integer-10"
+   - Texto de ayuda: "Solo números enteros"
+
+2. CAMPO FACTOR:
+   - Formato: DECIMAL(10,2)
+   - Máximo: 10 enteros + 2 decimales
+   - Validación: Trunca automáticamente si excede límites
+   - Atributos HTML:
+     * maxlength="13" (10+1+2)
+     * pattern="^\d{1,10}(\.\d{0,2})?$"
+     * inputmode="decimal"
+     * data-format="decimal-10-2"
+   - Texto de ayuda: "Formato: 10 enteros, 2 decimales (ej: 1234567890.99)"
+
+VALIDACIÓN EN TIEMPO REAL:
+==========================
+- Los campos se validan mientras el usuario escribe
+- Se corrigen automáticamente valores inválidos
+- Se muestran mensajes de corrección
+- Se registran logs detallados en consola
+
+FUNCIONES JAVASCRIPT:
+====================
+- limpiarValor(valor, tipo): Limpia valores según el tipo especificado
+- validarUnidad(): Valida y corrige campo Unidad
+- validarFactor(): Valida y corrige campo Factor
+- Event listeners: Configurados para validación en tiempo real
+
+CASOS DE PRUEBA:
+================
+- Unidad: 1000 → 1000 ✅
+- Unidad: 1000.50 → 1000 ✅ (decimales removidos)
+- Unidad: 12345678901 → 1234567890 ✅ (truncado a 10 dígitos)
+- Factor: 1.50 → 1.50 ✅
+- Factor: 1234567890.99 → 1234567890.99 ✅
+- Factor: 12345678901.999 → 1234567890.99 ✅ (truncado)
+- Factor: 1.123 → 1.12 ✅ (decimales truncados)
+
+ARCHIVOS DE PRUEBA:
+===================
+- test_formatos_unidad_factor.html (test independiente)
+- test_formatos_unidad_factor.py (generador del test)
+
+VERIFICACIÓN:
+=============
+1. Abrir test_formatos_unidad_factor.html en navegador
+2. Probar diferentes valores en los campos
+3. Ejecutar "Probar Casos de Prueba" para verificación automática
+4. Verificar que los valores se corrijan automáticamente
+5. Confirmar que se respeten los límites establecidos
+
+FORMULARIO REAL:
+================
+1. Acceder al formulario de declaración de volumen
+2. Ingresar valores en Unidad y Factor
+3. Verificar que se apliquen las validaciones automáticamente
+4. Confirmar que los formatos se respeten
+5. Verificar logs en consola del navegador (F12)

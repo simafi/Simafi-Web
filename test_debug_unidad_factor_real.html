@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐛 Debug: Unidad × Factor No Funciona</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .problema {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .solucion {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .test-paso {
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-danger">
+                    <h4>🐛 Debug: Campo Unidad × Factor No Funciona</h4>
+                    <p><strong>Problema Reportado:</strong> "campo unidad por factor sigue sin funcionar, corregir"</p>
+                    <p><strong>Objetivo:</strong> Diagnosticar por qué el cálculo no se está ejecutando correctamente</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5>🔍 Simulación del Formulario Real</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_unidad">
+                                        <i class="fas fa-ruler"></i> Unidad (TextInput)
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="id_unidad" name="unidad" 
+                                           placeholder="0" value="100"
+                                           maxlength="11" pattern="^\d{1,11}$" inputmode="numeric"
+                                           style="border: 3px solid #dc3545;">
+                                    <small class="form-text text-danger">
+                                        <i class="fas fa-exclamation-triangle"></i> Campo que no funciona
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_factor">
+                                        <i class="fas fa-percentage"></i> Factor (TextInput)
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="id_factor" name="factor" 
+                                           placeholder="0.00" value="2.50"
+                                           maxlength="13" pattern="^\d{1,10}(\.\d{0,2})?$" inputmode="decimal"
+                                           style="border: 3px solid #dc3545;">
+                                    <small class="form-text text-danger">
+                                        <i class="fas fa-exclamation-triangle"></i> Campo que no funciona
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_controlado">Productos Controlados</label>
+                                    <input type="text" class="form-control" 
+                                           id="id_controlado" name="controlado" 
+                                           placeholder="0.00" value="10,000.00">
+                                    <small class="form-text">Campo que SÍ funciona</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_impuesto">Impuesto Total</label>
+                                    <input type="text" class="form-control" 
+                                           id="id_impuesto" name="impuesto" readonly
+                                           style="background: #fff3e0; border: 2px solid #ff9800; color: #e65100; font-weight: 700; text-align: center;">
+                                    <small class="form-text">Resultado final</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-danger" onclick="diagnosticarProblema()">
+                                🐛 Diagnosticar Problema
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="testEventListeners()">
+                                🎧 Test Event Listeners
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="testFuncionesDirectas()">
+                                🔧 Test Funciones Directas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5>📊 Estado del Diagnóstico</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="estado-diagnostico">
+                            <p class="text-muted">El diagnóstico aparecerá aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>🧪 Tests de Diagnóstico</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="tests-diagnostico">
+                            <!-- Se generarán automáticamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log de Diagnóstico</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs de diagnóstico...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DebugUnidadFactor {
+            constructor() {
+                this.variablesOcultas = {};
+                this.problemasDiagnosticados = [];
+                this.log('🚀 Debug de Unidad × Factor iniciado', 'error');
+                this.inicializarTests();
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            inicializarTests() {
+                this.generarTestsDiagnostico();
+                
+                // Intentar configurar event listeners como en el sistema real
+                try {
+                    this.setupEventListenersReal();
+                    this.log('✅ Event listeners configurados', 'success');
+                } catch (error) {
+                    this.log(`❌ Error configurando event listeners: ${error.message}`, 'error');
+                    this.problemasDiagnosticados.push('Error en event listeners');
+                }
+            }
+            
+            setupEventListenersReal() {
+                // Simular la configuración real del sistema
+                const campos = ['unidad', 'factor', 'controlado'];
+                
+                campos.forEach(campo => {
+                    const input = document.getElementById(`id_${campo}`);
+                    if (input) {
+                        input.addEventListener('input', () => {
+                            this.log(`📝 Event listener disparado para: ${campo}`, 'info');
+                            this.calcularEnTiempoRealSimulado(campo);
+                        });
+                        input.addEventListener('blur', () => {
+                            this.log(`👁️ Blur event disparado para: ${campo}`, 'info');
+                            this.calcularEnTiempoRealSimulado(campo);
+                        });
+                        this.log(`✅ Listeners configurados para: ${campo}`, 'success');
+                    } else {
+                        this.log(`❌ Campo no encontrado: id_${campo}`, 'error');
+                        this.problemasDiagnosticados.push(`Campo ${campo} no existe`);
+                    }
+                });
+            }
+            
+            calcularEnTiempoRealSimulado(fieldName) {
+                this.log(`🔄 CALCULANDO EN TIEMPO REAL PARA: ${fieldName}`, 'warning');
+                
+                try {
+                    // PASO 1: Obtener valores
+                    const valores = this.obtenerValoresSimulados();
+                    this.log(`📊 Valores obtenidos: ${JSON.stringify(valores)}`);
+                    
+                    // PASO 2: Calcular impuestos independientes
+                    this.calcularImpuestosIndependientesSimulado(valores);
+                    
+                    // PASO 3: Sumar total
+                    const total = this.sumarImpuestosSimulado();
+                    
+                    // PASO 4: Actualizar campo
+                    this.actualizarCampoImpuestoSimulado(total);
+                    
+                    this.log(`✅ Cálculo completado para ${fieldName}: L. ${total.toFixed(2)}`, 'success');
+                    
+                } catch (error) {
+                    this.log(`❌ Error en cálculo para ${fieldName}: ${error.message}`, 'error');
+                    this.problemasDiagnosticados.push(`Error en cálculo de ${fieldName}: ${error.message}`);
+                }
+            }
+            
+            obtenerValoresSimulados() {
+                const valores = {};
+                
+                const campos = ['unidad', 'factor', 'controlado'];
+                
+                campos.forEach(campo => {
+                    const input = document.getElementById(`id_${campo}`);
+                    if (input && input.value) {
+                        let valor;
+                        
+                        if (campo === 'unidad') {
+                            valor = this.parsearUnidad(input.value);
+                        } else if (campo === 'factor') {
+                            valor = this.parsearFactor(input.value);
+                        } else {
+                            valor = this.parsearDecimal(input.value);
+                        }
+                        
+                        valores[campo] = valor;
+                        this.log(`   ${campo}: "${input.value}" → ${valor}`);
+                    } else {
+                        this.log(`   ${campo}: sin valor o campo no existe`);
+                    }
+                });
+                
+                return valores;
+            }
+            
+            calcularImpuestosIndependientesSimulado(valores) {
+                this.log('🧮 CALCULANDO IMPUESTOS INDEPENDIENTES SIMULADOS:', 'warning');
+                
+                // Productos Controlados
+                const valorControlado = valores.controlado || 0;
+                const impuestoControlado = valorControlado > 0 ? this.calcularImpuestoSimple(valorControlado) : 0;
+                this.variablesOcultas.controlado_impuesto = impuestoControlado;
+                this.log(`   Productos Controlados: L. ${valorControlado} → L. ${impuestoControlado.toFixed(2)}`);
+                
+                // UNIDAD × FACTOR (AQUÍ ESTÁ EL PROBLEMA POSIBLE)
+                const valorUnidad = valores.unidad || 0;
+                const valorFactor = valores.factor || 0;
+                
+                this.log(`🔍 DIAGNÓSTICO UNIDAD × FACTOR:`);
+                this.log(`   Valor Unidad: ${valorUnidad} (tipo: ${typeof valorUnidad})`);
+                this.log(`   Valor Factor: ${valorFactor} (tipo: ${typeof valorFactor})`);
+                this.log(`   Unidad > 0: ${valorUnidad > 0}`);
+                this.log(`   Factor > 0: ${valorFactor > 0}`);
+                this.log(`   Ambas condiciones: ${valorUnidad > 0 && valorFactor > 0}`);
+                
+                let impuestoUnidadFactor = 0;
+                
+                if (valorUnidad > 0 && valorFactor > 0) {
+                    try {
+                        impuestoUnidadFactor = this.calcularImpuestoUnidadFactorSimulado(valorUnidad, valorFactor);
+                        this.log(`   ✅ Cálculo exitoso: ${valorUnidad} × ${valorFactor} = ${impuestoUnidadFactor}`, 'success');
+                    } catch (error) {
+                        this.log(`   ❌ Error en cálculo: ${error.message}`, 'error');
+                        this.problemasDiagnosticados.push(`Error en calcularImpuestoUnidadFactor: ${error.message}`);
+                    }
+                } else {
+                    this.log(`   ⚠️ Condiciones no cumplidas - No se calcula`, 'warning');
+                    if (valorUnidad <= 0) this.problemasDiagnosticados.push('Unidad <= 0');
+                    if (valorFactor <= 0) this.problemasDiagnosticados.push('Factor <= 0');
+                }
+                
+                this.variablesOcultas.unidad_base = valorUnidad;
+                this.variablesOcultas.factor_base = valorFactor;
+                this.variablesOcultas.unidadFactor_impuesto = impuestoUnidadFactor;
+                
+                this.log(`   📊 Resultado final Unidad × Factor: L. ${impuestoUnidadFactor.toFixed(2)}`);
+            }
+            
+            calcularImpuestoUnidadFactorSimulado(valorUnidad, valorFactor) {
+                // Simular la función real
+                if (!valorUnidad || valorUnidad <= 0 || !valorFactor || valorFactor <= 0) {
+                    this.log('⚠️ Función simulada: Valores no válidos');
+                    return 0;
+                }
+                
+                const resultado = valorUnidad * valorFactor;
+                this.log(`🧮 Función simulada: ${valorUnidad} × ${valorFactor} = ${resultado}`);
+                return resultado;
+            }
+            
+            sumarImpuestosSimulado() {
+                this.log('➕ SUMANDO IMPUESTOS SIMULADOS:', 'warning');
+                
+                const impuestoControlado = this.variablesOcultas.controlado_impuesto || 0;
+                const impuestoUnidadFactor = this.variablesOcultas.unidadFactor_impuesto || 0;
+                
+                this.log(`   Productos Controlados: L. ${impuestoControlado.toFixed(2)}`);
+                this.log(`   Unidad × Factor: L. ${impuestoUnidadFactor.toFixed(2)}`);
+                
+                const total = impuestoControlado + impuestoUnidadFactor;
+                
+                this.log(`   TOTAL: ${impuestoControlado.toFixed(2)} + ${impuestoUnidadFactor.toFixed(2)} = ${total.toFixed(2)}`);
+                
+                return total;
+            }
+            
+            actualizarCampoImpuestoSimulado(total) {
+                const campoImpuesto = document.getElementById('id_impuesto');
+                if (campoImpuesto) {
+                    campoImpuesto.value = total.toFixed(2);
+                    this.log(`✅ Campo impuesto actualizado: L. ${total.toFixed(2)}`, 'success');
+                } else {
+                    this.log(`❌ Campo impuesto no encontrado`, 'error');
+                    this.problemasDiagnosticados.push('Campo impuesto no existe');
+                }
+            }
+            
+            diagnosticarProblema() {
+                this.log('🐛 INICIANDO DIAGNÓSTICO COMPLETO', 'error');
+                this.log('=' .repeat(50));
+                
+                this.problemasDiagnosticados = []; // Resetear
+                
+                // TEST 1: Verificar existencia de campos
+                this.log('TEST 1: Verificando existencia de campos');
+                const campos = ['id_unidad', 'id_factor', 'id_controlado', 'id_impuesto'];
+                campos.forEach(campoId => {
+                    const campo = document.getElementById(campoId);
+                    if (campo) {
+                        this.log(`   ✅ ${campoId}: Existe`);
+                    } else {
+                        this.log(`   ❌ ${campoId}: NO EXISTE`, 'error');
+                        this.problemasDiagnosticados.push(`Campo ${campoId} no existe`);
+                    }
+                });
+                
+                // TEST 2: Verificar valores de campos
+                this.log('TEST 2: Verificando valores de campos');
+                const valores = this.obtenerValoresSimulados();
+                
+                // TEST 3: Verificar parsing
+                this.log('TEST 3: Verificando parsing de valores');
+                const unidadRaw = document.getElementById('id_unidad').value;
+                const factorRaw = document.getElementById('id_factor').value;
+                
+                this.log(`   Unidad raw: "${unidadRaw}"`);
+                this.log(`   Factor raw: "${factorRaw}"`);
+                
+                const unidadParsed = this.parsearUnidad(unidadRaw);
+                const factorParsed = this.parsearFactor(factorRaw);
+                
+                this.log(`   Unidad parsed: ${unidadParsed} (${typeof unidadParsed})`);
+                this.log(`   Factor parsed: ${factorParsed} (${typeof factorParsed})`);
+                
+                // TEST 4: Verificar condiciones
+                this.log('TEST 4: Verificando condiciones');
+                const condicionUnidad = unidadParsed > 0;
+                const condicionFactor = factorParsed > 0;
+                const ambascondiciones = condicionUnidad && condicionFactor;
+                
+                this.log(`   Unidad > 0: ${condicionUnidad}`);
+                this.log(`   Factor > 0: ${condicionFactor}`);
+                this.log(`   Ambas condiciones: ${ambascondiciones}`);
+                
+                if (!ambascondiciones) {
+                    this.problemasDiagnosticados.push('Las condiciones de validación no se cumplen');
+                }
+                
+                // TEST 5: Ejecutar cálculo completo
+                this.log('TEST 5: Ejecutando cálculo completo');
+                this.calcularEnTiempoRealSimulado('unidad');
+                
+                // Mostrar resultados del diagnóstico
+                this.mostrarResultadosDiagnostico();
+            }
+            
+            mostrarResultadosDiagnostico() {
+                const div = document.getElementById('estado-diagnostico');
+                
+                if (this.problemasDiagnosticados.length === 0) {
+                    div.innerHTML = `
+                        <div class="solucion">
+                            <h6>✅ DIAGNÓSTICO: NO HAY PROBLEMAS DETECTADOS</h6>
+                            <p>El sistema debería funcionar correctamente.</p>
+                            <p><strong>Posibles causas externas:</strong></p>
+                            <ul>
+                                <li>Conflicto con otros scripts</li>
+                                <li>Error en la implementación real</li>
+                                <li>Problema de caché del navegador</li>
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <div class="problema">
+                            <h6>❌ PROBLEMAS DETECTADOS:</h6>
+                            <ul>
+                                ${this.problemasDiagnosticados.map(p => `<li>${p}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Mostrar estado de variables ocultas
+                div.innerHTML += `
+                    <div class="mt-3">
+                        <h6>🔧 Variables Ocultas Actuales:</h6>
+                        <p><strong>unidad_base:</strong> ${this.variablesOcultas.unidad_base || 0}</p>
+                        <p><strong>factor_base:</strong> ${this.variablesOcultas.factor_base || 0}</p>
+                        <p><strong>unidadFactor_impuesto:</strong> ${this.variablesOcultas.unidadFactor_impuesto || 0}</p>
+                        <p><strong>controlado_impuesto:</strong> ${this.variablesOcultas.controlado_impuesto || 0}</p>
+                    </div>
+                `;
+            }
+            
+            generarTestsDiagnostico() {
+                const div = document.getElementById('tests-diagnostico');
+                div.innerHTML = `
+                    <div class="test-paso">
+                        <h6>🧪 Test 1: Event Listeners</h6>
+                        <p>Verificar que los event listeners se disparen correctamente</p>
+                        <button class="btn btn-sm btn-primary" onclick="debugSistema.testEventListeners()">▶️ Ejecutar</button>
+                        <div id="resultado-test-1" class="mt-2"></div>
+                    </div>
+                    
+                    <div class="test-paso">
+                        <h6>🧪 Test 2: Parsing de Valores</h6>
+                        <p>Verificar que los valores se parseen correctamente</p>
+                        <button class="btn btn-sm btn-primary" onclick="debugSistema.testParsing()">▶️ Ejecutar</button>
+                        <div id="resultado-test-2" class="mt-2"></div>
+                    </div>
+                    
+                    <div class="test-paso">
+                        <h6>🧪 Test 3: Función de Cálculo</h6>
+                        <p>Verificar que la función de cálculo funcione</p>
+                        <button class="btn btn-sm btn-primary" onclick="debugSistema.testFuncionCalculo()">▶️ Ejecutar</button>
+                        <div id="resultado-test-3" class="mt-2"></div>
+                    </div>
+                    
+                    <div class="test-paso">
+                        <h6>🧪 Test 4: Variables Ocultas</h6>
+                        <p>Verificar que las variables ocultas se actualicen</p>
+                        <button class="btn btn-sm btn-primary" onclick="debugSistema.testVariablesOcultas()">▶️ Ejecutar</button>
+                        <div id="resultado-test-4" class="mt-2"></div>
+                    </div>
+                `;
+            }
+            
+            testEventListeners() {
+                this.log('🎧 PROBANDO EVENT LISTENERS', 'warning');
+                
+                const campoUnidad = document.getElementById('id_unidad');
+                const campoFactor = document.getElementById('id_factor');
+                
+                // Simular cambio de valor
+                if (campoUnidad) {
+                    campoUnidad.value = '200';
+                    campoUnidad.dispatchEvent(new Event('input'));
+                    this.log('✅ Event input disparado para unidad');
+                }
+                
+                if (campoFactor) {
+                    campoFactor.value = '3.75';
+                    campoFactor.dispatchEvent(new Event('input'));
+                    this.log('✅ Event input disparado para factor');
+                }
+                
+                document.getElementById('resultado-test-1').innerHTML = '<span class="text-success">✅ Events disparados - Ver log</span>';
+            }
+            
+            testParsing() {
+                this.log('🔢 PROBANDO PARSING DE VALORES', 'warning');
+                
+                const casos = [
+                    {valor: '100', esperado: 100, tipo: 'unidad'},
+                    {valor: '2.50', esperado: 2.50, tipo: 'factor'},
+                    {valor: '10,000.00', esperado: 10000, tipo: 'decimal'},
+                    {valor: '1,500', esperado: 1500, tipo: 'decimal'}
+                ];
+                
+                let errores = 0;
+                casos.forEach(caso => {
+                    let resultado;
+                    if (caso.tipo === 'unidad') {
+                        resultado = this.parsearUnidad(caso.valor);
+                    } else if (caso.tipo === 'factor') {
+                        resultado = this.parsearFactor(caso.valor);
+                    } else {
+                        resultado = this.parsearDecimal(caso.valor);
+                    }
+                    
+                    const correcto = Math.abs(resultado - caso.esperado) < 0.01;
+                    this.log(`   ${caso.tipo}("${caso.valor}") = ${resultado} (esperado: ${caso.esperado}) ${correcto ? '✅' : '❌'}`, correcto ? 'success' : 'error');
+                    
+                    if (!correcto) errores++;
+                });
+                
+                document.getElementById('resultado-test-2').innerHTML = errores === 0 ? 
+                    '<span class="text-success">✅ Parsing correcto</span>' : 
+                    `<span class="text-danger">❌ ${errores} errores de parsing</span>`;
+            }
+            
+            testFuncionCalculo() {
+                this.log('🧮 PROBANDO FUNCIÓN DE CÁLCULO', 'warning');
+                
+                const casos = [
+                    {unidad: 100, factor: 2.50, esperado: 250},
+                    {unidad: 50, factor: 4.00, esperado: 200},
+                    {unidad: 0, factor: 2.50, esperado: 0},
+                    {unidad: 100, factor: 0, esperado: 0}
+                ];
+                
+                let errores = 0;
+                casos.forEach(caso => {
+                    const resultado = this.calcularImpuestoUnidadFactorSimulado(caso.unidad, caso.factor);
+                    const correcto = Math.abs(resultado - caso.esperado) < 0.01;
+                    this.log(`   calcular(${caso.unidad}, ${caso.factor}) = ${resultado} (esperado: ${caso.esperado}) ${correcto ? '✅' : '❌'}`, correcto ? 'success' : 'error');
+                    
+                    if (!correcto) errores++;
+                });
+                
+                document.getElementById('resultado-test-3').innerHTML = errores === 0 ? 
+                    '<span class="text-success">✅ Función de cálculo correcta</span>' : 
+                    `<span class="text-danger">❌ ${errores} errores en función</span>`;
+            }
+            
+            testVariablesOcultas() {
+                this.log('🔧 PROBANDO VARIABLES OCULTAS', 'warning');
+                
+                // Ejecutar cálculo completo
+                this.calcularEnTiempoRealSimulado('unidad');
+                
+                const unidadFactor = this.variablesOcultas.unidadFactor_impuesto || 0;
+                const esperado = 100 * 2.50; // Valores por defecto
+                
+                const correcto = Math.abs(unidadFactor - esperado) < 0.01;
+                this.log(`   Variable unidadFactor_impuesto: ${unidadFactor} (esperado: ${esperado}) ${correcto ? '✅' : '❌'}`, correcto ? 'success' : 'error');
+                
+                document.getElementById('resultado-test-4').innerHTML = correcto ? 
+                    '<span class="text-success">✅ Variables ocultas correctas</span>' : 
+                    '<span class="text-danger">❌ Error en variables ocultas</span>';
+            }
+            
+            parsearUnidad(valor) {
+                if (!valor) return 0;
+                const valorLimpio = valor.toString().replace(/[^0-9]/g, '');
+                return parseInt(valorLimpio) || 0;
+            }
+            
+            parsearFactor(valor) {
+                if (!valor) return 0;
+                let valorLimpio = valor.toString();
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/,/g, '');
+                }
+                valorLimpio = valorLimpio.replace(/[^0-9.]/g, '');
+                return parseFloat(valorLimpio) || 0;
+            }
+            
+            parsearDecimal(valor) {
+                if (!valor) return 0;
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor.replace(/,/g, '')) || 0;
+                }
+                return parseFloat(valor.replace(/[^0-9.]/g, '')) || 0;
+            }
+            
+            calcularImpuestoSimple(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) return 0;
+                return Math.round((valorVentas * 0.10 / 1000) * 100) / 100;
+            }
+        }
+        
+        let debugSistema;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs de diagnóstico...</p>';
+        }
+        
+        function diagnosticarProblema() {
+            debugSistema.diagnosticarProblema();
+        }
+        
+        function testEventListeners() {
+            debugSistema.testEventListeners();
+        }
+        
+        function testFuncionesDirectas() {
+            debugSistema.log('🔧 PROBANDO FUNCIONES DIRECTAS', 'warning');
+            debugSistema.testParsing();
+            debugSistema.testFuncionCalculo();
+            debugSistema.testVariablesOcultas();
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            debugSistema = new DebugUnidadFactor();
+            
+            // Ejecutar diagnóstico automático después de 1 segundo
+            setTimeout(() => {
+                debugSistema.diagnosticarProblema();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

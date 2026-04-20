@@ -1,0 +1,230 @@
+{% extends 'catastro/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h1 class="display-5 fw-bold text-dark">
+                    <i class="fas fa-file-invoice-dollar me-3"></i>
+                    Tasas e Impuestos Municipales
+                </h1>
+                <p class="lead text-muted">Desglose de tasas e impuestos municipales registrados en el sistema</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="search-box">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" name="search" 
+                               value="{{ search }}" placeholder="Buscar por RTM, EXPE, rubro, código...">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="ano">
+                        <option value="">Todos los años</option>
+                        {% for ano in anos_disponibles %}
+                            <option value="{{ ano }}" {% if ano_filter == ano|stringformat:"s" %}selected{% endif %}>
+                                {{ ano }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="tipo">
+                        <option value="">Todos los tipos</option>
+                        <option value="F" {% if tipo_filter == 'F' %}selected{% endif %}>Fija</option>
+                        <option value="V" {% if tipo_filter == 'V' %}selected{% endif %}>Variable</option>
+                        <option value="T" {% if tipo_filter == 'T' %}selected{% endif %}>Temporal</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-custom w-100">
+                        <i class="fas fa-filter me-2"></i>Filtrar
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'catastro:tasas_impuestos' %}" class="btn btn-secondary w-100">
+                        <i class="fas fa-redo me-2"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-primary fs-6">
+                    <i class="fas fa-database me-2"></i>
+                    Total: {{ total_registros|default:0 }} registros
+                </span>
+            </div>
+            <div>
+                <a href="{% url 'catastro:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-home me-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Grid -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>RTM</th>
+                                    <th>Expediente</th>
+                                    <th>N° Declaración</th>
+                                    <th>Rubro</th>
+                                    <th>Código Tarifa</th>
+                                    <th>Año</th>
+                                    <th>Valor</th>
+                                    <th>Tipo</th>
+                                    <th>Frecuencia</th>
+                                    <th>Cuenta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tasa in page_obj %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ tasa.rtm|default:"-" }}</strong>
+                                        </td>
+                                        <td>{{ tasa.expe|default:"-" }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ tasa.nodecla|default:"-" }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ tasa.rubro|default:"-" }}</span>
+                                        </td>
+                                        <td>{{ tasa.cod_tarifa|default:"-" }}</td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ tasa.ano }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                L. {{ tasa.valor|floatformat:2 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if tasa.tipota == 'F' %}
+                                                <span class="badge bg-primary">Fija</span>
+                                            {% elif tasa.tipota == 'V' %}
+                                                <span class="badge bg-warning text-dark">Variable</span>
+                                            {% elif tasa.tipota == 'T' %}
+                                                <span class="badge bg-info">Temporal</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if tasa.frecuencia == 'A' %}
+                                                <span class="badge bg-info">Anual</span>
+                                            {% elif tasa.frecuencia == 'M' %}
+                                                <span class="badge bg-success">Mensual</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ tasa.cuenta|default:"-" }}</small>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                        <nav aria-label="Navegación de páginas">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if ano_filter %}&ano={{ ano_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if ano_filter %}&ano={{ ano_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if ano_filter %}&ano={{ ano_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if ano_filter %}&ano={{ ano_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if ano_filter %}&ano={{ ano_filter }}{% endif %}{% if tipo_filter %}&tipo={{ tipo_filter }}{% endif %}">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No se encontraron tasas e impuestos</h4>
+                        <p class="text-muted">No hay registros que coincidan con los criterios de búsqueda.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

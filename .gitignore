@@ -1,0 +1,22 @@
+# Entorno y secretos
+.env
+.env.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+venv/
+.venv/
+
+# Django
+staticfiles/
+media/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp

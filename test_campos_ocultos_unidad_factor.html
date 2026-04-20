@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Campos Ocultos Unidad × Factor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #28a745;
+            outline: none;
+        }
+        input[readonly] {
+            background-color: #f8f9fa;
+        }
+        .campos-ocultos {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        .variables-internas {
+            background-color: #e8f5e8;
+            border: 2px solid #28a745;
+        }
+        .resultado {
+            background-color: #e6f7ff;
+            border: 2px solid #1890ff;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .test-case {
+            background: #f1f3f4;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .success { color: #28a745; }
+        .warning { color: #ffc107; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test: Campos Ocultos Unidad × Factor</h1>
+        
+        <!-- Sección de Entrada -->
+        <div class="section">
+            <h3>📝 Campos de Entrada</h3>
+            
+            <div class="form-group">
+                <label for="id_unidad">Unidad:</label>
+                <input type="number" id="id_unidad" name="unidad" placeholder="Ej: 1000">
+            </div>
+            
+            <div class="form-group">
+                <label for="id_factor">Factor:</label>
+                <input type="number" id="id_factor" name="factor" step="0.01" placeholder="Ej: 25.50">
+            </div>
+            
+            <div class="form-group">
+                <label for="id_ventai">Ventas Industria (opcional):</label>
+                <input type="number" id="id_ventai" name="ventai" step="0.01" placeholder="Ej: 100000.00">
+            </div>
+        </div>
+
+        <!-- Sección de Resultados -->
+        <div class="section resultado">
+            <h3>💰 Resultados Calculados</h3>
+            
+            <div class="form-group">
+                <label for="id_impuesto">Impuesto Total:</label>
+                <input type="text" id="id_impuesto" name="impuesto" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_multadecla">Multa:</label>
+                <input type="text" id="id_multadecla" name="multadecla" readonly>
+            </div>
+        </div>
+
+        <!-- Sección de Variables Internas -->
+        <div class="section variables-internas">
+            <h3>🔧 Variables Internas (JavaScript)</h3>
+            
+            <div class="form-group">
+                <label for="var_unidad_base">unidad_base:</label>
+                <input type="text" id="var_unidad_base" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="var_factor_base">factor_base:</label>
+                <input type="text" id="var_factor_base" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="var_unidadFactor_impuesto">unidadFactor_impuesto:</label>
+                <input type="text" id="var_unidadFactor_impuesto" readonly>
+            </div>
+        </div>
+
+        <!-- Sección de Campos Ocultos -->
+        <div class="section campos-ocultos">
+            <h3>👻 Campos Ocultos HTML (Para Envío al Servidor)</h3>
+            
+            <div class="form-group">
+                <label for="hidden_unidad_base">hidden_unidad_base:</label>
+                <input type="text" id="display_hidden_unidad_base" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="hidden_factor_base">hidden_factor_base:</label>
+                <input type="text" id="display_hidden_factor_base" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="hidden_unidadFactor_impuesto">hidden_unidadFactor_impuesto:</label>
+                <input type="text" id="display_hidden_unidadFactor_impuesto" readonly>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="section">
+            <h3>🎮 Controles de Prueba</h3>
+            <button onclick="testCasoBillares()">🎱 Test Billares (1000 × 25.50)</button>
+            <button onclick="testCasoSencillo()">📊 Test Sencillo (100 × 5.25)</button>
+            <button onclick="testCasoDecimales()">🔢 Test Decimales (333 × 33.333)</button>
+            <button onclick="testCasoInvalido()">❌ Test Inválido (0 × 25.50)</button>
+            <button onclick="limpiarCampos()">🧹 Limpiar</button>
+            <button onclick="mostrarEstadoCompleto()">🔍 Estado Completo</button>
+        </div>
+
+        <!-- Log de Eventos -->
+        <div class="log" id="log"></div>
+
+        <!-- Campos Ocultos Reales (como en el formulario) -->
+        <input type="hidden" id="hidden_unidad_base" name="unidad_base" value="0">
+        <input type="hidden" id="hidden_factor_base" name="factor_base" value="0">
+        <input type="hidden" id="hidden_unidadFactor_impuesto" name="unidadFactor_impuesto" value="0">
+        <input type="hidden" id="hidden_ventai_base" name="ventai_base" value="0">
+        <input type="hidden" id="hidden_ventai_impuesto" name="ventai_impuesto" value="0">
+        
+        <!-- Campos para combobox (necesarios para el cálculo de multa) -->
+        <input type="hidden" id="id_mes" name="mes" value="2">
+        <input type="hidden" id="id_tipo" name="tipo" value="1">
+    </div>
+
+    <!-- JavaScript del Sistema -->
+    <script src="declaracion_volumen_interactivo.js"></script>
+    
+    <script>
+        // Variables globales para monitoreo
+        let sistemaCalculadora;
+        
+        // Función para logging
+        function log(mensaje, tipo = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = tipo === 'success' ? '#28a745' : tipo === 'warning' ? '#ffc107' : tipo === 'error' ? '#dc3545' : '#333';
+            
+            logDiv.innerHTML += `<div style="color: ${color};">[${timestamp}] ${mensaje}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Monitorear cambios en campos ocultos
+        function monitorearCamposOcultos() {
+            const camposOcultos = ['hidden_unidad_base', 'hidden_factor_base', 'hidden_unidadFactor_impuesto'];
+            
+            camposOcultos.forEach(id => {
+                const campo = document.getElementById(id);
+                if (campo) {
+                    // Observer para cambios
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach((mutation) => {
+                            if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                                actualizarDisplayCamposOcultos();
+                                log(`📝 Campo oculto cambió: ${id} = ${campo.value}`, 'success');
+                            }
+                        });
+                    });
+                    
+                    observer.observe(campo, { attributes: true, attributeFilter: ['value'] });
+                    
+                    // También monitorear cambios directos
+                    campo.addEventListener('input', () => {
+                        actualizarDisplayCamposOcultos();
+                    });
+                }
+            });
+        }
+        
+        // Actualizar display de campos ocultos
+        function actualizarDisplayCamposOcultos() {
+            document.getElementById('display_hidden_unidad_base').value = document.getElementById('hidden_unidad_base').value;
+            document.getElementById('display_hidden_factor_base').value = document.getElementById('hidden_factor_base').value;
+            document.getElementById('display_hidden_unidadFactor_impuesto').value = document.getElementById('hidden_unidadFactor_impuesto').value;
+        }
+        
+        // Actualizar variables internas
+        function actualizarVariablesInternas() {
+            if (sistemaCalculadora && sistemaCalculadora.variablesOcultas) {
+                document.getElementById('var_unidad_base').value = sistemaCalculadora.variablesOcultas.unidad_base || '0';
+                document.getElementById('var_factor_base').value = sistemaCalculadora.variablesOcultas.factor_base || '0';
+                document.getElementById('var_unidadFactor_impuesto').value = sistemaCalculadora.variablesOcultas.unidadFactor_impuesto || '0';
+            }
+        }
+        
+        // Casos de prueba
+        function testCasoBillares() {
+            log('🎱 INICIANDO TEST BILLARES', 'success');
+            document.getElementById('id_unidad').value = '1000';
+            document.getElementById('id_factor').value = '25.50';
+            document.getElementById('id_ventai').value = '0';
+            
+            setTimeout(() => {
+                mostrarEstadoCompleto();
+                log('🎱 Test Billares completado - Resultado esperado: 25,500.00', 'success');
+            }, 1000);
+        }
+        
+        function testCasoSencillo() {
+            log('📊 INICIANDO TEST SENCILLO', 'success');
+            document.getElementById('id_unidad').value = '100';
+            document.getElementById('id_factor').value = '5.25';
+            document.getElementById('id_ventai').value = '0';
+            
+            setTimeout(() => {
+                mostrarEstadoCompleto();
+                log('📊 Test Sencillo completado - Resultado esperado: 525.00', 'success');
+            }, 1000);
+        }
+        
+        function testCasoDecimales() {
+            log('🔢 INICIANDO TEST DECIMALES', 'success');
+            document.getElementById('id_unidad').value = '333';
+            document.getElementById('id_factor').value = '33.333';
+            document.getElementById('id_ventai').value = '0';
+            
+            setTimeout(() => {
+                mostrarEstadoCompleto();
+                log('🔢 Test Decimales completado - Resultado esperado: 11,099.89', 'success');
+            }, 1000);
+        }
+        
+        function testCasoInvalido() {
+            log('❌ INICIANDO TEST INVÁLIDO', 'warning');
+            document.getElementById('id_unidad').value = '0';
+            document.getElementById('id_factor').value = '25.50';
+            document.getElementById('id_ventai').value = '0';
+            
+            setTimeout(() => {
+                mostrarEstadoCompleto();
+                log('❌ Test Inválido completado - Resultado esperado: 0.00', 'warning');
+            }, 1000);
+        }
+        
+        function limpiarCampos() {
+            document.getElementById('id_unidad').value = '';
+            document.getElementById('id_factor').value = '';
+            document.getElementById('id_ventai').value = '';
+            document.getElementById('log').innerHTML = '';
+            log('🧹 Campos limpiados', 'info');
+        }
+        
+        function mostrarEstadoCompleto() {
+            actualizarVariablesInternas();
+            actualizarDisplayCamposOcultos();
+            
+            const unidad = document.getElementById('id_unidad').value;
+            const factor = document.getElementById('id_factor').value;
+            const impuesto = document.getElementById('id_impuesto').value;
+            const multa = document.getElementById('id_multadecla').value;
+            
+            log('📊 ESTADO COMPLETO:', 'info');
+            log(`   Unidad: ${unidad}`, 'info');
+            log(`   Factor: ${factor}`, 'info');
+            log(`   Impuesto Total: ${impuesto}`, 'info');
+            log(`   Multa: ${multa}`, 'info');
+            
+            if (sistemaCalculadora && sistemaCalculadora.variablesOcultas) {
+                log('🔧 Variables Internas:', 'info');
+                log(`   unidad_base: ${sistemaCalculadora.variablesOcultas.unidad_base || '0'}`, 'info');
+                log(`   factor_base: ${sistemaCalculadora.variablesOcultas.factor_base || '0'}`, 'info');
+                log(`   unidadFactor_impuesto: ${sistemaCalculadora.variablesOcultas.unidadFactor_impuesto || '0'}`, 'info');
+            }
+            
+            log('👻 Campos Ocultos HTML:', 'info');
+            log(`   hidden_unidad_base: ${document.getElementById('hidden_unidad_base').value}`, 'info');
+            log(`   hidden_factor_base: ${document.getElementById('hidden_factor_base').value}`, 'info');
+            log(`   hidden_unidadFactor_impuesto: ${document.getElementById('hidden_unidadFactor_impuesto').value}`, 'info');
+        }
+        
+        // Inicialización
+        window.addEventListener('load', function() {
+            log('🚀 Sistema de Test cargado', 'success');
+            
+            // Obtener referencia al sistema
+            setTimeout(() => {
+                sistemaCalculadora = window.declaracionVolumenInteractivo;
+                if (sistemaCalculadora) {
+                    log('✅ Sistema calculadora encontrado', 'success');
+                } else {
+                    log('❌ Sistema calculadora no encontrado', 'error');
+                }
+            }, 1000);
+            
+            // Configurar monitoreo
+            monitorearCamposOcultos();
+            
+            // Actualizar displays iniciales
+            actualizarDisplayCamposOcultos();
+            
+            // Test inicial
+            setTimeout(() => {
+                testCasoBillares();
+            }, 2000);
+        });
+        
+        // Event listener para cambios automáticos
+        document.addEventListener('calculoICSRealizado', function(event) {
+            log('🔄 Evento calculoICSRealizado disparado', 'success');
+            setTimeout(() => {
+                actualizarVariablesInternas();
+                actualizarDisplayCamposOcultos();
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

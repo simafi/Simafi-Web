@@ -1,0 +1,30 @@
+# Módulo de Catastro
+# Sistema de Gestión Catastral Municipal
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

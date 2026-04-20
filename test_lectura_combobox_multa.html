@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Test Lectura Combobox y Multa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 11px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .campo-monitoreado {
+            border: 3px solid #007bff !important;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+        }
+        .valor-detectado {
+            animation: pulse-blue 1s;
+        }
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-primary">
+                    <h4>🔍 Test Lectura de Combobox y Validación de Multa</h4>
+                    <p><strong>Objetivo:</strong> Verificar cómo se leen los valores de los combobox y cómo se valida la multa</p>
+                    <p><strong>Campos a monitorear:</strong> Mes (NumberInput), Tipo (Select), Impuesto, Multa</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>📝 Formulario Real Simulado</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Campo Mes (NumberInput) -->
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label for="id_mes">
+                                        <i class="fas fa-calendar-alt"></i> Mes (NumberInput)
+                                    </label>
+                                    <input type="number" class="form-control campo-monitoreado" 
+                                           id="id_mes" name="mes" 
+                                           min="1" max="12" step="1" 
+                                           placeholder="Mes" value="2">
+                                    <small class="form-text text-info">
+                                        <i class="fas fa-info-circle"></i> Formato: Número 1-12
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- Campo Tipo (Select) -->
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label for="id_tipo">
+                                        <i class="fas fa-tag"></i> Tipo (Select)
+                                    </label>
+                                    <select class="form-control campo-monitoreado" id="id_tipo" name="tipo">
+                                        <option value="">Seleccione tipo</option>
+                                        <option value="1" selected>Normal</option>
+                                        <option value="2">Apertura</option>
+                                    </select>
+                                    <small class="form-text text-info">
+                                        <i class="fas fa-info-circle"></i> 1=Normal, 2=Apertura
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- Campo Impuesto -->
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label for="id_impuesto">
+                                        <i class="fas fa-calculator"></i> Impuesto
+                                    </label>
+                                    <input type="text" class="form-control" id="id_impuesto" name="impuesto" 
+                                           value="150.00" readonly
+                                           style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800; color: #e65100; font-weight: 700; text-align: center;">
+                                </div>
+                            </div>
+                            
+                            <!-- Campo Multa -->
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label for="id_multadecla">
+                                        <i class="fas fa-exclamation-triangle"></i> Multa
+                                    </label>
+                                    <input type="text" class="form-control" id="id_multadecla" name="multadecla" readonly
+                                           style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 2px solid #ffa000; color: #e65100; font-weight: 700; text-align: center;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-primary" onclick="leerYValidarCampos()">
+                                        🔍 Leer y Validar Campos
+                                    </button>
+                                    <button type="button" class="btn btn-warning" onclick="testCambioMes()">
+                                        📅 Test Cambio de Mes
+                                    </button>
+                                    <button type="button" class="btn btn-success" onclick="testCambioTipo()">
+                                        🏷️ Test Cambio de Tipo
+                                    </button>
+                                    <button type="button" class="btn btn-info" onclick="testTodosLosEscenarios()">
+                                        🧪 Test Todos los Escenarios
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Monitor de Lectura</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="monitor-lectura">
+                            <p class="text-muted">Los valores se mostrarán aquí</p>
+                        </div>
+                        
+                        <div id="validacion-resultado" class="mt-3">
+                            <p class="text-muted">Resultado de validación</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log Detallado de Lectura y Validación</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs detallados aparecerán aquí...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TestLecturaCombobox {
+            constructor() {
+                this.setupEventListeners();
+                this.log('🚀 Sistema de test de lectura de combobox iniciado', 'success');
+                this.iniciarMonitoreoEnTiempoReal();
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            setupEventListeners() {
+                const campoMes = document.getElementById('id_mes');
+                const campoTipo = document.getElementById('id_tipo');
+                
+                if (campoMes) {
+                    campoMes.addEventListener('change', () => {
+                        this.log('🔄 CAMBIO DETECTADO EN MES', 'warning');
+                        campoMes.classList.add('valor-detectado');
+                        setTimeout(() => campoMes.classList.remove('valor-detectado'), 1000);
+                        this.leerYValidarCampos();
+                    });
+                    
+                    campoMes.addEventListener('input', () => {
+                        this.log('📝 INPUT EN MES (mientras escribe)', 'info');
+                        this.leerYValidarCampos();
+                    });
+                }
+                
+                if (campoTipo) {
+                    campoTipo.addEventListener('change', () => {
+                        this.log('🔄 CAMBIO DETECTADO EN TIPO', 'warning');
+                        campoTipo.classList.add('valor-detectado');
+                        setTimeout(() => campoTipo.classList.remove('valor-detectado'), 1000);
+                        this.leerYValidarCampos();
+                    });
+                }
+                
+                this.log('✅ Event listeners configurados para mes y tipo', 'success');
+            }
+            
+            leerYValidarCampos() {
+                this.log('🔍 LEYENDO VALORES DE CAMPOS', 'info');
+                this.log('=' .repeat(40));
+                
+                // Leer campo MES (NumberInput)
+                const campoMes = document.getElementById('id_mes');
+                let valorMes = null;
+                let tipoMes = 'No encontrado';
+                
+                if (campoMes) {
+                    valorMes = campoMes.value;
+                    tipoMes = campoMes.type;
+                    
+                    this.log(`📅 CAMPO MES (${tipoMes}):`);
+                    this.log(`   Valor raw: "${valorMes}"`);
+                    this.log(`   Valor parseInt: ${parseInt(valorMes) || 0}`);
+                    this.log(`   Valor parseFloat: ${parseFloat(valorMes) || 0}`);
+                    this.log(`   Es número válido: ${!isNaN(parseInt(valorMes))}`);
+                    this.log(`   Rango válido (1-12): ${this.validarRangoMes(parseInt(valorMes))}`);
+                } else {
+                    this.log('❌ Campo MES no encontrado', 'error');
+                }
+                
+                // Leer campo TIPO (Select)
+                const campoTipo = document.getElementById('id_tipo');
+                let valorTipo = null;
+                let tipoTipo = 'No encontrado';
+                
+                if (campoTipo) {
+                    valorTipo = campoTipo.value;
+                    tipoTipo = campoTipo.tagName;
+                    
+                    this.log(`🏷️ CAMPO TIPO (${tipoTipo}):`);
+                    this.log(`   Valor raw: "${valorTipo}"`);
+                    this.log(`   Valor parseInt: ${parseInt(valorTipo) || 0}`);
+                    this.log(`   Opción seleccionada: "${campoTipo.options[campoTipo.selectedIndex]?.text || 'Ninguna'}"`);
+                    this.log(`   Índice seleccionado: ${campoTipo.selectedIndex}`);
+                    this.log(`   Es opción válida: ${this.validarOpcionTipo(parseInt(valorTipo))}`);
+                } else {
+                    this.log('❌ Campo TIPO no encontrado', 'error');
+                }
+                
+                // Leer campo IMPUESTO
+                const campoImpuesto = document.getElementById('id_impuesto');
+                let valorImpuesto = 0;
+                
+                if (campoImpuesto) {
+                    valorImpuesto = parseFloat(campoImpuesto.value) || 0;
+                    this.log(`💰 CAMPO IMPUESTO:`);
+                    this.log(`   Valor: L. ${valorImpuesto.toFixed(2)}`);
+                    this.log(`   Es mayor a 0: ${valorImpuesto > 0}`);
+                }
+                
+                // APLICAR VALIDACIÓN DE MULTA
+                this.log('\n🧮 APLICANDO VALIDACIÓN DE MULTA:', 'warning');
+                const resultadoValidacion = this.validarMultaSegunReglas(
+                    parseInt(valorMes) || 0,
+                    parseInt(valorTipo) || 0,
+                    valorImpuesto
+                );
+                
+                // Actualizar monitor
+                this.actualizarMonitor(valorMes, valorTipo, valorImpuesto, resultadoValidacion);
+                
+                return resultadoValidacion;
+            }
+            
+            validarMultaSegunReglas(mes, tipo, impuesto) {
+                this.log(`📋 PARÁMETROS DE VALIDACIÓN:`);
+                this.log(`   Mes: ${mes} (${this.getNombreMes(mes)})`);
+                this.log(`   Tipo: ${tipo} (${this.getNombreTipo(tipo)})`);
+                this.log(`   Impuesto: L. ${impuesto.toFixed(2)}`);
+                
+                let multa = 0;
+                let regla = '';
+                let estado = '';
+                
+                // VALIDACIÓN EXACTA SEGÚN ESPECIFICACIONES
+                this.log('\n🔍 APLICANDO REGLAS:');
+                
+                // REGLA PRINCIPAL: Si impuesto <= 0, no hay multa
+                if (impuesto <= 0) {
+                    multa = 0;
+                    regla = 'Impuesto ≤ 0: Sin multa';
+                    estado = 'info';
+                    this.log(`   ✅ ${regla}`, 'info');
+                }
+                // REGLA 1: Si mes = Enero (1), multa = 0
+                else if (mes === 1) {
+                    multa = 0;
+                    regla = 'Enero: Multa = 0.00';
+                    estado = 'success';
+                    this.log(`   ✅ ${regla}`, 'success');
+                }
+                // REGLA 2: Si mes ≠ Enero Y tipo = Normal (1), multa = impuesto
+                else if (mes !== 1 && tipo === 1) {
+                    multa = impuesto;
+                    regla = `Mes ≠ Enero + Normal: Multa = Impuesto = L. ${multa.toFixed(2)}`;
+                    estado = 'warning';
+                    this.log(`   ⚠️ ${regla}`, 'warning');
+                }
+                // REGLA 3: Si mes ≠ Enero Y tipo ≠ Normal, multa = 0
+                else if (mes !== 1 && tipo !== 1) {
+                    multa = 0;
+                    regla = `Mes ≠ Enero + Tipo ≠ Normal: Multa = 0.00`;
+                    estado = 'success';
+                    this.log(`   ✅ ${regla}`, 'success');
+                }
+                // CASO ESPECIAL: Sin selección válida
+                else {
+                    multa = 0;
+                    regla = 'Sin selección válida: Multa = 0.00';
+                    estado = 'secondary';
+                    this.log(`   ℹ️ ${regla}`, 'info');
+                }
+                
+                // Actualizar campo de multa
+                this.actualizarCampoMulta(multa);
+                
+                this.log(`\n💰 RESULTADO FINAL: L. ${multa.toFixed(2)}`, multa > 0 ? 'warning' : 'success');
+                
+                return {
+                    multa: multa,
+                    regla: regla,
+                    estado: estado,
+                    mes: mes,
+                    tipo: tipo,
+                    impuesto: impuesto
+                };
+            }
+            
+            actualizarCampoMulta(valor) {
+                const campo = document.getElementById('id_multadecla');
+                if (campo) {
+                    campo.value = valor.toFixed(2);
+                    
+                    if (valor > 0) {
+                        campo.style.backgroundColor = '#fff3cd';
+                        campo.style.borderColor = '#ffa000';
+                        campo.style.color = '#856404';
+                    } else {
+                        campo.style.backgroundColor = '#e8f5e8';
+                        campo.style.borderColor = '#28a745';
+                        campo.style.color = '#155724';
+                    }
+                }
+            }
+            
+            actualizarMonitor(mes, tipo, impuesto, resultado) {
+                const monitor = document.getElementById('monitor-lectura');
+                monitor.innerHTML = `
+                    <div class="alert alert-info py-2">
+                        <h6>📊 Valores Leídos</h6>
+                        <p><strong>Mes:</strong> "${mes}" → ${parseInt(mes) || 0} (${this.getNombreMes(parseInt(mes) || 0)})</p>
+                        <p><strong>Tipo:</strong> "${tipo}" → ${parseInt(tipo) || 0} (${this.getNombreTipo(parseInt(tipo) || 0)})</p>
+                        <p><strong>Impuesto:</strong> L. ${impuesto.toFixed(2)}</p>
+                    </div>
+                `;
+                
+                const validacion = document.getElementById('validacion-resultado');
+                validacion.innerHTML = `
+                    <div class="alert alert-${resultado.estado} py-2">
+                        <h6>${resultado.multa > 0 ? '⚠️' : '✅'} Resultado Validación</h6>
+                        <p><strong>Multa:</strong> L. ${resultado.multa.toFixed(2)}</p>
+                        <p><strong>Regla:</strong> ${resultado.regla}</p>
+                    </div>
+                `;
+            }
+            
+            iniciarMonitoreoEnTiempoReal() {
+                setInterval(() => {
+                    this.actualizarMonitorTiempoReal();
+                }, 1000);
+            }
+            
+            actualizarMonitorTiempoReal() {
+                const mes = document.getElementById('id_mes').value;
+                const tipo = document.getElementById('id_tipo').value;
+                const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+                
+                // Solo actualizar si hay cambios
+                if (this.ultimoEstado !== `${mes}-${tipo}-${impuesto}`) {
+                    this.ultimoEstado = `${mes}-${tipo}-${impuesto}`;
+                    this.leerYValidarCampos();
+                }
+            }
+            
+            validarRangoMes(mes) {
+                return mes >= 1 && mes <= 12;
+            }
+            
+            validarOpcionTipo(tipo) {
+                return tipo === 1 || tipo === 2;
+            }
+            
+            getNombreMes(mes) {
+                const meses = ['Sin seleccionar', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                              'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                return meses[mes] || 'Inválido';
+            }
+            
+            getNombreTipo(tipo) {
+                const tipos = ['Sin seleccionar', 'Normal', 'Apertura'];
+                return tipos[tipo] || 'Inválido';
+            }
+        }
+        
+        let testSistema;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs detallados aparecerán aquí...</p>';
+        }
+        
+        function leerYValidarCampos() {
+            testSistema.log('🔍 LECTURA Y VALIDACIÓN MANUAL SOLICITADA', 'warning');
+            testSistema.leerYValidarCampos();
+        }
+        
+        function testCambioMes() {
+            testSistema.log('📅 INICIANDO TEST DE CAMBIO DE MES', 'warning');
+            
+            const meses = [1, 2, 3, 6, 12];
+            let indice = 0;
+            
+            const cambiarMes = () => {
+                if (indice < meses.length) {
+                    const mes = meses[indice];
+                    testSistema.log(`PASO ${indice + 1}: Cambiando mes a ${mes} (${testSistema.getNombreMes(mes)})`);
+                    
+                    document.getElementById('id_mes').value = mes;
+                    document.getElementById('id_mes').dispatchEvent(new Event('change'));
+                    
+                    indice++;
+                    setTimeout(cambiarMes, 2000);
+                } else {
+                    testSistema.log('✅ Test de cambio de mes completado', 'success');
+                }
+            };
+            
+            cambiarMes();
+        }
+        
+        function testCambioTipo() {
+            testSistema.log('🏷️ INICIANDO TEST DE CAMBIO DE TIPO', 'warning');
+            
+            const tipos = [1, 2, 1];
+            let indice = 0;
+            
+            const cambiarTipo = () => {
+                if (indice < tipos.length) {
+                    const tipo = tipos[indice];
+                    testSistema.log(`PASO ${indice + 1}: Cambiando tipo a ${tipo} (${testSistema.getNombreTipo(tipo)})`);
+                    
+                    document.getElementById('id_tipo').value = tipo;
+                    document.getElementById('id_tipo').dispatchEvent(new Event('change'));
+                    
+                    indice++;
+                    setTimeout(cambiarTipo, 2000);
+                } else {
+                    testSistema.log('✅ Test de cambio de tipo completado', 'success');
+                }
+            };
+            
+            cambiarTipo();
+        }
+        
+        function testTodosLosEscenarios() {
+            testSistema.log('🧪 INICIANDO TEST DE TODOS LOS ESCENARIOS', 'warning');
+            testSistema.log('=' .repeat(50));
+            
+            const escenarios = [
+                {mes: 1, tipo: 1, impuesto: 100, descripcion: 'Enero + Normal + Impuesto'},
+                {mes: 1, tipo: 2, impuesto: 100, descripcion: 'Enero + Apertura + Impuesto'},
+                {mes: 2, tipo: 1, impuesto: 100, descripcion: 'Febrero + Normal + Impuesto'},
+                {mes: 2, tipo: 2, impuesto: 100, descripcion: 'Febrero + Apertura + Impuesto'},
+                {mes: 6, tipo: 1, impuesto: 250, descripcion: 'Junio + Normal + Impuesto Alto'},
+                {mes: 12, tipo: 2, impuesto: 50, descripcion: 'Diciembre + Apertura + Impuesto Bajo'},
+                {mes: 3, tipo: 1, impuesto: 0, descripcion: 'Marzo + Normal + Sin Impuesto'},
+                {mes: 0, tipo: 0, impuesto: 100, descripcion: 'Sin selección + Impuesto'}
+            ];
+            
+            let paso = 0;
+            
+            const ejecutarEscenario = () => {
+                if (paso < escenarios.length) {
+                    const escenario = escenarios[paso];
+                    testSistema.log(`\nESCENARIO ${paso + 1}: ${escenario.descripcion}`, 'info');
+                    
+                    // Configurar valores
+                    document.getElementById('id_mes').value = escenario.mes;
+                    document.getElementById('id_tipo').value = escenario.tipo;
+                    document.getElementById('id_impuesto').value = escenario.impuesto.toFixed(2);
+                    
+                    // Disparar eventos
+                    document.getElementById('id_mes').dispatchEvent(new Event('change'));
+                    document.getElementById('id_tipo').dispatchEvent(new Event('change'));
+                    
+                    paso++;
+                    setTimeout(ejecutarEscenario, 3000);
+                } else {
+                    testSistema.log('\n🎯 TODOS LOS ESCENARIOS COMPLETADOS', 'success');
+                }
+            };
+            
+            ejecutarEscenario();
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            testSistema = new TestLecturaCombobox();
+            
+            // Realizar lectura inicial
+            setTimeout(() => {
+                testSistema.leerYValidarCampos();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

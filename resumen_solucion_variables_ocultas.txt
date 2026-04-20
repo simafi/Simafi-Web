@@ -1,0 +1,90 @@
+SOLUCIÓN IMPLEMENTADA: CORRECCIÓN DE VARIABLES OCULTAS
+=======================================================
+
+PROBLEMA IDENTIFICADO:
+- El cálculo de Productos Controlados estaba correcto (L. 50.00)
+- El problema estaba en la suma con otros impuestos (Ventas Rubro Producción, Mercadería, Servicios)
+- Cuando se calculaba desde "Productos Controlados", las variables ocultas de otros campos no se actualizaban
+- Resultado: suma incorrecta (ej: L. 5000.00 en lugar de L. 150.00 para "Otros Impuestos")
+
+CAUSA RAÍZ:
+- La función actualizarVariableOculta() solo actualizaba la variable del campo modificado
+- No recalculaba las variables ocultas de otros campos que ya tenían valores
+- Esto causaba conflictos entre variables ocultas y valores desactualizados
+
+SOLUCIÓN IMPLEMENTADA:
+
+1. 🔧 FUNCIÓN actualizarVariableOculta() MODIFICADA:
+   - Ahora llama a recalcularTodasLasVariablesOcultas() después de actualizar
+   - Garantiza que todas las variables ocultas estén sincronizadas
+   - Evita conflictos entre variables ocultas
+
+2. 🆕 NUEVA FUNCIÓN recalcularTodasLasVariablesOcultas():
+   - Recalcula TODAS las variables ocultas en cada cambio
+   - Obtiene los valores actuales de todos los campos
+   - Recalcula los impuestos para cada campo
+   - Actualiza tanto las variables internas como los campos ocultos del formulario
+   - Incluye logs detallados para debugging
+
+3. 📊 LOGS DETALLADOS AGREGADOS:
+   - Verificación de valores en valoresVentas
+   - Alerta automática cuando el impuesto es mayor a 1000
+   - Detección específica del problema 5000.00
+   - Análisis de causa del error
+   - Estado final de todas las variables ocultas
+
+FUNCIONAMIENTO CORREGIDO:
+
+ANTES (PROBLEMÁTICO):
+1. Usuario ingresa 500,000 en Ventas Rubro Producción
+2. Se calcula impuesto: L. 150.00
+3. Se actualiza variable oculta: ventai_impuesto = 150.00
+4. Usuario ingresa 500,000 en Productos Controlados
+5. Se calcula impuesto: L. 50.00
+6. Se actualiza SOLO variable oculta: controlado_impuesto = 50.00
+7. ❌ Las variables ocultas de otros campos no se recalculan
+8. ❌ Resultado: suma incorrecta
+
+DESPUÉS (CORREGIDO):
+1. Usuario ingresa 500,000 en Ventas Rubro Producción
+2. Se calcula impuesto: L. 150.00
+3. Se actualiza variable oculta: ventai_impuesto = 150.00
+4. Se recalculan TODAS las variables ocultas
+5. Usuario ingresa 500,000 en Productos Controlados
+6. Se calcula impuesto: L. 50.00
+7. Se actualiza variable oculta: controlado_impuesto = 50.00
+8. ✅ Se recalculan TODAS las variables ocultas automáticamente
+9. ✅ Resultado: suma correcta (L. 200.00)
+
+VERIFICACIÓN:
+
+CASO ESPECÍFICO: 500,000 + 500,000
+- Ventas Rubro Producción: L. 150.00 ✅
+- Productos Controlados: L. 50.00 ✅
+- Otros Impuestos: L. 150.00 ✅ (antes era L. 5000.00)
+- Total: L. 200.00 ✅
+
+CASOS ADICIONALES VERIFICADOS:
+- Ventai mayor (1,000,000): Total L. 450.00 ✅
+- Controlado mayor (1,000,000): Total L. 250.00 ✅
+- Ambos mayores (2,000,000): Total L. 900.00 ✅
+
+ARCHIVOS MODIFICADOS:
+- venv/Scripts/tributario/tributario_app/templates/declaracion_volumen.html
+  - Función actualizarVariableOculta() modificada
+  - Nueva función recalcularTodasLasVariablesOcultas()
+  - Logs detallados agregados
+
+ARCHIVOS DE TEST CREADOS:
+- test_variables_ocultas_corregidas.py: Test automatizado que verifica la corrección
+- test_problema_otros_impuestos.py: Test del problema original
+- test_problema_5000.html: Test interactivo del problema
+
+ESTADO: ✅ IMPLEMENTADO Y VERIFICADO
+
+BENEFICIOS:
+- ✅ Suma correcta independientemente del campo modificado
+- ✅ Variables ocultas siempre sincronizadas
+- ✅ No más conflictos entre variables ocultas
+- ✅ Logs detallados para debugging
+- ✅ Funcionamiento consistente en todos los escenarios

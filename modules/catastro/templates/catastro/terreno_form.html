@@ -1,0 +1,148 @@
+{% extends 'catastro/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-map me-2"></i>
+                    {% if terreno %}
+                        Editar Terreno: {{ terreno.codigo_terreno }}
+                    {% else %}
+                        Nuevo Terreno
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <!-- Municipio -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.municipio.id_for_label }}" class="form-label">
+                                <i class="fas fa-map-marker-alt me-1"></i>Municipio *
+                            </label>
+                            {{ form.municipio }}
+                            {% if form.municipio.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.municipio.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Código Terreno -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.codigo_terreno.id_for_label }}" class="form-label">
+                                <i class="fas fa-barcode me-1"></i>Código Terreno *
+                            </label>
+                            {{ form.codigo_terreno }}
+                            {% if form.codigo_terreno.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.codigo_terreno.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Propietario -->
+                    <div class="mb-3">
+                        <label for="{{ form.propietario.id_for_label }}" class="form-label">
+                            <i class="fas fa-user me-1"></i>Propietario *
+                        </label>
+                        {{ form.propietario }}
+                        {% if form.propietario.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.propietario.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Dirección -->
+                    <div class="mb-3">
+                        <label for="{{ form.direccion.id_for_label }}" class="form-label">
+                            <i class="fas fa-map me-1"></i>Dirección *
+                        </label>
+                        {{ form.direccion }}
+                        {% if form.direccion.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.direccion.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Área -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.area.id_for_label }}" class="form-label">
+                                <i class="fas fa-ruler-combined me-1"></i>Área (m²) *
+                            </label>
+                            {{ form.area }}
+                            {% if form.area.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.area.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Valor Catastral -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.valor_catastral.id_for_label }}" class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>Valor Catastral (L.) *
+                            </label>
+                            {{ form.valor_catastral }}
+                            {% if form.valor_catastral.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.valor_catastral.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <a href="{% url 'catastro:terrenos_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver a la Lista
+                            </a>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-custom">
+                                <i class="fas fa-save me-2"></i>
+                                {% if terreno %}
+                                    Actualizar Terreno
+                                {% else %}
+                                    Crear Terreno
+                                {% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+

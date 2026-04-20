@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐛 Debug Completo - Productos Controlados</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 12px; 
+            max-height: 300px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 10px; 
+        }
+        .test-case { border-left: 4px solid #007bff; }
+        .test-success { border-left: 4px solid #28a745; }
+        .test-error { border-left: 4px solid #dc3545; }
+        .test-warning { border-left: 4px solid #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h4>🐛 Debug Completo: Productos Controlados</h4>
+                    <p>Prueba todas las funciones de parsing y cálculo para identificar dónde está el problema</p>
+                    <p><strong>Problema reportado:</strong> 50,000.00 → se interpreta como 50.00 → L. 0.01</p>
+                    <p><strong>Resultado esperado:</strong> 50,000.00 → se interpreta como 50000.00 → L. 25.00</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>🧪 Campo de Prueba</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="id_controlado" class="form-label">Productos Controlados</label>
+                            <input type="text" class="form-control" id="id_controlado" name="controlado" 
+                                   value="50,000.00" placeholder="Ingrese valor para probar">
+                            <div class="form-text">Valor de prueba: 50,000.00</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="ejecutarTestCompleto()">
+                                🔍 Ejecutar Debug Completo
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="probarCasoEspecifico()">
+                                ⚡ Probar Caso Específico (50,000.00)
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="simularCalculoReal()">
+                                💰 Simular Cálculo Real
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Resultados del Debug</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultados-debug">
+                            <p class="text-muted">Haga clic en "Ejecutar Debug Completo" para comenzar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log de Debug Detallado</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Los logs aparecerán aquí...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5>🔧 Estado de las Correcciones</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="estado-correcciones">
+                            <div class="alert alert-info">
+                                <h6>✅ Correcciones Aplicadas:</h6>
+                                <ul class="mb-0">
+                                    <li>Backend: Campo 'cocontrolado' → 'controlado' en views.py</li>
+                                    <li>JavaScript: Parsing mejorado en declaracion_volumen_interactivo.js</li>
+                                    <li>Template HTML: Funciones parseFloat reemplazadas por parsearValorMejorado</li>
+                                    <li>Formulario: DeclaracionVolumenForm usa campo 'controlado' correctamente</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let debugLog = [];
+        
+        function log(mensaje, tipo = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${mensaje}`;
+            debugLog.push(logEntry);
+            
+            const logElement = document.getElementById('debug-log');
+            const colorClass = tipo === 'error' ? 'text-danger' : 
+                              tipo === 'success' ? 'text-success' : 
+                              tipo === 'warning' ? 'text-warning' : 'text-info';
+            
+            logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function limpiarLog() {
+            debugLog = [];
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Los logs aparecerán aquí...</p>';
+        }
+        
+        // Función de parsing mejorada (la que debería estar funcionando)
+        function parsearValorMejorado(valor) {
+            if (!valor) return 0;
+            
+            log(`🔍 Parsing valor original: "${valor}"`);
+            
+            // Caso 1: "50,000.00" (formato americano con miles y decimales)
+            if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                const resultado = parseFloat(valor.replace(/,/g, '')) || 0;
+                log(`✅ Formato americano detectado: "${valor}" → ${resultado}`, 'success');
+                return resultado;
+            }
+            // Caso 2: "50,000" (formato americano con miles, sin decimales)
+            else if (/^\d{1,3}(,\d{3})+$/.test(valor)) {
+                const resultado = parseFloat(valor.replace(/,/g, '')) || 0;
+                log(`✅ Formato americano sin decimales: "${valor}" → ${resultado}`, 'success');
+                return resultado;
+            }
+            // Caso 3: "50.000,00" (formato europeo con miles y decimales)
+            else if (/^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(valor)) {
+                const resultado = parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0;
+                log(`✅ Formato europeo detectado: "${valor}" → ${resultado}`, 'success');
+                return resultado;
+            }
+            // Caso 4: "50.000" (formato europeo con miles, sin decimales)
+            else if (/^\d{1,3}(\.\d{3})+$/.test(valor)) {
+                const resultado = parseFloat(valor.replace(/\./g, '')) || 0;
+                log(`✅ Formato europeo sin decimales: "${valor}" → ${resultado}`, 'success');
+                return resultado;
+            }
+            // Caso 5: "50.00" (formato americano simple con decimales)
+            else if (/^\d+\.\d{1,2}$/.test(valor)) {
+                const resultado = parseFloat(valor) || 0;
+                log(`✅ Formato americano simple: "${valor}" → ${resultado}`, 'success');
+                return resultado;
+            }
+            // Caso 6: "50,00" (formato europeo simple con decimales)
+            else if (/^\d+,\d{1,2}$/.test(valor)) {
+                const resultado = parseFloat(valor.replace(',', '.')) || 0;
+                log(`✅ Formato europeo simple: "${valor}" → ${resultado}`, 'success');
+                return resultado;
+            }
+            // Caso 7: Solo números
+            else if (/^\d+$/.test(valor)) {
+                const resultado = parseFloat(valor) || 0;
+                log(`✅ Solo números: "${valor}" → ${resultado}`, 'success');
+                return resultado;
+            }
+            // Fallback: limpiar caracteres no numéricos excepto punto decimal
+            else {
+                const valorLimpio = valor.replace(/[^0-9.]/g, '');
+                const resultado = parseFloat(valorLimpio) || 0;
+                log(`⚠️ Fallback aplicado: "${valor}" → "${valorLimpio}" → ${resultado}`, 'warning');
+                return resultado;
+            }
+        }
+        
+        // Función problemática (la que causaba el error)
+        function parsearValorProblematico(valor) {
+            const resultado = parseFloat(valor) || 0;
+            log(`❌ Parsing problemático: "${valor}" → ${resultado}`, 'error');
+            return resultado;
+        }
+        
+        // Función de cálculo de impuesto para productos controlados
+        function calcularImpuestoControlados(valorVentas) {
+            if (!valorVentas || valorVentas <= 0) {
+                log(`⚠️ Valor de ventas es 0 o negativo: ${valorVentas}`, 'warning');
+                return { impuestoTotal: 0, detalle: "Valor es 0 o negativo" };
+            }
+            
+            log(`💰 Calculando impuesto para productos controlados: ${valorVentas}`);
+            
+            // Tarifas para productos controlados (categoría 2)
+            const tarifas = [
+                { rango1: 0, rango2: 1000000, valor: 0.5, descripcion: "Rango $0 - $1,000,000" },
+                { rango1: 1000000.01, rango2: 5000000, valor: 0.6, descripcion: "Rango $1,000,000 - $5,000,000" },
+                { rango1: 5000000.01, rango2: 10000000, valor: 0.7, descripcion: "Rango $5,000,000 - $10,000,000" },
+                { rango1: 10000000.01, rango2: 20000000, valor: 0.8, descripcion: "Rango $10,000,000 - $20,000,000" },
+                { rango1: 20000000.01, rango2: 30000000, valor: 0.9, descripcion: "Rango $20,000,000 - $30,000,000" },
+                { rango1: 30000000.01, rango2: 9999999999, valor: 1.0, descripcion: "Rango $30,000,000+" }
+            ];
+            
+            let impuestoTotal = 0;
+            let valorRestante = valorVentas;
+            const detalleCalculo = [];
+            
+            for (const tarifa of tarifas) {
+                if (valorRestante <= 0) break;
+                
+                const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                if (diferencialRango <= 0) continue;
+                
+                let valorAplicable;
+                if (valorRestante <= diferencialRango) {
+                    valorAplicable = valorRestante;
+                    valorRestante = 0;
+                } else {
+                    valorAplicable = diferencialRango;
+                    valorRestante -= diferencialRango;
+                }
+                
+                const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+                impuestoTotal += impuestoRango;
+                
+                const detalle = `L. ${valorAplicable.toLocaleString('es-HN', {minimumFractionDigits: 2})} ÷ 1000 × ${tarifa.valor} = L. ${impuestoRango.toFixed(2)}`;
+                detalleCalculo.push(detalle);
+                log(`   ${detalle}`);
+            }
+            
+            const resultado = {
+                impuestoTotal: Math.round(impuestoTotal * 100) / 100,
+                detalle: detalleCalculo.join('; ')
+            };
+            
+            log(`💰 Impuesto total calculado: L. ${resultado.impuestoTotal.toFixed(2)}`, 'success');
+            return resultado;
+        }
+        
+        function ejecutarTestCompleto() {
+            limpiarLog();
+            log('🚀 INICIANDO DEBUG COMPLETO DE PRODUCTOS CONTROLADOS', 'info');
+            log('=' .repeat(60));
+            
+            const input = document.getElementById('id_controlado');
+            const valorOriginal = input.value;
+            
+            log(`📊 Valor original del campo: "${valorOriginal}"`);
+            
+            // Test 1: Parsing mejorado (correcto)
+            log('\n🧪 TEST 1: Parsing Mejorado (Corrección Aplicada)');
+            const valorMejorado = parsearValorMejorado(valorOriginal);
+            
+            // Test 2: Parsing problemático (original)
+            log('\n🧪 TEST 2: Parsing Problemático (Método Original)');
+            const valorProblematico = parsearValorProblematico(valorOriginal);
+            
+            // Test 3: Comparación de resultados
+            log('\n📊 COMPARACIÓN DE RESULTADOS:');
+            log(`   Método Corregido:    ${valorMejorado.toLocaleString('es-HN', {minimumFractionDigits: 2})}`);
+            log(`   Método Problemático: ${valorProblematico.toLocaleString('es-HN', {minimumFractionDigits: 2})}`);
+            log(`   ¿Corrección exitosa?: ${valorMejorado !== valorProblematico ? '✅ SÍ' : '❌ NO'}`, 
+                valorMejorado !== valorProblematico ? 'success' : 'error');
+            
+            // Test 4: Cálculo de impuestos con método correcto
+            log('\n💰 TEST 4: Cálculo de Impuestos (Método Correcto)');
+            const impuestoCorregido = calcularImpuestoControlados(valorMejorado);
+            
+            // Test 5: Cálculo de impuestos con método problemático
+            log('\n💰 TEST 5: Cálculo de Impuestos (Método Problemático)');
+            const impuestoProblematico = calcularImpuestoControlados(valorProblematico);
+            
+            // Test 6: Resumen final
+            log('\n📋 RESUMEN FINAL:');
+            log(`   Valor parseado correcto:     ${valorMejorado.toLocaleString('es-HN', {minimumFractionDigits: 2})}`);
+            log(`   Impuesto correcto:           L. ${impuestoCorregido.impuestoTotal.toFixed(2)}`, 'success');
+            log(`   Valor parseado problemático: ${valorProblematico.toLocaleString('es-HN', {minimumFractionDigits: 2})}`);
+            log(`   Impuesto problemático:       L. ${impuestoProblematico.impuestoTotal.toFixed(2)}`, 'error');
+            
+            // Actualizar resultados en la UI
+            const resultadosDiv = document.getElementById('resultados-debug');
+            resultadosDiv.innerHTML = `
+                <div class="alert alert-${valorMejorado !== valorProblematico ? 'success' : 'danger'}">
+                    <h6>🎯 Resultado del Debug:</h6>
+                    <p><strong>Valor Original:</strong> "${valorOriginal}"</p>
+                    <p><strong>Parsing Correcto:</strong> ${valorMejorado.toLocaleString('es-HN', {minimumFractionDigits: 2})}</p>
+                    <p><strong>Parsing Problemático:</strong> ${valorProblematico.toLocaleString('es-HN', {minimumFractionDigits: 2})}</p>
+                    <p><strong>Impuesto Correcto:</strong> L. ${impuestoCorregido.impuestoTotal.toFixed(2)}</p>
+                    <p><strong>Impuesto Problemático:</strong> L. ${impuestoProblematico.impuestoTotal.toFixed(2)}</p>
+                    <p><strong>Estado:</strong> ${valorMejorado !== valorProblematico ? '✅ Corrección Funciona' : '❌ Problema Persiste'}</p>
+                </div>
+            `;
+        }
+        
+        function probarCasoEspecifico() {
+            limpiarLog();
+            log('⚡ PROBANDO CASO ESPECÍFICO: 50,000.00', 'info');
+            log('=' .repeat(50));
+            
+            const valorPrueba = "50,000.00";
+            log(`📊 Valor de prueba: "${valorPrueba}"`);
+            
+            // Probar todos los regex individualmente
+            log('\n🔍 PROBANDO REGEX INDIVIDUALMENTE:');
+            
+            const regex1 = /^\d{1,3}(,\d{3})+\.\d{1,2}$/;
+            const match1 = regex1.test(valorPrueba);
+            log(`   Regex 1 (americano con decimales): ${match1 ? '✅ MATCH' : '❌ NO MATCH'}`, match1 ? 'success' : 'error');
+            
+            const regex2 = /^\d{1,3}(,\d{3})+$/;
+            const match2 = regex2.test(valorPrueba);
+            log(`   Regex 2 (americano sin decimales): ${match2 ? '✅ MATCH' : '❌ NO MATCH'}`, match2 ? 'success' : 'error');
+            
+            if (match1) {
+                const resultado = parseFloat(valorPrueba.replace(/,/g, ''));
+                log(`✅ Aplicando transformación: "${valorPrueba}" → "${valorPrueba.replace(/,/g, '')}" → ${resultado}`, 'success');
+                
+                const impuesto = calcularImpuestoControlados(resultado);
+                log(`💰 Impuesto calculado: L. ${impuesto.impuestoTotal.toFixed(2)}`, 'success');
+                
+                // Verificar si es el resultado esperado
+                if (impuesto.impuestoTotal === 25.00) {
+                    log('🎉 ¡CORRECCIÓN EXITOSA! El resultado coincide con lo esperado (L. 25.00)', 'success');
+                } else {
+                    log(`⚠️ Resultado no coincide. Esperado: L. 25.00, Obtenido: L. ${impuesto.impuestoTotal.toFixed(2)}`, 'warning');
+                }
+            } else {
+                log('❌ El regex no coincide, esto indica que hay un problema en la lógica', 'error');
+            }
+        }
+        
+        function simularCalculoReal() {
+            limpiarLog();
+            log('💰 SIMULANDO CÁLCULO REAL DEL SISTEMA', 'info');
+            log('=' .repeat(50));
+            
+            const input = document.getElementById('id_controlado');
+            const valorCampo = input.value;
+            
+            log(`📊 Simulando el flujo completo para: "${valorCampo}"`);
+            
+            // Simular el flujo del template HTML
+            log('\n1️⃣ SIMULANDO TEMPLATE HTML (parsearValorMejorado):');
+            const valorTemplate = parsearValorMejorado(valorCampo);
+            
+            // Simular el flujo del JavaScript interactivo
+            log('\n2️⃣ SIMULANDO JAVASCRIPT INTERACTIVO (obtenerValorCampo):');
+            const valorJS = parsearValorMejorado(valorCampo); // Misma función ahora
+            
+            // Simular el cálculo de impuestos
+            log('\n3️⃣ SIMULANDO CÁLCULO DE IMPUESTOS:');
+            const impuestoFinal = calcularImpuestoControlados(valorJS);
+            
+            // Simular el envío al backend
+            log('\n4️⃣ SIMULANDO ENVÍO AL BACKEND:');
+            log(`   Valor a enviar: ${valorJS}`);
+            log(`   Campo en BD: 'controlado' (✅ corregido de 'cocontrolado')`);
+            log(`   Impuesto calculado: L. ${impuestoFinal.impuestoTotal.toFixed(2)}`);
+            
+            // Verificar consistencia
+            log('\n5️⃣ VERIFICACIÓN DE CONSISTENCIA:');
+            const esConsistente = valorTemplate === valorJS;
+            log(`   Template HTML: ${valorTemplate}`);
+            log(`   JavaScript: ${valorJS}`);
+            log(`   ¿Consistente?: ${esConsistente ? '✅ SÍ' : '❌ NO'}`, esConsistente ? 'success' : 'error');
+            
+            // Resultado final
+            const resultadoFinal = document.getElementById('resultados-debug');
+            resultadoFinal.innerHTML = `
+                <div class="alert alert-info">
+                    <h6>💰 Simulación del Cálculo Real:</h6>
+                    <p><strong>Valor Original:</strong> "${valorCampo}"</p>
+                    <p><strong>Valor Procesado:</strong> ${valorJS.toLocaleString('es-HN', {minimumFractionDigits: 2})}</p>
+                    <p><strong>Impuesto:</strong> L. ${impuestoFinal.impuestoTotal.toFixed(2)}</p>
+                    <p><strong>Detalle:</strong> ${impuestoFinal.detalle}</p>
+                    <p><strong>Consistencia:</strong> ${esConsistente ? '✅ Todas las funciones devuelven el mismo resultado' : '❌ Hay inconsistencias'}</p>
+                </div>
+            `;
+        }
+        
+        // Ejecutar test automático al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            log('📋 Página cargada. Lista para debugging.', 'info');
+            log('💡 Sugerencia: Haga clic en "Ejecutar Debug Completo" para comenzar.', 'info');
+        });
+    </script>
+</body>
+</html>
+

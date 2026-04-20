@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Test Tarifas Controlados Corregidas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-success">
+                    <h4>🎯 Test Tarifas Controlados Corregidas</h4>
+                    <p><strong>Tarifas reales:</strong> Primera fila 0.10 por millar, resto 0.01 por millar</p>
+                    <p><strong>Caso problemático:</strong> 50,000.00 debe dar L. 5.00 (no L. 0.01)</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>📊 Test de Cálculo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="valor-test" class="form-label">Valor Productos Controlados</label>
+                            <input type="text" class="form-control" id="valor-test" value="50,000.00">
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary" onclick="calcularConTarifasCorrectas()">
+                            🧮 Calcular con Tarifas Corregidas
+                        </button>
+                        
+                        <div class="mt-3">
+                            <label class="form-label">Resultado</label>
+                            <input type="text" class="form-control" id="resultado-calculo" readonly
+                                   style="background: #e8f5e8; font-weight: bold;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>📋 Desglose del Cálculo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="desglose-calculo">
+                            <p class="text-muted">Haga clic en "Calcular" para ver el desglose</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>✅ Tarifas Corregidas</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Rango</th>
+                                    <th>Tarifa por Millar</th>
+                                    <th>Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-success">
+                                    <td>$0 - $1,000,000</td>
+                                    <td><strong>0.10</strong></td>
+                                    <td>Primera fila (tarifa más alta)</td>
+                                </tr>
+                                <tr class="table-warning">
+                                    <td>$1,000,000+</td>
+                                    <td><strong>0.01</strong></td>
+                                    <td>Resto de rangos (tarifa menor)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5>🧪 Casos de Prueba</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-outline-primary w-100 mb-2" onclick="probarCaso(50000)">
+                                    Caso 1: 50,000.00
+                                </button>
+                                <small class="text-muted">Esperado: L. 5.00</small>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-outline-primary w-100 mb-2" onclick="probarCaso(500000)">
+                                    Caso 2: 500,000.00
+                                </button>
+                                <small class="text-muted">Esperado: L. 50.00</small>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-outline-primary w-100 mb-2" onclick="probarCaso(1500000)">
+                                    Caso 3: 1,500,000.00
+                                </button>
+                                <small class="text-muted">Esperado: L. 105.00</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función de parsing mejorada
+        function parsearValor(valor) {
+            if (!valor) return 0;
+            
+            if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                return parseFloat(valor.replace(/,/g, '')) || 0;
+            }
+            else if (/^\d{1,3}(,\d{3})+$/.test(valor)) {
+                return parseFloat(valor.replace(/,/g, '')) || 0;
+            }
+            else if (/^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(valor)) {
+                return parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0;
+            }
+            else if (/^\d{1,3}(\.\d{3})+$/.test(valor)) {
+                return parseFloat(valor.replace(/\./g, '')) || 0;
+            }
+            else if (/^\d+\.\d{1,2}$/.test(valor)) {
+                return parseFloat(valor) || 0;
+            }
+            else if (/^\d+,\d{1,2}$/.test(valor)) {
+                return parseFloat(valor.replace(',', '.')) || 0;
+            }
+            else if (/^\d+$/.test(valor)) {
+                return parseFloat(valor) || 0;
+            }
+            else {
+                const valorLimpio = valor.replace(/[^0-9.]/g, '');
+                return parseFloat(valorLimpio) || 0;
+            }
+        }
+        
+        // Función de cálculo con tarifas CORREGIDAS
+        function calcularImpuestoControlados(valorVentas) {
+            if (!valorVentas || valorVentas <= 0) {
+                return { impuestoTotal: 0, detalle: [] };
+            }
+            
+            // Tarifas CORREGIDAS: Primera fila 0.10, resto 0.01
+            const tarifas = [
+                { rango1: 0, rango2: 1000000, valor: 0.10, descripcion: "Primera fila (0.10 por millar)" },
+                { rango1: 1000000.01, rango2: 9999999999, valor: 0.01, descripcion: "Resto (0.01 por millar)" }
+            ];
+            
+            let impuestoTotal = 0;
+            let valorRestante = valorVentas;
+            const detalle = [];
+            
+            for (const tarifa of tarifas) {
+                if (valorRestante <= 0) break;
+                
+                const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                if (diferencialRango <= 0) continue;
+                
+                let valorAplicable;
+                if (valorRestante <= diferencialRango) {
+                    valorAplicable = valorRestante;
+                    valorRestante = 0;
+                } else {
+                    valorAplicable = diferencialRango;
+                    valorRestante -= diferencialRango;
+                }
+                
+                const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+                impuestoTotal += impuestoRango;
+                
+                detalle.push({
+                    rango: `$${tarifa.rango1.toLocaleString()} - $${tarifa.rango2.toLocaleString()}`,
+                    valorAplicable: valorAplicable,
+                    tarifa: tarifa.valor,
+                    impuesto: impuestoRango,
+                    calculo: `L. ${valorAplicable.toLocaleString()} ÷ 1000 × ${tarifa.valor} = L. ${impuestoRango.toFixed(2)}`,
+                    descripcion: tarifa.descripcion
+                });
+            }
+            
+            return {
+                impuestoTotal: Math.round(impuestoTotal * 100) / 100,
+                detalle: detalle
+            };
+        }
+        
+        function calcularConTarifasCorrectas() {
+            const valorOriginal = document.getElementById('valor-test').value;
+            const valorParseado = parsearValor(valorOriginal);
+            
+            console.log(`🔍 Valor original: "${valorOriginal}"`);
+            console.log(`🔍 Valor parseado: ${valorParseado}`);
+            
+            const resultado = calcularImpuestoControlados(valorParseado);
+            
+            document.getElementById('resultado-calculo').value = `L. ${resultado.impuestoTotal.toFixed(2)}`;
+            
+            const desglose = document.getElementById('desglose-calculo');
+            let html = `
+                <div class="alert alert-info">
+                    <h6>📊 Cálculo Detallado:</h6>
+                    <p><strong>Valor Original:</strong> "${valorOriginal}"</p>
+                    <p><strong>Valor Parseado:</strong> ${valorParseado.toLocaleString()}</p>
+                    <p><strong>Impuesto Total:</strong> L. ${resultado.impuestoTotal.toFixed(2)}</p>
+                </div>
+            `;
+            
+            if (resultado.detalle.length > 0) {
+                html += '<h6>🧮 Desglose por Rangos:</h6>';
+                resultado.detalle.forEach((item, index) => {
+                    html += `
+                        <div class="alert alert-light">
+                            <strong>Línea ${index + 1}:</strong> ${item.descripcion}<br>
+                            <strong>Cálculo:</strong> ${item.calculo}
+                        </div>
+                    `;
+                });
+            }
+            
+            desglose.innerHTML = html;
+        }
+        
+        function probarCaso(valor) {
+            document.getElementById('valor-test').value = valor.toLocaleString('en-US', {minimumFractionDigits: 2});
+            calcularConTarifasCorrectas();
+        }
+        
+        // Verificación del caso problemático específico
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Test de tarifas controlados inicializado');
+            console.log('📋 Caso problemático: 50,000.00 debe dar L. 5.00');
+            console.log('📋 Cálculo: 50,000 ÷ 1000 × 0.10 = 5.00');
+        });
+    </script>
+</body>
+</html>
+

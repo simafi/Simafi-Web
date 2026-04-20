@@ -1,0 +1,82 @@
+SOLUCIÓN IMPLEMENTADA: IMPUESTOS INDEPENDIENTES CON SUMA TOTAL
+================================================================
+
+PROBLEMA IDENTIFICADO:
+- Los cálculos individuales estaban bien
+- El problema estaba en la suma cuando se combinaban los valores
+- El usuario requería que cada campo calcule su impuesto independientemente
+- El campo "Impuesto Calculado" debe mostrar la suma de todos los impuestos independientes
+
+SOLUCIÓN IMPLEMENTADA:
+
+1. 🔄 CÁLCULO INDEPENDIENTE POR CAMPO:
+   - Cada campo (ventai, ventac, ventas, controlado, unidad, factor) calcula su impuesto por separado
+   - No hay interferencia entre cálculos
+   - Cada campo mantiene su lógica específica
+
+2. 🧮 LÓGICA DE CÁLCULO:
+   - Ventas Rubro Producción: usa tarifas ICS normales (0.3/1000, 0.4/1000, 0.3/1000)
+   - Ventas Mercadería: usa tarifas ICS normales
+   - Ventas por Servicios: usa tarifas ICS normales
+   - Ventas Productos Controlados: usa tarifas especiales (1.0/1000, 1.5/1000, 2.0/1000)
+   - Factor × Unidad: multiplicación simple (unidad × factor) redondeada a 2 decimales
+
+3. 🎯 SUMA TOTAL:
+   - El campo "Impuesto Calculado" muestra la suma de todos los impuestos independientes
+   - Se actualiza cada vez que se modifica cualquier campo
+   - Incluye Factor × Unidad como un impuesto independiente más
+
+4. 📊 FUNCIONES IMPLEMENTADAS:
+   - calcularEnTiempoReal(): calcula impuesto independiente y suma total
+   - obtenerValorCampo(): obtiene valor de un campo específico
+   - calcularImpuestoCampo(): calcula impuesto para un campo específico
+   - calcularSumaTotalIndependientes(): suma todos los impuestos independientes
+   - actualizarVariableOculta(): actualiza variables ocultas del formulario
+
+5. 🔍 LOGS DETALLADOS:
+   - Muestra cada cálculo independiente
+   - Muestra la suma paso a paso
+   - Identifica qué campo está calculando
+   - Verifica valores y tipos de datos
+
+EJEMPLOS DE FUNCIONAMIENTO:
+
+CASO 1: Solo Ventas Rubro Producción (500,000)
+- Impuesto: 500,000 × 0.3/1000 = 150.00
+- Total: L. 150.00
+
+CASO 2: Solo Productos Controlados (500,000)
+- Impuesto: 500,000 × 1.0/1000 = 500.00
+- Total: L. 500.00
+
+CASO 3: Solo Factor × Unidad (500 × 1)
+- Impuesto: 500 × 1 = 500.00
+- Total: L. 500.00
+
+CASO 4: COMBINADO
+- Ventas Rubro Producción: L. 150.00
+- Ventas Mercadería: L. 90.00
+- Ventas por Servicios: L. 60.00
+- Productos Controlados: L. 500.00
+- Factor × Unidad: L. 500.00
+- SUMA TOTAL: L. 1,300.00
+
+VERIFICACIÓN:
+✅ Cada campo calcula su impuesto independientemente
+✅ El campo "Impuesto Calculado" muestra la suma correcta
+✅ Factor × Unidad se incluye como impuesto independiente
+✅ Los logs muestran cada cálculo paso a paso
+✅ No hay interferencia entre cálculos
+
+ARCHIVOS MODIFICADOS:
+- venv/Scripts/tributario/tributario_app/templates/declaracion_volumen.html
+  - Función calcularEnTiempoReal() modificada
+  - Nuevas funciones: obtenerValorCampo(), calcularImpuestoCampo(), calcularSumaTotalIndependientes()
+  - Logs detallados agregados
+
+ARCHIVOS DE TEST CREADOS:
+- test_impuestos_independientes.py: Test automatizado que verifica la funcionalidad
+- test_caso_500000.html: Test interactivo para el caso específico
+- test_suma_especifica.py: Test de suma matemática
+
+ESTADO: ✅ IMPLEMENTADO Y VERIFICADO

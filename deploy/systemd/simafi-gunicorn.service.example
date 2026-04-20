@@ -1,0 +1,23 @@
+# Copiar a /etc/systemd/system/simafi-gunicorn.service y adaptar rutas de usuario/proyecto.
+# sudo systemctl daemon-reload && sudo systemctl enable --now simafi-gunicorn
+
+[Unit]
+Description=SIMAFI Web (Gunicorn)
+After=network.target mysql.service mariadb.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+RuntimeDirectory=gunicorn
+WorkingDirectory=/srv/simafi/venv/Scripts/tributario
+EnvironmentFile=-/etc/simafi.env
+Environment=PYTHONPATH=/srv/simafi/venv/Scripts
+ExecStart=/srv/simafi/venv/bin/gunicorn \
+    -c /srv/simafi/deploy/gunicorn.conf.py \
+    tributario_app.wsgi:application
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

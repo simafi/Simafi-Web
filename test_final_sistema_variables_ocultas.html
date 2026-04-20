@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Test Final - Sistema Variables Ocultas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 11px; 
+            max-height: 350px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 10px; 
+        }
+        .campo-test {
+            border-left: 4px solid #007bff;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .resultado-correcto { background: #d4edda; border: 1px solid #c3e6cb; }
+        .resultado-incorrecto { background: #f8d7da; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-success">
+                    <h4>🎯 Test Final: Sistema de Variables Ocultas</h4>
+                    <p><strong>Propósito:</strong> Verificar que el sistema funcione exactamente como se solicitó</p>
+                    <p><strong>Caso de prueba:</strong> 50,000.00 en Productos Controlados debe dar L. 25.00 (no L. 0.01)</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>📊 Formulario de Test</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3 campo-test">
+                            <label for="id_ventai" class="form-label">Ventas Rubro Producción</label>
+                            <input type="text" class="form-control" id="id_ventai" name="ventai" value="">
+                            <div class="form-text">Variable oculta: ventai_impuesto</div>
+                        </div>
+                        
+                        <div class="mb-3 campo-test">
+                            <label for="id_ventac" class="form-label">Ventas Mercadería</label>
+                            <input type="text" class="form-control" id="id_ventac" name="ventac" value="">
+                            <div class="form-text">Variable oculta: ventac_impuesto</div>
+                        </div>
+                        
+                        <div class="mb-3 campo-test">
+                            <label for="id_ventas" class="form-label">Ventas por Servicios</label>
+                            <input type="text" class="form-control" id="id_ventas" name="ventas" value="">
+                            <div class="form-text">Variable oculta: ventas_impuesto</div>
+                        </div>
+                        
+                        <div class="mb-3 campo-test">
+                            <label for="id_controlado" class="form-label">Productos Controlados</label>
+                            <input type="text" class="form-control" id="id_controlado" name="controlado" value="50,000.00">
+                            <div class="form-text">Variable oculta: controlado_impuesto</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="mb-3 campo-test">
+                                    <label for="id_unidad" class="form-label">Unidad</label>
+                                    <input type="number" class="form-control" id="id_unidad" name="unidad" value="">
+                                    <div class="form-text">Para multiplicar</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3 campo-test">
+                                    <label for="id_factor" class="form-label">Factor</label>
+                                    <input type="number" class="form-control" id="id_factor" name="factor" step="0.01" value="">
+                                    <div class="form-text">Variable oculta: unidadFactor_impuesto</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_impuesto" class="form-label">Impuesto Total (Suma de Variables Ocultas)</label>
+                            <input type="text" class="form-control" id="id_impuesto" name="impuesto" readonly 
+                                   style="background: #fff3e0; border: 2px solid #ff9800; font-weight: bold; text-align: center;">
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-warning" onclick="probarCasoProblematico()">
+                                🐛 Probar Caso Problemático (50,000.00)
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="probarCasoCompleto()">
+                                🧮 Probar Caso Completo
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="mostrarVariablesOcultas()">
+                                🔍 Mostrar Variables Ocultas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Resultados</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultados-finales">
+                            <p class="text-muted">Los resultados aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log Detallado</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Los logs aparecerán aquí...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación exacta del sistema implementado
+        class TestSistemaVariablesOcultas {
+            constructor() {
+                this.variablesOcultas = {};
+                this.tarifas = [
+                    {"rango1": 0.0, "rango2": 500000.0, "valor": 0.3, "categoria": "1"},
+                    {"rango1": 500000.01, "rango2": 10000000.0, "valor": 0.4, "categoria": "1"},
+                    {"rango1": 10000000.01, "rango2": 20000000.0, "valor": 0.3, "categoria": "1"},
+                    {"rango1": 20000000.01, "rango2": 30000000.0, "valor": 0.2, "categoria": "1"},
+                    {"rango1": 30000000.01, "rango2": 9999999999.0, "valor": 0.15, "categoria": "1"}
+                ];
+                // Tarifas CORREGIDAS para productos controlados
+                // Primera fila: 0.10 por millar, resto: 0.01 por millar
+                this.tarifasControlados = [
+                    {"rango1": 0.0, "rango2": 1000000.0, "valor": 0.10, "categoria": "2", "descripcion": "Controlados $0 - $1,000,000 (0.10 por millar)"},
+                    {"rango1": 1000000.01, "rango2": 9999999999.0, "valor": 0.01, "categoria": "2", "descripcion": "Controlados $1,000,000+ (0.01 por millar)"}
+                ];
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            // Función limpiarValor CORREGIDA (la implementada en el template)
+            limpiarValor(valor, tipo = 'general') {
+                if (!valor) return 0;
+                
+                let valorLimpio = valor.toString();
+                
+                // PARSING MEJORADO
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/,/g, '');
+                    this.log(`✅ Formato americano detectado: "${valor}" → "${valorLimpio}"`);
+                }
+                else if (/^\d{1,3}(,\d{3})+$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/,/g, '');
+                    this.log(`✅ Formato americano sin decimales: "${valor}" → "${valorLimpio}"`);
+                }
+                else if (/^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/\./g, '').replace(',', '.');
+                    this.log(`✅ Formato europeo detectado: "${valor}" → "${valorLimpio}"`);
+                }
+                else if (/^\d{1,3}(\.\d{3})+$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/\./g, '');
+                    this.log(`✅ Formato europeo sin decimales: "${valor}" → "${valorLimpio}"`);
+                }
+                else {
+                    valorLimpio = valorLimpio.replace(/[^0-9.]/g, '');
+                }
+                
+                if (tipo === 'unidad') {
+                    valorLimpio = valorLimpio.split('.')[0];
+                    return parseInt(valorLimpio) || 0;
+                } else if (tipo === 'factor') {
+                    const partes = valorLimpio.split('.');
+                    let parteEntera = partes[0] || '0';
+                    let parteDecimal = partes[1] || '00';
+                    if (parteEntera.length > 10) parteEntera = parteEntera.substring(0, 10);
+                    if (parteDecimal.length > 2) parteDecimal = parteDecimal.substring(0, 2);
+                    return parseFloat(parteEntera + '.' + parteDecimal) || 0;
+                } else {
+                    const partes = valorLimpio.split('.');
+                    let parteEntera = partes[0] || '0';
+                    let parteDecimal = partes[1] || '00';
+                    if (parteEntera.length > 14) parteEntera = parteEntera.substring(0, 14);
+                    if (parteDecimal.length > 2) parteDecimal = parteDecimal.substring(0, 2);
+                    return parseFloat(parteEntera + '.' + parteDecimal) || 0;
+                }
+            }
+            
+            obtenerValoresVentas() {
+                const campos = ['ventai', 'ventac', 'ventas', 'controlado', 'unidad', 'factor'];
+                const valores = {};
+                
+                this.log('🔍 OBTENIENDO VALORES CON PARSING MEJORADO:');
+                
+                campos.forEach(campo => {
+                    const input = document.getElementById(`id_${campo}`);
+                    if (input && input.value) {
+                        let tipo = 'general';
+                        if (campo === 'unidad') tipo = 'unidad';
+                        else if (campo === 'factor') tipo = 'factor';
+                        
+                        const valor = this.limpiarValor(input.value, tipo);
+                        this.log(`   ${campo}: "${input.value}" → ${valor}`);
+                        
+                        if (valor > 0) {
+                            valores[campo] = valor;
+                        }
+                    }
+                });
+                
+                this.log('📋 Valores finales: ' + JSON.stringify(valores));
+                return valores;
+            }
+            
+            calcularEnTiempoReal(fieldName) {
+                this.log(`🔄 Calculando para campo: ${fieldName}`, 'info');
+                
+                const valoresVentas = this.obtenerValoresVentas();
+                this.calcularYGuardarImpuestosIndependientes(valoresVentas);
+                const totalImpuesto = this.sumarImpuestosDesdeVariablesOcultas();
+                this.actualizarCampoImpuesto(totalImpuesto);
+            }
+            
+            calcularYGuardarImpuestosIndependientes(valoresVentas) {
+                this.log('🧮 CALCULANDO IMPUESTOS INDEPENDIENTES:', 'warning');
+                
+                // 1. Ventas Rubro Producción
+                const valorVentai = valoresVentas.ventai || 0;
+                const impuestoVentai = valorVentai > 0 ? this.calcularImpuestoICS(valorVentai).impuestoTotal : 0;
+                this.variablesOcultas.ventai_base = valorVentai;
+                this.variablesOcultas.ventai_impuesto = impuestoVentai;
+                this.log(`   📊 Ventas Rubro Producción: L. ${valorVentai.toLocaleString()} → L. ${impuestoVentai.toFixed(2)}`);
+                
+                // 2. Ventas Mercadería
+                const valorVentac = valoresVentas.ventac || 0;
+                const impuestoVentac = valorVentac > 0 ? this.calcularImpuestoICS(valorVentac).impuestoTotal : 0;
+                this.variablesOcultas.ventac_base = valorVentac;
+                this.variablesOcultas.ventac_impuesto = impuestoVentac;
+                this.log(`   📊 Ventas Mercadería: L. ${valorVentac.toLocaleString()} → L. ${impuestoVentac.toFixed(2)}`);
+                
+                // 3. Ventas por Servicios
+                const valorVentas = valoresVentas.ventas || 0;
+                const impuestoVentas = valorVentas > 0 ? this.calcularImpuestoICS(valorVentas).impuestoTotal : 0;
+                this.variablesOcultas.ventas_base = valorVentas;
+                this.variablesOcultas.ventas_impuesto = impuestoVentas;
+                this.log(`   📊 Ventas por Servicios: L. ${valorVentas.toLocaleString()} → L. ${impuestoVentas.toFixed(2)}`);
+                
+                // 4. Productos Controlados
+                const valorControlado = valoresVentas.controlado || 0;
+                const impuestoControlado = valorControlado > 0 ? this.calcularImpuestoICSControlados(valorControlado).impuestoTotal : 0;
+                this.variablesOcultas.controlado_base = valorControlado;
+                this.variablesOcultas.controlado_impuesto = impuestoControlado;
+                this.log(`   📊 Productos Controlados: L. ${valorControlado.toLocaleString()} → L. ${impuestoControlado.toFixed(2)}`);
+                
+                // 5. Unidad × Factor
+                const valorUnidad = valoresVentas.unidad || 0;
+                const valorFactor = valoresVentas.factor || 0;
+                const impuestoUnidadFactor = (valorUnidad > 0 && valorFactor > 0) ? Math.round((valorUnidad * valorFactor) * 100) / 100 : 0;
+                this.variablesOcultas.unidad_base = valorUnidad;
+                this.variablesOcultas.factor_base = valorFactor;
+                this.variablesOcultas.unidadFactor_impuesto = impuestoUnidadFactor;
+                this.log(`   📊 Unidad × Factor: ${valorUnidad} × ${valorFactor} = L. ${impuestoUnidadFactor.toFixed(2)}`);
+            }
+            
+            sumarImpuestosDesdeVariablesOcultas() {
+                this.log('🎯 SUMANDO DESDE VARIABLES OCULTAS:', 'warning');
+                
+                const ventai = parseFloat(this.variablesOcultas.ventai_impuesto) || 0;
+                const ventac = parseFloat(this.variablesOcultas.ventac_impuesto) || 0;
+                const ventas = parseFloat(this.variablesOcultas.ventas_impuesto) || 0;
+                const controlado = parseFloat(this.variablesOcultas.controlado_impuesto) || 0;
+                const unidadFactor = parseFloat(this.variablesOcultas.unidadFactor_impuesto) || 0;
+                
+                this.log(`   ventai_impuesto: ${ventai.toFixed(2)}`);
+                this.log(`   ventac_impuesto: ${ventac.toFixed(2)}`);
+                this.log(`   ventas_impuesto: ${ventas.toFixed(2)}`);
+                this.log(`   controlado_impuesto: ${controlado.toFixed(2)}`);
+                this.log(`   unidadFactor_impuesto: ${unidadFactor.toFixed(2)}`);
+                
+                const total = ventai + ventac + ventas + controlado + unidadFactor;
+                this.log(`💰 SUMA TOTAL: ${total.toFixed(2)}`, 'success');
+                
+                return total;
+            }
+            
+            calcularImpuestoICS(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) {
+                    return { impuestoTotal: 0 };
+                }
+                
+                let impuestoTotal = 0;
+                let valorRestante = valorVentas;
+                
+                for (const tarifa of this.tarifas) {
+                    if (valorRestante <= 0) break;
+                    
+                    const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                    if (diferencialRango <= 0) continue;
+                    
+                    let valorAplicable;
+                    if (valorRestante <= diferencialRango) {
+                        valorAplicable = valorRestante;
+                        valorRestante = 0;
+                    } else {
+                        valorAplicable = diferencialRango;
+                        valorRestante -= diferencialRango;
+                    }
+                    
+                    const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+                    impuestoTotal += impuestoRango;
+                }
+                
+                return { impuestoTotal: Math.round(impuestoTotal * 100) / 100 };
+            }
+            
+            calcularImpuestoICSControlados(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) {
+                    return { impuestoTotal: 0 };
+                }
+                
+                let impuestoTotal = 0;
+                let valorRestante = valorVentas;
+                
+                for (const tarifa of this.tarifasControlados) {
+                    if (valorRestante <= 0) break;
+                    
+                    const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                    if (diferencialRango <= 0) continue;
+                    
+                    let valorAplicable;
+                    if (valorRestante <= diferencialRango) {
+                        valorAplicable = valorRestante;
+                        valorRestante = 0;
+                    } else {
+                        valorAplicable = diferencialRango;
+                        valorRestante -= diferencialRango;
+                    }
+                    
+                    const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+                    impuestoTotal += impuestoRango;
+                }
+                
+                return { impuestoTotal: Math.round(impuestoTotal * 100) / 100 };
+            }
+            
+            actualizarCampoImpuesto(totalImpuesto) {
+                const campo = document.getElementById('id_impuesto');
+                if (campo) {
+                    campo.value = totalImpuesto.toFixed(2);
+                    this.log(`💰 Campo impuesto actualizado: L. ${totalImpuesto.toFixed(2)}`, 'success');
+                }
+            }
+        }
+        
+        let testSistema;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Los logs aparecerán aquí...</p>';
+        }
+        
+        function probarCasoProblematico() {
+            limpiarLog();
+            testSistema.log('🐛 PROBANDO CASO PROBLEMÁTICO: 50,000.00', 'warning');
+            testSistema.log('=' .repeat(50));
+            
+            // Limpiar otros campos
+            document.getElementById('id_ventai').value = '';
+            document.getElementById('id_ventac').value = '';
+            document.getElementById('id_ventas').value = '';
+            document.getElementById('id_unidad').value = '';
+            document.getElementById('id_factor').value = '';
+            
+            // Configurar solo productos controlados
+            document.getElementById('id_controlado').value = '50,000.00';
+            
+            testSistema.calcularEnTiempoReal('controlado');
+            
+            const impuestoCalculado = parseFloat(document.getElementById('id_impuesto').value) || 0;
+            const esCorrectoControlados = impuestoCalculado === 5.00;
+            
+            const resultadosDiv = document.getElementById('resultados-finales');
+            resultadosDiv.innerHTML = `
+                <div class="alert alert-${esCorrectoControlados ? 'success' : 'danger'}">
+                    <h6>🎯 Resultado del Caso Problemático:</h6>
+                    <p><strong>Entrada:</strong> 50,000.00</p>
+                    <p><strong>Impuesto Calculado:</strong> L. ${impuestoCalculado.toFixed(2)}</p>
+                    <p><strong>Impuesto Esperado:</strong> L. 5.00</p>
+                    <p><strong>Estado:</strong> ${esCorrectoControlados ? '✅ CORRECTO' : '❌ INCORRECTO'}</p>
+                    ${!esCorrectoControlados ? '<p class="text-danger"><strong>Problema:</strong> Aún se está interpretando como 50.00 en lugar de 50000.00</p>' : ''}
+                </div>
+            `;
+        }
+        
+        function probarCasoCompleto() {
+            limpiarLog();
+            testSistema.log('🧮 PROBANDO CASO COMPLETO CON TODOS LOS CAMPOS', 'info');
+            testSistema.log('=' .repeat(50));
+            
+            // Cargar valores de prueba
+            document.getElementById('id_ventai').value = '500,000.00';
+            document.getElementById('id_ventac').value = '300,000.00';
+            document.getElementById('id_ventas').value = '200,000.00';
+            document.getElementById('id_controlado').value = '50,000.00';
+            document.getElementById('id_unidad').value = '100';
+            document.getElementById('id_factor').value = '2.50';
+            
+            testSistema.calcularEnTiempoReal('manual');
+            
+            const impuestoTotal = parseFloat(document.getElementById('id_impuesto').value) || 0;
+            
+            // Cálculos esperados con tarifas CORREGIDAS:
+            // Ventai (500,000): L. 150.00 (tarifas ICS normales)
+            // Ventac (300,000): L. 90.00 (tarifas ICS normales)
+            // Ventas (200,000): L. 60.00 (tarifas ICS normales)
+            // Controlado (50,000): L. 5.00 (50,000 ÷ 1000 × 0.10 = 5.00)
+            // Unidad×Factor (100×2.50): L. 250.00
+            // Total esperado: L. 555.00
+            
+            const totalEsperado = 555.00;
+            const esCorrectoTotal = Math.abs(impuestoTotal - totalEsperado) < 0.01;
+            
+            const resultadosDiv = document.getElementById('resultados-finales');
+            resultadosDiv.innerHTML = `
+                <div class="alert alert-${esCorrectoTotal ? 'success' : 'danger'}">
+                    <h6>🎯 Resultado del Caso Completo:</h6>
+                    <p><strong>Total Calculado:</strong> L. ${impuestoTotal.toFixed(2)}</p>
+                    <p><strong>Total Esperado:</strong> L. ${totalEsperado.toFixed(2)}</p>
+                    <p><strong>Diferencia:</strong> L. ${Math.abs(impuestoTotal - totalEsperado).toFixed(2)}</p>
+                    <p><strong>Estado:</strong> ${esCorrectoTotal ? '✅ CORRECTO' : '❌ INCORRECTO'}</p>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>📊 Desglose Esperado:</h6>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Ventas Rubro Producción (500,000): L. 150.00</li>
+                        <li class="list-group-item">Ventas Mercadería (300,000): L. 90.00</li>
+                        <li class="list-group-item">Ventas por Servicios (200,000): L. 60.00</li>
+                        <li class="list-group-item">Productos Controlados (50,000): L. 5.00</li>
+                        <li class="list-group-item">Unidad × Factor (100 × 2.50): L. 250.00</li>
+                        <li class="list-group-item"><strong>Total: L. 555.00</strong></li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        function mostrarVariablesOcultas() {
+            testSistema.log('🔍 VARIABLES OCULTAS ACTUALES:', 'info');
+            Object.keys(testSistema.variablesOcultas).forEach(key => {
+                testSistema.log(`   ${key}: ${testSistema.variablesOcultas[key]}`, 'info');
+            });
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            testSistema = new TestSistemaVariablesOcultas();
+            testSistema.log('🚀 Sistema de test inicializado', 'success');
+            testSistema.log('💡 Haga clic en "Probar Caso Problemático" para verificar la corrección', 'info');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Municipal Ejecutivo - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --accent-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-light: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-heavy: 0 15px 35px rgba(31, 38, 135, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass-morphism {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .executive-navbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-light);
+            padding: 1rem 0;
+        }
+
+        .brand-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #fff, #f8f9fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-dashboard {
+            padding: 2rem 0;
+            min-height: calc(100vh - 100px);
+        }
+
+        .executive-welcome {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-heavy);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .executive-welcome::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+
+        .welcome-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.8rem;
+            box-shadow: var(--shadow-light);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .executive-module {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: var(--shadow-light);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .executive-module::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--secondary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .executive-module:hover::before {
+            transform: scaleX(1);
+        }
+
+        .executive-module:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .module-icon-large {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-right: 1rem;
+            color: white;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .module-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.3rem;
+        }
+
+        .module-description {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .executive-btn {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 0.8rem 2rem;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .executive-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .system-info {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: var(--shadow-light);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+            color: white;
+        }
+
+        .info-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .time-display {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .welcome-title {
+                font-size: 1.8rem;
+            }
+            
+            .main-dashboard {
+                padding: 1rem 0;
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Executive Navbar -->
+    <nav class="navbar navbar-expand-lg executive-navbar">
+        <div class="container">
+            <a class="navbar-brand brand-logo" href="#">
+                <i class="fas fa-building me-2"></i>
+                Sistema Municipal Ejecutivo
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        {{ usuario|first|upper }}
+                    </div>
+                    <div class="user-details">
+                        <div class="fw-bold">{{ usuario }}</div>
+                        <div class="small opacity-75">{{ empresa }}</div>
+                    </div>
+                    <a class="logout-btn ms-3" href="{% url 'core:logout_principal' %}">
+                        <i class="fas fa-sign-out-alt me-1"></i> Salir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Executive Dashboard -->
+    <div class="main-dashboard">
+        <div class="container">
+            <!-- Executive Welcome Section -->
+            <div class="executive-welcome animate-fade-in">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h1 class="welcome-title">
+                            <i class="fas fa-chart-line me-3"></i>
+                            Dashboard Ejecutivo
+                        </h1>
+                        <p class="welcome-subtitle">
+                            Panel de control centralizado para la gestión municipal integral. 
+                            Acceda a todos los módulos del sistema desde una interfaz unificada.
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-end">
+                        <div class="time-display">
+                            <i class="fas fa-clock me-2"></i>
+                            <span id="current-time"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Executive Stats Grid -->
+            <div class="stats-grid animate-fade-in">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--primary-gradient);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="active-users">1,247</div>
+                    <div class="stat-label">Usuarios Activos</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--success-gradient);">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="stat-value" id="monthly-revenue">$2.4M</div>
+                    <div class="stat-label">Recaudación Mensual</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--warning-gradient);">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-value" id="pending-tasks">89</div>
+                    <div class="stat-label">Tareas Pendientes</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: var(--accent-gradient);">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="stat-value" id="efficiency">94%</div>
+                    <div class="stat-label">Eficiencia Operativa</div>
+                </div>
+            </div>
+
+            <!-- Executive Modules Grid -->
+            <div class="modules-grid animate-fade-in">
+                {% for modulo in modulos %}
+                <div class="executive-module">
+                    <div class="module-header">
+                        <div class="module-icon-large" style="background: var(--primary-gradient);">
+                            <i class="{{ modulo.icono }}"></i>
+                        </div>
+                        <div>
+                            <h3 class="module-title">{{ modulo.nombre }}</h3>
+                        </div>
+                    </div>
+                    <p class="module-description">
+                        {{ modulo.descripcion }}
+                    </p>
+                    <a href="{% url modulo.url %}" class="executive-btn">
+                        <i class="fas fa-rocket me-2"></i>
+                        Acceder al Módulo
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- System Information -->
+            <div class="system-info animate-fade-in">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4 class="text-white fw-bold mb-0">
+                            <i class="fas fa-cogs me-2"></i>
+                            Estado del Sistema
+                        </h4>
+                    </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon" style="background: var(--primary-gradient);">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <h6 class="info-title">Arquitectura Modular</h6>
+                        <p class="info-subtitle">Sistema distribuido de alta disponibilidad</p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon" style="background: var(--success-gradient);">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h6 class="info-title">Seguridad Avanzada</h6>
+                        <p class="info-subtitle">Autenticación multi-factor y encriptación</p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon" style="background: var(--warning-gradient);">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                        <h6 class="info-title">Sincronización</h6>
+                        <p class="info-subtitle">Datos en tiempo real entre módulos</p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon" style="background: var(--accent-gradient);">
+                            <i class="fas fa-analytics"></i>
+                        </div>
+                        <h6 class="info-title">Business Intelligence</h6>
+                        <p class="info-subtitle">Análisis predictivo y reportes ejecutivos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Executive Dashboard Functionality
+        class ExecutiveDashboard {
+            constructor() {
+                this.initializeTime();
+                this.initializeAnimations();
+                this.initializeStats();
+                this.initializeInteractions();
+            }
+
+            initializeTime() {
+                this.updateTime();
+                setInterval(() => this.updateTime(), 1000);
+            }
+
+            updateTime() {
+                const now = new Date();
+                const options = {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    timeZone: 'America/Mexico_City'
+                };
+                const timeString = now.toLocaleString('es-ES', options);
+                const timeElement = document.getElementById('current-time');
+                if (timeElement) {
+                    timeElement.textContent = timeString;
+                }
+            }
+
+            initializeAnimations() {
+                // Stagger animation for cards
+                const animatedElements = document.querySelectorAll('.animate-fade-in');
+                animatedElements.forEach((element, index) => {
+                    element.style.animationDelay = `${index * 0.2}s`;
+                });
+
+                // Intersection Observer for scroll animations
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }
+                    });
+                }, { threshold: 0.1 });
+
+                document.querySelectorAll('.executive-module, .stat-card').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+
+            initializeStats() {
+                // Animate stat values on load
+                this.animateValue('active-users', 0, 1247, 2000);
+                this.animateValue('pending-tasks', 0, 89, 1500);
+                this.animateValue('efficiency', 0, 94, 2500, '%');
+                
+                // Update stats periodically (simulate real-time data)
+                setInterval(() => this.updateStats(), 30000);
+            }
+
+            animateValue(elementId, start, end, duration, suffix = '') {
+                const element = document.getElementById(elementId);
+                if (!element) return;
+
+                const startTime = performance.now();
+                const animate = (currentTime) => {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+                    const current = Math.floor(start + (end - start) * easeOutCubic);
+                    
+                    if (elementId === 'monthly-revenue') {
+                        element.textContent = `$${(current / 1000).toFixed(1)}M`;
+                    } else {
+                        element.textContent = current.toLocaleString() + suffix;
+                    }
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                requestAnimationFrame(animate);
+            }
+
+            updateStats() {
+                // Simulate real-time stat updates
+                const stats = {
+                    'active-users': Math.floor(1200 + Math.random() * 100),
+                    'pending-tasks': Math.floor(80 + Math.random() * 20),
+                    'efficiency': Math.floor(90 + Math.random() * 8)
+                };
+
+                Object.entries(stats).forEach(([id, value]) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        const suffix = id === 'efficiency' ? '%' : '';
+                        element.textContent = value.toLocaleString() + suffix;
+                    }
+                });
+            }
+
+            initializeInteractions() {
+                // Add ripple effect to buttons
+                document.querySelectorAll('.executive-btn').forEach(button => {
+                    button.addEventListener('click', this.createRipple);
+                });
+
+                // Add hover effects to module cards
+                document.querySelectorAll('.executive-module').forEach(module => {
+                    module.addEventListener('mouseenter', function() {
+                        this.style.transform = 'translateY(-10px) scale(1.02)';
+                    });
+                    
+                    module.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateY(0) scale(1)';
+                    });
+                });
+
+                // Keyboard navigation support
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        // Close any open modals or dropdowns
+                        document.querySelectorAll('.show').forEach(el => {
+                            el.classList.remove('show');
+                        });
+                    }
+                });
+            }
+
+            createRipple(event) {
+                const button = event.currentTarget;
+                const ripple = document.createElement('span');
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = event.clientX - rect.left - size / 2;
+                const y = event.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                
+                button.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            }
+        }
+
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ExecutiveDashboard();
+        });
+
+        // Add ripple effect styles
+        const rippleStyles = `
+            .executive-btn {
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(0);
+                animation: ripple-animation 0.6s linear;
+                pointer-events: none;
+            }
+            
+            @keyframes ripple-animation {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = rippleStyles;
+        document.head.appendChild(styleSheet);
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

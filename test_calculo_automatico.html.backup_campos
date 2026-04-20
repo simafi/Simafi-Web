@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Cálculo Automático ICS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .campo-calculado {
+            border-left: 4px solid #28a745 !important;
+            background-color: #f8fff8 !important;
+        }
+        .resultado-calculo {
+            background-color: #e8f5e8 !important;
+            font-weight: bold;
+            color: #155724;
+            font-size: 1.2em;
+            border: 2px solid #28a745;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        .test-result {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .calculation-log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .tarifa-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .feedback-visual {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            min-width: 250px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="text-center mb-4">
+            <h1 class="display-4">🧪 Test Cálculo Automático ICS</h1>
+            <p class="lead">Prueba el sistema de cálculo interactivo para declaración de volumen</p>
+        </div>
+
+        <!-- Información de Tarifas -->
+        <div class="test-section">
+            <h3>📊 Tarifas ICS Configuradas</h3>
+            <div class="tarifa-info">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Rangos Progresivos:</strong>
+                        <ul class="mb-0">
+                            <li>$0 - $500,000: 0.3‰</li>
+                            <li>$500,000 - $10,000,000: 0.4‰</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="mb-0">
+                            <li>$10,000,000 - $20,000,000: 0.3‰</li>
+                            <li>$20,000,000 - $30,000,000: 0.2‰</li>
+                            <li>$30,000,000 - $9,999,999,999: 0.15‰</li>
+                        </ul>
+                        <small class="text-muted">‰ = por mil</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de Test -->
+        <div class="test-section">
+            <h3>💰 Formulario de Prueba - Declaración Volumen</h3>
+            <form id="test-form">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_ventai" class="form-label">Ventas Industria</label>
+                            <input type="text" class="form-control campo-calculado" id="id_ventai" name="ventai" placeholder="Ej: 1500000">
+                            <div class="form-text">Ingrese valor y vea el cálculo automático</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_ventac" class="form-label">Ventas Comercio</label>
+                            <input type="text" class="form-control campo-calculado" id="id_ventac" name="ventac" placeholder="Ej: 2500000">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_ventas" class="form-label">Ventas Servicios</label>
+                            <input type="text" class="form-control campo-calculado" id="id_ventas" name="ventas" placeholder="Ej: 3000000">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_ventap" class="form-label"><strong>Ventas Rubro Producción</strong></label>
+                            <input type="text" class="form-control campo-calculado" id="id_ventap" name="ventap" placeholder="Ej: 8000000">
+                            <div class="form-text text-success"><strong>Campo principal solicitado</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campo Impuesto Calculado -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label for="id_impuesto" class="form-label"><strong>💎 Impuesto Calculado (Campo tabla 'declara')</strong></label>
+                            <input type="text" class="form-control resultado-calculo" id="id_impuesto" name="impuesto" readonly>
+                            <div class="form-text">Este campo se actualiza automáticamente y se guarda en tabla 'declara'</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Total Ventas</label>
+                            <input type="text" class="form-control" id="total_ventas" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="button" class="btn btn-primary btn-lg" onclick="recalcularManual()">
+                        🔄 Recalcular Manual
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg" onclick="probarCasosTest()">
+                        🧪 Casos de Prueba
+                    </button>
+                    <button type="button" class="btn btn-warning btn-lg" onclick="limpiarFormulario()">
+                        🗑️ Limpiar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Resultados del Test -->
+        <div class="test-section">
+            <h3>📋 Resultados del Cálculo</h3>
+            <div class="test-result">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Desglose por Tipo:</h5>
+                        <ul id="desglose-tipos" class="mb-0">
+                            <li>Industria: $<span id="impuesto-industria">0.00</span></li>
+                            <li>Comercio: $<span id="impuesto-comercio">0.00</span></li>
+                            <li>Servicios: $<span id="impuesto-servicios">0.00</span></li>
+                            <li><strong>Producción: $<span id="impuesto-produccion">0.00</span></strong></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Totales:</h5>
+                        <ul class="mb-0">
+                            <li>Total Ventas: $<span id="display-total-ventas">0.00</span></li>
+                            <li><strong>Total Impuesto: $<span id="display-total-impuesto">0.00</span></strong></li>
+                            <li>Tasa Efectiva: <span id="tasa-efectiva">0.00</span>‰</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log de Cálculos -->
+        <div class="test-section">
+            <h3>📝 Log de Cálculos</h3>
+            <div class="calculation-log" id="calculation-log">
+                <div class="text-muted">Los cálculos aparecerán aquí en tiempo real...</div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                Limpiar Log
+            </button>
+        </div>
+
+        <!-- Casos de Prueba Predefinidos -->
+        <div class="test-section">
+            <h3>🎯 Casos de Prueba Predefinidos</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <button class="btn btn-outline-primary w-100 mb-2" onclick="cargarCaso(1)">
+                        Caso 1: Rango Bajo<br>
+                        <small>$500,000</small>
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-primary w-100 mb-2" onclick="cargarCaso(2)">
+                        Caso 2: Rango Medio<br>
+                        <small>$7,500,000</small>
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-primary w-100 mb-2" onclick="cargarCaso(3)">
+                        Caso 3: Rango Alto<br>
+                        <small>$25,000,000</small>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="declaracion_volumen_interactivo.js"></script>
+    <script>
+        // Variables globales para el test
+        let logCalculos = [];
+
+        // Escuchar eventos de cálculo
+        document.addEventListener('calculoICSRealizado', function(event) {
+            const detalle = event.detail;
+            actualizarResultadosTest(detalle);
+            logearCalculo(detalle);
+        });
+
+        function actualizarResultadosTest(detalle) {
+            // Actualizar desglose por tipos
+            document.getElementById('impuesto-industria').textContent = detalle.resultados.industria.impuestoTotal.toFixed(2);
+            document.getElementById('impuesto-comercio').textContent = detalle.resultados.comercio.impuestoTotal.toFixed(2);
+            document.getElementById('impuesto-servicios').textContent = detalle.resultados.servicios.impuestoTotal.toFixed(2);
+            document.getElementById('impuesto-produccion').textContent = detalle.resultados.produccion.impuestoTotal.toFixed(2);
+
+            // Actualizar totales
+            document.getElementById('total_ventas').value = detalle.totalVentas.toLocaleString('es-CO');
+            document.getElementById('display-total-ventas').textContent = detalle.totalVentas.toLocaleString('es-CO');
+            document.getElementById('display-total-impuesto').textContent = detalle.totalImpuesto.toFixed(2);
+
+            // Calcular tasa efectiva
+            const tasaEfectiva = detalle.totalVentas > 0 ? (detalle.totalImpuesto / detalle.totalVentas * 1000) : 0;
+            document.getElementById('tasa-efectiva').textContent = tasaEfectiva.toFixed(2);
+        }
+
+        function logearCalculo(detalle) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] Campo: ${detalle.campo} | Ventas: $${detalle.totalVentas.toLocaleString('es-CO')} | Impuesto: $${detalle.totalImpuesto.toFixed(2)}`;
+            
+            logCalculos.unshift(logEntry);
+            if (logCalculos.length > 20) logCalculos.pop(); // Mantener solo últimos 20
+
+            const logContainer = document.getElementById('calculation-log');
+            logContainer.innerHTML = logCalculos.map(log => `<div>${log}</div>`).join('');
+        }
+
+        function recalcularManual() {
+            if (window.declaracionVolumenInteractivo) {
+                window.declaracionVolumenInteractivo.recalcular();
+                mostrarFeedback('🔄 Recálculo manual ejecutado');
+            }
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('test-form').reset();
+            document.getElementById('impuesto-industria').textContent = '0.00';
+            document.getElementById('impuesto-comercio').textContent = '0.00';
+            document.getElementById('impuesto-servicios').textContent = '0.00';
+            document.getElementById('impuesto-produccion').textContent = '0.00';
+            document.getElementById('display-total-ventas').textContent = '0.00';
+            document.getElementById('display-total-impuesto').textContent = '0.00';
+            document.getElementById('tasa-efectiva').textContent = '0.00';
+            mostrarFeedback('🗑️ Formulario limpiado');
+        }
+
+        function limpiarLog() {
+            logCalculos = [];
+            document.getElementById('calculation-log').innerHTML = '<div class="text-muted">Log limpiado...</div>';
+        }
+
+        function cargarCaso(caso) {
+            limpiarFormulario();
+            
+            switch(caso) {
+                case 1: // Rango bajo
+                    document.getElementById('id_ventap').value = '500000';
+                    break;
+                case 2: // Rango medio
+                    document.getElementById('id_ventai').value = '2000000';
+                    document.getElementById('id_ventac').value = '1500000';
+                    document.getElementById('id_ventas').value = '2000000';
+                    document.getElementById('id_ventap').value = '2000000';
+                    break;
+                case 3: // Rango alto
+                    document.getElementById('id_ventap').value = '25000000';
+                    break;
+            }
+            
+            // Disparar cálculo
+            setTimeout(() => {
+                if (window.declaracionVolumenInteractivo) {
+                    window.declaracionVolumenInteractivo.recalcular();
+                }
+            }, 100);
+            
+            mostrarFeedback(`🎯 Caso ${caso} cargado`);
+        }
+
+        function probarCasosTest() {
+            mostrarFeedback('🧪 Ejecutando casos de prueba...');
+            
+            // Caso 1
+            setTimeout(() => cargarCaso(1), 500);
+            setTimeout(() => cargarCaso(2), 2000);
+            setTimeout(() => cargarCaso(3), 3500);
+            setTimeout(() => mostrarFeedback('✅ Casos de prueba completados'), 5000);
+        }
+
+        function mostrarFeedback(mensaje) {
+            // Remover feedback anterior
+            const feedbackAnterior = document.querySelector('.feedback-visual');
+            if (feedbackAnterior) {
+                feedbackAnterior.remove();
+            }
+
+            // Crear nuevo feedback
+            const feedback = document.createElement('div');
+            feedback.className = 'feedback-visual';
+            feedback.innerHTML = `<strong>${mensaje}</strong>`;
+            document.body.appendChild(feedback);
+
+            // Auto-remover después de 3 segundos
+            setTimeout(() => {
+                if (feedback && feedback.parentNode) {
+                    feedback.style.opacity = '0';
+                    setTimeout(() => feedback.remove(), 300);
+                }
+            }, 3000);
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            mostrarFeedback('🚀 Test de cálculo automático iniciado');
+            
+            // Mensaje de instrucciones
+            setTimeout(() => {
+                mostrarFeedback('💡 Ingrese valores en los campos verdes para ver el cálculo automático');
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

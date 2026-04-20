@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Fix Productos Controlados</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-success">
+                    <h4>✅ Correcciones Aplicadas para Productos Controlados</h4>
+                    <ul>
+                        <li><strong>Backend:</strong> Corregido campo 'cocontrolado' → 'controlado' en views.py</li>
+                        <li><strong>JavaScript:</strong> Mejorado parsing de formatos numéricos para reconocer 50,000.00</li>
+                        <li><strong>Template HTML:</strong> Actualizada función obtenerValorCampo</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>🧪 Test de Formato de Decimales</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="id_controlado" class="form-label">Productos Controlados</label>
+                            <input type="text" class="form-control" id="id_controlado" name="controlado" 
+                                   placeholder="Ingrese: 50,000.00" value="">
+                            <div class="form-text">Pruebe con: 50,000.00, 1,500,000.50, etc.</div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary" onclick="testParsingFormatos()">
+                            🔍 Probar Parsing
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Resultados del Test</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultados-test">
+                            <p class="text-muted">Ingrese un valor y haga clic en "Probar Parsing"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>🧮 Cálculo de Impuestos - Productos Controlados</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="test-valor" class="form-label">Valor Productos Controlados</label>
+                                <input type="text" class="form-control" id="test-valor" placeholder="Ej: 50,000.00">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-success mt-4" onclick="calcularImpuestoTest()">
+                                    💰 Calcular Impuesto
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Impuesto Calculado</label>
+                                <input type="text" class="form-control" id="impuesto-resultado" readonly 
+                                       style="background-color: #e8f5e8; font-weight: bold;">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <div id="detalle-calculo" class="alert alert-light" style="display: none;">
+                                <h6>📋 Detalle del Cálculo:</h6>
+                                <div id="detalle-contenido"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5>⚠️ Problema Original vs Solución</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-danger">❌ Problema Original:</h6>
+                                <ul class="text-danger">
+                                    <li>Usuario ingresa: <code>50,000.00</code></li>
+                                    <li>Sistema interpreta: <code>50.00</code></li>
+                                    <li>Cálculo incorrecto: <code>L. 50.00 ÷ 1000 × 0.10 = L. 0.01</code></li>
+                                    <li>Campo backend: <code>cocontrolado</code> (no existe)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success">✅ Solución Aplicada:</h6>
+                                <ul class="text-success">
+                                    <li>Usuario ingresa: <code>50,000.00</code></li>
+                                    <li>Sistema interpreta: <code>50000.00</code></li>
+                                    <li>Cálculo correcto: <code>L. 50000.00 ÷ 1000 × 0.50 = L. 25.00</code></li>
+                                    <li>Campo backend: <code>controlado</code> (existe)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función de parsing mejorada (extraída del fix aplicado)
+        function parsearValorNumerico(valor) {
+            if (!valor) return 0;
+            
+            console.log(`🔍 Parsing valor original: "${valor}"`);
+            
+            // Caso 1: "50,000.00" (formato americano con miles y decimales)
+            if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                valor = valor.replace(/,/g, '');
+                console.log(`✅ Formato americano detectado: parsing → "${valor}"`);
+            }
+            // Caso 2: "50,000" (formato americano con miles, sin decimales)
+            else if (/^\d{1,3}(,\d{3})+$/.test(valor)) {
+                valor = valor.replace(/,/g, '');
+                console.log(`✅ Formato americano sin decimales: parsing → "${valor}"`);
+            }
+            // Caso 3: "50.000,00" (formato europeo con miles y decimales)
+            else if (/^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(valor)) {
+                valor = valor.replace(/\./g, '').replace(',', '.');
+                console.log(`✅ Formato europeo detectado: parsing → "${valor}"`);
+            }
+            // Caso 4: "50.000" (formato europeo con miles, sin decimales)
+            else if (/^\d{1,3}(\.\d{3})+$/.test(valor)) {
+                valor = valor.replace(/\./g, '');
+                console.log(`✅ Formato europeo sin decimales: parsing → "${valor}"`);
+            }
+            // Caso 5: "50.00" (formato americano simple con decimales)
+            else if (/^\d+\.\d{1,2}$/.test(valor)) {
+                console.log(`✅ Formato americano simple: parsing → "${valor}"`);
+            }
+            // Caso 6: "50,00" (formato europeo simple con decimales)
+            else if (/^\d+,\d{1,2}$/.test(valor)) {
+                valor = valor.replace(',', '.');
+                console.log(`✅ Formato europeo simple: parsing → "${valor}"`);
+            }
+            // Caso 7: Solo números
+            else if (/^\d+$/.test(valor)) {
+                console.log(`✅ Solo números: parsing → "${valor}"`);
+            }
+            
+            // Limpiar caracteres no numéricos excepto punto decimal
+            valor = valor.replace(/[^0-9.]/g, '');
+            const numeroFinal = parseFloat(valor) || 0;
+            
+            console.log(`🎯 Resultado final: ${numeroFinal}`);
+            return numeroFinal;
+        }
+        
+        // Función de cálculo de impuesto para productos controlados (simplificada)
+        function calcularImpuestoControlados(valorVentas) {
+            if (!valorVentas || valorVentas <= 0) {
+                return { impuestoTotal: 0, detalle: "Valor es 0 o negativo" };
+            }
+            
+            // Tarifas para productos controlados (categoría 2)
+            const tarifas = [
+                { rango1: 0, rango2: 1000000, valor: 0.5, descripcion: "Rango $0 - $1,000,000" },
+                { rango1: 1000000.01, rango2: 5000000, valor: 0.6, descripcion: "Rango $1,000,000 - $5,000,000" },
+                { rango1: 5000000.01, rango2: 10000000, valor: 0.7, descripcion: "Rango $5,000,000 - $10,000,000" },
+                { rango1: 10000000.01, rango2: 20000000, valor: 0.8, descripcion: "Rango $10,000,000 - $20,000,000" },
+                { rango1: 20000000.01, rango2: 30000000, valor: 0.9, descripcion: "Rango $20,000,000 - $30,000,000" },
+                { rango1: 30000000.01, rango2: 9999999999, valor: 1.0, descripcion: "Rango $30,000,000+" }
+            ];
+            
+            let impuestoTotal = 0;
+            let valorRestante = valorVentas;
+            const detalleCalculo = [];
+            
+            for (const tarifa of tarifas) {
+                if (valorRestante <= 0) break;
+                
+                const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                if (diferencialRango <= 0) continue;
+                
+                let valorAplicable;
+                if (valorRestante <= diferencialRango) {
+                    valorAplicable = valorRestante;
+                    valorRestante = 0;
+                } else {
+                    valorAplicable = diferencialRango;
+                    valorRestante -= diferencialRango;
+                }
+                
+                const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+                impuestoTotal += impuestoRango;
+                
+                detalleCalculo.push(`L. ${valorAplicable.toLocaleString('es-HN', {minimumFractionDigits: 2})} ÷ 1000 × ${tarifa.valor} = L. ${impuestoRango.toFixed(2)}`);
+            }
+            
+            return {
+                impuestoTotal: Math.round(impuestoTotal * 100) / 100,
+                detalle: detalleCalculo.join('; ')
+            };
+        }
+        
+        function testParsingFormatos() {
+            const input = document.getElementById('id_controlado');
+            const valorOriginal = input.value;
+            const valorParseado = parsearValorNumerico(valorOriginal);
+            
+            const resultados = document.getElementById('resultados-test');
+            
+            if (!valorOriginal) {
+                resultados.innerHTML = '<div class="alert alert-warning">⚠️ Ingrese un valor para probar</div>';
+                return;
+            }
+            
+            // Comparar con el método anterior (problemático)
+            const valorProblematico = parseFloat(valorOriginal) || 0;
+            
+            resultados.innerHTML = `
+                <div class="alert alert-info">
+                    <h6>📊 Resultados del Parsing:</h6>
+                    <p><strong>Valor Original:</strong> "${valorOriginal}"</p>
+                    <p><strong>Método Anterior (problemático):</strong> ${valorProblematico.toLocaleString('es-HN', {minimumFractionDigits: 2})}</p>
+                    <p><strong>Método Corregido:</strong> ${valorParseado.toLocaleString('es-HN', {minimumFractionDigits: 2})}</p>
+                    <p><strong>¿Corrección exitosa?:</strong> ${valorParseado !== valorProblematico ? '✅ SÍ' : '⚠️ Sin cambio'}</p>
+                </div>
+            `;
+        }
+        
+        function calcularImpuestoTest() {
+            const input = document.getElementById('test-valor');
+            const valorOriginal = input.value;
+            const valorParseado = parsearValorNumerico(valorOriginal);
+            
+            if (valorParseado <= 0) {
+                document.getElementById('impuesto-resultado').value = '0.00';
+                document.getElementById('detalle-calculo').style.display = 'none';
+                return;
+            }
+            
+            const resultado = calcularImpuestoControlados(valorParseado);
+            
+            document.getElementById('impuesto-resultado').value = `L. ${resultado.impuestoTotal.toFixed(2)}`;
+            
+            const detalleDiv = document.getElementById('detalle-calculo');
+            const detalleContenido = document.getElementById('detalle-contenido');
+            
+            detalleContenido.innerHTML = `
+                <p><strong>Valor base:</strong> L. ${valorParseado.toLocaleString('es-HN', {minimumFractionDigits: 2})}</p>
+                <p><strong>Cálculo:</strong> ${resultado.detalle}</p>
+                <p><strong>Impuesto total:</strong> L. ${resultado.impuestoTotal.toFixed(2)}</p>
+            `;
+            
+            detalleDiv.style.display = 'block';
+        }
+        
+        // Configurar formateo automático en el campo de test
+        document.addEventListener('DOMContentLoaded', function() {
+            const campoControlado = document.getElementById('id_controlado');
+            const campoTest = document.getElementById('test-valor');
+            
+            // Simular el formateo automático (simplificado)
+            [campoControlado, campoTest].forEach(campo => {
+                if (campo) {
+                    campo.addEventListener('blur', function() {
+                        const valor = parsearValorNumerico(this.value);
+                        if (valor > 0) {
+                            this.value = valor.toLocaleString('en-US', {minimumFractionDigits: 2});
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

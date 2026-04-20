@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rápido - Sistema de Cálculo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        input { margin: 5px; padding: 8px; width: 200px; }
+        button { padding: 10px 20px; margin: 5px; }
+        #resultado { font-weight: bold; font-size: 1.2em; color: #28a745; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Rápido - Sistema de Cálculo Embebido</h1>
+    
+    <div class="test-section">
+        <h3>Campos de Ventas</h3>
+        <label>Ventas Rubro Producción:</label>
+        <input type="text" id="id_ventai" value="1000000" placeholder="Ej: 1000000"><br>
+        
+        <label>Ventas Mercadería:</label>
+        <input type="text" id="id_ventac" value="500000" placeholder="Ej: 500000"><br>
+        
+        <label>Ventas por Servicios:</label>
+        <input type="text" id="id_ventas" value="300000" placeholder="Ej: 300000"><br>
+        
+        <label>Ventas Productos Controlados:</label>
+        <input type="text" id="id_controlado" value="200000" placeholder="Ej: 200000"><br>
+        
+        <button onclick="probarSistema()">🧮 Probar Sistema</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Resultado</h3>
+        <div id="resultado">Haga clic en "Probar Sistema"</div>
+    </div>
+
+    <script>
+        // Incluir el mismo JavaScript del template
+        class DeclaracionVolumenInteractivo {
+            constructor() {
+                this.tarifas = [
+                    {"rango1": 0.0, "rango2": 500000.0, "valor": 0.3, "categoria": "1", "descripcion": "Rango $0 - $500,000"},
+                    {"rango1": 500000.01, "rango2": 10000000.0, "valor": 0.4, "categoria": "1", "descripcion": "Rango $500,000 - $10,000,000"},
+                    {"rango1": 10000000.01, "rango2": 20000000.0, "valor": 0.3, "categoria": "1", "descripcion": "Rango $10,000,000 - $20,000,000"},
+                    {"rango1": 20000000.01, "rango2": 30000000.0, "valor": 0.2, "categoria": "1", "descripcion": "Rango $20,000,000 - $30,000,000"},
+                    {"rango1": 30000000.01, "rango2": 9999999999.0, "valor": 0.15, "categoria": "1", "descripcion": "Rango $30,000,000 - $9,999,999,999"}
+                ];
+            }
+
+            calcularImpuestoICS(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) return { impuestoTotal: 0 };
+                
+                let impuestoTotal = 0;
+                let valorRestante = valorVentas;
+                
+                for (const tarifa of this.tarifas) {
+                    if (valorRestante <= 0) break;
+                    const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                    if (diferencialRango <= 0) continue;
+                    
+                    let valorAplicable = Math.min(valorRestante, diferencialRango);
+                    impuestoTotal += (valorAplicable * tarifa.valor / 1000);
+                    valorRestante -= valorAplicable;
+                }
+                
+                return { impuestoTotal: Math.round(impuestoTotal * 100) / 100 };
+            }
+
+            calcularImpuestoICSControlados(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) return { impuestoTotal: 0 };
+                
+                const tarifasControlados = [
+                    {"rango1": 0.0, "rango2": 1000000.0, "valor": 1.0},
+                    {"rango1": 1000000.01, "rango2": 5000000.0, "valor": 1.5},
+                    {"rango1": 5000000.01, "rango2": 9999999999.0, "valor": 2.0}
+                ];
+                
+                let impuestoTotal = 0;
+                let valorRestante = valorVentas;
+                
+                for (const tarifa of tarifasControlados) {
+                    if (valorRestante <= 0) break;
+                    const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                    if (diferencialRango <= 0) continue;
+                    
+                    let valorAplicable = Math.min(valorRestante, diferencialRango);
+                    impuestoTotal += (valorAplicable * tarifa.valor / 1000);
+                    valorRestante -= valorAplicable;
+                }
+                
+                return { impuestoTotal: Math.round(impuestoTotal * 100) / 100 };
+            }
+        }
+
+        function probarSistema() {
+            const sistema = new DeclaracionVolumenInteractivo();
+            
+            const ventai = parseFloat(document.getElementById('id_ventai').value) || 0;
+            const ventac = parseFloat(document.getElementById('id_ventac').value) || 0;
+            const ventas = parseFloat(document.getElementById('id_ventas').value) || 0;
+            const controlado = parseFloat(document.getElementById('id_controlado').value) || 0;
+            
+            const resultadoIndustria = sistema.calcularImpuestoICS(ventai);
+            const resultadoComercio = sistema.calcularImpuestoICS(ventac);
+            const resultadoServicios = sistema.calcularImpuestoICS(ventas);
+            const resultadoControlados = sistema.calcularImpuestoICSControlados(controlado);
+            
+            const totalImpuesto = resultadoIndustria.impuestoTotal + 
+                                 resultadoComercio.impuestoTotal + 
+                                 resultadoServicios.impuestoTotal + 
+                                 resultadoControlados.impuestoTotal;
+            
+            const resultado = document.getElementById('resultado');
+            resultado.innerHTML = `
+                <h4>📊 Resultados del Cálculo:</h4>
+                <p>Industria: L. ${resultadoIndustria.impuestoTotal.toFixed(2)}</p>
+                <p>Comercio: L. ${resultadoComercio.impuestoTotal.toFixed(2)}</p>
+                <p>Servicios: L. ${resultadoServicios.impuestoTotal.toFixed(2)}</p>
+                <p>Controlados: L. ${resultadoControlados.impuestoTotal.toFixed(2)}</p>
+                <p><strong>Total Impuesto: L. ${totalImpuesto.toFixed(2)}</strong></p>
+            `;
+        }
+    </script>
+</body>
+</html>

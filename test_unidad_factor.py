@@ -1,0 +1,463 @@
+#!/usr/bin/env python3
+"""
+Script para probar la funcionalidad de Unidad y Factor en el formulario de declaración de volumen
+"""
+
+def crear_test_unidad_factor():
+    """Crea un test HTML para verificar la funcionalidad de Unidad y Factor"""
+    
+    test_html = '''<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Funcionalidad Unidad y Factor</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        input { margin: 5px; padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #resultado { font-weight: bold; font-size: 1.2em; }
+        .desglose { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }
+        .total { background: #28a745; color: white; padding: 15px; border-radius: 5px; text-align: center; margin: 10px 0; }
+        .log { background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test - Funcionalidad Unidad y Factor</h1>
+    
+    <div class="test-section info">
+        <h3>📋 Instrucciones</h3>
+        <p>Este test verifica que cuando Unidad > 0 y Factor > 0, se multiplique valor por unidad (redondeado a 2 dígitos) y se sume al impuesto total.</p>
+    </div>
+    
+    <div class="test-section">
+        <h3>💰 Campos de Ventas</h3>
+        <label><strong>Ventas Rubro Producción:</strong></label>
+        <input type="text" id="id_ventai" value="1000000" placeholder="Ej: 1000000" oninput="calcularAutomatico()"><br>
+        
+        <label><strong>Ventas Mercadería:</strong></label>
+        <input type="text" id="id_ventac" value="500000" placeholder="Ej: 500000" oninput="calcularAutomatico()"><br>
+        
+        <label><strong>Ventas por Servicios:</strong></label>
+        <input type="text" id="id_ventas" value="300000" placeholder="Ej: 300000" oninput="calcularAutomatico()"><br>
+        
+        <label><strong>Ventas Productos Controlados:</strong></label>
+        <input type="text" id="id_controlado" value="200000" placeholder="Ej: 200000" oninput="calcularAutomatico()"><br>
+        
+        <h4>🧮 Campos Unidad y Factor</h4>
+        <label><strong>Unidad:</strong></label>
+        <input type="text" id="id_unidad" value="1000" placeholder="Ej: 1000" oninput="calcularAutomatico()"><br>
+        
+        <label><strong>Factor:</strong></label>
+        <input type="text" id="id_factor" value="1.5" placeholder="Ej: 1.5" oninput="calcularAutomatico()"><br>
+        
+        <button onclick="probarFuncionalidad()">🧮 Probar Funcionalidad Completa</button>
+        <button onclick="limpiarCampos()">🧹 Limpiar Campos</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>📊 Resultado del Cálculo</h3>
+        <div id="resultado">Los cálculos aparecerán aquí automáticamente...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>📝 Logs del Sistema</h3>
+        <div id="logs">Los logs del sistema aparecerán aquí...</div>
+    </div>
+
+    <script>
+        // Sistema de cálculo idéntico al del template
+        class DeclaracionVolumenInteractivo {
+            constructor() {
+                this.tarifas = [
+                    {"rango1": 0.0, "rango2": 500000.0, "valor": 0.3, "categoria": "1", "descripcion": "Rango $0 - $500,000"},
+                    {"rango1": 500000.01, "rango2": 10000000.0, "valor": 0.4, "categoria": "1", "descripcion": "Rango $500,000 - $10,000,000"},
+                    {"rango1": 10000000.01, "rango2": 20000000.0, "valor": 0.3, "categoria": "1", "descripcion": "Rango $10,000,000 - $20,000,000"},
+                    {"rango1": 20000000.01, "rango2": 30000000.0, "valor": 0.2, "categoria": "1", "descripcion": "Rango $20,000,000 - $30,000,000"},
+                    {"rango1": 30000000.01, "rango2": 9999999999.0, "valor": 0.15, "categoria": "1", "descripcion": "Rango $30,000,000 - $9,999,999,999"}
+                ];
+                this.initializeSystem();
+            }
+
+            async initializeSystem() {
+                this.verificarCamposDisponibles();
+                this.setupEventListeners();
+                this.log('🚀 Sistema de cálculo interactivo inicializado (versión embebida)');
+            }
+
+            verificarCamposDisponibles() {
+                this.log('🔍 Verificando campos disponibles...');
+                
+                const camposRequeridos = ['ventai', 'ventac', 'ventas', 'controlado', 'impuesto', 'unidad', 'factor'];
+                const camposEncontrados = [];
+                const camposFaltantes = [];
+                
+                camposRequeridos.forEach(campo => {
+                    const elemento = document.getElementById(`id_${campo}`);
+                    if (elemento) {
+                        camposEncontrados.push(campo);
+                        this.log(`✅ Campo ${campo} encontrado: ${elemento.tagName} con valor "${elemento.value || 'vacío'}"`);
+                    } else {
+                        camposFaltantes.push(campo);
+                        this.log(`❌ Campo ${campo} NO encontrado (id_${campo})`);
+                    }
+                });
+                
+                this.log(`📊 Resumen de campos: ${camposEncontrados.length}/${camposRequeridos.length} encontrados`);
+                
+                if (camposFaltantes.length > 0) {
+                    this.log(`⚠️ Campos faltantes: ${camposFaltantes.join(', ')}`);
+                } else {
+                    this.log('✅ Todos los campos requeridos están disponibles');
+                }
+            }
+
+            setupEventListeners() {
+                const campos = ['ventai', 'ventac', 'ventas', 'controlado', 'unidad', 'factor'];
+                campos.forEach(campo => {
+                    const input = document.getElementById(`id_${campo}`);
+                    if (input) {
+                        input.addEventListener('input', () => this.calcularEnTiempoReal(campo));
+                        input.addEventListener('blur', () => this.calcularEnTiempoReal(campo));
+                    }
+                });
+            }
+
+            calcularEnTiempoReal(fieldName) {
+                this.log(`🔄 Calculando impuestos para campo: ${fieldName}`);
+                
+                const valoresVentas = this.obtenerValoresVentas();
+                this.log('📊 Valores de ventas obtenidos: ' + JSON.stringify(valoresVentas));
+                
+                // Calcular impuestos para cada tipo de venta
+                const resultadoIndustria = this.calcularImpuestoICS(valoresVentas.ventai || 0);
+                const resultadoComercio = this.calcularImpuestoICS(valoresVentas.ventac || 0);
+                const resultadoServicios = this.calcularImpuestoICS(valoresVentas.ventas || 0);
+                const resultadoControlados = this.calcularImpuestoICSControlados(valoresVentas.controlado || 0);
+                
+                // Calcular impuesto adicional por Unidad y Factor
+                const resultadoUnidadFactor = this.calcularImpuestoUnidadFactor(valoresVentas.unidad || 0, valoresVentas.factor || 0);
+                
+                const resultados = {
+                    industria: resultadoIndustria,
+                    comercio: resultadoComercio,
+                    servicios: resultadoServicios,
+                    controlados: resultadoControlados,
+                    unidadFactor: resultadoUnidadFactor
+                };
+
+                this.log('💰 Resultados de cálculo por tipo: ' + JSON.stringify(resultados));
+
+                // SUMATORIA COMPLETA: Incluir TODOS los tipos de ventas + Unidad*Factor
+                const totalImpuesto = resultadoIndustria.impuestoTotal + 
+                                     resultadoComercio.impuestoTotal + 
+                                     resultadoServicios.impuestoTotal + 
+                                     resultadoControlados.impuestoTotal +
+                                     resultadoUnidadFactor.impuestoTotal;
+
+                this.log('🎯 SUMATORIA COMPLETA DE IMPUESTOS:');
+                this.log(`   • Industria (Ventas Rubro Producción): L. ${resultadoIndustria.impuestoTotal.toFixed(2)}`);
+                this.log(`   • Comercio (Ventas Mercadería): L. ${resultadoComercio.impuestoTotal.toFixed(2)}`);
+                this.log(`   • Servicios (Ventas por Servicios): L. ${resultadoServicios.impuestoTotal.toFixed(2)}`);
+                this.log(`   • Controlados (Ventas Productos Controlados): L. ${resultadoControlados.impuestoTotal.toFixed(2)}`);
+                this.log(`   • Unidad × Factor: L. ${resultadoUnidadFactor.impuestoTotal.toFixed(2)}`);
+                this.log(`   = TOTAL IMPUESTO CALCULADO: L. ${totalImpuesto.toFixed(2)}`);
+
+                this.actualizarCampoImpuesto(totalImpuesto);
+            }
+
+            obtenerValoresVentas() {
+                const campos = ['ventai', 'ventac', 'ventas', 'controlado', 'unidad', 'factor'];
+                const valores = {};
+
+                campos.forEach(campo => {
+                    const input = document.getElementById(`id_${campo}`);
+                    if (input && input.value) {
+                        const valor = this.limpiarValor(input.value);
+                        if (valor > 0) {
+                            valores[campo] = valor;
+                            this.log(`✅ Campo ${campo} detectado con valor: ${valor}`);
+                        }
+                    }
+                });
+
+                this.log('📋 Valores finales de ventas: ' + JSON.stringify(valores));
+                return valores;
+            }
+
+            limpiarValor(valor) {
+                if (!valor) return 0;
+                let valorLimpio = valor.toString().replace(/[^0-9.]/g, '');
+                const numero = parseFloat(valorLimpio) || 0;
+                return numero;
+            }
+
+            calcularImpuestoICS(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) {
+                    return { impuestoTotal: 0, detalleCalculo: [], valorVentas: 0 };
+                }
+
+                let impuestoTotal = 0;
+                let valorRestante = valorVentas;
+                const detalleCalculo = [];
+
+                for (const tarifa of this.tarifas) {
+                    if (valorRestante <= 0) break;
+
+                    const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                    if (diferencialRango <= 0) continue;
+
+                    let valorAplicable;
+                    if (valorRestante <= diferencialRango) {
+                        valorAplicable = valorRestante;
+                        valorRestante = 0;
+                    } else {
+                        valorAplicable = diferencialRango;
+                        valorRestante -= diferencialRango;
+                    }
+
+                    const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+                    impuestoTotal += impuestoRango;
+
+                    detalleCalculo.push({
+                        rango1: tarifa.rango1,
+                        rango2: tarifa.rango2,
+                        valorAplicable: valorAplicable,
+                        tarifaPorMil: tarifa.valor,
+                        impuestoRango: impuestoRango,
+                        descripcion: tarifa.descripcion
+                    });
+                }
+
+                return {
+                    impuestoTotal: Math.round(impuestoTotal * 100) / 100,
+                    detalleCalculo: detalleCalculo,
+                    valorVentas: valorVentas
+                };
+            }
+
+            calcularImpuestoICSControlados(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) {
+                    return { impuestoTotal: 0, detalleCalculo: [], valorVentas: 0 };
+                }
+
+                const tarifasControlados = [
+                    {"rango1": 0.0, "rango2": 1000000.0, "valor": 1.0, "categoria": "2", "descripcion": "Controlados $0 - $1,000,000"},
+                    {"rango1": 1000000.01, "rango2": 5000000.0, "valor": 1.5, "categoria": "2", "descripcion": "Controlados $1,000,000 - $5,000,000"},
+                    {"rango1": 5000000.01, "rango2": 9999999999.0, "valor": 2.0, "categoria": "2", "descripcion": "Controlados $5,000,000+"}
+                ];
+
+                let impuestoTotal = 0;
+                let valorRestante = valorVentas;
+                const detalleCalculo = [];
+
+                for (const tarifa of tarifasControlados) {
+                    if (valorRestante <= 0) break;
+
+                    const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                    if (diferencialRango <= 0) continue;
+
+                    let valorAplicable;
+                    if (valorRestante <= diferencialRango) {
+                        valorAplicable = valorRestante;
+                        valorRestante = 0;
+                    } else {
+                        valorAplicable = diferencialRango;
+                        valorRestante -= diferencialRango;
+                    }
+
+                    const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+                    impuestoTotal += impuestoRango;
+
+                    detalleCalculo.push({
+                        rango1: tarifa.rango1,
+                        rango2: tarifa.rango2,
+                        valorAplicable: valorAplicable,
+                        tarifaPorMil: tarifa.valor,
+                        impuestoRango: impuestoRango,
+                        descripcion: tarifa.descripcion
+                    });
+                }
+
+                return {
+                    impuestoTotal: Math.round(impuestoTotal * 100) / 100,
+                    detalleCalculo: detalleCalculo,
+                    valorVentas: valorVentas
+                };
+            }
+
+            calcularImpuestoUnidadFactor(valorUnidad, valorFactor) {
+                // Validar que ambos valores sean mayores a cero
+                if (!valorUnidad || valorUnidad <= 0 || !valorFactor || valorFactor <= 0) {
+                    this.log('⚠️ Unidad o Factor no válidos - Unidad: ' + valorUnidad + ', Factor: ' + valorFactor);
+                    return { 
+                        impuestoTotal: 0, 
+                        detalleCalculo: [], 
+                        valorUnidad: valorUnidad || 0, 
+                        valorFactor: valorFactor || 0,
+                        valorCalculado: 0
+                    };
+                }
+
+                // Multiplicar valor por unidad (redondeado a 2 dígitos)
+                const valorCalculado = Math.round((valorUnidad * valorFactor) * 100) / 100;
+                
+                this.log(`🧮 Cálculo Unidad × Factor:`);
+                this.log(`   Unidad: ${valorUnidad}`);
+                this.log(`   Factor: ${valorFactor}`);
+                this.log(`   Resultado: ${valorUnidad} × ${valorFactor} = ${valorCalculado}`);
+
+                // Aplicar las mismas tarifas ICS que los otros tipos de venta
+                const resultadoICS = this.calcularImpuestoICS(valorCalculado);
+                
+                const detalleCalculo = [{
+                    descripcion: `Unidad × Factor (${valorUnidad} × ${valorFactor})`,
+                    valorUnidad: valorUnidad,
+                    valorFactor: valorFactor,
+                    valorCalculado: valorCalculado,
+                    impuestoAplicado: resultadoICS.impuestoTotal
+                }];
+
+                this.log(`✅ Impuesto calculado para Unidad × Factor: L. ${resultadoICS.impuestoTotal.toFixed(2)}`);
+
+                return {
+                    impuestoTotal: resultadoICS.impuestoTotal,
+                    detalleCalculo: detalleCalculo,
+                    valorUnidad: valorUnidad,
+                    valorFactor: valorFactor,
+                    valorCalculado: valorCalculado
+                };
+            }
+
+            actualizarCampoImpuesto(totalImpuesto) {
+                const campoImpuesto = document.getElementById('id_impuesto');
+                if (campoImpuesto) {
+                    const valorAnterior = campoImpuesto.value;
+                    campoImpuesto.value = totalImpuesto.toFixed(2);
+                    
+                    this.log(`✅ Campo impuesto actualizado:`);
+                    this.log(`   Valor anterior: L. ${valorAnterior || '0.00'}`);
+                    this.log(`   Valor nuevo: L. ${totalImpuesto.toFixed(2)}`);
+                    
+                    if (campoImpuesto.value === totalImpuesto.toFixed(2)) {
+                        this.log(`✅ Verificación exitosa: Campo impuesto contiene el valor correcto`);
+                    } else {
+                        this.log(`❌ Error: Campo impuesto no se actualizó correctamente`);
+                    }
+                    
+                    campoImpuesto.dispatchEvent(new Event('change', { bubbles: true }));
+                } else {
+                    this.log('❌ Campo impuesto no encontrado (id_impuesto)');
+                }
+            }
+
+            log(mensaje) {
+                console.log(mensaje);
+                const logsDiv = document.getElementById('logs');
+                if (logsDiv) {
+                    const logEntry = document.createElement('div');
+                    logEntry.className = 'log';
+                    logEntry.textContent = mensaje;
+                    logsDiv.appendChild(logEntry);
+                    logsDiv.scrollTop = logsDiv.scrollHeight;
+                }
+            }
+
+            recalcular() {
+                this.calcularEnTiempoReal('manual');
+            }
+        }
+
+        // Variables globales
+        let declaracionVolumenInteractivo;
+
+        function calcularAutomatico() {
+            if (declaracionVolumenInteractivo) {
+                declaracionVolumenInteractivo.calcularEnTiempoReal('input');
+            }
+        }
+
+        function probarFuncionalidad() {
+            if (declaracionVolumenInteractivo) {
+                declaracionVolumenInteractivo.recalcular();
+            }
+        }
+
+        function limpiarCampos() {
+            document.getElementById('id_ventai').value = '';
+            document.getElementById('id_ventac').value = '';
+            document.getElementById('id_ventas').value = '';
+            document.getElementById('id_controlado').value = '';
+            document.getElementById('id_unidad').value = '';
+            document.getElementById('id_factor').value = '';
+            document.getElementById('resultado').innerHTML = 'Campos limpiados';
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        // Inicializar sistema
+        document.addEventListener('DOMContentLoaded', function() {
+            declaracionVolumenInteractivo = new DeclaracionVolumenInteractivo();
+            
+            // Crear campo de impuesto si no existe
+            if (!document.getElementById('id_impuesto')) {
+                const campoImpuesto = document.createElement('input');
+                campoImpuesto.id = 'id_impuesto';
+                campoImpuesto.type = 'text';
+                campoImpuesto.placeholder = 'Impuesto Calculado';
+                campoImpuesto.readOnly = true;
+                campoImpuesto.style.cssText = 'margin: 5px; padding: 8px; width: 200px; background: #f8f9fa; border: 1px solid #28a745; border-radius: 4px; font-weight: bold; color: #155724;';
+                document.querySelector('.test-section:nth-child(3)').appendChild(campoImpuesto);
+            }
+        });
+    </script>
+</body>
+</html>'''
+    
+    with open('test_unidad_factor.html', 'w', encoding='utf-8') as f:
+        f.write(test_html)
+    
+    print("✅ Test de funcionalidad Unidad y Factor creado: test_unidad_factor.html")
+    print("📝 Para probar: abra el archivo en un navegador web")
+
+def mostrar_instrucciones():
+    """Muestra las instrucciones para probar la funcionalidad"""
+    
+    print("\n" + "=" * 60)
+    print("🎯 INSTRUCCIONES PARA PROBAR UNIDAD Y FACTOR:")
+    print("=" * 60)
+    
+    print("\n1️⃣ TEST INDEPENDIENTE:")
+    print("   • Abrir 'test_unidad_factor.html' en el navegador")
+    print("   • Ingresar valores en Unidad (ej: 1000) y Factor (ej: 1.5)")
+    print("   • Observar que se calcule: 1000 × 1.5 = 1500")
+    print("   • Verificar que el impuesto se calcule sobre 1500")
+    print("   • Confirmar que se sume al total de impuestos")
+    
+    print("\n2️⃣ FORMULARIO REAL:")
+    print("   • Acceder al formulario de declaración de volumen")
+    print("   • Ingresar valores en Unidad y Factor")
+    print("   • Verificar en consola del navegador (F12) que aparezcan:")
+    print("     - '🧮 Cálculo Unidad × Factor:'")
+    print("     - '✅ Impuesto calculado para Unidad × Factor:'")
+    print("     - '• Unidad × Factor: L. X.XX' en la sumatoria")
+    
+    print("\n3️⃣ VALIDACIÓN ESPECÍFICA:")
+    print("   • Unidad = 0 o Factor = 0: NO se calcula impuesto")
+    print("   • Unidad > 0 y Factor > 0: SÍ se calcula impuesto")
+    print("   • El resultado se redondea a 2 decimales")
+    print("   • Se aplican las mismas tarifas ICS que otros tipos de venta")
+    print("   • Se suma al total de impuestos calculados")
+    
+    print("\n✅ RESULTADO ESPERADO:")
+    print("   El sistema debe validar que Unidad > 0 y Factor > 0,")
+    print("   multiplicar valor por unidad (redondeado a 2 dígitos),")
+    print("   calcular el impuesto sobre ese valor y sumarlo al total.")
+
+if __name__ == "__main__":
+    crear_test_unidad_factor()
+    mostrar_instrucciones()

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Prueba de Confirmación de Actualización</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        .warning {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+        .log-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .log-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        .log-content {
+            font-family: monospace;
+            font-size: 11px;
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Prueba de Confirmación de Actualización</h1>
+        <p>Esta página permite probar específicamente el problema de confirmación de actualización de negocios.</p>
+        
+        <div class="form-group">
+            <label>Negocio de Prueba (del error reportado):</label>
+            <p><strong>Empresa:</strong> 0301 | <strong>RTM:</strong> 114-03-23 | <strong>Expediente:</strong> 1151</p>
+        </div>
+        
+        <form id="testForm">
+            <div class="form-group">
+                <label for="empre">Empresa:</label>
+                <input type="text" id="empre" name="empre" value="0301" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="rtm">RTM:</label>
+                <input type="text" id="rtm" name="rtm" value="114-03-23" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="expe">Expediente:</label>
+                <input type="text" id="expe" name="expe" value="1151" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="nombrenego">Nombre del Negocio:</label>
+                <input type="text" id="nombrenego" name="nombrenego" value="Negocio Actualizado - Prueba">
+            </div>
+            
+            <div class="form-group">
+                <label for="cx">Coordenada X:</label>
+                <input type="number" id="cx" name="cx" step="0.0000001" value="-86.2419055">
+            </div>
+            
+            <div class="form-group">
+                <label for="cy">Coordenada Y:</label>
+                <input type="number" id="cy" name="cy" step="0.0000001" value="15.1999999">
+            </div>
+            
+            <div class="form-group">
+                <label for="direccion">Dirección:</label>
+                <input type="text" id="direccion" name="direccion" value="Dirección Actualizada - Prueba">
+            </div>
+            
+            <button type="submit" name="accion" value="salvar" class="btn-success">Guardar Negocio (Probar Confirmación)</button>
+            <button type="button" onclick="buscarNegocio()" class="btn-warning">Buscar Negocio</button>
+            <button type="button" onclick="limpiarLogs()" class="btn-warning">Limpiar Logs</button>
+        </form>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Logs de Debugging</h2>
+        <div class="log-section">
+            <div class="log-title">Console Logs:</div>
+            <div id="consoleLog" class="log-content"></div>
+        </div>
+        
+        <div class="log-section">
+            <div class="log-title">Network Logs:</div>
+            <div id="networkLog" class="log-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let logCounter = 0;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            
+            // Agregar al console log
+            const consoleLog = document.getElementById('consoleLog');
+            consoleLog.textContent += logEntry;
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+            
+            // También mostrar en console del navegador
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            
+            logCounter++;
+        }
+        
+        function logNetwork(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            
+            const networkLog = document.getElementById('networkLog');
+            networkLog.textContent += logEntry;
+            networkLog.scrollTop = networkLog.scrollHeight;
+        }
+        
+        function limpiarLogs() {
+            document.getElementById('consoleLog').textContent = '';
+            document.getElementById('networkLog').textContent = '';
+            logCounter = 0;
+            log('Logs limpiados');
+        }
+
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            log('=== INICIANDO PRUEBA DE CONFIRMACIÓN ===');
+            
+            const formData = new FormData(this);
+            const data = {};
+            
+            // Mostrar datos que se van a enviar
+            log('Datos del formulario que se enviarán:');
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+                log(`  ${key}: ${value}`);
+            }
+            
+            log('Verificando coordenadas específicas...');
+            const cx = formData.get('cx');
+            const cy = formData.get('cy');
+            log(`Coordenadas a enviar - CX: ${cx}, CY: ${cy}`);
+            
+            // Simular envío al servidor
+            log('Enviando petición AJAX...');
+            logNetwork('POST /maestro_negocios/');
+            logNetwork(`Content-Type: application/x-www-form-urlencoded`);
+            logNetwork(`X-Requested-With: XMLHttpRequest`);
+            
+            fetch('/maestro_negocios/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                logNetwork(`Response Status: ${response.status}`);
+                logNetwork(`Response Headers: ${response.headers}`);
+                log(`Respuesta recibida - Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                log('Respuesta del servidor:');
+                log(JSON.stringify(data, null, 2));
+                
+                if (data.exito) {
+                    mostrarResultado('✅ Éxito:', data, 'success');
+                    log('✅ Operación completada exitosamente');
+                } else if (data.requiere_confirmacion || data.existe) {
+                    log('⚠️ Se requiere confirmación para actualizar');
+                    log(`Mensaje de confirmación: ${data.mensaje}`);
+                    
+                    mostrarResultado('⚠️ Confirmación Requerida:', data, 'warning');
+                    
+                    // Simular confirmación automática para pruebas
+                    log('Simulando confirmación automática...');
+                    setTimeout(() => {
+                        confirmarActualizacion(formData);
+                    }, 1000);
+                    
+                } else {
+                    mostrarResultado('❌ Error:', data, 'error');
+                    log('❌ Error en la operación');
+                }
+            })
+            .catch(error => {
+                log(`❌ Error en la petición: ${error.message}`, 'error');
+                mostrarResultado('❌ Error de Red:', error.message, 'error');
+            });
+        });
+        
+        function confirmarActualizacion(formData) {
+            log('=== PROCESANDO CONFIRMACIÓN ===');
+            
+            // Agregar flag de confirmación
+            formData.append('confirmar_actualizacion', '1');
+            
+            log('Datos de confirmación:');
+            for (let [key, value] of formData.entries()) {
+                log(`  ${key}: ${value}`);
+            }
+            
+            log('Enviando petición de confirmación...');
+            logNetwork('POST /maestro_negocios/ (CONFIRMACIÓN)');
+            logNetwork(`confirmar_actualizacion: 1`);
+            
+            fetch('/maestro_negocios/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                logNetwork(`Confirmación Response Status: ${response.status}`);
+                log(`Respuesta de confirmación - Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                log('Respuesta de confirmación:');
+                log(JSON.stringify(data, null, 2));
+                
+                if (data.exito) {
+                    mostrarResultado('✅ Confirmación Exitosa:', data, 'success');
+                    log('✅ Negocio actualizado exitosamente');
+                } else {
+                    mostrarResultado('❌ Error en Confirmación:', data, 'error');
+                    log('❌ Error al confirmar actualización');
+                }
+            })
+            .catch(error => {
+                log(`❌ Error en confirmación: ${error.message}`, 'error');
+                mostrarResultado('❌ Error de Red en Confirmación:', error.message, 'error');
+            });
+        }
+        
+        function buscarNegocio() {
+            const empre = document.getElementById('empre').value;
+            const rtm = document.getElementById('rtm').value;
+            const expe = document.getElementById('expe').value;
+            
+            log('=== BUSCANDO NEGOCIO ===');
+            log(`Buscando: Empresa=${empre}, RTM=${rtm}, Expediente=${expe}`);
+            
+            if (!empre || !rtm || !expe) {
+                mostrarResultado('❌ Error:', 'Todos los campos son requeridos para buscar', 'error');
+                return;
+            }
+            
+            const url = `/ajax/buscar-negocio/?empre=${encodeURIComponent(empre)}&rtm=${encodeURIComponent(rtm)}&expe=${encodeURIComponent(expe)}`;
+            
+            log(`URL de búsqueda: ${url}`);
+            logNetwork(`GET ${url}`);
+            
+            fetch(url)
+            .then(response => {
+                logNetwork(`Busqueda Response Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                log('Respuesta de búsqueda:');
+                log(JSON.stringify(data, null, 2));
+                
+                if (data.error) {
+                    mostrarResultado('❌ Negocio no encontrado:', data.error, 'error');
+                    log('❌ Negocio no encontrado');
+                } else {
+                    mostrarResultado('✅ Negocio encontrado:', data, 'success');
+                    log('✅ Negocio encontrado, llenando formulario...');
+                    llenarFormulario(data);
+                }
+            })
+            .catch(error => {
+                log(`❌ Error en búsqueda: ${error.message}`, 'error');
+                mostrarResultado('❌ Error en búsqueda:', error.message, 'error');
+            });
+        }
+        
+        function llenarFormulario(data) {
+            log('Llenando formulario con datos encontrados...');
+            
+            // Llenar campos del formulario con los datos recibidos
+            if (data.empre) document.getElementById('empre').value = data.empre;
+            if (data.rtm) document.getElementById('rtm').value = data.rtm;
+            if (data.expe) document.getElementById('expe').value = data.expe;
+            if (data.nombrenego) document.getElementById('nombrenego').value = data.nombrenego;
+            if (data.direccion) document.getElementById('direccion').value = data.direccion;
+            
+            // Manejar coordenadas
+            if (data.cx !== null && data.cx !== undefined) {
+                document.getElementById('cx').value = parseFloat(data.cx).toFixed(7);
+                log(`Coordenada X establecida: ${parseFloat(data.cx).toFixed(7)}`);
+            }
+            if (data.cy !== null && data.cy !== undefined) {
+                document.getElementById('cy').value = parseFloat(data.cy).toFixed(7);
+                log(`Coordenada Y establecida: ${parseFloat(data.cy).toFixed(7)}`);
+            }
+            
+            log('✅ Formulario llenado exitosamente');
+        }
+        
+        function mostrarResultado(titulo, contenido, tipo) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${tipo}`;
+            resultDiv.innerHTML = `
+                <h3>${titulo}</h3>
+                <pre>${JSON.stringify(contenido, null, 2)}</pre>
+            `;
+            resultDiv.style.display = 'block';
+        }
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Página de prueba cargada');
+            log('Negocio de prueba: Empresa=0301, RTM=114-03-23, Expediente=1151');
+        });
+    </script>
+</body>
+</html> 

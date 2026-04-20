@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test Multa Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .campo-destacado {
+            border: 3px solid #28a745 !important;
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-primary">
+                    <h4>🧪 Test Multa Declaración Tardía - Validación Interactiva</h4>
+                    <p><strong>Reglas a Validar:</strong></p>
+                    <ul>
+                        <li>✅ Si <strong>Impuesto > 0</strong> Y <strong>Mes = Enero</strong> → Multa = L. 0.00</li>
+                        <li>⚠️ Si <strong>Impuesto > 0</strong> Y <strong>Mes ≠ Enero</strong> Y <strong>Tipo = Normal</strong> → Multa = Impuesto</li>
+                        <li>✅ Si <strong>Impuesto > 0</strong> Y <strong>Mes ≠ Enero</strong> Y <strong>Tipo ≠ Normal</strong> → Multa = L. 0.00</li>
+                        <li>✅ Si <strong>Impuesto = 0</strong> → Multa = L. 0.00 (sin importar mes/tipo)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>📝 Formulario de Test</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_mes">
+                                        <i class="fas fa-calendar-alt"></i> Mes
+                                    </label>
+                                    <select class="form-control" id="id_mes" name="mes">
+                                        <option value="0">Sin seleccionar</option>
+                                        <option value="1">Enero</option>
+                                        <option value="2" selected>Febrero</option>
+                                        <option value="3">Marzo</option>
+                                        <option value="4">Abril</option>
+                                        <option value="5">Mayo</option>
+                                        <option value="6">Junio</option>
+                                        <option value="7">Julio</option>
+                                        <option value="8">Agosto</option>
+                                        <option value="9">Septiembre</option>
+                                        <option value="10">Octubre</option>
+                                        <option value="11">Noviembre</option>
+                                        <option value="12">Diciembre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_tipo">
+                                        <i class="fas fa-tag"></i> Tipo de Declaración
+                                    </label>
+                                    <select class="form-control" id="id_tipo" name="tipo">
+                                        <option value="0">Sin seleccionar</option>
+                                        <option value="1" selected>Normal</option>
+                                        <option value="2">Apertura</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_impuesto">
+                                        <i class="fas fa-calculator"></i> Impuesto Calculado
+                                    </label>
+                                    <input type="text" class="form-control" id="id_impuesto" name="impuesto" 
+                                           value="150.00" readonly
+                                           style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800; color: #e65100; font-weight: 700; text-align: center;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_multadecla">
+                                        <i class="fas fa-exclamation-triangle"></i> Multa Declaración Tardía
+                                    </label>
+                                    <input type="text" class="form-control campo-destacado" id="id_multadecla" name="multadecla" readonly
+                                           style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 2px solid #ffa000; color: #e65100; font-weight: 700; text-align: center;">
+                                    <small class="form-text text-info">
+                                        <i class="fas fa-magic"></i> 
+                                        <strong>Automático:</strong> Se calcula según las reglas
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label>Estado de Validación</label>
+                                    <div id="estado-validacion" class="alert alert-info">
+                                        <i class="fas fa-clock"></i> Esperando cálculo...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-primary" onclick="simularImpuesto(50.00)">
+                                        🧮 Simular Impuesto: L. 50.00
+                                    </button>
+                                    <button type="button" class="btn btn-warning" onclick="simularImpuesto(100.00)">
+                                        🧮 Simular Impuesto: L. 100.00
+                                    </button>
+                                    <button type="button" class="btn btn-success" onclick="simularImpuesto(200.00)">
+                                        🧮 Simular Impuesto: L. 200.00
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="simularImpuesto(0)">
+                                        🧮 Simular Impuesto: L. 0.00
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Monitor en Tiempo Real</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="monitor-estado">
+                            <p class="text-muted">El estado se mostrará aquí</p>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="button" class="btn btn-info" onclick="testSecuenciaCompleta()">
+                                🔄 Test Secuencia Completa
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="testCasosEspeciales()">
+                                🧪 Test Casos Especiales
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log en Tiempo Real</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs de validación en tiempo real...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación del sistema de multa interactiva
+        class TestMultaInteractiva {
+            constructor() {
+                this.setupEventListeners();
+                this.inicializar();
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            setupEventListeners() {
+                const campoMes = document.getElementById('id_mes');
+                const campoTipo = document.getElementById('id_tipo');
+                
+                if (campoMes) {
+                    campoMes.addEventListener('change', () => {
+                        this.log('🔄 Mes cambió - Recalculando multa', 'warning');
+                        this.recalcularMulta();
+                    });
+                }
+                
+                if (campoTipo) {
+                    campoTipo.addEventListener('change', () => {
+                        this.log('🔄 Tipo cambió - Recalculando multa', 'warning');
+                        this.recalcularMulta();
+                    });
+                }
+            }
+            
+            inicializar() {
+                this.log('🚀 Sistema de test de multa iniciado', 'success');
+                this.recalcularMulta();
+            }
+            
+            recalcularMulta() {
+                const mes = parseInt(document.getElementById('id_mes').value) || 0;
+                const tipo = parseInt(document.getElementById('id_tipo').value) || 0;
+                const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+                
+                this.log('🧮 CALCULANDO MULTA AUTOMÁTICAMENTE');
+                this.log(`   Mes: ${mes} (${this.getNombreMes(mes)})`);
+                this.log(`   Tipo: ${tipo} (${this.getNombreTipo(tipo)})`);
+                this.log(`   Impuesto: L. ${impuesto.toFixed(2)}`);
+                
+                let multa = 0;
+                let regla = '';
+                let estado = '';
+                
+                // REGLA 1: Si impuesto <= 0, multa = 0
+                if (impuesto <= 0) {
+                    multa = 0;
+                    regla = 'Impuesto ≤ 0: Multa = 0.00';
+                    estado = 'success';
+                    this.log(`   ✅ ${regla}`, 'success');
+                }
+                // REGLA 2: Si mes = Enero, multa = 0
+                else if (mes === 1) {
+                    multa = 0;
+                    regla = 'Enero: Multa = 0.00';
+                    estado = 'success';
+                    this.log(`   ✅ ${regla}`, 'success');
+                }
+                // REGLA 3: Si mes ≠ Enero Y tipo = Normal, multa = impuesto
+                else if (mes !== 1 && tipo === 1) {
+                    multa = impuesto;
+                    regla = `Mes ≠ Enero + Normal: Multa = Impuesto = L. ${multa.toFixed(2)}`;
+                    estado = 'warning';
+                    this.log(`   ⚠️ ${regla}`, 'warning');
+                }
+                // REGLA 4: Si mes ≠ Enero Y tipo ≠ Normal, multa = 0
+                else if (mes !== 1 && tipo !== 1) {
+                    multa = 0;
+                    regla = 'Mes ≠ Enero + Tipo ≠ Normal: Multa = 0.00';
+                    estado = 'success';
+                    this.log(`   ✅ ${regla}`, 'success');
+                }
+                // DEFAULT
+                else {
+                    multa = 0;
+                    regla = 'Sin selección válida: Multa = 0.00';
+                    estado = 'info';
+                    this.log(`   ℹ️ ${regla}`, 'info');
+                }
+                
+                // Actualizar campo
+                this.actualizarCampoMulta(multa);
+                this.actualizarEstadoValidacion(regla, estado);
+                this.actualizarMonitor();
+                
+                this.log(`💰 MULTA FINAL: L. ${multa.toFixed(2)}`, multa > 0 ? 'warning' : 'success');
+            }
+            
+            actualizarCampoMulta(valor) {
+                const campo = document.getElementById('id_multadecla');
+                if (campo) {
+                    campo.value = valor.toFixed(2);
+                    
+                    if (valor > 0) {
+                        campo.style.backgroundColor = '#fff3cd';
+                        campo.style.borderColor = '#ffa000';
+                        campo.style.color = '#856404';
+                    } else {
+                        campo.style.backgroundColor = '#e8f5e8';
+                        campo.style.borderColor = '#28a745';
+                        campo.style.color = '#155724';
+                    }
+                }
+            }
+            
+            actualizarEstadoValidacion(regla, estado) {
+                const div = document.getElementById('estado-validacion');
+                const iconos = {
+                    'success': 'fa-check-circle',
+                    'warning': 'fa-exclamation-triangle',
+                    'info': 'fa-info-circle',
+                    'error': 'fa-times-circle'
+                };
+                
+                div.className = `alert alert-${estado}`;
+                div.innerHTML = `<i class="fas ${iconos[estado]}"></i> ${regla}`;
+            }
+            
+            actualizarMonitor() {
+                const mes = parseInt(document.getElementById('id_mes').value) || 0;
+                const tipo = parseInt(document.getElementById('id_tipo').value) || 0;
+                const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+                const multa = parseFloat(document.getElementById('id_multadecla').value) || 0;
+                
+                const monitor = document.getElementById('monitor-estado');
+                monitor.innerHTML = `
+                    <div class="alert alert-${multa > 0 ? 'warning' : 'success'} py-2">
+                        <h6>${multa > 0 ? '⚠️' : '✅'} Estado Actual</h6>
+                        <p><strong>Mes:</strong> ${this.getNombreMes(mes)}</p>
+                        <p><strong>Tipo:</strong> ${this.getNombreTipo(tipo)}</p>
+                        <p><strong>Impuesto:</strong> L. ${impuesto.toFixed(2)}</p>
+                        <p><strong>Multa:</strong> L. ${multa.toFixed(2)}</p>
+                    </div>
+                `;
+            }
+            
+            getNombreMes(mes) {
+                const meses = ['Sin seleccionar', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                              'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                return meses[mes] || 'Desconocido';
+            }
+            
+            getNombreTipo(tipo) {
+                const tipos = ['Sin seleccionar', 'Normal', 'Apertura'];
+                return tipos[tipo] || 'Desconocido';
+            }
+        }
+        
+        let testSistema;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs de validación en tiempo real...</p>';
+        }
+        
+        function simularImpuesto(valor) {
+            testSistema.log(`🧮 Simulando impuesto: L. ${valor.toFixed(2)}`, 'info');
+            document.getElementById('id_impuesto').value = valor.toFixed(2);
+            testSistema.recalcularMulta();
+        }
+        
+        function testSecuenciaCompleta() {
+            testSistema.log('🔄 INICIANDO TEST DE SECUENCIA COMPLETA', 'warning');
+            testSistema.log('=' .repeat(50));
+            
+            const secuencia = [
+                {impuesto: 100, mes: 1, tipo: 1, descripcion: 'Enero + Normal + Impuesto'},
+                {impuesto: 100, mes: 2, tipo: 1, descripcion: 'Febrero + Normal + Impuesto'},
+                {impuesto: 100, mes: 2, tipo: 2, descripcion: 'Febrero + Apertura + Impuesto'},
+                {impuesto: 0, mes: 2, tipo: 1, descripcion: 'Sin impuesto + Febrero + Normal'}
+            ];
+            
+            let paso = 0;
+            const ejecutarPaso = () => {
+                if (paso < secuencia.length) {
+                    const test = secuencia[paso];
+                    testSistema.log(`PASO ${paso + 1}: ${test.descripcion}`, 'info');
+                    
+                    document.getElementById('id_impuesto').value = test.impuesto.toFixed(2);
+                    document.getElementById('id_mes').value = test.mes;
+                    document.getElementById('id_tipo').value = test.tipo;
+                    
+                    testSistema.recalcularMulta();
+                    paso++;
+                    
+                    setTimeout(ejecutarPaso, 2000);
+                } else {
+                    testSistema.log('✅ SECUENCIA COMPLETA TERMINADA', 'success');
+                }
+            };
+            
+            ejecutarPaso();
+        }
+        
+        function testCasosEspeciales() {
+            testSistema.log('🧪 PROBANDO CASOS ESPECIALES', 'warning');
+            
+            // Caso 1: Sin seleccionar mes ni tipo
+            testSistema.log('Caso 1: Sin seleccionar mes ni tipo');
+            document.getElementById('id_mes').value = 0;
+            document.getElementById('id_tipo').value = 0;
+            document.getElementById('id_impuesto').value = '50.00';
+            testSistema.recalcularMulta();
+            
+            setTimeout(() => {
+                // Caso 2: Impuesto muy alto
+                testSistema.log('Caso 2: Impuesto muy alto');
+                document.getElementById('id_impuesto').value = '9999.99';
+                document.getElementById('id_mes').value = 6;
+                document.getElementById('id_tipo').value = 1;
+                testSistema.recalcularMulta();
+            }, 2000);
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            testSistema = new TestMultaInteractiva();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

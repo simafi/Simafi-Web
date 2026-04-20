@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔢 Test Automatización Multa Numérica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 500px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .test-case {
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        .result-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .result-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .result-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-primary">
+                    <h4>🔢 Test Automatización Multa - Validación Numérica</h4>
+                    <p><strong>Reglas Numéricas:</strong></p>
+                    <ul>
+                        <li><code>mes === 1</code> (Enero) → <strong>multa = 0.00</strong></li>
+                        <li><code>mes !== 1 && tipo === 1</code> (≠ Enero + Normal) → <strong>multa = impuesto</strong></li>
+                        <li><code>mes !== 1 && tipo !== 1</code> (≠ Enero + ≠ Normal) → <strong>multa = 0.00</strong></li>
+                        <li><code>impuesto <= 0</code> → <strong>multa = 0.00</strong> (sin importar mes/tipo)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>🎛️ Controles de Test</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_mes">
+                                        <i class="fas fa-calendar-alt"></i> Mes
+                                    </label>
+                                    <input type="number" class="form-control" 
+                                           id="id_mes" name="mes" 
+                                           min="1" max="12" step="1" 
+                                           placeholder="Mes" value="2">
+                                    <small class="form-text">Enero = 1</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_tipo">
+                                        <i class="fas fa-tag"></i> Tipo
+                                    </label>
+                                    <select class="form-control" id="id_tipo" name="tipo">
+                                        <option value="">Sin seleccionar</option>
+                                        <option value="1" selected>Normal</option>
+                                        <option value="2">Apertura</option>
+                                    </select>
+                                    <small class="form-text">Normal = 1</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="id_impuesto">
+                                        <i class="fas fa-calculator"></i> Impuesto
+                                    </label>
+                                    <input type="text" class="form-control" id="id_impuesto" 
+                                           value="100.00" readonly
+                                           style="background: #fff3e0; border: 2px solid #ff9800; color: #e65100; font-weight: 700; text-align: center;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group mb-3">
+                                    <label for="id_multadecla">
+                                        <i class="fas fa-exclamation-triangle"></i> Multa (Resultado)
+                                    </label>
+                                    <input type="text" class="form-control" id="id_multadecla" readonly
+                                           style="background: #fff8e1; border: 2px solid #ffa000; color: #e65100; font-weight: 700; text-align: center; font-size: 1.2em;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="validarAhora()">
+                                🔍 Validar Ahora
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="testCasosEspecificos()">
+                                🧪 Test Casos Específicos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Resultados de Test</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultados-test">
+                            <p class="text-muted">Los resultados aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5>🧪 Casos de Test Específicos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="casos-test">
+                            <!-- Los casos de test se generarán aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log Detallado</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs detallados...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TestAutomatizacionMultaNumerica {
+            constructor() {
+                this.setupEventListeners();
+                this.log('🚀 Test de automatización numérica iniciado', 'success');
+                this.generarCasosTest();
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            setupEventListeners() {
+                const campoMes = document.getElementById('id_mes');
+                const campoTipo = document.getElementById('id_tipo');
+                
+                if (campoMes) {
+                    campoMes.addEventListener('change', () => {
+                        this.log('🔄 MES CAMBIÓ - Ejecutando automatización', 'warning');
+                        this.ejecutarAutomatizacion();
+                    });
+                    
+                    campoMes.addEventListener('input', () => {
+                        this.log('📝 MES INPUT - Ejecutando automatización', 'info');
+                        this.ejecutarAutomatizacion();
+                    });
+                }
+                
+                if (campoTipo) {
+                    campoTipo.addEventListener('change', () => {
+                        this.log('🔄 TIPO CAMBIÓ - Ejecutando automatización', 'warning');
+                        this.ejecutarAutomatizacion();
+                    });
+                }
+                
+                this.log('✅ Listeners configurados', 'success');
+            }
+            
+            ejecutarAutomatizacion() {
+                this.log('🤖 EJECUTANDO AUTOMATIZACIÓN DE MULTA', 'warning');
+                
+                // PASO 1: Leer valores de campos
+                const mes = parseInt(document.getElementById('id_mes').value) || 0;
+                const tipo = parseInt(document.getElementById('id_tipo').value) || 0;
+                const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+                
+                this.log(`📊 VALORES LEÍDOS:`);
+                this.log(`   Mes: ${mes} (tipo: ${typeof mes})`);
+                this.log(`   Tipo: ${tipo} (tipo: ${typeof tipo})`);
+                this.log(`   Impuesto: ${impuesto} (tipo: ${typeof impuesto})`);
+                
+                // PASO 2: Validar que impuesto > 0
+                if (impuesto <= 0) {
+                    this.log('⚠️ Impuesto ≤ 0, asignando multa = 0.00', 'warning');
+                    this.actualizarCampoMulta(0);
+                    this.actualizarResultados(mes, tipo, impuesto, 0, 'Impuesto ≤ 0');
+                    return;
+                }
+                
+                // PASO 3: Aplicar validaciones numéricas
+                let multa = 0;
+                let regla = '';
+                
+                this.log('🔢 APLICANDO VALIDACIONES NUMÉRICAS:');
+                
+                // Validación 1: mes === 1
+                if (mes === 1) {
+                    multa = 0;
+                    regla = 'mes === 1 (Enero)';
+                    this.log(`   ✅ ${regla} → multa = 0.00`, 'success');
+                }
+                // Validación 2: mes !== 1 && tipo === 1
+                else if (mes !== 1 && tipo === 1) {
+                    multa = impuesto;
+                    regla = `mes !== 1 (${mes}) && tipo === 1 (Normal)`;
+                    this.log(`   ⚠️ ${regla} → multa = impuesto = ${multa.toFixed(2)}`, 'warning');
+                }
+                // Validación 3: mes !== 1 && tipo !== 1
+                else if (mes !== 1 && tipo !== 1) {
+                    multa = 0;
+                    regla = `mes !== 1 (${mes}) && tipo !== 1 (${tipo})`;
+                    this.log(`   ✅ ${regla} → multa = 0.00`, 'success');
+                }
+                // Default
+                else {
+                    multa = 0;
+                    regla = 'Caso no contemplado';
+                    this.log(`   ⚠️ ${regla} → multa = 0.00`, 'warning');
+                }
+                
+                // PASO 4: Actualizar campo
+                this.actualizarCampoMulta(multa);
+                this.actualizarResultados(mes, tipo, impuesto, multa, regla);
+                
+                this.log(`💰 AUTOMATIZACIÓN COMPLETADA: L. ${multa.toFixed(2)}`, multa > 0 ? 'warning' : 'success');
+            }
+            
+            actualizarCampoMulta(valor) {
+                const campo = document.getElementById('id_multadecla');
+                if (campo) {
+                    campo.value = valor.toFixed(2);
+                    
+                    if (valor > 0) {
+                        campo.style.backgroundColor = '#fff3cd';
+                        campo.style.borderColor = '#ffa000';
+                        campo.style.color = '#856404';
+                    } else {
+                        campo.style.backgroundColor = '#e8f5e8';
+                        campo.style.borderColor = '#28a745';
+                        campo.style.color = '#155724';
+                    }
+                }
+            }
+            
+            actualizarResultados(mes, tipo, impuesto, multa, regla) {
+                const div = document.getElementById('resultados-test');
+                div.innerHTML = `
+                    <div class="alert alert-${multa > 0 ? 'warning' : 'success'} py-2">
+                        <h6>${multa > 0 ? '⚠️' : '✅'} Resultado Automatización</h6>
+                        <p><strong>Mes:</strong> ${mes} ${mes === 1 ? '(Enero)' : mes > 1 && mes <= 12 ? '(≠ Enero)' : '(Inválido)'}</p>
+                        <p><strong>Tipo:</strong> ${tipo} ${tipo === 1 ? '(Normal)' : tipo === 2 ? '(Apertura)' : '(Inválido)'}</p>
+                        <p><strong>Impuesto:</strong> L. ${impuesto.toFixed(2)}</p>
+                        <p><strong>Multa:</strong> L. ${multa.toFixed(2)}</p>
+                        <p><strong>Regla:</strong> ${regla}</p>
+                    </div>
+                `;
+            }
+            
+            generarCasosTest() {
+                const casos = [
+                    {mes: 1, tipo: 1, impuesto: 100, esperado: 0, descripcion: 'Enero + Normal + Impuesto'},
+                    {mes: 1, tipo: 2, impuesto: 100, esperado: 0, descripcion: 'Enero + Apertura + Impuesto'},
+                    {mes: 2, tipo: 1, impuesto: 100, esperado: 100, descripcion: 'Febrero + Normal + Impuesto'},
+                    {mes: 2, tipo: 2, impuesto: 100, esperado: 0, descripcion: 'Febrero + Apertura + Impuesto'},
+                    {mes: 6, tipo: 1, impuesto: 250, esperado: 250, descripcion: 'Junio + Normal + Impuesto Alto'},
+                    {mes: 12, tipo: 2, impuesto: 50, esperado: 0, descripcion: 'Diciembre + Apertura + Impuesto'},
+                    {mes: 3, tipo: 1, impuesto: 0, esperado: 0, descripcion: 'Marzo + Normal + Sin Impuesto'},
+                    {mes: 0, tipo: 0, impuesto: 100, esperado: 0, descripcion: 'Valores inválidos + Impuesto'}
+                ];
+                
+                const casosDiv = document.getElementById('casos-test');
+                casosDiv.innerHTML = casos.map((caso, index) => `
+                    <div class="test-case">
+                        <h6>📋 Caso ${index + 1}: ${caso.descripcion}</h6>
+                        <p><strong>Entrada:</strong> mes=${caso.mes}, tipo=${caso.tipo}, impuesto=${caso.impuesto}</p>
+                        <p><strong>Esperado:</strong> multa=${caso.esperado}</p>
+                        <button class="btn btn-sm btn-primary" onclick="ejecutarCaso(${index})">
+                            🧪 Ejecutar Caso
+                        </button>
+                        <div id="resultado-caso-${index}" class="mt-2"></div>
+                    </div>
+                `).join('');
+                
+                this.casosPrueba = casos;
+            }
+            
+            ejecutarCaso(indiceCaso) {
+                const caso = this.casosPrueba[indiceCaso];
+                this.log(`🧪 EJECUTANDO CASO ${indiceCaso + 1}: ${caso.descripcion}`, 'warning');
+                
+                // Configurar valores
+                document.getElementById('id_mes').value = caso.mes;
+                document.getElementById('id_tipo').value = caso.tipo;
+                document.getElementById('id_impuesto').value = caso.impuesto.toFixed(2);
+                
+                // Ejecutar automatización
+                this.ejecutarAutomatizacion();
+                
+                // Verificar resultado
+                const multaObtenida = parseFloat(document.getElementById('id_multadecla').value) || 0;
+                const esCorrecta = Math.abs(multaObtenida - caso.esperado) < 0.01;
+                
+                const resultadoDiv = document.getElementById(`resultado-caso-${indiceCaso}`);
+                resultadoDiv.innerHTML = `
+                    <div class="test-result result-${esCorrecta ? 'success' : 'error'}">
+                        <strong>${esCorrecta ? '✅ CORRECTO' : '❌ ERROR'}</strong><br>
+                        Esperado: L. ${caso.esperado.toFixed(2)}<br>
+                        Obtenido: L. ${multaObtenida.toFixed(2)}
+                    </div>
+                `;
+                
+                this.log(`${esCorrecta ? '✅' : '❌'} Caso ${indiceCaso + 1}: Esperado=${caso.esperado}, Obtenido=${multaObtenida}`, esCorrecta ? 'success' : 'error');
+            }
+        }
+        
+        let testSistema;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs detallados...</p>';
+        }
+        
+        function validarAhora() {
+            testSistema.log('🔍 VALIDACIÓN MANUAL SOLICITADA', 'info');
+            testSistema.ejecutarAutomatizacion();
+        }
+        
+        function testCasosEspecificos() {
+            testSistema.log('🧪 EJECUTANDO TODOS LOS CASOS DE TEST', 'warning');
+            
+            for (let i = 0; i < testSistema.casosPrueba.length; i++) {
+                setTimeout(() => {
+                    testSistema.ejecutarCaso(i);
+                }, i * 1000);
+            }
+        }
+        
+        function ejecutarCaso(indice) {
+            testSistema.ejecutarCaso(indice);
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            testSistema = new TestAutomatizacionMultaNumerica();
+            
+            // Ejecutar automatización inicial
+            setTimeout(() => {
+                testSistema.ejecutarAutomatizacion();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

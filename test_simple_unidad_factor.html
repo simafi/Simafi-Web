@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple: Unidad × Factor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #28a745;
+            outline: none;
+        }
+        input[readonly] {
+            background-color: #e9ecef;
+            font-weight: bold;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .resultado {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Simple: Unidad × Factor</h1>
+        
+        <div class="form-group">
+            <label for="unidad">Unidad:</label>
+            <input type="number" id="unidad" placeholder="Ej: 10">
+        </div>
+        
+        <div class="form-group">
+            <label for="factor">Factor:</label>
+            <input type="number" id="factor" step="0.01" placeholder="Ej: 255.00">
+        </div>
+        
+        <div class="form-group">
+            <label for="resultado">Resultado:</label>
+            <input type="text" id="resultado" readonly>
+        </div>
+        
+        <button onclick="calcularManual()">🧮 Calcular Manual</button>
+        <button onclick="testBillares()">🎱 Test Billares (10 × 255)</button>
+        <button onclick="limpiar()">🧹 Limpiar</button>
+        
+        <div id="resultado-visual" style="display: none;"></div>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        function log(mensaje) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div>[${timestamp}] ${mensaje}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(mensaje);
+        }
+        
+        function calcularUnidadFactor(unidad, factor) {
+            // Validar que ambos valores sean mayores a cero
+            if (!unidad || unidad <= 0 || !factor || factor <= 0) {
+                log(`⚠️ Validación fallida - Unidad: ${unidad}, Factor: ${factor}`);
+                return 0;
+            }
+            
+            // Multiplicación simple: Factor × Unidad con redondeo a 2 dígitos
+            const resultado = factor * unidad;
+            const resultadoRedondeado = Math.round(resultado * 100) / 100;
+            
+            log(`🧮 Cálculo: ${factor} × ${unidad} = ${resultado}`);
+            log(`🔄 Redondeado: ${resultadoRedondeado.toFixed(2)}`);
+            
+            return resultadoRedondeado;
+        }
+        
+        function calcularManual() {
+            log('🔄 INICIANDO CÁLCULO MANUAL');
+            
+            const unidad = parseFloat(document.getElementById('unidad').value) || 0;
+            const factor = parseFloat(document.getElementById('factor').value) || 0;
+            
+            log(`📊 Valores ingresados - Unidad: ${unidad}, Factor: ${factor}`);
+            
+            const resultado = calcularUnidadFactor(unidad, factor);
+            
+            document.getElementById('resultado').value = `L. ${resultado.toFixed(2)}`;
+            
+            mostrarResultado(unidad, factor, resultado);
+            
+            log(`✅ Resultado final: L. ${resultado.toFixed(2)}`);
+        }
+        
+        function testBillares() {
+            log('🎱 INICIANDO TEST BILLARES');
+            
+            document.getElementById('unidad').value = '10';
+            document.getElementById('factor').value = '255.00';
+            
+            setTimeout(() => {
+                calcularManual();
+                log('🎱 Test Billares completado - Esperado: L. 2,550.00');
+            }, 100);
+        }
+        
+        function limpiar() {
+            document.getElementById('unidad').value = '';
+            document.getElementById('factor').value = '';
+            document.getElementById('resultado').value = '';
+            document.getElementById('resultado-visual').style.display = 'none';
+            document.getElementById('log').innerHTML = '';
+            log('🧹 Campos limpiados');
+        }
+        
+        function mostrarResultado(unidad, factor, resultado) {
+            const div = document.getElementById('resultado-visual');
+            const esValido = unidad > 0 && factor > 0;
+            
+            div.style.display = 'block';
+            div.className = 'resultado';
+            div.innerHTML = `
+                <h3>${esValido ? '✅ CÁLCULO VÁLIDO' : '❌ CÁLCULO INVÁLIDO'}</h3>
+                <p><strong>Unidad:</strong> ${unidad}</p>
+                <p><strong>Factor:</strong> ${factor}</p>
+                <p><strong>Resultado:</strong> L. ${resultado.toFixed(2)}</p>
+                <p><strong>Válido:</strong> ${esValido ? 'SÍ (ambos > 0)' : 'NO (uno o ambos ≤ 0)'}</p>
+            `;
+        }
+        
+        // Inicialización
+        window.addEventListener('load', function() {
+            log('🚀 Test Simple cargado correctamente');
+            
+            // Auto-test
+            setTimeout(() => {
+                testBillares();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

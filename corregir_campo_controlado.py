@@ -1,0 +1,239 @@
+#!/usr/bin/env python3
+"""
+Script para corregir el campo 'controlado' (cocontrolado en BD) 
+y asegurar formato DECIMAL(16,2) correcto
+"""
+
+import os
+import shutil
+from pathlib import Path
+
+def actualizar_javascript_controlado():
+    """Actualiza el JavaScript para manejar correctamente el campo controlado"""
+    
+    js_file = Path("c:/simafiweb/declaracion_volumen_interactivo.js")
+    
+    if not js_file.exists():
+        print(f"❌ No se encontró: {js_file}")
+        return False
+    
+    # Verificar que contiene las correcciones para controlado
+    with open(js_file, 'r', encoding='utf-8') as f:
+        contenido = f.read()
+    
+    if "cocontrolado" in contenido and "controlado" in contenido:
+        print("✅ JavaScript ya contiene correcciones para campo controlado")
+        return True
+    else:
+        print("⚠️ JavaScript necesita actualización para campo controlado")
+        return False
+
+def copiar_js_actualizado():
+    """Copia el JavaScript actualizado a todas las ubicaciones Django"""
+    
+    js_corregido = Path("c:/simafiweb/declaracion_volumen_interactivo.js")
+    
+    destinos = [
+        "c:/simafiweb/venv/Scripts/tributario/tributario_app/static/js/declaracion_volumen_interactivo.js",
+        "c:/simafiweb/venv/Scripts/tributario/tributario_app/templates/static/js/declaracion_volumen_interactivo.js",
+        "c:/simafiweb/venv/Scripts/tributario/static/js/declaracion_volumen_interactivo.js",
+        "c:/simafiweb/venv/Scripts/tributario/tributario_app/static/declaracion_volumen_interactivo.js"
+    ]
+    
+    copiados = 0
+    for destino_str in destinos:
+        destino = Path(destino_str)
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            shutil.copy2(js_corregido, destino)
+            copiados += 1
+        except Exception as e:
+            print(f"⚠️ Error copiando a {destino}: {e}")
+    
+    print(f"✅ JavaScript copiado a {copiados} ubicaciones")
+    return copiados > 0
+
+def crear_test_campo_controlado():
+    """Crea un test específico para el campo controlado"""
+    
+    html_test = '''<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Campo Controlado DECIMAL(16,2)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>🧪 Test Campo Controlado</h1>
+        <p class="text-muted">Verificación DECIMAL(16,2) para campo 'controlado' (cocontrolado en BD)</p>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Campo Controlado</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="id_cocontrolado" class="form-label">Valor Controlado (BD: cocontrolado)</label>
+                            <input type="text" class="form-control" 
+                                   id="id_cocontrolado" name="cocontrolado" 
+                                   placeholder="Ej: 1.234.567,89"
+                                   maxlength="20">
+                            <div class="form-text">Campo real en BD: 'cocontrolado'</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_controlado" class="form-label">Valor Controlado (Alias: controlado)</label>
+                            <input type="text" class="form-control" 
+                                   id="id_controlado" name="controlado" 
+                                   placeholder="Ej: 9.876.543,21"
+                                   maxlength="20">
+                            <div class="form-text">Alias que mapea a 'cocontrolado'</div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="probarCampoControlado()">
+                            🧮 Probar Validación
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Resultado de Validación</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultado_validacion">
+                            <p class="text-muted">Ingrese valores y haga clic en "Probar Validación"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4>📋 Información del Campo</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Base de Datos:</h5>
+                        <ul>
+                            <li><strong>Nombre real:</strong> <code>cocontrolado</code></li>
+                            <li><strong>Formato:</strong> DECIMAL(16,2)</li>
+                            <li><strong>Máximo:</strong> 99,999,999,999,999.99</li>
+                            <li><strong>Default:</strong> 0.00</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Formulario:</h5>
+                        <ul>
+                            <li><strong>Puede usar:</strong> <code>controlado</code> o <code>cocontrolado</code></li>
+                            <li><strong>Mapeo automático:</strong> controlado → cocontrolado</li>
+                            <li><strong>Formato soportado:</strong> Europeo y Americano</li>
+                            <li><strong>Validación:</strong> DECIMAL(16,2)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="declaracion_volumen_interactivo.js"></script>
+    <script>
+        function probarCampoControlado() {
+            const resultado = document.getElementById('resultado_validacion');
+            
+            if (typeof DeclaracionVolumenInteractivo !== 'undefined') {
+                const calculadora = new DeclaracionVolumenInteractivo();
+                
+                // Probar ambos campos
+                const valorCocontrolado = calculadora.obtenerValorCampoValidado('cocontrolado');
+                const valorControlado = calculadora.obtenerValorCampoValidado('controlado');
+                
+                resultado.innerHTML = `
+                    <div class="alert alert-info">
+                        <h5>✅ Resultados de Validación:</h5>
+                        <p><strong>Campo 'cocontrolado':</strong> ${valorCocontrolado.toLocaleString('es-CO', {minimumFractionDigits: 2})}</p>
+                        <p><strong>Campo 'controlado' (mapeado):</strong> ${valorControlado.toLocaleString('es-CO', {minimumFractionDigits: 2})}</p>
+                        <p><strong>Estado:</strong> ${valorCocontrolado > 0 || valorControlado > 0 ? '✅ Valores detectados' : '⚠️ Sin valores'}</p>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <h5>🔧 Correcciones Aplicadas:</h5>
+                        <ul>
+                            <li>Mapeo automático: controlado → cocontrolado</li>
+                            <li>Validación DECIMAL(16,2) aplicada</li>
+                            <li>Soporte formato europeo/americano</li>
+                            <li>Búsqueda en múltiples IDs de campo</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                resultado.innerHTML = '<div class="alert alert-danger">❌ DeclaracionVolumenInteractivo no disponible</div>';
+            }
+        }
+        
+        // Configurar formateo automático
+        document.addEventListener('DOMContentLoaded', function() {
+            const calculadora = new DeclaracionVolumenInteractivo();
+            
+            ['id_cocontrolado', 'id_controlado'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', function(event) {
+                        calculadora.formatearNumero(event);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>'''
+    
+    with open("c:/simafiweb/test_campo_controlado.html", 'w', encoding='utf-8') as f:
+        f.write(html_test)
+    
+    print("✅ Test creado: test_campo_controlado.html")
+
+def main():
+    print("🔧 Corrigiendo campo 'controlado' (cocontrolado)...")
+    print("=" * 50)
+    
+    # 1. Verificar JavaScript
+    if actualizar_javascript_controlado():
+        
+        # 2. Copiar a Django
+        if copiar_js_actualizado():
+            
+            # 3. Crear test
+            crear_test_campo_controlado()
+            
+            print("\n" + "=" * 50)
+            print("✅ CORRECCIÓN COMPLETADA")
+            print("\n📝 RESUMEN:")
+            print("- Campo BD real: 'cocontrolado' DECIMAL(16,2)")
+            print("- Alias formulario: 'controlado' → mapea a 'cocontrolado'")
+            print("- Validación DECIMAL(16,2) aplicada")
+            print("- Soporte formato europeo/americano")
+            
+            print("\n🧪 PRUEBAS:")
+            print("1. Abrir: test_campo_controlado.html")
+            print("2. Probar valores: 1.234.567,89")
+            print("3. Verificar mapeo automático")
+            
+            print("\n📋 SQL REQUERIDO:")
+            print("ALTER TABLE `declara` MODIFY COLUMN `cocontrolado` DECIMAL(16,2) DEFAULT 0.00;")
+            
+        else:
+            print("❌ Error copiando JavaScript")
+    else:
+        print("❌ Error en JavaScript")
+
+if __name__ == "__main__":
+    main()

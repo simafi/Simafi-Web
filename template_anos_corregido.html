@@ -1,0 +1,18 @@
+
+<!-- Combobox de Años - Corregido -->
+<div class="form-group form-group-ano">
+    <label for="id_ano" class="required">
+        <i class="fas fa-calendar"></i> Año
+    </label>
+    <select id="id_ano" name="ano" class="form-control" required>
+        <option value="">Seleccione año</option>
+        {% for ano in anos_disponibles %}
+            <option value="{{ ano.ano }}" {% if form.ano.value == ano.ano|stringformat:"s" %}selected{% endif %}>
+                {{ ano.ano }}
+            </option>
+        {% endfor %}
+    </select>
+    <small class="form-text text-muted">
+        Seleccione el año de la declaración
+    </small>
+</div>

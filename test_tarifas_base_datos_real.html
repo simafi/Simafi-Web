@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗄️ Test Tarifas Base de Datos Real</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 11px; 
+            max-height: 300px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 10px; 
+        }
+        .tarifa-real { background: #d4edda; border: 1px solid #c3e6cb; }
+        .tarifa-fallback { background: #fff3cd; border: 1px solid #ffeaa7; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h4>🗄️ Test Tarifas Base de Datos Real</h4>
+                    <p><strong>Propósito:</strong> Verificar que el sistema consulte correctamente la tabla <code>tarifasimptoics</code></p>
+                    <p><strong>Categoría 2:</strong> Productos Controlados (primera fila 0.10, resto 0.01)</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>🔗 Test de Conexión API</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="testConexionAPI()">
+                                🌐 Probar Conexión API
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="obtenerTarifasCategoria1()">
+                                📊 Obtener Tarifas Categoría 1
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="obtenerTarifasCategoria2()">
+                                📊 Obtener Tarifas Categoría 2 (Controlados)
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="compararTarifas()">
+                                🔍 Comparar Hardcoded vs BD
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Resultados</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultados-api">
+                            <p class="text-muted">Los resultados de la API aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5>🧪 Test de Cálculo con Tarifas Reales</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="valor-controlados" class="form-label">Productos Controlados</label>
+                                <input type="text" class="form-control" id="valor-controlados" value="50,000.00">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-warning mt-4" onclick="calcularConTarifasReales()">
+                                    💰 Calcular con Tarifas BD
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Resultado</label>
+                                <input type="text" class="form-control" id="resultado-bd" readonly
+                                       style="background: #e8f5e8; font-weight: bold;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log de Debug</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Los logs aparecerán aquí...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tarifasRealesCategoria2 = [];
+        
+        function log(mensaje, tipo = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${mensaje}`;
+            
+            const logElement = document.getElementById('debug-log');
+            const colorClass = tipo === 'error' ? 'text-danger' : 
+                              tipo === 'success' ? 'text-success' : 
+                              tipo === 'warning' ? 'text-warning' : 'text-info';
+            
+            logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Los logs aparecerán aquí...</p>';
+        }
+        
+        async function testConexionAPI() {
+            limpiarLog();
+            log('🌐 Probando conexión a la API de tarifas...', 'info');
+            
+            try {
+                const response = await fetch('/tributario/api/tarifas-ics/?categoria=1');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ API respondió correctamente`, 'success');
+                    log(`📊 Tarifas categoría 1 encontradas: ${data.total}`, 'success');
+                    
+                    document.getElementById('resultados-api').innerHTML = `
+                        <div class="alert alert-success">
+                            <h6>✅ Conexión API Exitosa</h6>
+                            <p><strong>Estado:</strong> ${data.success ? 'Éxito' : 'Error'}</p>
+                            <p><strong>Categoría:</strong> ${data.categoria}</p>
+                            <p><strong>Total tarifas:</strong> ${data.total}</p>
+                        </div>
+                    `;
+                } else {
+                    log(`❌ API respondió con error: ${response.status}`, 'error');
+                    document.getElementById('resultados-api').innerHTML = `
+                        <div class="alert alert-danger">
+                            <h6>❌ Error de Conexión</h6>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Mensaje:</strong> Error al conectar con la API</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                log(`❌ Error de conexión: ${error.message}`, 'error');
+                document.getElementById('resultados-api').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h6>❌ Error de Red</h6>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Verifique que el servidor esté ejecutándose</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function obtenerTarifasCategoria2() {
+            limpiarLog();
+            log('📊 Obteniendo tarifas de categoría 2 (Productos Controlados)...', 'info');
+            
+            try {
+                const response = await fetch('/tributario/api/tarifas-ics/?categoria=2');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    tarifasRealesCategoria2 = data.tarifas || [];
+                    
+                    log(`✅ Tarifas categoría 2 obtenidas: ${data.total}`, 'success');
+                    
+                    let html = `
+                        <div class="alert alert-success">
+                            <h6>✅ Tarifas Categoría 2 (Productos Controlados)</h6>
+                            <p><strong>Total encontradas:</strong> ${data.total}</p>
+                        </div>
+                    `;
+                    
+                    if (tarifasRealesCategoria2.length > 0) {
+                        html += '<h6>📋 Tarifas Encontradas:</h6>';
+                        html += '<div class="table-responsive"><table class="table table-sm">';
+                        html += '<thead><tr><th>Rango 1</th><th>Rango 2</th><th>Valor</th><th>Descripción</th></tr></thead><tbody>';
+                        
+                        tarifasRealesCategoria2.forEach((tarifa, index) => {
+                            html += `<tr class="tarifa-real">
+                                <td>$${tarifa.rango1.toLocaleString()}</td>
+                                <td>$${tarifa.rango2.toLocaleString()}</td>
+                                <td><strong>${tarifa.valor}</strong></td>
+                                <td>${tarifa.descripcion}</td>
+                            </tr>`;
+                            
+                            log(`   Tarifa ${index + 1}: $${tarifa.rango1.toLocaleString()} - $${tarifa.rango2.toLocaleString()} = ${tarifa.valor}/1000`, 'info');
+                        });
+                        
+                        html += '</tbody></table></div>';
+                    } else {
+                        html += '<div class="alert alert-warning">⚠️ No se encontraron tarifas en categoría 2</div>';
+                        log('⚠️ No hay tarifas configuradas en categoría 2', 'warning');
+                    }
+                    
+                    document.getElementById('resultados-api').innerHTML = html;
+                } else {
+                    log(`❌ Error al obtener tarifas categoría 2: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function obtenerTarifasCategoria1() {
+            limpiarLog();
+            log('📊 Obteniendo tarifas de categoría 1 (Ventas normales)...', 'info');
+            
+            try {
+                const response = await fetch('/tributario/api/tarifas-ics/?categoria=1');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    log(`✅ Tarifas categoría 1 obtenidas: ${data.total}`, 'success');
+                    
+                    let html = `
+                        <div class="alert alert-info">
+                            <h6>📊 Tarifas Categoría 1 (Ventas Normales)</h6>
+                            <p><strong>Total encontradas:</strong> ${data.total}</p>
+                        </div>
+                    `;
+                    
+                    if (data.tarifas && data.tarifas.length > 0) {
+                        html += '<h6>📋 Tarifas Encontradas:</h6>';
+                        html += '<div class="table-responsive"><table class="table table-sm">';
+                        html += '<thead><tr><th>Rango 1</th><th>Rango 2</th><th>Valor</th><th>Descripción</th></tr></thead><tbody>';
+                        
+                        data.tarifas.forEach((tarifa, index) => {
+                            html += `<tr>
+                                <td>$${tarifa.rango1.toLocaleString()}</td>
+                                <td>$${tarifa.rango2.toLocaleString()}</td>
+                                <td>${tarifa.valor}</td>
+                                <td>${tarifa.descripcion}</td>
+                            </tr>`;
+                            
+                            log(`   Tarifa ${index + 1}: $${tarifa.rango1.toLocaleString()} - $${tarifa.rango2.toLocaleString()} = ${tarifa.valor}/1000`, 'info');
+                        });
+                        
+                        html += '</tbody></table></div>';
+                    }
+                    
+                    document.getElementById('resultados-api').innerHTML = html;
+                } else {
+                    log(`❌ Error al obtener tarifas categoría 1: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function calcularConTarifasReales() {
+            if (tarifasRealesCategoria2.length === 0) {
+                log('⚠️ Primero obtenga las tarifas de categoría 2', 'warning');
+                alert('Primero haga clic en "Obtener Tarifas Categoría 2"');
+                return;
+            }
+            
+            limpiarLog();
+            log('💰 Calculando con tarifas REALES de la base de datos...', 'info');
+            
+            const valorOriginal = document.getElementById('valor-controlados').value;
+            const valorParseado = parsearValor(valorOriginal);
+            
+            log(`📊 Valor original: "${valorOriginal}"`);
+            log(`📊 Valor parseado: ${valorParseado.toLocaleString()}`);
+            
+            const resultado = calcularConTarifasBD(valorParseado, tarifasRealesCategoria2);
+            
+            document.getElementById('resultado-bd').value = `L. ${resultado.impuestoTotal.toFixed(2)}`;
+            
+            log(`💰 Impuesto calculado con tarifas BD: L. ${resultado.impuestoTotal.toFixed(2)}`, 'success');
+            log('📋 Detalle del cálculo:', 'info');
+            resultado.detalle.forEach(item => {
+                log(`   ${item}`, 'info');
+            });
+        }
+        
+        function parsearValor(valor) {
+            if (!valor) return 0;
+            
+            if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                return parseFloat(valor.replace(/,/g, '')) || 0;
+            }
+            else if (/^\d{1,3}(,\d{3})+$/.test(valor)) {
+                return parseFloat(valor.replace(/,/g, '')) || 0;
+            }
+            else {
+                const valorLimpio = valor.replace(/[^0-9.]/g, '');
+                return parseFloat(valorLimpio) || 0;
+            }
+        }
+        
+        function calcularConTarifasBD(valorVentas, tarifas) {
+            if (!valorVentas || valorVentas <= 0) {
+                return { impuestoTotal: 0, detalle: [] };
+            }
+            
+            let impuestoTotal = 0;
+            let valorRestante = valorVentas;
+            const detalle = [];
+            
+            for (const tarifa of tarifas) {
+                if (valorRestante <= 0) break;
+                
+                const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                if (diferencialRango <= 0) continue;
+                
+                let valorAplicable;
+                if (valorRestante <= diferencialRango) {
+                    valorAplicable = valorRestante;
+                    valorRestante = 0;
+                } else {
+                    valorAplicable = diferencialRango;
+                    valorRestante -= diferencialRango;
+                }
+                
+                const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+                impuestoTotal += impuestoRango;
+                
+                detalle.push(`L. ${valorAplicable.toLocaleString()} ÷ 1000 × ${tarifa.valor} = L. ${impuestoRango.toFixed(2)}`);
+            }
+            
+            return {
+                impuestoTotal: Math.round(impuestoTotal * 100) / 100,
+                detalle: detalle
+            };
+        }
+        
+        function compararTarifas() {
+            limpiarLog();
+            log('🔍 COMPARANDO TARIFAS HARDCODED VS BASE DE DATOS', 'warning');
+            log('=' .repeat(60));
+            
+            // Tarifas hardcoded (las que tenía antes)
+            const tarifasHardcoded = [
+                {"rango1": 0.0, "rango2": 1000000.0, "valor": 0.5, "descripcion": "Hardcoded $0-$1M"},
+                {"rango1": 1000000.01, "rango2": 5000000.0, "valor": 0.6, "descripcion": "Hardcoded $1M-$5M"},
+                {"rango1": 5000000.01, "rango2": 9999999999.0, "valor": 0.7, "descripcion": "Hardcoded $5M+"}
+            ];
+            
+            log('📊 TARIFAS HARDCODED (INCORRECTAS):');
+            tarifasHardcoded.forEach((tarifa, index) => {
+                log(`   ${index + 1}. ${tarifa.descripcion}: ${tarifa.valor}/1000`, 'warning');
+            });
+            
+            log('\n📊 TARIFAS DE BASE DE DATOS (CORRECTAS):');
+            if (tarifasRealesCategoria2.length > 0) {
+                tarifasRealesCategoria2.forEach((tarifa, index) => {
+                    log(`   ${index + 1}. ${tarifa.descripcion}: ${tarifa.valor}/1000`, 'success');
+                });
+            } else {
+                log('   ⚠️ No se han cargado las tarifas de BD. Haga clic en "Obtener Tarifas Categoría 2"', 'warning');
+            }
+            
+            // Calcular con ambas para comparar
+            const valorPrueba = 50000;
+            
+            log('\n🧮 COMPARACIÓN DE CÁLCULOS PARA 50,000:');
+            
+            const resultadoHardcoded = calcularConTarifasBD(valorPrueba, tarifasHardcoded);
+            log(`   Hardcoded: L. ${resultadoHardcoded.impuestoTotal.toFixed(2)}`, 'warning');
+            
+            if (tarifasRealesCategoria2.length > 0) {
+                const resultadoBD = calcularConTarifasBD(valorPrueba, tarifasRealesCategoria2);
+                log(`   Base de Datos: L. ${resultadoBD.impuestoTotal.toFixed(2)}`, 'success');
+                
+                if (resultadoHardcoded.impuestoTotal !== resultadoBD.impuestoTotal) {
+                    log(`✅ LAS TARIFAS SON DIFERENTES - Usando BD es correcto`, 'success');
+                } else {
+                    log(`⚠️ Las tarifas dan el mismo resultado`, 'warning');
+                }
+            }
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Test de tarifas BD inicializado', 'success');
+            log('💡 Primero pruebe la conexión API, luego obtenga las tarifas de categoría 2', 'info');
+        });
+    </script>
+</body>
+</html>
+

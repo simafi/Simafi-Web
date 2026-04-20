@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Formulario Actividad</title>
+</head>
+<body>
+    <h1>Test de Formulario Actividad</h1>
+    
+    <form method="post" id="actividad-form" autocomplete="off" novalidate>
+        <input type="hidden" name="csrfmiddlewaretoken" value="test">
+        <input type="hidden" id="hidden_cuentarec" name="cuentarec" value="">
+        
+        <div>
+            <label>Empresa:</label>
+            <input type="text" id="id_empresa" name="empresa" value="0301" readonly>
+        </div>
+        
+        <div>
+            <label>Cuenta:</label>
+            <input type="text" id="id_cuenta" name="cuenta" maxlength="20" 
+                   tabindex="1" placeholder="Ingrese cuenta">
+        </div>
+        
+        <div>
+            <label>Descripción:</label>
+            <input type="text" id="id_descripcion" name="descripcion" maxlength="200" 
+                   tabindex="4" placeholder="Ingrese descripción" readonly>
+        </div>
+        
+        <div>
+            <label>Cuenta Rezago:</label>
+            <input type="text" id="id_cuentarez" name="cuentarez" maxlength="20" readonly>
+        </div>
+        
+        <div>
+            <label>Cuenta Recargos:</label>
+            <input type="text" id="id_cuentarec" maxlength="20" readonly>
+        </div>
+        
+        <button type="submit" name="accion" value="guardar" id="btn-guardar">Guardar</button>
+    </form>
+    
+    <div id="logs" style="margin-top: 20px; padding: 10px; background: #f0f0f0; white-space: pre-wrap;"></div>
+    
+    <script>
+        const log = (msg) => {
+            const logs = document.getElementById('logs');
+            logs.textContent += msg + '\n';
+            console.log(msg);
+        };
+        
+        const actividadForm = document.getElementById('actividad-form');
+        const cuentaInput = document.getElementById('id_cuenta');
+        const descripcionInput = document.getElementById('id_descripcion');
+        const cuentarezInput = document.getElementById('id_cuentarez');
+        const cuentarecInput = document.getElementById('id_cuentarec');
+        const empresaInput = document.getElementById('id_empresa');
+        
+        let accionGuardada = '';
+        const botonesAccion = actividadForm.querySelectorAll('button[type="submit"][name="accion"]');
+        botonesAccion.forEach(btn => {
+            btn.addEventListener('click', function() {
+                accionGuardada = this.value || '';
+                log('🔘 [BOTÓN CLIC] Acción capturada: ' + accionGuardada);
+            });
+        });
+        
+        actividadForm.addEventListener('submit', function(e) {
+            log('\n=== INICIO SUBMIT ===');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (!this.hasAttribute('novalidate')) {
+                this.setAttribute('novalidate', 'novalidate');
+                log('✅ Atributo novalidate agregado');
+            }
+            
+            let accion = accionGuardada || document.activeElement?.value || '';
+            log('🔍 Acción detectada: ' + accion);
+            
+            if (accion === 'guardar') {
+                // Remover readonly
+                if (descripcionInput && descripcionInput.hasAttribute('readonly')) {
+                    descripcionInput.removeAttribute('readonly');
+                    log('✅ Removido readonly de descripcion');
+                }
+                if (cuentarezInput && cuentarezInput.hasAttribute('readonly')) {
+                    cuentarezInput.removeAttribute('readonly');
+                    log('✅ Removido readonly de cuentarez');
+                }
+                if (cuentarecInput && cuentarecInput.hasAttribute('readonly')) {
+                    cuentarecInput.removeAttribute('readonly');
+                    log('✅ Removido readonly de cuentarec');
+                }
+                
+                // Capturar valores
+                const empresa = empresaInput ? empresaInput.value.trim() : '';
+                const cuenta = cuentaInput ? cuentaInput.value.trim() : '';
+                const descripcion = descripcionInput ? descripcionInput.value.trim() : '';
+                const cuentarez = cuentarezInput ? cuentarezInput.value.trim() : '';
+                const cuentarec = cuentarecInput ? cuentarecInput.value.trim() : '';
+                
+                log('📋 Valores capturados:');
+                log('   - empresa: ' + empresa);
+                log('   - cuenta: ' + cuenta);
+                log('   - descripcion: ' + descripcion);
+                log('   - cuentarez: ' + cuentarez);
+                log('   - cuentarec: ' + cuentarec);
+                
+                // Validar
+                let hayErrores = false;
+                if (!empresa) {
+                    log('❌ ERROR: Empresa vacía');
+                    hayErrores = true;
+                }
+                if (!cuenta) {
+                    log('❌ ERROR: Cuenta vacía');
+                    hayErrores = true;
+                }
+                if (!descripcion) {
+                    log('❌ ERROR: Descripción vacía');
+                    hayErrores = true;
+                }
+                
+                if (hayErrores) {
+                    log('❌ HAY ERRORES - NO SE ENVÍA');
+                    return false;
+                }
+                
+                // Remover todos los required
+                const allRequiredInputs = this.querySelectorAll('input[required], textarea[required], select[required]');
+                log('🔍 Campos con required encontrados: ' + allRequiredInputs.length);
+                allRequiredInputs.forEach(input => {
+                    input.removeAttribute('required');
+                    log('✅ Removido required de: ' + (input.id || input.name));
+                });
+                
+                // Actualizar hidden cuentarec
+                const hiddenCuentarec = document.getElementById('hidden_cuentarec');
+                if (hiddenCuentarec) {
+                    hiddenCuentarec.value = cuentarec;
+                    log('✅ Hidden cuentarec actualizado: ' + cuentarec);
+                }
+                
+                // Verificar FormData
+                const formData = new FormData(this);
+                log('\n📦 FormData:');
+                for (let [key, value] of formData.entries()) {
+                    log('   ' + key + ': ' + value);
+                }
+                
+                // Intentar enviar
+                log('\n🚀 Intentando enviar formulario...');
+                try {
+                    // Verificar si hay validación HTML5 bloqueando
+                    if (!this.checkValidity()) {
+                        log('❌ ERROR: checkValidity() retorna false');
+                        log('   - Validity state: ' + JSON.stringify({
+                            valid: this.validity.valid,
+                            valueMissing: this.validity.valueMissing,
+                            customError: this.validity.customError
+                        }));
+                    } else {
+                        log('✅ checkValidity() retorna true');
+                    }
+                    
+                    this.submit();
+                    log('✅ submit() llamado');
+                } catch (error) {
+                    log('❌ ERROR al enviar: ' + error.message);
+                }
+            }
+        });
+        
+        // Simular llenado de campos
+        log('=== TEST INICIADO ===');
+        log('Llenando campos de prueba...');
+        cuentaInput.value = '11.7.1.01.09.00';
+        descripcionInput.value = 'Test Descripción';
+        cuentarezInput.value = '11.7.1.98.01.00';
+        cuentarecInput.value = '11.7.1.01.09.01';
+        log('Campos llenados. Haz clic en Guardar para probar.');
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

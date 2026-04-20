@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Verificación Real - Unidad × Factor</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .panel { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .resultado { background: #d5f4e6; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #27ae60; }
+        .error { background: #fadbd8; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #e74c3c; }
+        .warning { background: #fef5e7; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #f39c12; }
+        button { padding: 12px 24px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; font-size: 14px; }
+        button:hover { background: #2980b9; }
+        .code { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 12px; overflow-x: auto; }
+        iframe { width: 100%; height: 700px; border: 2px solid #3498db; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h2>🔍 VERIFICACIÓN REAL DEL CÁLCULO UNIDAD × FACTOR</h2>
+        <p><strong>Esta página te permite verificar si el sistema está funcionando correctamente</strong></p>
+        
+        <div class="warning">
+            <strong>⚠️ IMPORTANTE:</strong><br>
+            1. El formulario real está cargado abajo en el iframe<br>
+            2. Abre la consola del navegador (<strong>F12</strong>) para ver los logs del sistema<br>
+            3. Si ya tenías el formulario abierto, recarga con <strong>Ctrl+F5</strong>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>📋 INSTRUCCIONES DE PRUEBA</h2>
+        
+        <div style="background: #ecf0f1; padding: 15px; border-radius: 5px;">
+            <h3>Paso 1: Verificar Inicialización</h3>
+            <ol>
+                <li>Presiona <strong>F12</strong> para abrir Developer Tools</li>
+                <li>Ve a la pestaña <strong>Console</strong></li>
+                <li>Busca el mensaje:
+                    <div class="code">🔧 Variables ocultas creadas: {...}</div>
+                </li>
+                <li>Verifica que contenga:
+                    <div class="code">unidadFactor_impuesto: 0</div>
+                </li>
+            </ol>
+            
+            <button onclick="alert('✅ Si ves ese mensaje con unidadFactor_impuesto: 0, la inicialización está OK')">
+                ✅ Veo el mensaje
+            </button>
+            <button onclick="alert('❌ Si NO ves ese mensaje:\\n\\n1. Recarga con Ctrl+F5\\n2. Verifica que no haya errores rojos en consola\\n3. Busca el mensaje: Sistema de cálculo interactivo inicializado')" style="background: #e74c3c;">
+                ❌ NO veo el mensaje
+            </button>
+        </div>
+
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin-top: 15px;">
+            <h3>Paso 2: Probar el Cálculo</h3>
+            <ol>
+                <li>En el formulario abajo, busca el campo <strong>"Unidad"</strong></li>
+                <li>Ingresa el valor: <strong>1000</strong></li>
+                <li>Presiona <strong>Tab</strong> o haz clic fuera</li>
+                <li>Busca el campo <strong>"Factor"</strong></li>
+                <li>Ingresa el valor: <strong>5.50</strong></li>
+                <li>Presiona <strong>Tab</strong> o haz clic fuera</li>
+            </ol>
+        </div>
+
+        <div style="background: #fff3e0; padding: 15px; border-radius: 5px; margin-top: 15px;">
+            <h3>Paso 3: Verificar en Console</h3>
+            <p>Después de ingresar los valores, debes ver en la consola:</p>
+            <div class="code">
+📝 EVENT INPUT DISPARADO PARA: unidad con valor: "1000"<br>
+🔢 CALCULANDO IMPUESTOS PARA CAMPO: unidad<br>
+<br>
+🧮 Cálculo Factor × Unidad:<br>
+   Factor: 5.5<br>
+   Unidad: 1000<br>
+   Resultado: 5.5 × 1000 = 5500<br>
+<br>
+📊 Unidad × Factor: 1000 × 5.5 = L. 5500.00<br>
+💰 TOTAL IMPUESTO FINAL: L. 5500.00<br>
+✅ Campo impuesto actualizado: ... Valor nuevo: L. 5500.00
+            </div>
+            
+            <button onclick="alert('✅ FUNCIONANDO CORRECTAMENTE\\n\\nEl sistema está calculando bien. Si ves estos mensajes, el cálculo está operativo.')">
+                ✅ Veo estos mensajes
+            </button>
+            <button onclick="alert('❌ NO FUNCIONA\\n\\nSi NO ves estos mensajes:\\n\\n1. Verifica que los campos sean id_unidad e id_factor\\n2. Busca errores rojos en consola\\n3. Verifica que el mensaje de inicialización aparezca\\n4. Recarga con Ctrl+F5')" style="background: #e74c3c;">
+                ❌ NO veo estos mensajes
+            </button>
+        </div>
+
+        <div style="background: #d5f4e6; padding: 15px; border-radius: 5px; margin-top: 15px;">
+            <h3>Paso 4: Verificar en el Formulario</h3>
+            <p>El campo <strong>"Impuesto Calculado"</strong> o <strong>"Impuesto"</strong> debe mostrar:</p>
+            <div class="code" style="font-size: 18px; text-align: center;">
+                L. 5,500.00
+            </div>
+            
+            <button onclick="alert('✅ PERFECTO\\n\\nEl campo se actualiza correctamente. El sistema está completamente funcional.')">
+                ✅ El campo muestra L. 5,500.00
+            </button>
+            <button onclick="alert('❌ PROBLEMA EN LA ACTUALIZACIÓN\\n\\nEl cálculo se hace (ves logs en consola) pero el campo no se actualiza.\\n\\nPosibles causas:\\n1. Campo está en readonly\\n2. Hay otro script que sobreescribe el valor\\n3. El ID del campo no es id_impuesto')" style="background: #f39c12;">
+                ⚠️ Veo los logs pero el campo NO cambia
+            </button>
+            <button onclick="alert('❌ NO FUNCIONA NADA\\n\\nNi logs ni actualización.\\n\\nVERIFICAR:\\n1. Mensaje inicial: Sistema de cálculo interactivo inicializado\\n2. Variables ocultas creadas con unidadFactor_impuesto\\n3. No hay errores rojos en consola\\n4. Los campos tienen ID correcto (id_unidad, id_factor)')" style="background: #e74c3c;">
+                ❌ NO funciona nada
+            </button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>🌐 FORMULARIO REAL</h2>
+        <p>El formulario de declaraciones está cargado abajo. <strong>No olvides abrir la consola (F12)</strong></p>
+        <iframe src="/tributario/declaraciones/?empresa=0301&rtm=114-03-23&expe=1151"></iframe>
+    </div>
+
+    <div class="panel">
+        <h2>📊 Comandos para la Consola (Copiar y Pegar)</h2>
+        <p>Puedes pegar estos comandos en la consola del navegador para hacer verificaciones:</p>
+        
+        <h3>Verificar que los campos existen:</h3>
+        <div class="code">
+document.getElementById('id_unidad')<br>
+document.getElementById('id_factor')<br>
+document.getElementById('id_impuesto')
+        </div>
+        <p><em>Cada uno debe retornar un elemento HTML, no null</em></p>
+        
+        <h3>Verificar valores actuales:</h3>
+        <div class="code">
+console.log('Unidad:', document.getElementById('id_unidad').value)<br>
+console.log('Factor:', document.getElementById('id_factor').value)<br>
+console.log('Impuesto:', document.getElementById('id_impuesto').value)
+        </div>
+        
+        <h3>Verificar sistema:</h3>
+        <div class="code">
+window.declaracionVolumenInteractivo<br>
+window.declaracionVolumenInteractivo.variablesOcultas
+        </div>
+        <p><em>Debe mostrar el objeto del sistema y sus variables ocultas</em></p>
+        
+        <h3>Forzar recálculo manual:</h3>
+        <div class="code">
+window.declaracionVolumenInteractivo.calcularEnTiempoReal('unidad')
+        </div>
+    </div>
+
+    <script>
+        console.log('%c🧪 PÁGINA DE VERIFICACIÓN CARGADA', 'background: #3498db; color: white; padding: 10px; font-size: 16px; font-weight: bold;');
+        console.log('%cEsta página contiene el formulario real en un iframe', 'color: #7f8c8d; font-size: 12px;');
+        console.log('%cLos logs del sistema aparecerán en esta consola', 'color: #7f8c8d; font-size: 12px;');
+        console.log('%cSigue las instrucciones arriba para probar el sistema', 'color: #27ae60; font-size: 14px; font-weight: bold;');
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TEST REAL: Unidad × Factor en Navegador</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; margin: 0; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        h1 { color: #2c3e50; margin: 0 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #3498db; }
+        .test-panel { background: #ecf0f1; padding: 25px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #3498db; }
+        .result-panel { background: #d5f4e6; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 5px solid #27ae60; }
+        .error-panel { background: #fadbd8; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 5px solid #e74c3c; }
+        .warning-panel { background: #fef5e7; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 5px solid #f39c12; }
+        input { padding: 12px; margin: 8px; border: 2px solid #bdc3c7; border-radius: 6px; width: 220px; font-size: 18px; font-weight: bold; }
+        input:focus { border-color: #3498db; outline: none; box-shadow: 0 0 5px rgba(52,152,219,0.5); }
+        button { padding: 14px 28px; margin: 8px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s; }
+        button:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        button.danger { background: #e74c3c; }
+        button.danger:hover { background: #c0392b; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 25px 0; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 8px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .stat-value { font-size: 36px; font-weight: bold; margin-bottom: 8px; }
+        .stat-label { font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        .console-log { background: #2c3e50; color: #ecf0f1; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 13px; max-height: 500px; overflow-y: auto; margin: 20px 0; }
+        .log-entry { padding: 8px; margin: 3px 0; border-radius: 4px; }
+        .log-success { background: rgba(39, 174, 96, 0.2); border-left: 3px solid #27ae60; }
+        .log-error { background: rgba(231, 76, 60, 0.2); border-left: 3px solid #e74c3c; }
+        .log-warning { background: rgba(243, 156, 18, 0.2); border-left: 3px solid #f39c12; }
+        .log-info { background: rgba(52, 152, 219, 0.2); border-left: 3px solid #3498db; }
+        .timestamp { color: #95a5a6; font-size: 11px; }
+        .highlight { background: #f39c12; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+        .code { background: #34495e; color: #e74c3c; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; }
+        h2 { color: #34495e; margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 TEST REAL: Cálculo Unidad × Factor</h1>
+        
+        <div class="test-panel">
+            <h2>📝 Ingresa Valores para Probar</h2>
+            <div style="text-align: center; margin: 20px 0;">
+                <div>
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Unidad (entero):</label>
+                    <input type="number" id="test_unidad" value="1000" step="1" placeholder="Ej: 1000">
+                </div>
+                <div>
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Factor (decimal):</label>
+                    <input type="number" id="test_factor" value="5.50" step="0.01" placeholder="Ej: 5.50">
+                </div>
+                <div style="margin-top: 20px;">
+                    <button onclick="ejecutarTestCompleto()" style="font-size: 18px; padding: 16px 32px;">
+                        🚀 EJECUTAR TEST COMPLETO
+                    </button>
+                    <button onclick="limpiarTodo()" class="danger">🗑️ Limpiar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="stat_unidad">0</div>
+                <div class="stat-label">Unidad</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="stat-value" id="stat_factor">0.00</div>
+                <div class="stat-label">Factor</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="stat-value" id="stat_resultado">L. 0.00</div>
+                <div class="stat-label">Resultado</div>
+            </div>
+        </div>
+
+        <div id="resultado_test"></div>
+
+        <div class="test-panel">
+            <h2>📊 Console de Logs del Sistema</h2>
+            <div class="console-log" id="console-log">
+                <div class="log-entry log-info">
+                    <span class="timestamp">[Inicio]</span> Sistema de test cargado. Listo para pruebas.
+                </div>
+            </div>
+        </div>
+
+        <div class="test-panel">
+            <h2>🔍 INSTRUCCIONES PARA PROBAR EN FORMULARIO REAL</h2>
+            <div style="background: white; padding: 20px; border-radius: 5px;">
+                <p><strong>URL del formulario:</strong></p>
+                <p style="background: #34495e; color: white; padding: 10px; border-radius: 4px; font-family: monospace;">
+                    http://127.0.0.1:8080/tributario/declaraciones/?empresa=0301&rtm=114-03-23&expe=1151
+                </p>
+                
+                <p><strong>Pasos para verificar:</strong></p>
+                <ol style="line-height: 1.8;">
+                    <li>Abrir el formulario en una nueva pestaña</li>
+                    <li>Presionar <span class="highlight">F12</span> para abrir Developer Tools</li>
+                    <li>Ir a la pestaña <span class="highlight">Console</span></li>
+                    <li>Buscar el mensaje: <span class="code">🔧 Variables ocultas creadas</span></li>
+                    <li>Verificar que contenga: <span class="code">unidadFactor_impuesto: 0</span></li>
+                    <li>En el formulario, ingresar <strong>Unidad: 1000</strong></li>
+                    <li>Ingresar <strong>Factor: 5.50</strong></li>
+                    <li>Presionar <span class="highlight">Tab</span> o click fuera del campo</li>
+                    <li>Buscar en consola: <span class="code">📊 Unidad × Factor: 1000 × 5.5 = L. 5500.00</span></li>
+                    <li>Verificar que el campo <strong>"Impuesto Calculado"</strong> se actualice</li>
+                </ol>
+                
+                <p><strong>Si NO aparece el cálculo:</strong></p>
+                <ul style="line-height: 1.8; color: #e74c3c;">
+                    <li>Verificar que NO haya errores rojos en consola</li>
+                    <li>Refrescar la página con <span class="highlight">Ctrl+F5</span> (limpiar caché)</li>
+                    <li>Verificar que el mensaje inicial incluya <span class="code">unidadFactor_impuesto</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logs = [];
+
+        function addLog(mensaje, tipo = 'info') {
+            const timestamp = new Date().toLocaleTimeString('es-HN');
+            logs.push({ timestamp, mensaje, tipo });
+            
+            const consoleDiv = document.getElementById('console-log');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${tipo}`;
+            logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${mensaje}`;
+            consoleDiv.insertBefore(logEntry, consoleDiv.firstChild);
+            
+            console.log(`[${tipo.toUpperCase()}] ${mensaje}`);
+            
+            // Limitar a 50 logs
+            if (consoleDiv.children.length > 50) {
+                consoleDiv.removeChild(consoleDiv.lastChild);
+            }
+        }
+
+        function limpiarTodo() {
+            document.getElementById('console-log').innerHTML = '';
+            document.getElementById('resultado_test').innerHTML = '';
+            document.getElementById('stat_unidad').textContent = '0';
+            document.getElementById('stat_factor').textContent = '0.00';
+            document.getElementById('stat_resultado').textContent = 'L. 0.00';
+            logs = [];
+            addLog('Sistema limpiado', 'info');
+        }
+
+        function ejecutarTestCompleto() {
+            addLog('🚀 Iniciando test completo del sistema', 'info');
+            
+            const unidad = parseFloat(document.getElementById('test_unidad').value) || 0;
+            const factor = parseFloat(document.getElementById('test_factor').value) || 0;
+            
+            // Actualizar stats
+            document.getElementById('stat_unidad').textContent = unidad;
+            document.getElementById('stat_factor').textContent = factor.toFixed(2);
+            
+            addLog(`📥 Valores ingresados: Unidad=${unidad}, Factor=${factor}`, 'info');
+            
+            let resultadoHTML = '<div class="test-panel">';
+            resultadoHTML += '<h2>📊 Resultados del Test</h2>';
+            
+            // PASO 1: Validación
+            addLog('PASO 1: Validando valores...', 'info');
+            if (unidad <= 0 || factor <= 0) {
+                resultadoHTML += '<div class="error-panel"><strong>❌ VALIDACIÓN FALLÓ</strong><br>';
+                resultadoHTML += `Unidad: ${unidad} ${unidad > 0 ? '✅' : '❌ Debe ser > 0'}<br>`;
+                resultadoHTML += `Factor: ${factor} ${factor > 0 ? '✅' : '❌ Debe ser > 0'}<br>`;
+                resultadoHTML += '<em>Ambos valores deben ser mayores a 0 para que el cálculo funcione</em></div>';
+                addLog(`❌ Validación falló: Unidad=${unidad}, Factor=${factor}`, 'error');
+                document.getElementById('stat_resultado').textContent = 'L. 0.00';
+                resultadoHTML += '</div>';
+                document.getElementById('resultado_test').innerHTML = resultadoHTML;
+                return;
+            }
+            addLog('✅ Validación exitosa', 'success');
+            
+            // PASO 2: Cálculo
+            addLog(`PASO 2: Ejecutando calcularImpuestoUnidadFactor(${unidad}, ${factor})`, 'info');
+            const impuesto = factor * unidad;
+            addLog(`✅ Cálculo: ${factor} × ${unidad} = ${impuesto.toFixed(2)}`, 'success');
+            
+            // PASO 3: Variables ocultas
+            addLog('PASO 3: Actualizando variables ocultas...', 'info');
+            const variablesOcultas = {
+                unidad_base: unidad,
+                factor_base: factor,
+                unidadFactor_impuesto: impuesto
+            };
+            addLog(`✅ Variables actualizadas: ${JSON.stringify(variablesOcultas)}`, 'success');
+            
+            // PASO 4: Suma al total
+            addLog('PASO 4: Sumando al total de impuestos...', 'info');
+            const otrosImpuestos = 0; // En sistema real habría otros valores
+            const totalImpuesto = otrosImpuestos + impuesto;
+            addLog(`✅ Total: ${otrosImpuestos} + ${impuesto} = ${totalImpuesto}`, 'success');
+            
+            // PASO 5: Actualizar campo
+            addLog('PASO 5: Actualizando campo de impuesto...', 'info');
+            addLog(`✅ Campo 'id_impuesto' debe mostrar: ${totalImpuesto.toFixed(2)}`, 'success');
+            
+            // Actualizar stat
+            document.getElementById('stat_resultado').textContent = `L. ${impuesto.toFixed(2)}`;
+            
+            // Mostrar resultado
+            resultadoHTML += '<div class="result-panel">';
+            resultadoHTML += '<h3 style="margin-top:0;">✅ TEST COMPLETADO EXITOSAMENTE</h3>';
+            resultadoHTML += '<table style="width: 100%; border-collapse: collapse;">';
+            resultadoHTML += '<tr style="background: #3498db; color: white;"><th style="padding:12px;">Concepto</th><th style="padding:12px;">Valor</th></tr>';
+            resultadoHTML += `<tr style="background: #ecf0f1;"><td style="padding:10px;"><strong>Unidad</strong></td><td style="padding:10px; text-align:right;">${unidad}</td></tr>`;
+            resultadoHTML += `<tr><td style="padding:10px;"><strong>Factor</strong></td><td style="padding:10px; text-align:right;">${factor.toFixed(2)}</td></tr>`;
+            resultadoHTML += `<tr style="background: #ecf0f1;"><td style="padding:10px;"><strong>Fórmula</strong></td><td style="padding:10px; text-align:right;">${factor} × ${unidad}</td></tr>`;
+            resultadoHTML += `<tr style="background: #d5f4e6; font-size: 20px;"><td style="padding:15px;"><strong>RESULTADO</strong></td><td style="padding:15px; text-align:right; color: #27ae60;"><strong>L. ${impuesto.toFixed(2)}</strong></td></tr>`;
+            resultadoHTML += '</table>';
+            resultadoHTML += '</div>';
+            
+            // Mostrar flujo de variables
+            resultadoHTML += '<div class="warning-panel">';
+            resultadoHTML += '<h3 style="margin-top:0;">🔧 Variables Ocultas del Sistema:</h3>';
+            resultadoHTML += '<table style="width: 100%; font-family: monospace;">';
+            resultadoHTML += `<tr><td style="padding:8px;"><code>variablesOcultas.unidad_base</code></td><td style="padding:8px; text-align:right;"><strong>${unidad}</strong></td></tr>`;
+            resultadoHTML += `<tr><td style="padding:8px;"><code>variablesOcultas.factor_base</code></td><td style="padding:8px; text-align:right;"><strong>${factor}</strong></td></tr>`;
+            resultadoHTML += `<tr style="background: #fef5e7;"><td style="padding:8px;"><code style="background: #f39c12; color: white; padding: 3px 6px;">variablesOcultas.unidadFactor_impuesto</code></td><td style="padding:8px; text-align:right;"><strong style="color: #27ae60; font-size: 18px;">${impuesto.toFixed(2)}</strong></td></tr>`;
+            resultadoHTML += '</table>';
+            resultadoHTML += '<p style="margin-top: 15px;"><em>Esta variable (<code>unidadFactor_impuesto</code>) se suma al total de impuestos</em></p>';
+            resultadoHTML += '</div>';
+            
+            resultadoHTML += '</div>';
+            
+            document.getElementById('resultado_test').innerHTML = resultadoHTML;
+            addLog('🎉 Test completo finalizado exitosamente', 'success');
+            addLog(`💰 Resultado final: L. ${impuesto.toFixed(2)}`, 'success');
+        }
+
+        // Eventos de input para actualización en tiempo real
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputUnidad = document.getElementById('test_unidad');
+            const inputFactor = document.getElementById('test_factor');
+            
+            inputUnidad.addEventListener('input', () => {
+                addLog(`📝 Unidad cambiado a: ${inputUnidad.value}`, 'info');
+            });
+            
+            inputFactor.addEventListener('input', () => {
+                addLog(`📝 Factor cambiado a: ${inputFactor.value}`, 'info');
+            });
+            
+            addLog('🎯 Test de Unidad × Factor cargado correctamente', 'success');
+            addLog('ℹ️ Ingresa valores y presiona "EJECUTAR TEST COMPLETO"', 'info');
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

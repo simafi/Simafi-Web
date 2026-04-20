@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Demo - Diseño Gerencial Formulario Tarifas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header gerencial mejorado */
+        .header-gerencial {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 
+                0 20px 40px rgba(30, 58, 138, 0.3),
+                0 10px 20px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header-gerencial::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .header-gerencial h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            font-weight: 900;
+            text-shadow: 
+                3px 3px 6px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(255, 255, 255, 0.3);
+            position: relative;
+            background: linear-gradient(45deg, #fff, #f0f8ff, #e6f3ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite alternate;
+            text-align: center;
+        }
+        
+        @keyframes glow {
+            from { 
+                text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 255, 255, 0.3);
+                filter: brightness(1);
+            }
+            to { 
+                text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 255, 255, 0.6);
+                filter: brightness(1.1);
+            }
+        }
+        
+        .header-gerencial .subtitle {
+            font-size: 1.6rem;
+            opacity: 0.95;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            font-weight: 400;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.8px;
+            line-height: 1.4;
+            text-align: center;
+        }
+        
+        /* Card gerencial mejorada */
+        .card-gerencial {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                0 15px 30px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            padding: 45px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(15px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-gerencial::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #1e3a8a, #1e40af, #3b82f6, #60a5fa);
+            border-radius: 25px 25px 0 0;
+        }
+        
+        .card-gerencial:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 35px 70px rgba(0, 0, 0, 0.2),
+                0 20px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Título del formulario gerencial */
+        .titulo-formulario-gerencial {
+            font-size: 2.2rem;
+            color: #1e3a8a;
+            margin-bottom: 35px;
+            font-weight: 800;
+            text-align: center;
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        .titulo-formulario-gerencial::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+            border-radius: 2px;
+            box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+        }
+        
+        /* Formulario gerencial */
+        .formulario-gerencial {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            position: relative;
+        }
+        
+        .formulario-gerencial::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(30, 58, 138, 0.05) 0%, transparent 50%);
+            border-radius: 20px;
+            pointer-events: none;
+        }
+        
+        /* Grid gerencial mejorado */
+        .form-grid-gerencial {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+        
+        /* Form groups gerenciales */
+        .form-group-gerencial {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            box-shadow: 
+                0 8px 20px rgba(0, 0, 0, 0.06),
+                0 4px 10px rgba(0, 0, 0, 0.04);
+            padding: 25px;
+            margin-bottom: 0;
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-group-gerencial::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .form-group-gerencial:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 12px 25px rgba(0, 0, 0, 0.1),
+                0 6px 15px rgba(0, 0, 0, 0.06);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Labels gerenciales */
+        .label-gerencial {
+            display: block !important;
+            margin-bottom: 15px !important;
+            font-weight: 800 !important;
+            color: #1e3a8a !important;
+            font-size: 1.1rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            position: relative !important;
+            padding-left: 35px !important;
+        }
+        
+        .label-gerencial::before {
+            content: '' !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 8px !important;
+            height: 25px !important;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+            border-radius: 4px !important;
+            box-shadow: 0 3px 6px rgba(30, 58, 138, 0.4) !important;
+        }
+        
+        .label-gerencial::after {
+            content: '' !important;
+            position: absolute !important;
+            bottom: -5px !important;
+            left: 35px !important;
+            width: 40px !important;
+            height: 3px !important;
+            background: linear-gradient(90deg, #1e3a8a, #3b82f6) !important;
+            border-radius: 2px !important;
+        }
+        
+        /* Inputs gerenciales */
+        .input-gerencial {
+            width: 100% !important;
+            padding: 18px 25px !important;
+            border: 2px solid #e2e8f0 !important;
+            border-radius: 14px !important;
+            font-size: 1.2rem !important;
+            font-weight: 600 !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+            color: #1e293b !important;
+        }
+        
+        .input-gerencial:focus {
+            outline: none !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 
+                0 0 0 5px rgba(59, 130, 246, 0.15),
+                0 8px 20px rgba(59, 130, 246, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+            background: #ffffff !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        .input-gerencial:hover {
+            border-color: #93c5fd !important;
+            box-shadow: 
+                0 6px 16px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        /* Selects gerenciales */
+        .select-gerencial {
+            cursor: pointer !important;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%231e3a8a' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 15px center !important;
+            background-size: 18px 14px !important;
+            padding-right: 45px !important;
+            appearance: none !important;
+        }
+        
+        .select-gerencial:focus {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%233b82f6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E") !important;
+        }
+        
+        /* Textos de ayuda gerenciales */
+        .texto-ayuda-gerencial {
+            color: #64748b !important;
+            font-size: 0.95rem !important;
+            font-weight: 600 !important;
+            display: block !important;
+            margin-top: 12px !important;
+            padding: 12px 16px !important;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+            border-radius: 10px !important;
+            border-left: 4px solid #3b82f6 !important;
+            box-shadow: 
+                0 2px 6px rgba(0, 0, 0, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+            position: relative;
+        }
+        
+        .texto-ayuda-gerencial::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #1e3a8a, #3b82f6);
+            border-radius: 10px 0 0 10px;
+        }
+        
+        .texto-ayuda-gerencial i {
+            color: #3b82f6 !important;
+            margin-right: 8px !important;
+            font-size: 1rem !important;
+        }
+        
+        /* Botones gerenciales */
+        .btn-gerencial {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 140px;
+            justify-content: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-gerencial::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-gerencial:hover::before {
+            left: 100%;
+        }
+        
+        .btn-gerencial-success {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+        }
+        
+        .btn-gerencial-success:hover {
+            background: linear-gradient(135deg, #047857 0%, #059669 100%);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.4);
+        }
+        
+        .btn-gerencial-warning {
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            color: white;
+        }
+        
+        .btn-gerencial-warning:hover {
+            background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(217, 119, 6, 0.4);
+        }
+        
+        .btn-gerencial-secondary {
+            background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+            color: white;
+        }
+        
+        .btn-gerencial-secondary:hover {
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(71, 85, 105, 0.4);
+        }
+        
+        /* Acciones del formulario gerencial */
+        .form-actions-gerencial {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        /* Responsive gerencial */
+        @media (max-width: 768px) {
+            .header-gerencial h1 {
+                font-size: 2.5rem;
+            }
+            
+            .header-gerencial .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .form-grid-gerencial {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .form-actions-gerencial {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-gerencial {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header-gerencial">
+            <h1><i class="fas fa-chart-line"></i> Gestión Ejecutiva de Tarifas</h1>
+            <p class="subtitle">Sistema de administración y control gerencial de tarifas municipales</p>
+        </header>
+
+        <div class="card-gerencial">
+            <h2 class="titulo-formulario-gerencial"><i class="fas fa-cogs"></i> Panel de Configuración Gerencial</h2>
+            <form class="formulario-gerencial">
+                <div class="form-grid-gerencial">
+                    <div class="form-group-gerencial">
+                        <label class="label-gerencial">Municipio <span style="color:#e11d48">*</span></label>
+                        <input type="text" class="input-gerencial" value="TEST" readonly>
+                        <small class="texto-ayuda-gerencial">
+                            <i class="fas fa-lock"></i> Campo de solo lectura - Municipio seleccionado
+                        </small>
+                    </div>
+                    
+                    <div class="form-group-gerencial">
+                        <label class="label-gerencial">Rubro <span style="color:#e11d48">*</span></label>
+                        <select class="input-gerencial select-gerencial">
+                            <option value="">Seleccione un rubro</option>
+                            <option value="001">001 - Impuesto Predial</option>
+                            <option value="002">002 - Tasa de Basura</option>
+                            <option value="003">003 - Licencia Comercial</option>
+                        </select>
+                        <small class="texto-ayuda-gerencial">
+                            <i class="fas fa-search"></i> Seleccione el rubro correspondiente
+                        </small>
+                    </div>
+                    
+                    <div class="form-group-gerencial">
+                        <label class="label-gerencial">Año <span style="color:#e11d48">*</span></label>
+                        <input type="text" class="input-gerencial" placeholder="2024">
+                        <small class="texto-ayuda-gerencial">
+                            <i class="fas fa-calendar"></i> Ingrese el año para la tarifa
+                        </small>
+                    </div>
+                    
+                    <div class="form-group-gerencial">
+                        <label class="label-gerencial">Código de Tarifa</label>
+                        <input type="text" class="input-gerencial" placeholder="Ej: T001">
+                        <small class="texto-ayuda-gerencial">
+                            <i class="fas fa-tag"></i> Código único de la tarifa
+                        </small>
+                    </div>
+                    
+                    <div class="form-group-gerencial">
+                        <label class="label-gerencial">Descripción <span style="color:#e11d48">*</span></label>
+                        <input type="text" class="input-gerencial" placeholder="Descripción detallada de la tarifa">
+                        <small class="texto-ayuda-gerencial">
+                            <i class="fas fa-info-circle"></i> Descripción completa de la tarifa
+                        </small>
+                    </div>
+                    
+                    <div class="form-group-gerencial">
+                        <label class="label-gerencial">Valor</label>
+                        <input type="text" class="input-gerencial" placeholder="0.00">
+                        <small class="texto-ayuda-gerencial">
+                            <i class="fas fa-dollar-sign"></i> Valor de la tarifa
+                        </small>
+                    </div>
+                    
+                    <div class="form-group-gerencial">
+                        <label class="label-gerencial">Frecuencia</label>
+                        <select class="input-gerencial select-gerencial">
+                            <option value="">Seleccione frecuencia</option>
+                            <option value="A">Anual</option>
+                            <option value="M">Mensual</option>
+                        </select>
+                        <small class="texto-ayuda-gerencial">
+                            <i class="fas fa-clock"></i> Frecuencia de aplicación
+                        </small>
+                    </div>
+                    
+                    <div class="form-group-gerencial">
+                        <label class="label-gerencial">Tipo</label>
+                        <select class="input-gerencial select-gerencial">
+                            <option value="">Seleccione tipo</option>
+                            <option value="F">Fija</option>
+                            <option value="V">Variable</option>
+                        </select>
+                        <small class="texto-ayuda-gerencial">
+                            <i class="fas fa-cogs"></i> Tipo de tarifa
+                        </small>
+                    </div>
+                    
+                    <div class="form-group-gerencial">
+                        <label class="label-gerencial">Categoría</label>
+                        <select class="input-gerencial select-gerencial">
+                            <option value="">Seleccione categoría</option>
+                            <option value="D">Doméstico</option>
+                            <option value="C">Comercial</option>
+                        </select>
+                        <small class="texto-ayuda-gerencial">
+                            <i class="fas fa-tags"></i> Categoría de aplicación
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="form-actions-gerencial">
+                    <button type="button" class="btn-gerencial btn-gerencial-success">
+                        <i class="fas fa-save"></i> Guardar Tarifa
+                    </button>
+                    <button type="button" class="btn-gerencial btn-gerencial-warning">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </button>
+                    <button type="button" class="btn-gerencial btn-gerencial-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="card-gerencial">
+            <h2 class="titulo-formulario-gerencial"><i class="fas fa-chart-bar"></i> Características del Diseño Gerencial</h2>
+            <div style="padding: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #0ea5e9;">
+                        <h3 style="color: #0c4a6e; margin-bottom: 10px;"><i class="fas fa-palette"></i> Diseño Moderno</h3>
+                        <p style="color: #0c4a6e;">Gradientes, sombras y efectos visuales avanzados</p>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #22c55e;">
+                        <h3 style="color: #14532d; margin-bottom: 10px;"><i class="fas fa-eye"></i> Vistoso</h3>
+                        <p style="color: #14532d;">Interfaz atractiva con animaciones y transiciones</p>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #f59e0b;">
+                        <h3 style="color: #92400e; margin-bottom: 10px;"><i class="fas fa-briefcase"></i> Gerencial</h3>
+                        <p style="color: #92400e;">Elementos ejecutivos y profesionales</p>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #a855f7;">
+                        <h3 style="color: #581c87; margin-bottom: 10px;"><i class="fas fa-mobile-alt"></i> Responsive</h3>
+                        <p style="color: #581c87;">Adaptable a diferentes dispositivos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

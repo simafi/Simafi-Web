@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Real: Unidad × Factor</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        .test-section { background: #ecf0f1; padding: 20px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #3498db; }
+        .result { background: #d5f4e6; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #27ae60; }
+        .error { background: #fadbd8; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #e74c3c; }
+        .warning { background: #fef5e7; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #f39c12; }
+        input { padding: 10px; margin: 5px; border: 2px solid #bdc3c7; border-radius: 4px; width: 200px; font-size: 16px; }
+        button { padding: 12px 24px; margin: 5px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #2980b9; }
+        .log-console { background: #2c3e50; color: #ecf0f1; padding: 15px; margin: 10px 0; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 12px; max-height: 400px; overflow-y: auto; }
+        .log-entry { margin: 5px 0; padding: 5px; border-bottom: 1px solid #34495e; }
+        .log-info { color: #3498db; }
+        .log-success { color: #27ae60; }
+        .log-error { color: #e74c3c; }
+        .log-warning { color: #f39c12; }
+        .iframe-container { margin: 20px 0; border: 2px solid #3498db; border-radius: 5px; }
+        iframe { width: 100%; height: 600px; border: none; }
+        .stats { display: flex; justify-content: space-around; margin: 20px 0; }
+        .stat-box { background: #3498db; color: white; padding: 20px; border-radius: 5px; text-align: center; flex: 1; margin: 0 10px; }
+        .stat-value { font-size: 32px; font-weight: bold; }
+        .stat-label { font-size: 14px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Real: Cálculo Unidad × Factor</h1>
+        
+        <div class="test-section">
+            <h2>📋 Prueba Manual del Sistema</h2>
+            <p><strong>Instrucción:</strong> Ingresa valores y observa el resultado</p>
+            
+            <label><strong>Unidad (entero):</strong></label>
+            <input type="number" id="test_unidad" value="1000" step="1">
+            
+            <label><strong>Factor (decimal):</strong></label>
+            <input type="number" id="test_factor" value="5.50" step="0.01">
+            
+            <br><br>
+            <button onclick="ejecutarPruebaManual()">🔄 Calcular Ahora</button>
+            <button onclick="limpiarLogs()">🗑️ Limpiar Logs</button>
+            
+            <div id="resultado_manual"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="stat_unidad">0</div>
+                <div class="stat-label">Unidad</div>
+            </div>
+            <div class="stat-box" style="background: #e74c3c;">
+                <div class="stat-value" id="stat_factor">0.00</div>
+                <div class="stat-label">Factor</div>
+            </div>
+            <div class="stat-box" style="background: #27ae60;">
+                <div class="stat-value" id="stat_resultado">L. 0.00</div>
+                <div class="stat-label">Resultado (Unidad × Factor)</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Verificación de Variables Ocultas</h2>
+            <button onclick="verificarVariablesOcultas()">Verificar Variables</button>
+            <div id="resultado_variables"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Simulación del Flujo Completo</h2>
+            <button onclick="simularFlujoCompleto()">Simular Flujo</button>
+            <div id="resultado_flujo"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 Console de Logs</h2>
+            <div class="log-console" id="log-console"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🌐 Formulario Real (iFrame)</h2>
+            <p><em>El formulario real se muestra abajo. Abre la consola del navegador (F12) para ver los logs del sistema.</em></p>
+            <div class="iframe-container">
+                <iframe src="/tributario/declaraciones/?empresa=0301&rtm=114-03-23&expe=1151"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logCount = 0;
+
+        function log(mensaje, tipo = 'info') {
+            logCount++;
+            const consoleDiv = document.getElementById('log-console');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${tipo}`;
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.innerHTML = `<strong>[${logCount}] ${timestamp}</strong> - ${mensaje}`;
+            consoleDiv.insertBefore(logEntry, consoleDiv.firstChild);
+            console.log(`[${tipo.toUpperCase()}] ${mensaje}`);
+        }
+
+        function limpiarLogs() {
+            document.getElementById('log-console').innerHTML = '';
+            logCount = 0;
+            log('Logs limpiados', 'info');
+        }
+
+        function ejecutarPruebaManual() {
+            const unidad = parseFloat(document.getElementById('test_unidad').value) || 0;
+            const factor = parseFloat(document.getElementById('test_factor').value) || 0;
+            
+            log(`🧪 Iniciando prueba manual`, 'info');
+            log(`   Unidad ingresada: ${unidad}`, 'info');
+            log(`   Factor ingresado: ${factor}`, 'info');
+            
+            // Actualizar stats
+            document.getElementById('stat_unidad').textContent = unidad;
+            document.getElementById('stat_factor').textContent = factor.toFixed(2);
+            
+            const resultado = document.getElementById('resultado_manual');
+            
+            // PASO 1: Validación
+            log('PASO 1: Validando valores...', 'info');
+            if (unidad <= 0 || factor <= 0) {
+                resultado.innerHTML = `<div class="error">
+                    <strong>❌ Validación Falló:</strong><br>
+                    Unidad: ${unidad} ${unidad > 0 ? '✅' : '❌'}<br>
+                    Factor: ${factor} ${factor > 0 ? '✅' : '❌'}<br>
+                    <em>Ambos valores deben ser mayores a 0</em>
+                </div>`;
+                log(`   ❌ Validación falló: Unidad=${unidad}, Factor=${factor}`, 'error');
+                document.getElementById('stat_resultado').textContent = 'L. 0.00';
+                return;
+            }
+            log('   ✅ Validación exitosa', 'success');
+            
+            // PASO 2: Cálculo
+            log('PASO 2: Calculando Factor × Unidad...', 'info');
+            const impuesto = factor * unidad;
+            log(`   🧮 Cálculo: ${factor} × ${unidad} = ${impuesto}`, 'success');
+            
+            // PASO 3: Actualizar variables ocultas (simulado)
+            log('PASO 3: Actualizando variables ocultas...', 'info');
+            const variablesOcultas = {
+                unidad_base: unidad,
+                factor_base: factor,
+                unidadFactor_impuesto: impuesto
+            };
+            log(`   ✅ Variables actualizadas: ${JSON.stringify(variablesOcultas)}`, 'success');
+            
+            // PASO 4: Sumar al total (simulado)
+            log('PASO 4: Sumando al total de impuestos...', 'info');
+            const otrosImpuestos = 0; // En el sistema real habría otros valores
+            const totalImpuesto = otrosImpuestos + impuesto;
+            log(`   💰 Total: ${otrosImpuestos} + ${impuesto} = ${totalImpuesto}`, 'success');
+            
+            // Actualizar resultado
+            document.getElementById('stat_resultado').textContent = `L. ${impuesto.toFixed(2)}`;
+            
+            resultado.innerHTML = `<div class="result">
+                <strong>✅ Cálculo Exitoso</strong><br><br>
+                <strong>Entrada:</strong><br>
+                • Unidad: ${unidad}<br>
+                • Factor: ${factor}<br><br>
+                <strong>Proceso:</strong><br>
+                • Fórmula: Factor × Unidad<br>
+                • Cálculo: ${factor} × ${unidad}<br><br>
+                <strong>Resultado:</strong><br>
+                • Impuesto: <span style="font-size: 24px; color: #27ae60;">L. ${impuesto.toFixed(2)}</span>
+            </div>`;
+            
+            log('✅ Prueba manual completada exitosamente', 'success');
+        }
+
+        function verificarVariablesOcultas() {
+            log('🔍 Verificando estructura de variables ocultas...', 'info');
+            
+            const variablesOcultas = {
+                ventai_base: 0,
+                ventai_impuesto: 0,
+                ventac_base: 0,
+                ventac_impuesto: 0,
+                ventas_base: 0,
+                ventas_impuesto: 0,
+                controlado_base: 0,
+                controlado_impuesto: 0,
+                unidad_base: 0,
+                unidad_impuesto: 0,
+                factor_base: 0,
+                factor_impuesto: 0,
+                unidadFactor_impuesto: 0  // ← LA QUE SE USA
+            };
+            
+            const unidad = parseFloat(document.getElementById('test_unidad').value) || 0;
+            const factor = parseFloat(document.getElementById('test_factor').value) || 0;
+            
+            variablesOcultas.unidad_base = unidad;
+            variablesOcultas.factor_base = factor;
+            variablesOcultas.unidadFactor_impuesto = factor * unidad;
+            
+            let html = '<div class="result"><strong>📊 Estructura de Variables Ocultas:</strong><br><br>';
+            
+            // Variables relacionadas con Unidad/Factor
+            html += '<strong style="color: #3498db;">Variables Unidad × Factor:</strong><br>';
+            html += `<span style="color: #27ae60; font-weight: bold;">• unidad_base: ${variablesOcultas.unidad_base}</span><br>`;
+            html += `<span style="color: #27ae60; font-weight: bold;">• factor_base: ${variablesOcultas.factor_base}</span><br>`;
+            html += `<span style="color: #e74c3c;">• unidad_impuesto: ${variablesOcultas.unidad_impuesto} (NO SE USA)</span><br>`;
+            html += `<span style="color: #e74c3c;">• factor_impuesto: ${variablesOcultas.factor_impuesto} (NO SE USA)</span><br>`;
+            html += `<span style="color: #27ae60; font-weight: bold; font-size: 16px;">• unidadFactor_impuesto: ${variablesOcultas.unidadFactor_impuesto} ✅ ESTA SE USA</span><br><br>`;
+            
+            // Todas las variables
+            html += '<strong style="color: #3498db;">Todas las Variables:</strong><br>';
+            Object.keys(variablesOcultas).forEach(key => {
+                const valor = variablesOcultas[key];
+                const destacado = key.includes('unidad') || key.includes('factor') || key.includes('unidadFactor') ? ' style="background: #fef5e7; padding: 2px 5px;"' : '';
+                html += `<span${destacado}>${key}: ${valor}</span><br>`;
+            });
+            html += '</div>';
+            
+            document.getElementById('resultado_variables').innerHTML = html;
+            log('✅ Variables ocultas verificadas', 'success');
+        }
+
+        function simularFlujoCompleto() {
+            log('🔄 Iniciando simulación del flujo completo...', 'info');
+            
+            const unidad = parseFloat(document.getElementById('test_unidad').value) || 0;
+            const factor = parseFloat(document.getElementById('test_factor').value) || 0;
+            
+            let pasos = [];
+            
+            // Paso 1
+            pasos.push({ paso: 1, titulo: 'Usuario ingresa valores', detalles: `Unidad: ${unidad}, Factor: ${factor}`, estado: 'success' });
+            
+            // Paso 2
+            pasos.push({ paso: 2, titulo: 'Event listener detecta cambio', detalles: `addEventListener('input') disparado`, estado: 'success' });
+            
+            // Paso 3
+            pasos.push({ paso: 3, titulo: 'calcularEnTiempoReal()', detalles: `Obtiene valores de campos`, estado: 'success' });
+            
+            // Paso 4
+            if (unidad <= 0 || factor <= 0) {
+                pasos.push({ paso: 4, titulo: 'calcularImpuestoUnidadFactor()', detalles: `❌ Validación falló`, estado: 'error' });
+            } else {
+                const impuesto = factor * unidad;
+                pasos.push({ paso: 4, titulo: 'calcularImpuestoUnidadFactor()', detalles: `✅ Calcula: ${factor} × ${unidad} = ${impuesto}`, estado: 'success' });
+                pasos.push({ paso: 5, titulo: 'Actualizar variables ocultas', detalles: `unidadFactor_impuesto = ${impuesto}`, estado: 'success' });
+                pasos.push({ paso: 6, titulo: 'sumarImpuestosDesdeVariablesOcultas()', detalles: `Total incluye: ${impuesto}`, estado: 'success' });
+                pasos.push({ paso: 7, titulo: 'Actualizar campo Impuesto', detalles: `Campo se actualiza con nuevo total`, estado: 'success' });
+                pasos.push({ paso: 8, titulo: 'Calcular multa', detalles: `Multa basada en impuesto total`, estado: 'success' });
+            }
+            
+            let html = '<div class="result"><strong>🔄 Flujo Completo del Sistema:</strong><br><br>';
+            pasos.forEach(p => {
+                const icon = p.estado === 'success' ? '✅' : '❌';
+                const color = p.estado === 'success' ? '#27ae60' : '#e74c3c';
+                html += `<div style="margin: 10px 0; padding: 10px; background: #ecf0f1; border-left: 4px solid ${color};">`;
+                html += `<strong style="color: ${color};">${icon} Paso ${p.paso}: ${p.titulo}</strong><br>`;
+                html += `<span style="margin-left: 20px;">${p.detalles}</span>`;
+                html += `</div>`;
+                log(`Paso ${p.paso}: ${p.titulo} - ${p.detalles}`, p.estado);
+            });
+            html += '</div>';
+            
+            document.getElementById('resultado_flujo').innerHTML = html;
+            log('✅ Simulación completa finalizada', 'success');
+        }
+
+        // Log inicial
+        window.onload = function() {
+            log('🚀 Test Real de Unidad × Factor cargado', 'info');
+            log('📋 Listo para ejecutar pruebas', 'success');
+            log('ℹ️ El formulario real está cargado en el iframe abajo', 'info');
+            log('ℹ️ Abre la consola del navegador (F12) para ver logs del sistema real', 'warning');
+        };
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

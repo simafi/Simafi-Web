@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Debug IDs Django</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .campo-encontrado { border: 3px solid #28a745; }
+        .campo-no-encontrado { border: 3px solid #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="alert alert-warning">
+            <h4>🔍 Debug IDs Django - Verificación de Campos</h4>
+            <p>Este test verifica que los IDs generados por Django coincidan con los usados en JavaScript</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>🏷️ Campos con IDs Django Reales</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Simulando exactamente como Django genera los IDs -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label for="id_mes">Mes (Django ID)</label>
+                                    <!-- Django genera: id_mes para campo 'mes' -->
+                                    <input type="number" class="form-control" 
+                                           id="id_mes" name="mes" 
+                                           min="1" max="12" step="1" 
+                                           value="2">
+                                    <small class="text-muted">ID: id_mes</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label for="id_tipo">Tipo (Django ID)</label>
+                                    <!-- Django genera: id_tipo para campo 'tipo' -->
+                                    <select class="form-control" id="id_tipo" name="tipo">
+                                        <option value="">Seleccione tipo</option>
+                                        <option value="1" selected>Normal</option>
+                                        <option value="2">Apertura</option>
+                                    </select>
+                                    <small class="text-muted">ID: id_tipo</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label for="id_impuesto">Impuesto (Django ID)</label>
+                                    <!-- Django genera: id_impuesto para campo 'impuesto' -->
+                                    <input type="text" class="form-control" 
+                                           id="id_impuesto" name="impuesto" 
+                                           value="100.00" readonly>
+                                    <small class="text-muted">ID: id_impuesto</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label for="id_multadecla">Multa (Django ID)</label>
+                                    <!-- Django genera: id_multadecla para campo 'multadecla' -->
+                                    <input type="text" class="form-control" 
+                                           id="id_multadecla" name="multadecla" 
+                                           readonly placeholder="0.00"
+                                           style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 2px solid #ffa000; color: #e65100; font-weight: 700; text-align: center;">
+                                    <small class="text-muted">ID: id_multadecla</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-primary" onclick="verificarIDs()">
+                                        🔍 Verificar IDs y Funcionalidad
+                                    </button>
+                                    <button type="button" class="btn btn-warning" onclick="testAutomatizacion()">
+                                        🤖 Test Automatización Completa
+                                    </button>
+                                    <button type="button" class="btn btn-success" onclick="simularSistemaReal()">
+                                        🎯 Simular Sistema Real
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>📊 Estado de Verificación</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="estado-verificacion">
+                            <p class="text-muted">Los resultados aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log de Debug</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs de debug...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(mensaje, tipo = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${mensaje}`;
+            
+            const logElement = document.getElementById('debug-log');
+            const colorClass = tipo === 'error' ? 'text-danger' : 
+                              tipo === 'success' ? 'text-success' : 
+                              tipo === 'warning' ? 'text-warning' : 'text-info';
+            
+            logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs de debug...</p>';
+        }
+        
+        function verificarIDs() {
+            limpiarLog();
+            log('🔍 VERIFICANDO IDs DE CAMPOS DJANGO', 'info');
+            log('=' .repeat(50));
+            
+            // Lista de IDs que debería generar Django
+            const idsEsperados = [
+                'id_mes',      // Campo 'mes'
+                'id_tipo',     // Campo 'tipo' 
+                'id_impuesto', // Campo 'impuesto'
+                'id_multadecla' // Campo 'multadecla'
+            ];
+            
+            let camposEncontrados = 0;
+            
+            idsEsperados.forEach(id => {
+                const campo = document.getElementById(id);
+                if (campo) {
+                    campo.classList.add('campo-encontrado');
+                    log(`✅ ${id}: ENCONTRADO (${campo.tagName}, valor: "${campo.value}")`, 'success');
+                    camposEncontrados++;
+                    
+                    // Información adicional
+                    if (campo.tagName === 'SELECT') {
+                        log(`   Opciones disponibles: ${campo.options.length}`);
+                        log(`   Opción seleccionada: "${campo.options[campo.selectedIndex]?.text || 'Ninguna'}"`);
+                    }
+                    if (campo.readOnly) {
+                        log(`   Campo es ReadOnly: SÍ`);
+                    }
+                } else {
+                    log(`❌ ${id}: NO ENCONTRADO`, 'error');
+                }
+            });
+            
+            log(`\n📊 RESUMEN: ${camposEncontrados}/${idsEsperados.length} campos encontrados`, 
+                camposEncontrados === idsEsperados.length ? 'success' : 'error');
+            
+            // Actualizar estado
+            const estadoDiv = document.getElementById('estado-verificacion');
+            const todosEncontrados = camposEncontrados === idsEsperados.length;
+            
+            estadoDiv.innerHTML = `
+                <div class="alert alert-${todosEncontrados ? 'success' : 'danger'}">
+                    <h6>${todosEncontrados ? '✅' : '❌'} Verificación de IDs</h6>
+                    <p><strong>Encontrados:</strong> ${camposEncontrados}/${idsEsperados.length}</p>
+                    <p><strong>Estado:</strong> ${todosEncontrados ? 'Todos los campos están disponibles' : 'Faltan campos'}</p>
+                </div>
+            `;
+        }
+        
+        function testAutomatizacion() {
+            log('🤖 INICIANDO TEST DE AUTOMATIZACIÓN', 'warning');
+            
+            // IMPLEMENTACIÓN EXACTA DEL SISTEMA
+            function calcularMultaSegunReglas(impuestoCalculado) {
+                const campoMes = document.getElementById('id_mes');
+                const campoTipo = document.getElementById('id_tipo');
+                
+                if (!campoMes || !campoTipo) {
+                    log('⚠️ No se encontraron campos mes o tipo', 'error');
+                    return 0;
+                }
+                
+                // LECTURA NUMÉRICA EXACTA
+                const mes = parseInt(campoMes.value) || 0;
+                const tipo = parseInt(campoTipo.value) || 0;
+                
+                log(`🔍 VALIDACIÓN NUMÉRICA DE MULTA:`);
+                log(`   Mes (numérico): ${mes} ${mes === 1 ? '(ENERO)' : mes > 1 && mes <= 12 ? '(≠ ENERO)' : '(INVÁLIDO)'}`);
+                log(`   Tipo (numérico): ${tipo} ${tipo === 1 ? '(NORMAL)' : tipo === 2 ? '(APERTURA)' : '(INVÁLIDO)'}`);
+                log(`   Impuesto: L. ${impuestoCalculado.toFixed(2)}`);
+                
+                let multa = 0;
+                let reglaAplicada = '';
+                
+                // VALIDACIÓN NUMÉRICA EXACTA
+                log(`🧮 APLICANDO VALIDACIONES NUMÉRICAS:`);
+                
+                // REGLA 1: mes === 1 (Enero) → multa = 0.00
+                if (mes === 1) {
+                    multa = 0;
+                    reglaAplicada = `Mes = 1 (Enero): Multa = 0.00`;
+                    log(`   ✅ ${reglaAplicada}`, 'success');
+                }
+                // REGLA 2: mes !== 1 AND tipo === 1 (Normal) → multa = impuesto
+                else if (mes !== 1 && tipo === 1) {
+                    multa = impuestoCalculado;
+                    reglaAplicada = `Mes ≠ 1 (${mes}) + Tipo = 1 (Normal): Multa = Impuesto`;
+                    log(`   ⚠️ ${reglaAplicada} = L. ${multa.toFixed(2)}`, 'warning');
+                }
+                // REGLA 3: mes !== 1 AND tipo !== 1 → multa = 0.00
+                else if (mes !== 1 && tipo !== 1) {
+                    multa = 0;
+                    reglaAplicada = `Mes ≠ 1 (${mes}) + Tipo ≠ 1 (${tipo}): Multa = 0.00`;
+                    log(`   ✅ ${reglaAplicada}`, 'success');
+                }
+                // REGLA DEFAULT: Valores inválidos
+                else {
+                    multa = 0;
+                    reglaAplicada = `Valores inválidos (Mes: ${mes}, Tipo: ${tipo}): Multa = 0.00`;
+                    log(`   ⚠️ ${reglaAplicada}`, 'warning');
+                }
+                
+                log(`💰 MULTA FINAL: L. ${multa.toFixed(2)} | REGLA: ${reglaAplicada}`);
+                return multa;
+            }
+            
+            function actualizarCampoMulta(valorMulta) {
+                const campoMulta = document.getElementById('id_multadecla');
+                
+                if (campoMulta) {
+                    const valorAnterior = parseFloat(campoMulta.value) || 0;
+                    campoMulta.value = valorMulta.toFixed(2);
+                    
+                    // Aplicar estilos según el valor
+                    if (valorMulta > 0) {
+                        campoMulta.style.backgroundColor = '#fff3cd';
+                        campoMulta.style.borderColor = '#ffa000';
+                        campoMulta.style.color = '#856404';
+                    } else {
+                        campoMulta.style.backgroundColor = '#e8f5e8';
+                        campoMulta.style.borderColor = '#28a745';
+                        campoMulta.style.color = '#155724';
+                    }
+                    
+                    log(`💰 Campo multa actualizado: L. ${valorAnterior.toFixed(2)} → L. ${valorMulta.toFixed(2)}`, 'success');
+                } else {
+                    log('❌ Campo multa no encontrado', 'error');
+                }
+            }
+            
+            // Obtener impuesto actual
+            const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+            
+            if (impuesto > 0) {
+                log('✅ Impuesto > 0, aplicando reglas de multa');
+                const multa = calcularMultaSegunReglas(impuesto);
+                actualizarCampoMulta(multa);
+            } else {
+                log('⚠️ Impuesto ≤ 0, multa = 0.00');
+                actualizarCampoMulta(0);
+            }
+        }
+        
+        function simularSistemaReal() {
+            log('🎯 SIMULANDO SISTEMA REAL COMPLETO', 'warning');
+            log('=' .repeat(50));
+            
+            // Configurar listeners exactos
+            const campoMes = document.getElementById('id_mes');
+            const campoTipo = document.getElementById('id_tipo');
+            
+            if (campoMes) {
+                // Remover listeners anteriores
+                campoMes.removeEventListener('change', handleMesChange);
+                campoMes.removeEventListener('input', handleMesInput);
+                
+                // Agregar listeners nuevos
+                campoMes.addEventListener('change', handleMesChange);
+                campoMes.addEventListener('input', handleMesInput);
+                log('✅ Listeners MES configurados', 'success');
+            }
+            
+            if (campoTipo) {
+                // Remover listeners anteriores
+                campoTipo.removeEventListener('change', handleTipoChange);
+                
+                // Agregar listeners nuevos
+                campoTipo.addEventListener('change', handleTipoChange);
+                log('✅ Listeners TIPO configurados', 'success');
+            }
+            
+            // Ejecutar automatización inicial
+            log('🚀 Ejecutando automatización inicial...');
+            testAutomatizacion();
+        }
+        
+        function handleMesChange() {
+            log('🔄 MES CAMBIÓ - Listener activado', 'warning');
+            recalcularMulta();
+        }
+        
+        function handleMesInput() {
+            log('📝 MES INPUT - Listener activado', 'info');
+            recalcularMulta();
+        }
+        
+        function handleTipoChange() {
+            log('🔄 TIPO CAMBIÓ - Listener activado', 'warning');
+            recalcularMulta();
+        }
+        
+        function recalcularMulta() {
+            log('🔄 RECALCULANDO MULTA POR CAMBIO EN COMBOBOX', 'warning');
+            
+            // Leer valores
+            const mes = parseInt(document.getElementById('id_mes').value) || 0;
+            const tipo = parseInt(document.getElementById('id_tipo').value) || 0;
+            const impuesto = parseFloat(document.getElementById('id_impuesto').value) || 0;
+            
+            log(`📊 Valores leídos: mes=${mes}, tipo=${tipo}, impuesto=${impuesto}`);
+            
+            // Aplicar reglas
+            let multa = 0;
+            
+            if (impuesto <= 0) {
+                multa = 0;
+                log('   Impuesto ≤ 0 → multa = 0.00', 'info');
+            } else if (mes === 1) {
+                multa = 0;
+                log('   mes === 1 (Enero) → multa = 0.00', 'success');
+            } else if (mes !== 1 && tipo === 1) {
+                multa = impuesto;
+                log(`   mes !== 1 && tipo === 1 → multa = impuesto = ${multa.toFixed(2)}`, 'warning');
+            } else if (mes !== 1 && tipo !== 1) {
+                multa = 0;
+                log('   mes !== 1 && tipo !== 1 → multa = 0.00', 'success');
+            } else {
+                multa = 0;
+                log('   Caso default → multa = 0.00', 'info');
+            }
+            
+            // Actualizar campo
+            const campoMulta = document.getElementById('id_multadecla');
+            if (campoMulta) {
+                campoMulta.value = multa.toFixed(2);
+                log(`💰 Campo multa actualizado: L. ${multa.toFixed(2)}`, 'success');
+            }
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Debug de IDs Django iniciado', 'success');
+            
+            // Verificación automática inicial
+            setTimeout(() => {
+                verificarIDs();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

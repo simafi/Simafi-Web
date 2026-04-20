@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Test: Unidad × Factor CORREGIDO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .debug-log { 
+            font-family: 'Courier New', monospace; 
+            font-size: 10px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            padding: 8px; 
+        }
+        .correccion {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .test-resultado {
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+        }
+        .campo-corregido {
+            border: 3px solid #28a745 !important;
+            background: #f0fff0 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-success">
+                    <h4>🔧 Test: Unidad × Factor CORREGIDO</h4>
+                    <p><strong>Correcciones Aplicadas:</strong></p>
+                    <ul>
+                        <li>✅ Uso de función específica <code>calcularImpuestoUnidadFactor()</code></li>
+                        <li>✅ Logging detallado para diagnóstico</li>
+                        <li>✅ Recálculo forzado del total después de cambios</li>
+                        <li>✅ Event listeners mejorados con logging</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5>🎛️ Formulario Corregido</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_unidad">
+                                        <i class="fas fa-ruler"></i> Unidad (CORREGIDO)
+                                    </label>
+                                    <input type="text" class="form-control campo-corregido" 
+                                           id="id_unidad" name="unidad" 
+                                           placeholder="0" value="100"
+                                           maxlength="11" pattern="^\d{1,11}$" inputmode="numeric">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-check-circle"></i> Con logging mejorado
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_factor">
+                                        <i class="fas fa-percentage"></i> Factor (CORREGIDO)
+                                    </label>
+                                    <input type="text" class="form-control campo-corregido" 
+                                           id="id_factor" name="factor" 
+                                           placeholder="0.00" value="2.50"
+                                           maxlength="13" pattern="^\d{1,10}(\.\d{0,2})?$" inputmode="decimal">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-check-circle"></i> Con función específica
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_controlado">Productos Controlados</label>
+                                    <input type="text" class="form-control" 
+                                           id="id_controlado" name="controlado" 
+                                           placeholder="0.00" value="10,000.00">
+                                    <small class="form-text">Para comparación</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="id_impuesto">Impuesto Total</label>
+                                    <input type="text" class="form-control" 
+                                           id="id_impuesto" name="impuesto" readonly
+                                           style="background: #fff3e0; border: 2px solid #ff9800; color: #e65100; font-weight: 700; text-align: center;">
+                                    <small class="form-text">Resultado final</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group mb-3">
+                                    <label for="resultado_unidad_factor">
+                                        <i class="fas fa-equals"></i> Resultado Unidad × Factor
+                                    </label>
+                                    <input type="text" class="form-control" 
+                                           id="resultado_unidad_factor" readonly
+                                           style="background: #e8f5e8; border: 2px solid #28a745; color: #155724; font-weight: 700; text-align: center; font-size: 1.2em;">
+                                    <small class="form-text text-success">
+                                        <i class="fas fa-magic"></i> Calculado con función corregida
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-success" onclick="testCorreccion()">
+                                🔧 Test Corrección
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="testEventListeners()">
+                                🎧 Test Event Listeners
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="testCasosCompletos()">
+                                🧪 Test Casos Completos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>📊 Estado de la Corrección</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="estado-correccion">
+                            <p class="text-muted">El estado aparecerá aquí</p>
+                        </div>
+                        
+                        <div id="variables-ocultas-estado" class="mt-3">
+                            <h6>🔧 Variables Ocultas</h6>
+                            <div id="variables-lista">
+                                <p class="text-muted">Variables aparecerán aquí</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5>🧪 Resultados de Tests</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultados-tests">
+                            <!-- Se generarán automáticamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5>📝 Log de Corrección</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debug-log" class="debug-log">
+                            <p class="text-muted">Logs de la corrección...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="limpiarLog()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TestUnidadFactorCorregido {
+            constructor() {
+                this.variablesOcultas = {};
+                this.setupEventListeners();
+                this.log('🚀 Test de corrección de Unidad × Factor iniciado', 'success');
+                this.generarResultadosTests();
+            }
+            
+            log(mensaje, tipo = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${mensaje}`;
+                
+                const logElement = document.getElementById('debug-log');
+                const colorClass = tipo === 'error' ? 'text-danger' : 
+                                  tipo === 'success' ? 'text-success' : 
+                                  tipo === 'warning' ? 'text-warning' : 'text-info';
+                
+                logElement.innerHTML += `<div class="${colorClass}">${logEntry}</div>`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            setupEventListeners() {
+                const campos = ['unidad', 'factor', 'controlado'];
+                this.log('🎧 CONFIGURANDO EVENT LISTENERS CORREGIDOS PARA CAMPOS:', 'warning');
+                
+                campos.forEach(campo => {
+                    const input = document.getElementById(`id_${campo}`);
+                    if (input) {
+                        this.log(`✅ Configurando listeners corregidos para: ${campo}`);
+                        
+                        input.addEventListener('input', () => {
+                            this.log(`📝 EVENT INPUT DISPARADO PARA: ${campo} con valor: "${input.value}"`, 'info');
+                            this.calcularEnTiempoRealCorregido(campo);
+                        });
+                        
+                        input.addEventListener('blur', () => {
+                            this.log(`👁️ EVENT BLUR DISPARADO PARA: ${campo} con valor: "${input.value}"`, 'info');
+                            this.calcularEnTiempoRealCorregido(campo);
+                        });
+                        
+                        // Para unidad y factor, agregar logging especial
+                        if (campo === 'unidad' || campo === 'factor') {
+                            this.log(`🔧 CONFIGURACIÓN ESPECIAL CORREGIDA PARA ${campo.toUpperCase()}:`);
+                            this.log(`   ID del campo: id_${campo}`);
+                            this.log(`   Elemento encontrado: ${input ? 'SÍ' : 'NO'}`);
+                            this.log(`   Valor actual: "${input.value}"`);
+                            this.log(`   Tipo de input: ${input.type}`);
+                            this.log(`   Atributos: maxlength=${input.maxlength}, pattern=${input.pattern}`);
+                        }
+                    } else {
+                        this.log(`❌ Campo no encontrado: id_${campo}`, 'error');
+                    }
+                });
+                
+                this.log('✅ Event listeners corregidos configurados', 'success');
+            }
+            
+            calcularEnTiempoRealCorregido(fieldName) {
+                this.log(`🔄 CALCULANDO EN TIEMPO REAL CORREGIDO PARA: ${fieldName}`, 'warning');
+                
+                try {
+                    // PASO 1: Obtener valores
+                    const valores = this.obtenerValoresCorregidos();
+                    this.log(`📊 Valores obtenidos: ${JSON.stringify(valores)}`);
+                    
+                    // PASO 2: Calcular impuestos independientes con correcciones
+                    this.calcularImpuestosIndependientesCorregido(valores);
+                    
+                    // PASO 3: Sumar total
+                    const total = this.sumarImpuestosCorregido();
+                    
+                    // PASO 4: Actualizar campos
+                    this.actualizarCamposCorregido(total);
+                    
+                    // PASO 5: Mostrar estado
+                    this.mostrarEstadoCorreccion();
+                    
+                    this.log(`✅ Cálculo corregido completado para ${fieldName}: L. ${total.toFixed(2)}`, 'success');
+                    
+                } catch (error) {
+                    this.log(`❌ Error en cálculo corregido para ${fieldName}: ${error.message}`, 'error');
+                }
+            }
+            
+            obtenerValoresCorregidos() {
+                const valores = {};
+                const campos = ['unidad', 'factor', 'controlado'];
+                
+                this.log('📊 OBTENIENDO VALORES CON MÉTODO CORREGIDO:');
+                
+                campos.forEach(campo => {
+                    const input = document.getElementById(`id_${campo}`);
+                    if (input && input.value) {
+                        let valor;
+                        
+                        if (campo === 'unidad') {
+                            valor = this.limpiarValorCorregido(input.value, 'unidad');
+                        } else if (campo === 'factor') {
+                            valor = this.limpiarValorCorregido(input.value, 'factor');
+                        } else {
+                            valor = this.limpiarValorCorregido(input.value, 'general');
+                        }
+                        
+                        valores[campo] = valor;
+                        this.log(`   ${campo}: "${input.value}" → ${valor} (tipo: ${typeof valor})`);
+                    } else {
+                        this.log(`   ${campo}: sin valor o campo no existe`);
+                    }
+                });
+                
+                return valores;
+            }
+            
+            limpiarValorCorregido(valor, tipo = 'general') {
+                if (!valor) return 0;
+                
+                // PARSING MEJORADO CORREGIDO
+                let valorLimpio = valor.toString();
+                
+                // Caso 1: "50,000.00" (formato americano con miles y decimales)
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/,/g, '');
+                    this.log(`✅ Formato americano detectado en limpiarValorCorregido: "${valor}" → "${valorLimpio}"`);
+                }
+                // Caso 2: "50,000" (formato americano con miles, sin decimales)
+                else if (/^\d{1,3}(,\d{3})+$/.test(valorLimpio)) {
+                    valorLimpio = valorLimpio.replace(/,/g, '');
+                    this.log(`✅ Formato americano sin decimales en limpiarValorCorregido: "${valor}" → "${valorLimpio}"`);
+                }
+                // Fallback: limpiar caracteres no numéricos excepto punto decimal
+                else {
+                    valorLimpio = valorLimpio.replace(/[^0-9.]/g, '');
+                }
+                
+                if (tipo === 'unidad') {
+                    // Para Unidad: solo enteros (11 dígitos máximo)
+                    valorLimpio = valorLimpio.split('.')[0]; // Remover parte decimal
+                    if (valorLimpio.length > 11) {
+                        valorLimpio = valorLimpio.substring(0, 11);
+                    }
+                    const numero = parseInt(valorLimpio) || 0;
+                    this.log(`🔧 Unidad procesada: "${valor}" → ${numero}`);
+                    return numero;
+                } else if (tipo === 'factor') {
+                    // Para Factor: 10 enteros, 2 decimales (DECIMAL(10,2))
+                    const partes = valorLimpio.split('.');
+                    let parteEntera = partes[0] || '0';
+                    let parteDecimal = partes[1] || '00';
+                    
+                    // Limitar a 10 enteros
+                    if (parteEntera.length > 10) {
+                        parteEntera = parteEntera.substring(0, 10);
+                    }
+                    
+                    // Limitar a 2 decimales
+                    if (parteDecimal.length > 2) {
+                        parteDecimal = parteDecimal.substring(0, 2);
+                    }
+                    
+                    const numeroCompleto = `${parteEntera}.${parteDecimal}`;
+                    const numero = parseFloat(numeroCompleto) || 0;
+                    this.log(`🔧 Factor procesado: "${valor}" → ${numero}`);
+                    return numero;
+                } else {
+                    // Para otros campos: parseFloat normal
+                    const numero = parseFloat(valorLimpio) || 0;
+                    this.log(`🔧 Campo general procesado: "${valor}" → ${numero}`);
+                    return numero;
+                }
+            }
+            
+            calcularImpuestosIndependientesCorregido(valores) {
+                this.log('🧮 CALCULANDO IMPUESTOS INDEPENDIENTES CON CORRECCIONES:', 'warning');
+                
+                // Productos Controlados
+                const valorControlado = valores.controlado || 0;
+                const impuestoControlado = valorControlado > 0 ? this.calcularImpuestoSimple(valorControlado) : 0;
+                this.variablesOcultas.controlado_impuesto = impuestoControlado;
+                this.log(`   Productos Controlados: L. ${valorControlado} → L. ${impuestoControlado.toFixed(2)}`);
+                
+                // UNIDAD × FACTOR CON FUNCIÓN ESPECÍFICA CORREGIDA
+                const valorUnidad = valores.unidad || 0;
+                const valorFactor = valores.factor || 0;
+                
+                this.log(`🔧 ACTUALIZANDO UNIDAD × FACTOR CON CORRECCIONES:`);
+                this.log(`   Unidad obtenida: ${valorUnidad} (tipo: ${typeof valorUnidad})`);
+                this.log(`   Factor obtenido: ${valorFactor} (tipo: ${typeof valorFactor})`);
+                
+                const resultadoUnidadFactor = this.calcularImpuestoUnidadFactorCorregido(valorUnidad, valorFactor);
+                const impuestoCombinado = resultadoUnidadFactor.impuestoTotal;
+                
+                this.variablesOcultas.unidad_base = valorUnidad;
+                this.variablesOcultas.factor_base = valorFactor;
+                this.variablesOcultas.unidadFactor_impuesto = impuestoCombinado;
+                this.log(`🔧 Variable unidadFactor_impuesto actualizada: ${impuestoCombinado}`);
+                
+                // Actualizar campo visual
+                document.getElementById('resultado_unidad_factor').value = `L. ${impuestoCombinado.toFixed(2)}`;
+                
+                this.log(`   📊 Resultado final Unidad × Factor: L. ${impuestoCombinado.toFixed(2)}`);
+            }
+            
+            calcularImpuestoUnidadFactorCorregido(valorUnidad, valorFactor) {
+                // FUNCIÓN ESPECÍFICA CORREGIDA
+                if (!valorUnidad || valorUnidad <= 0 || !valorFactor || valorFactor <= 0) {
+                    this.log('⚠️ Unidad o Factor no válidos - Unidad:', valorUnidad, 'Factor:', valorFactor);
+                    return { 
+                        impuestoTotal: 0, 
+                        detalleCalculo: [], 
+                        valorUnidad: valorUnidad || 0, 
+                        valorFactor: valorFactor || 0,
+                        valorCalculado: 0
+                    };
+                }
+
+                // Multiplicación simple: Factor × Unidad
+                const valorCalculado = valorFactor * valorUnidad;
+                
+                this.log(`🧮 Cálculo Factor × Unidad CORREGIDO:`);
+                this.log(`   Factor: ${valorFactor}`);
+                this.log(`   Unidad: ${valorUnidad}`);
+                this.log(`   Resultado: ${valorFactor} × ${valorUnidad} = ${valorCalculado}`);
+
+                // NO aplicar tarifas ICS - es una multiplicación simple
+                const impuestoTotal = valorCalculado;
+                
+                const detalleCalculo = [{
+                    descripcion: `Factor × Unidad (${valorFactor} × ${valorUnidad})`,
+                    valorUnidad: valorUnidad,
+                    valorFactor: valorFactor,
+                    valorCalculado: valorCalculado,
+                    impuestoAplicado: impuestoTotal
+                }];
+
+                this.log(`✅ Valor calculado CORREGIDO para Factor × Unidad: L. ${impuestoTotal.toFixed(2)}`);
+
+                return {
+                    impuestoTotal: impuestoTotal,
+                    detalleCalculo: detalleCalculo,
+                    valorUnidad: valorUnidad,
+                    valorFactor: valorFactor,
+                    valorCalculado: valorCalculado
+                };
+            }
+            
+            sumarImpuestosCorregido() {
+                this.log('➕ SUMANDO IMPUESTOS CON MÉTODO CORREGIDO:', 'warning');
+                
+                const impuestoControlado = this.variablesOcultas.controlado_impuesto || 0;
+                const impuestoUnidadFactor = this.variablesOcultas.unidadFactor_impuesto || 0;
+                
+                this.log(`   Productos Controlados: L. ${impuestoControlado.toFixed(2)}`);
+                this.log(`   Unidad × Factor: L. ${impuestoUnidadFactor.toFixed(2)}`);
+                
+                const total = impuestoControlado + impuestoUnidadFactor;
+                
+                this.log(`   TOTAL CORREGIDO: ${impuestoControlado.toFixed(2)} + ${impuestoUnidadFactor.toFixed(2)} = ${total.toFixed(2)}`);
+                
+                return total;
+            }
+            
+            actualizarCamposCorregido(total) {
+                const campoImpuesto = document.getElementById('id_impuesto');
+                if (campoImpuesto) {
+                    campoImpuesto.value = total.toFixed(2);
+                    this.log(`✅ Campo impuesto actualizado con método corregido: L. ${total.toFixed(2)}`, 'success');
+                } else {
+                    this.log(`❌ Campo impuesto no encontrado`, 'error');
+                }
+            }
+            
+            mostrarEstadoCorreccion() {
+                const div = document.getElementById('estado-correccion');
+                const unidadFactor = this.variablesOcultas.unidadFactor_impuesto || 0;
+                const unidad = this.variablesOcultas.unidad_base || 0;
+                const factor = this.variablesOcultas.factor_base || 0;
+                
+                div.innerHTML = `
+                    <div class="correccion">
+                        <h6>✅ ESTADO DE LA CORRECCIÓN</h6>
+                        <p><strong>Unidad:</strong> ${unidad}</p>
+                        <p><strong>Factor:</strong> ${factor}</p>
+                        <p><strong>Resultado:</strong> ${unidad} × ${factor} = ${unidadFactor}</p>
+                        <p><strong>Estado:</strong> ${unidadFactor > 0 ? '✅ FUNCIONANDO' : '⚠️ Sin cálculo'}</p>
+                    </div>
+                `;
+                
+                const variablesDiv = document.getElementById('variables-lista');
+                variablesDiv.innerHTML = `
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 5px; border-radius: 4px; margin: 2px 0; font-family: monospace; font-size: 0.85em;">unidad_base: ${this.variablesOcultas.unidad_base || 0}</div>
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 5px; border-radius: 4px; margin: 2px 0; font-family: monospace; font-size: 0.85em;">factor_base: ${this.variablesOcultas.factor_base || 0}</div>
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 5px; border-radius: 4px; margin: 2px 0; font-family: monospace; font-size: 0.85em;">unidadFactor_impuesto: ${this.variablesOcultas.unidadFactor_impuesto || 0}</div>
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 5px; border-radius: 4px; margin: 2px 0; font-family: monospace; font-size: 0.85em;">controlado_impuesto: ${this.variablesOcultas.controlado_impuesto || 0}</div>
+                `;
+            }
+            
+            generarResultadosTests() {
+                const div = document.getElementById('resultados-tests');
+                div.innerHTML = `
+                    <div class="test-resultado">
+                        <h6>🧪 Test 1: Event Listeners</h6>
+                        <p>Verificar que los event listeners se disparen correctamente</p>
+                        <button class="btn btn-sm btn-primary" onclick="testSistemaCorregido.testEventListeners()">▶️ Ejecutar</button>
+                        <div id="resultado-test-1" class="mt-2"></div>
+                    </div>
+                    
+                    <div class="test-resultado">
+                        <h6>🧪 Test 2: Función de Cálculo</h6>
+                        <p>Verificar que la función corregida funcione</p>
+                        <button class="btn btn-sm btn-primary" onclick="testSistemaCorregido.testFuncionCalculoCorregida()">▶️ Ejecutar</button>
+                        <div id="resultado-test-2" class="mt-2"></div>
+                    </div>
+                    
+                    <div class="test-resultado">
+                        <h6>🧪 Test 3: Casos Reales</h6>
+                        <p>Probar casos reales de uso</p>
+                        <button class="btn btn-sm btn-primary" onclick="testSistemaCorregido.testCasosReales()">▶️ Ejecutar</button>
+                        <div id="resultado-test-3" class="mt-2"></div>
+                    </div>
+                `;
+            }
+            
+            testEventListeners() {
+                this.log('🎧 PROBANDO EVENT LISTENERS CORREGIDOS', 'warning');
+                
+                const campoUnidad = document.getElementById('id_unidad');
+                const campoFactor = document.getElementById('id_factor');
+                
+                // Simular cambio de valor
+                if (campoUnidad) {
+                    campoUnidad.value = '200';
+                    campoUnidad.dispatchEvent(new Event('input'));
+                    this.log('✅ Event input disparado para unidad con valor 200');
+                }
+                
+                if (campoFactor) {
+                    campoFactor.value = '3.75';
+                    campoFactor.dispatchEvent(new Event('input'));
+                    this.log('✅ Event input disparado para factor con valor 3.75');
+                }
+                
+                document.getElementById('resultado-test-1').innerHTML = '<span class="text-success">✅ Events disparados - Ver log</span>';
+            }
+            
+            testFuncionCalculoCorregida() {
+                this.log('🧮 PROBANDO FUNCIÓN DE CÁLCULO CORREGIDA', 'warning');
+                
+                const casos = [
+                    {unidad: 100, factor: 2.50, esperado: 250},
+                    {unidad: 50, factor: 4.00, esperado: 200},
+                    {unidad: 0, factor: 2.50, esperado: 0},
+                    {unidad: 100, factor: 0, esperado: 0}
+                ];
+                
+                let errores = 0;
+                casos.forEach(caso => {
+                    const resultado = this.calcularImpuestoUnidadFactorCorregido(caso.unidad, caso.factor);
+                    const correcto = Math.abs(resultado.impuestoTotal - caso.esperado) < 0.01;
+                    this.log(`   calcularCorregido(${caso.unidad}, ${caso.factor}) = ${resultado.impuestoTotal} (esperado: ${caso.esperado}) ${correcto ? '✅' : '❌'}`, correcto ? 'success' : 'error');
+                    
+                    if (!correcto) errores++;
+                });
+                
+                document.getElementById('resultado-test-2').innerHTML = errores === 0 ? 
+                    '<span class="text-success">✅ Función corregida funciona correctamente</span>' : 
+                    `<span class="text-danger">❌ ${errores} errores en función corregida</span>`;
+            }
+            
+            testCasosReales() {
+                this.log('🧪 PROBANDO CASOS REALES', 'warning');
+                
+                // Caso 1: Valores normales
+                this.log('CASO 1: Valores normales');
+                document.getElementById('id_unidad').value = '100';
+                document.getElementById('id_factor').value = '2.50';
+                document.getElementById('id_controlado').value = '10,000.00';
+                this.calcularEnTiempoRealCorregido('unidad');
+                
+                setTimeout(() => {
+                    // Caso 2: Valores con formato complejo
+                    this.log('CASO 2: Valores con formato complejo');
+                    document.getElementById('id_unidad').value = '1500';
+                    document.getElementById('id_factor').value = '3.75';
+                    this.calcularEnTiempoRealCorregido('factor');
+                }, 2000);
+                
+                document.getElementById('resultado-test-3').innerHTML = '<span class="text-info">⏳ Ejecutando casos - Ver log</span>';
+            }
+            
+            calcularImpuestoSimple(valorVentas) {
+                if (!valorVentas || valorVentas <= 0) return 0;
+                return Math.round((valorVentas * 0.10 / 1000) * 100) / 100;
+            }
+        }
+        
+        let testSistemaCorregido;
+        
+        function limpiarLog() {
+            document.getElementById('debug-log').innerHTML = '<p class="text-muted">Logs de la corrección...</p>';
+        }
+        
+        function testCorreccion() {
+            testSistemaCorregido.log('🔧 TEST DE CORRECCIÓN COMPLETO SOLICITADO', 'warning');
+            testSistemaCorregido.calcularEnTiempoRealCorregido('manual');
+        }
+        
+        function testEventListeners() {
+            testSistemaCorregido.testEventListeners();
+        }
+        
+        function testCasosCompletos() {
+            testSistemaCorregido.testFuncionCalculoCorregida();
+            setTimeout(() => {
+                testSistemaCorregido.testCasosReales();
+            }, 1000);
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            testSistemaCorregido = new TestUnidadFactorCorregido();
+            
+            // Ejecutar test inicial
+            setTimeout(() => {
+                testSistemaCorregido.calcularEnTiempoRealCorregido('inicial');
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

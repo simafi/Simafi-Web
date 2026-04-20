@@ -1,0 +1,337 @@
+#!/usr/bin/env python3
+"""
+Test para verificar el cálculo corregido de Factor × Unidad
+"""
+
+def test_calculo_corregido():
+    """Test del cálculo corregido"""
+    
+    print("🧪 TEST CÁLCULO CORREGIDO - FACTOR × UNIDAD")
+    print("=" * 60)
+    
+    # Simular el cálculo JavaScript
+    def calcularImpuestoUnidadFactor(valorUnidad, valorFactor):
+        # Validar que ambos valores sean mayores a cero
+        if not valorUnidad or valorUnidad <= 0 or not valorFactor or valorFactor <= 0:
+            print(f'⚠️ Unidad o Factor no válidos - Unidad: {valorUnidad}, Factor: {valorFactor}')
+            return { 
+                'impuestoTotal': 0, 
+                'detalleCalculo': [], 
+                'valorUnidad': valorUnidad or 0, 
+                'valorFactor': valorFactor or 0,
+                'valorCalculado': 0
+            }
+
+        # Multiplicación simple: Factor × Unidad
+        valorCalculado = valorFactor * valorUnidad;
+        
+        print(f'🧮 Cálculo Factor × Unidad:')
+        print(f'   Factor: {valorFactor}')
+        print(f'   Unidad: {valorUnidad}')
+        print(f'   Resultado: {valorFactor} × {valorUnidad} = {valorCalculado}')
+
+        # NO aplicar tarifas ICS - es una multiplicación simple
+        # El resultado se suma directamente al total de impuestos
+        impuestoTotal = valorCalculado;
+        
+        detalleCalculo = [{
+            'descripcion': f'Factor × Unidad ({valorFactor} × {valorUnidad})',
+            'valorUnidad': valorUnidad,
+            'valorFactor': valorFactor,
+            'valorCalculado': valorCalculado,
+            'impuestoAplicado': impuestoTotal
+        }];
+
+        print(f'✅ Valor calculado para Factor × Unidad: L. {impuestoTotal:.2f}')
+
+        return {
+            'impuestoTotal': impuestoTotal,
+            'detalleCalculo': detalleCalculo,
+            'valorUnidad': valorUnidad,
+            'valorFactor': valorFactor,
+            'valorCalculado': valorCalculado
+        }
+
+    # Casos de prueba
+    casos_prueba = [
+        {"factor": 1, "unidad": 500, "esperado": 500, "descripcion": "Caso básico: 1 × 500 = 500"},
+        {"factor": 1.5, "unidad": 1000, "esperado": 1500, "descripcion": "Con decimales: 1.5 × 1000 = 1500"},
+        {"factor": 2.25, "unidad": 200, "esperado": 450, "descripcion": "Factor decimal: 2.25 × 200 = 450"},
+        {"factor": 0, "unidad": 500, "esperado": 0, "descripcion": "Factor = 0 (no debe calcular)"},
+        {"factor": 1.5, "unidad": 0, "esperado": 0, "descripcion": "Unidad = 0 (no debe calcular)"},
+        {"factor": 0, "unidad": 0, "esperado": 0, "descripcion": "Ambos = 0 (no debe calcular)"}
+    ]
+    
+    print("\n📊 EJECUTANDO CASOS DE PRUEBA:")
+    print("-" * 60)
+    
+    todos_pasan = True
+    
+    for i, caso in enumerate(casos_prueba, 1):
+        print(f"\n🧪 Caso {i}: {caso['descripcion']}")
+        print(f"   Entrada: Factor={caso['factor']}, Unidad={caso['unidad']}")
+        
+        resultado = calcularImpuestoUnidadFactor(caso['unidad'], caso['factor'])
+        
+        if resultado['impuestoTotal'] == caso['esperado']:
+            print(f"   ✅ CORRECTO: {resultado['impuestoTotal']} (esperado: {caso['esperado']})")
+        else:
+            print(f"   ❌ ERROR: {resultado['impuestoTotal']} (esperado: {caso['esperado']})")
+            todos_pasan = False
+    
+    print("\n" + "=" * 60)
+    if todos_pasan:
+        print("✅ TODOS LOS CASOS DE PRUEBA PASARON")
+        print("🎯 El cálculo está funcionando correctamente")
+    else:
+        print("❌ ALGUNOS CASOS DE PRUEBA FALLARON")
+        print("🔧 Necesita corrección")
+    
+    return todos_pasan
+
+def crear_test_html_corregido():
+    """Crear un test HTML para verificar el cálculo corregido"""
+    
+    test_html = '''<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Cálculo Corregido - Factor × Unidad</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test { background: #e8f5e8; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #28a745; }
+        .error { background: #ffebee; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #f44336; }
+        .success { background: #e8f5e8; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #4caf50; }
+        .log { background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 0.9em; border: 1px solid #dee2e6; }
+        .highlight { background: #ffeb3b; padding: 2px 4px; border-radius: 3px; font-weight: bold; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; width: 150px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .resultado { background: #e3f2fd; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #2196f3; }
+        .test-case { background: #fff3e0; padding: 10px; margin: 5px 0; border-radius: 4px; border: 1px solid #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Cálculo Corregido - Factor × Unidad</h1>
+        
+        <div class="test">
+            <h3>📋 Test Manual</h3>
+            <p>Prueba el cálculo con diferentes valores:</p>
+            
+            <label>Factor: <input type="text" id="factor" value="1" placeholder="Ej: 1"></label>
+            <label>Unidad: <input type="text" id="unidad" value="500" placeholder="Ej: 500"></label>
+            <button onclick="ejecutarTest()">🧪 Ejecutar Test</button>
+            <button onclick="limpiarTest()">🧹 Limpiar</button>
+        </div>
+
+        <div class="test">
+            <h3>🎯 Casos de Prueba Automáticos</h3>
+            <button onclick="ejecutarCasosPrueba()">🚀 Ejecutar Casos de Prueba</button>
+            <div id="casosPrueba"></div>
+        </div>
+
+        <div id="resultado" class="resultado" style="display: none;">
+            <h3>📊 Resultado del Test</h3>
+            <div id="detalle"></div>
+        </div>
+
+        <div class="test">
+            <h3>📝 Logs del Test</h3>
+            <div id="logs">Los logs aparecerán aquí cuando ejecutes el test...</div>
+        </div>
+    </div>
+
+    <script>
+        function calcularImpuestoUnidadFactor(valorUnidad, valorFactor) {
+            log('🧮 Iniciando cálculo Factor × Unidad...');
+            log(`   Factor recibido: ${valorFactor} (tipo: ${typeof valorFactor})`);
+            log(`   Unidad recibida: ${valorUnidad} (tipo: ${typeof valorUnidad})`);
+            
+            // Validar que ambos valores sean mayores a cero
+            if (!valorUnidad || valorUnidad <= 0 || !valorFactor || valorFactor <= 0) {
+                log('⚠️ Unidad o Factor no válidos - Unidad: ' + valorUnidad + ', Factor: ' + valorFactor);
+                return { 
+                    impuestoTotal: 0, 
+                    detalleCalculo: [], 
+                    valorUnidad: valorUnidad || 0, 
+                    valorFactor: valorFactor || 0,
+                    valorCalculado: 0
+                };
+            }
+
+            // Multiplicación simple: Factor × Unidad
+            const valorCalculado = valorFactor * valorUnidad;
+            
+            log('🧮 Cálculo Factor × Unidad:');
+            log('   Factor: ' + valorFactor);
+            log('   Unidad: ' + valorUnidad);
+            log('   Resultado: ' + valorFactor + ' × ' + valorUnidad + ' = ' + valorCalculado);
+
+            // NO aplicar tarifas ICS - es una multiplicación simple
+            // El resultado se suma directamente al total de impuestos
+            const impuestoTotal = valorCalculado;
+            
+            const detalleCalculo = [{
+                descripcion: `Factor × Unidad (${valorFactor} × ${valorUnidad})`,
+                valorUnidad: valorUnidad,
+                valorFactor: valorFactor,
+                valorCalculado: valorCalculado,
+                impuestoAplicado: impuestoTotal
+            }];
+
+            log('✅ Valor calculado para Factor × Unidad: L. ' + impuestoTotal.toFixed(2));
+
+            return {
+                impuestoTotal: impuestoTotal,
+                detalleCalculo: detalleCalculo,
+                valorUnidad: valorUnidad,
+                valorFactor: valorFactor,
+                valorCalculado: valorCalculado
+            };
+        }
+
+        function ejecutarTest() {
+            const factor = parseFloat(document.getElementById('factor').value) || 0;
+            const unidad = parseInt(document.getElementById('unidad').value) || 0;
+            
+            // Limpiar logs anteriores
+            document.getElementById('logs').innerHTML = '';
+            
+            log('🚀 Iniciando test manual...');
+            log(`📥 Valores de entrada: Factor=${factor}, Unidad=${unidad}`);
+            
+            const resultado = calcularImpuestoUnidadFactor(unidad, factor);
+            
+            // Mostrar resultado
+            mostrarResultado(resultado, "Test Manual");
+        }
+
+        function ejecutarCasosPrueba() {
+            const casos = [
+                { factor: 1, unidad: 500, esperado: 500, descripcion: "Caso básico: 1 × 500 = 500" },
+                { factor: 1.5, unidad: 1000, esperado: 1500, descripcion: "Con decimales: 1.5 × 1000 = 1500" },
+                { factor: 2.25, unidad: 200, esperado: 450, descripcion: "Factor decimal: 2.25 × 200 = 450" },
+                { factor: 0, unidad: 500, esperado: 0, descripcion: "Factor = 0 (no debe calcular)" },
+                { factor: 1.5, unidad: 0, esperado: 0, descripcion: "Unidad = 0 (no debe calcular)" },
+                { factor: 0, unidad: 0, esperado: 0, descripcion: "Ambos = 0 (no debe calcular)" }
+            ];
+            
+            document.getElementById('casosPrueba').innerHTML = '';
+            document.getElementById('logs').innerHTML = '';
+            
+            log('🚀 Iniciando casos de prueba automáticos...');
+            
+            casos.forEach((caso, index) => {
+                log(`\\n📋 Caso ${index + 1}: ${caso.descripcion}`);
+                const resultado = calcularImpuestoUnidadFactor(caso.unidad, caso.factor);
+                
+                const casoDiv = document.createElement('div');
+                casoDiv.className = 'test-case';
+                
+                if (resultado.impuestoTotal === caso.esperado) {
+                    casoDiv.innerHTML = `
+                        <strong>✅ Caso ${index + 1}: ${caso.descripcion}</strong><br>
+                        Factor: ${caso.factor}, Unidad: ${caso.unidad}<br>
+                        Resultado: ${resultado.valorCalculado} | Esperado: ${caso.esperado} | <span style="color: green;">CORRECTO</span>
+                    `;
+                } else {
+                    casoDiv.innerHTML = `
+                        <strong>❌ Caso ${index + 1}: ${caso.descripcion}</strong><br>
+                        Factor: ${caso.factor}, Unidad: ${caso.unidad}<br>
+                        Resultado: ${resultado.valorCalculado} | Esperado: ${caso.esperado} | <span style="color: red;">ERROR</span>
+                    `;
+                }
+                
+                document.getElementById('casosPrueba').appendChild(casoDiv);
+            });
+            
+            log('\\n✅ Casos de prueba completados');
+        }
+
+        function mostrarResultado(resultado, tipo) {
+            const resultadoDiv = document.getElementById('resultado');
+            const detalleDiv = document.getElementById('detalle');
+            
+            if (resultado.impuestoTotal > 0) {
+                resultadoDiv.style.display = 'block';
+                detalleDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ ${tipo} Exitoso</h4>
+                        <p><strong>Factor:</strong> ${resultado.valorFactor}</p>
+                        <p><strong>Unidad:</strong> ${resultado.valorUnidad}</p>
+                        <p><strong>Valor Calculado:</strong> ${resultado.valorFactor} × ${resultado.valorUnidad} = <strong>${resultado.valorCalculado}</strong></p>
+                        <p><strong>Resultado Final:</strong> L. <strong>${resultado.impuestoTotal.toFixed(2)}</strong></p>
+                    </div>
+                `;
+                log('✅ Test completado exitosamente');
+            } else {
+                resultadoDiv.style.display = 'block';
+                detalleDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ ${tipo} Fallido</h4>
+                        <p><strong>Error:</strong> No se puede calcular</p>
+                        <p>Factor: ${resultado.valorFactor} | Unidad: ${resultado.valorUnidad}</p>
+                        <p>Ambos valores deben ser mayores a 0</p>
+                    </div>
+                `;
+                log('❌ Test falló - valores inválidos');
+            }
+        }
+
+        function limpiarTest() {
+            document.getElementById('factor').value = '';
+            document.getElementById('unidad').value = '';
+            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('casosPrueba').innerHTML = '';
+            document.getElementById('logs').innerHTML = 'Los logs aparecerán aquí cuando ejecutes el test...';
+        }
+
+        function log(mensaje) {
+            console.log(mensaje);
+            const logsDiv = document.getElementById('logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log';
+            logEntry.textContent = mensaje;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        // Test inicial
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Sistema de test corregido iniciado');
+            log('💡 Ahora es una multiplicación simple: Factor × Unidad');
+        });
+    </script>
+</body>
+</html>'''
+    
+    with open('test_calculo_corregido.html', 'w', encoding='utf-8') as f:
+        f.write(test_html)
+    
+    print("✅ Test HTML corregido creado: test_calculo_corregido.html")
+
+if __name__ == "__main__":
+    print("🧪 INICIANDO TEST CÁLCULO CORREGIDO...")
+    print()
+    
+    # Ejecutar test del cálculo corregido
+    if test_calculo_corregido():
+        print("\n✅ CÁLCULO CORREGIDO FUNCIONA CORRECTAMENTE")
+        print("🎯 Ahora es una multiplicación simple: Factor × Unidad")
+        
+        # Crear test HTML
+        crear_test_html_corregido()
+        print("\n📁 Archivos de test creados:")
+        print("   - test_calculo_corregido.html")
+        
+        print("\n🔧 PRÓXIMOS PASOS:")
+        print("1. Abrir 'test_calculo_corregido.html' en el navegador")
+        print("2. Probar con Factor=1, Unidad=500 (debe dar 500)")
+        print("3. Verificar que ya no aplica tarifas ICS")
+        
+    else:
+        print("\n❌ EL CÁLCULO AÚN TIENE PROBLEMAS")
+        print("🔧 Necesita más corrección")

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Declaraciones</title>
+</head>
+<body>
+    <h1>Prueba de Declaraciones</h1>
+    <p>Haz clic en el botón para probar la vista de declaraciones:</p>
+    <button onclick="probarDeclaraciones()">Probar Declaraciones</button>
+    <div id="resultado"></div>
+
+    <script>
+        function probarDeclaraciones() {
+            fetch('/tributario/declaraciones/')
+                .then(response => {
+                    console.log('Status:', response.status);
+                    console.log('Content-Type:', response.headers.get('Content-Type'));
+                    
+                    const contentType = response.headers.get('Content-Type');
+                    
+                    if (contentType && contentType.includes('text/html')) {
+                        return response.text();
+                    } else if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    } else {
+                        return response.text();
+                    }
+                })
+                .then(data => {
+                    const resultado = document.getElementById('resultado');
+                    
+                    if (typeof data === 'string' && data.includes('<html')) {
+                        resultado.innerHTML = '<h2>✅ ¡Éxito! La página carga correctamente como HTML</h2>' +
+                                           '<p>La vista está devolviendo HTML en lugar de JSON.</p>' +
+                                           '<div style="border: 1px solid #ccc; padding: 10px; max-height: 300px; overflow-y: auto;">' +
+                                           data.substring(0, 1000) + '...' +
+                                           '</div>';
+                    } else if (typeof data === 'object') {
+                        resultado.innerHTML = '<h2>❌ Problema: La vista aún devuelve JSON</h2>' +
+                                           '<p>La vista necesita ser corregida para devolver HTML.</p>' +
+                                           '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    } else {
+                        resultado.innerHTML = '<h2>⚠️ Respuesta inesperada</h2>' +
+                                           '<pre>' + data + '</pre>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('resultado').innerHTML = 
+                        '<h2>❌ Error</h2><p>' + error.message + '</p>';
+                });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,100 @@
+
+<!-- Sección de Período de Declaración -->
+<div class="form-section">
+    <h4 class="section-title">
+        <i class="fas fa-calendar"></i> Período de Declaración
+    </h4>
+    <div class="form-grid">
+        <!-- Campo Año -->
+        <div class="form-group form-group-ano">
+            <label for="id_ano" class="required">
+                <i class="fas fa-calendar"></i> Año
+            </label>
+            <select id="id_ano" name="ano" class="form-control" required>
+                <option value="">Seleccione año</option>
+                {% for ano in anos_disponibles %}
+                    <option value="{{ ano.ano }}" 
+                            {% if form.ano.value == ano.ano|stringformat:"s" %}selected{% endif %}>
+                        {{ ano.ano }}
+                    </option>
+                {% endfor %}
+            </select>
+            <small class="form-text text-muted">
+                Seleccione el año de la declaración
+            </small>
+        </div>
+        
+        <!-- Campo Mes -->
+        <div class="form-group form-group-mes">
+            <label for="id_mes" class="required">
+                <i class="fas fa-calendar-alt"></i> Mes
+            </label>
+            <select id="id_mes" name="mes" class="form-control" required>
+                <option value="">Seleccione mes</option>
+                <option value="1" {% if form.mes.value == "1" %}selected{% endif %}>Enero</option>
+                <option value="2" {% if form.mes.value == "2" %}selected{% endif %}>Febrero</option>
+                <option value="3" {% if form.mes.value == "3" %}selected{% endif %}>Marzo</option>
+                <option value="4" {% if form.mes.value == "4" %}selected{% endif %}>Abril</option>
+                <option value="5" {% if form.mes.value == "5" %}selected{% endif %}>Mayo</option>
+                <option value="6" {% if form.mes.value == "6" %}selected{% endif %}>Junio</option>
+                <option value="7" {% if form.mes.value == "7" %}selected{% endif %}>Julio</option>
+                <option value="8" {% if form.mes.value == "8" %}selected{% endif %}>Agosto</option>
+                <option value="9" {% if form.mes.value == "9" %}selected{% endif %}>Septiembre</option>
+                <option value="10" {% if form.mes.value == "10" %}selected{% endif %}>Octubre</option>
+                <option value="11" {% if form.mes.value == "11" %}selected{% endif %}>Noviembre</option>
+                <option value="12" {% if form.mes.value == "12" %}selected{% endif %}>Diciembre</option>
+            </select>
+            <small class="form-text text-muted">
+                Seleccione el mes de la declaración
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- CSS para el formulario -->
+<style>
+.form-section {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    color: #495057;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #007bff;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group label.required::after {
+    content: " *";
+    color: #dc3545;
+}
+
+.form-control {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

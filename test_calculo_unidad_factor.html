@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Cálculo Unidad × Factor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #28a745;
+            outline: none;
+        }
+        .result {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .error {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border-left: 4px solid #ffa000;
+        }
+        .test-cases {
+            margin-top: 30px;
+        }
+        .test-case {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 Test: Cálculo Unidad × Factor</h1>
+        
+        <div class="form-group">
+            <label for="id_unidad">Unidad (entero, máximo 11 dígitos):</label>
+            <input type="number" id="id_unidad" name="unidad" placeholder="Ej: 1000">
+        </div>
+        
+        <div class="form-group">
+            <label for="id_factor">Factor (decimal, máximo 10 enteros + 2 decimales):</label>
+            <input type="number" id="id_factor" name="factor" step="0.01" placeholder="Ej: 25.50">
+        </div>
+        
+        <div class="form-group">
+            <label for="id_ventai">Ventas Industria (para probar suma total):</label>
+            <input type="number" id="id_ventai" name="ventai" step="0.01" placeholder="Ej: 100000.00">
+        </div>
+        
+        <div class="form-group">
+            <label for="id_impuesto">Impuesto Total Calculado:</label>
+            <input type="text" id="id_impuesto" name="impuesto" readonly style="background-color: #e8f5e8;">
+        </div>
+        
+        <div class="form-group">
+            <label for="id_multadecla">Multa Calculada:</label>
+            <input type="text" id="id_multadecla" name="multadecla" readonly style="background-color: #fff3cd;">
+        </div>
+        
+        <!-- Campos ocultos necesarios para el sistema -->
+        <input type="hidden" id="id_mes" name="mes" value="2">
+        <input type="hidden" id="id_tipo" name="tipo" value="1">
+        
+        <button onclick="testCalculos()">🔄 Probar Cálculos</button>
+        
+        <div id="resultados"></div>
+        
+        <div class="test-cases">
+            <h3>📋 Casos de Prueba</h3>
+            
+            <div class="test-case">
+                <strong>Caso 1:</strong> Unidad = 1000, Factor = 25.50
+                <br><strong>Resultado esperado:</strong> 1000 × 25.50 = 25,500.00
+                <br><button onclick="testCase1()">Probar</button>
+            </div>
+            
+            <div class="test-case">
+                <strong>Caso 2:</strong> Unidad = 500, Factor = 12.75
+                <br><strong>Resultado esperado:</strong> 500 × 12.75 = 6,375.00
+                <br><button onclick="testCase2()">Probar</button>
+            </div>
+            
+            <div class="test-case">
+                <strong>Caso 3:</strong> Unidad = 0, Factor = 25.50
+                <br><strong>Resultado esperado:</strong> 0 (no se calcula porque unidad = 0)
+                <br><button onclick="testCase3()">Probar</button>
+            </div>
+            
+            <div class="test-case">
+                <strong>Caso 4:</strong> Unidad = 1000, Factor = 0
+                <br><strong>Resultado esperado:</strong> 0 (no se calcula porque factor = 0)
+                <br><button onclick="testCase4()">Probar</button>
+            </div>
+            
+            <div class="test-case">
+                <strong>Caso 5:</strong> Unidad = 333, Factor = 33.333
+                <br><strong>Resultado esperado:</strong> 333 × 33.333 = 11,099.89 (redondeado a 2 decimales)
+                <br><button onclick="testCase5()">Probar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incluir el JavaScript del sistema de cálculo -->
+    <script src="declaracion_volumen_interactivo.js"></script>
+    
+    <script>
+        function testCalculos() {
+            const unidad = parseFloat(document.getElementById('id_unidad').value) || 0;
+            const factor = parseFloat(document.getElementById('id_factor').value) || 0;
+            
+            console.log('🧪 INICIANDO TEST DE CÁLCULOS');
+            console.log(`   Unidad: ${unidad}`);
+            console.log(`   Factor: ${factor}`);
+            
+            // Simular el cálculo manual
+            let resultado = 0;
+            if (unidad > 0 && factor > 0) {
+                const calculo = unidad * factor;
+                resultado = Math.round(calculo * 100) / 100;
+            }
+            
+            document.getElementById('resultados').innerHTML = `
+                <div class="result">
+                    <h4>📊 Resultado del Test Manual</h4>
+                    <p><strong>Unidad:</strong> ${unidad}</p>
+                    <p><strong>Factor:</strong> ${factor}</p>
+                    <p><strong>Cálculo:</strong> ${unidad} × ${factor} = ${unidad * factor}</p>
+                    <p><strong>Redondeado:</strong> ${resultado.toFixed(2)}</p>
+                    <p><strong>Válido:</strong> ${(unidad > 0 && factor > 0) ? 'SÍ' : 'NO'}</p>
+                </div>
+            `;
+            
+            // Esperar un poco para que el sistema automático procese
+            setTimeout(() => {
+                const impuestoCalculado = document.getElementById('id_impuesto').value;
+                document.getElementById('resultados').innerHTML += `
+                    <div class="result">
+                        <h4>🤖 Resultado del Sistema Automático</h4>
+                        <p><strong>Impuesto Total:</strong> ${impuestoCalculado}</p>
+                    </div>
+                `;
+            }, 500);
+        }
+        
+        function testCase1() {
+            document.getElementById('id_unidad').value = '1000';
+            document.getElementById('id_factor').value = '25.50';
+            document.getElementById('id_ventai').value = '0';
+            testCalculos();
+        }
+        
+        function testCase2() {
+            document.getElementById('id_unidad').value = '500';
+            document.getElementById('id_factor').value = '12.75';
+            document.getElementById('id_ventai').value = '0';
+            testCalculos();
+        }
+        
+        function testCase3() {
+            document.getElementById('id_unidad').value = '0';
+            document.getElementById('id_factor').value = '25.50';
+            document.getElementById('id_ventai').value = '0';
+            testCalculos();
+        }
+        
+        function testCase4() {
+            document.getElementById('id_unidad').value = '1000';
+            document.getElementById('id_factor').value = '0';
+            document.getElementById('id_ventai').value = '0';
+            testCalculos();
+        }
+        
+        function testCase5() {
+            document.getElementById('id_unidad').value = '333';
+            document.getElementById('id_factor').value = '33.333';
+            document.getElementById('id_ventai').value = '0';
+            testCalculos();
+        }
+        
+        // Inicializar con valores por defecto
+        window.addEventListener('load', function() {
+            console.log('🚀 Test de Cálculo Unidad × Factor cargado');
+            testCase1(); // Ejecutar el primer caso por defecto
+        });
+    </script>
+</body>
+</html>
+

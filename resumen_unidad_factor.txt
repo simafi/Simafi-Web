@@ -1,0 +1,58 @@
+
+🎯 RESUMEN DE IMPLEMENTACIÓN - UNIDAD Y FACTOR
+
+FUNCIONALIDAD AGREGADA:
+======================
+
+1. VALIDACIÓN:
+   - Verifica que Unidad > 0 Y Factor > 0
+   - Si alguno es 0 o vacío, NO calcula impuesto adicional
+
+2. CÁLCULO:
+   - Multiplica: valorCalculado = Unidad × Factor
+   - Redondea resultado a 2 decimales
+   - Aplica tarifas ICS estándar sobre valorCalculado
+
+3. INTEGRACIÓN:
+   - Suma el impuesto resultante al total de impuestos
+   - Incluye en logs de depuración
+   - Actualiza campo "Impuesto Calculado" automáticamente
+
+4. CAMPOS MODIFICADOS:
+   - Agregados 'unidad' y 'factor' a verificación de campos
+   - Agregados a event listeners para cálculo en tiempo real
+   - Incluidos en función obtenerValoresVentas()
+
+5. LOGS DE DEPURACIÓN:
+   - "🧮 Cálculo Unidad × Factor:"
+   - "✅ Impuesto calculado para Unidad × Factor:"
+   - "• Unidad × Factor: L. X.XX" en sumatoria
+
+ARCHIVOS MODIFICADOS:
+====================
+- venv/Scripts/tributario/tributario_app/templates/declaracion_volumen.html
+  * Función calcularImpuestoUnidadFactor() agregada
+  * Campos unidad y factor agregados a verificación
+  * Event listeners actualizados
+  * Sumatoria total modificada para incluir Unidad × Factor
+
+ARCHIVOS DE PRUEBA CREADOS:
+===========================
+- test_unidad_factor.html (test independiente)
+- test_unidad_factor.py (generador del test)
+
+VERIFICACIÓN:
+=============
+1. Abrir test_unidad_factor.html en navegador
+2. Ingresar Unidad = 1000, Factor = 1.5
+3. Verificar que calcule 1000 × 1.5 = 1500
+4. Confirmar que aplique impuesto sobre 1500
+5. Verificar que se sume al total de impuestos
+
+FORMULARIO REAL:
+================
+1. Acceder a formulario de declaración de volumen
+2. Ingresar valores en Unidad y Factor
+3. Abrir consola del navegador (F12)
+4. Verificar logs de cálculo automático
+5. Confirmar actualización del campo "Impuesto Calculado"

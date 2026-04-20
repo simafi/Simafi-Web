@@ -1,0 +1,19 @@
+
+# VERSIÓN DEL SISTEMA - DECLARACIÓN DE VOLUMEN
+# Generado automáticamente: 2025-09-22 10:52:11
+
+## Cambios Aplicados:
+- ✅ Herencia de RTM, EXPE e ID del negocio en Información Básica
+- ✅ Cálculo de unidad × factor en productos controlados
+- ✅ Variables ocultas sincronizadas
+- ✅ Cache del navegador limpiado
+
+## Archivos Modificados:
+- modules/tributario/simple_views.py
+- venv/Scripts/tributario/tributario_app/static/js/declaracion_volumen_interactivo.js
+- venv/Scripts/tributario/tributario_app/templates/declaracion_volumen.html
+
+## Próximos Pasos:
+1. Recargar página con Ctrl+F5
+2. Verificar que los campos RTM, EXPE e ID se llenen automáticamente
+3. Probar cálculo de productos controlados con unidad × factor

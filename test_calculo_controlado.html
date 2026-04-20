@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Cálculo Productos Controlados</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        input { margin: 5px; padding: 8px; width: 200px; }
+        button { padding: 10px 20px; margin: 5px; }
+        #resultado { font-weight: bold; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test - Sistema de Cálculo con Productos Controlados</h1>
+    
+    <div class="test-section">
+        <h3>Campos de Ventas</h3>
+        <label>Ventas Rubro Producción:</label>
+        <input type="text" id="id_ventai" value="1000000" placeholder="Ej: 1000000"><br>
+        
+        <label>Ventas Mercadería:</label>
+        <input type="text" id="id_ventac" value="500000" placeholder="Ej: 500000"><br>
+        
+        <label>Ventas por Servicios:</label>
+        <input type="text" id="id_ventas" value="300000" placeholder="Ej: 300000"><br>
+        
+        <label>Ventas Productos Controlados:</label>
+        <input type="text" id="id_controlado" value="200000" placeholder="Ej: 200000"><br>
+        
+        <button onclick="probarCalculo()">🧮 Probar Cálculo</button>
+        <button onclick="limpiarCampos()">🧹 Limpiar</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Resultado del Cálculo</h3>
+        <div id="resultado">Haga clic en "Probar Cálculo" para ver los resultados</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Logs de Consola</h3>
+        <div id="logs">Los logs aparecerán aquí...</div>
+    </div>
+
+    <script src="declaracion_volumen_interactivo.js"></script>
+    <script>
+        // Interceptar console.log para mostrar en la página
+        const originalLog = console.log;
+        const logsDiv = document.getElementById('logs');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const logEntry = document.createElement('div');
+            logEntry.textContent = args.join(' ');
+            logEntry.style.margin = '2px 0';
+            logEntry.style.fontSize = '0.9em';
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        };
+        
+        function probarCalculo() {
+            console.log('🧪 Iniciando test de cálculo...');
+            
+            if (window.declaracionVolumenInteractivo) {
+                window.declaracionVolumenInteractivo.recalcular();
+                
+                setTimeout(() => {
+                    const resultado = document.getElementById('resultado');
+                    const valores = window.declaracionVolumenInteractivo.obtenerValoresVentas();
+                    
+                    let html = '<h4>📊 Valores Detectados:</h4>';
+                    html += `<p>Ventas Rubro Producción: L. ${(valores.ventai || 0).toLocaleString()}</p>`;
+                    html += `<p>Ventas Mercadería: L. ${(valores.ventac || 0).toLocaleString()}</p>`;
+                    html += `<p>Ventas por Servicios: L. ${(valores.ventas || 0).toLocaleString()}</p>`;
+                    html += `<p>Ventas Productos Controlados: L. ${(valores.controlado || 0).toLocaleString()}</p>`;
+                    
+                    const totalVentas = (valores.ventai || 0) + (valores.ventac || 0) + (valores.ventas || 0) + (valores.controlado || 0);
+                    html += `<p><strong>Total Ventas: L. ${totalVentas.toLocaleString()}</strong></p>`;
+                    
+                    const campoImpuesto = document.getElementById('id_impuesto');
+                    if (campoImpuesto && campoImpuesto.value) {
+                        html += `<p><strong>Impuesto Calculado: L. ${parseFloat(campoImpuesto.value).toLocaleString()}</strong></p>`;
+                    }
+                    
+                    resultado.innerHTML = html;
+                }, 1000);
+            } else {
+                console.error('❌ Sistema de cálculo no encontrado');
+                document.getElementById('resultado').innerHTML = 
+                    '<div class="error">❌ Sistema de cálculo no encontrado</div>';
+            }
+        }
+        
+        function limpiarCampos() {
+            document.getElementById('id_ventai').value = '';
+            document.getElementById('id_ventac').value = '';
+            document.getElementById('id_ventas').value = '';
+            document.getElementById('id_controlado').value = '';
+            document.getElementById('resultado').innerHTML = 'Campos limpiados';
+            document.getElementById('logs').innerHTML = '';
+        }
+        
+        // Verificar sistema al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (window.declaracionVolumenInteractivo) {
+                    console.log('✅ Sistema de cálculo cargado correctamente');
+                } else {
+                    console.error('❌ Sistema de cálculo no cargado');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

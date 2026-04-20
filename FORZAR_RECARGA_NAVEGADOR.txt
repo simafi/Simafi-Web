@@ -1,0 +1,146 @@
+════════════════════════════════════════════════════════════════
+  🔥 EL CÓDIGO YA ESTÁ EN EL SERVIDOR - PROBLEMA DE CACHÉ
+════════════════════════════════════════════════════════════════
+
+✅ CONFIRMADO:
+   - Archivo: declaracion_volumen.html
+   - Líneas 1763-1806: Código del billar EXISTE
+   - Servidor: Enviando 124,215 bytes (archivo ACTUALIZADO)
+   - Inputs: ALINEADOS A LA IZQUIERDA
+
+❌ PROBLEMA:
+   Tu navegador está usando una VERSIÓN EN CACHÉ del JavaScript
+
+════════════════════════════════════════════════════════════════
+SOLUCIÓN 1: MODO INCÓGNITO (MÁS FÁCIL)
+════════════════════════════════════════════════════════════════
+
+1. Abre una ventana INCÓGNITA/PRIVADA:
+   - Chrome: Ctrl+Shift+N
+   - Edge: Ctrl+Shift+P
+
+2. Ve a esta URL:
+   http://127.0.0.1:8080/tributario/declaraciones/?empresa=0301&rtm=114-03-23&expe=1151
+
+3. Presiona F12 inmediatamente
+
+4. Busca en la consola:
+   ✅ Listener agregado a campo Unidad
+   ✅ Listener agregado a campo Factor
+
+5. Ingresa valores:
+   Unidad: 100
+   Factor: 5.50
+
+6. Busca:
+   🎯 IMPUESTO BILLAR: 100 × 5.5 = 550
+
+════════════════════════════════════════════════════════════════
+SOLUCIÓN 2: BORRAR CACHÉ COMPLETAMENTE
+════════════════════════════════════════════════════════════════
+
+1. CIERRA TODAS LAS PESTAÑAS del navegador
+
+2. Presiona Ctrl+Shift+Delete
+
+3. Selecciona:
+   ☑ Cookies y otros datos de sitios
+   ☑ Imágenes y archivos almacenados en caché
+
+4. Haz clic en "Borrar datos"
+
+5. Cierra y vuelve a abrir el navegador completamente
+
+6. Ve a la URL
+
+════════════════════════════════════════════════════════════════
+SOLUCIÓN 3: DESHABILITAR CACHÉ EN DEVTOOLS
+════════════════════════════════════════════════════════════════
+
+1. Presiona F12
+2. Ve a la pestaña "Network"
+3. Marca la casilla "Disable cache"
+4. CON F12 ABIERTO, presiona Ctrl+R
+5. Ve a la pestaña "Console"
+6. Busca los mensajes de "Listener agregado"
+
+════════════════════════════════════════════════════════════════
+VERIFICACIÓN MANUAL EN LA CONSOLA
+════════════════════════════════════════════════════════════════
+
+Si nada de lo anterior funciona, pega estos comandos en F12 → Console:
+
+// Ver si el código se cargó
+console.log('¿Código billar cargado?', typeof calcularImpuestoBillar);
+console.log('¿Calculadora existe?', window.declaracionVolumenInteractivo);
+
+// Forzar cálculo manual
+const unidad = 100;
+const factor = 5.50;
+const resultado = unidad * factor;
+console.log('Cálculo manual:', unidad, 'x', factor, '=', resultado);
+
+// Actualizar campo hidden manualmente
+document.getElementById('hidden_unidadFactor_impuesto').value = resultado;
+console.log('Hidden actualizado:', document.getElementById('hidden_unidadFactor_impuesto').value);
+
+// Verificar campos
+console.log('Campo Unidad:', document.getElementById('id_unidad'));
+console.log('Campo Factor:', document.getElementById('id_factor'));
+console.log('Campo Hidden:', document.getElementById('hidden_unidadFactor_impuesto'));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Interactivo - Suma Productos Controlados</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { background: #e8f5e8; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #28a745; }
+        .resultado { background: #e3f2fd; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #2196f3; }
+        .log { background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 0.9em; border: 1px solid #dee2e6; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; width: 150px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .highlight { background: #ffeb3b; padding: 2px 4px; border-radius: 3px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Interactivo - Suma Productos Controlados</h1>
+        
+        <div class="test-section">
+            <h3>📋 Valores de Entrada</h3>
+            <label>Ventas Rubro Producción: <input type="text" id="ventai" value="500000" placeholder="500000"></label><br>
+            <label>Ventas Productos Controlados: <input type="text" id="controlado" value="500000" placeholder="500000"></label><br>
+            <button onclick="ejecutarTest()">🧪 Ejecutar Test</button>
+            <button onclick="limpiarTest()">🧹 Limpiar</button>
+        </div>
+
+        <div id="resultado" class="resultado" style="display: none;">
+            <h3>📊 Resultado del Test</h3>
+            <div id="detalle"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Logs del Test</h3>
+            <div id="logs">Los logs aparecerán aquí cuando ejecutes el test...</div>
+        </div>
+    </div>
+
+    <script>
+        // Tarifas normales ICS
+        const tarifasNormales = [
+            {"rango1": 0.0, "rango2": 500000.0, "valor": 0.3, "descripcion": "Rango $0 - $500,000"},
+            {"rango1": 500000.01, "rango2": 10000000.0, "valor": 0.4, "descripcion": "Rango $500,000 - $10,000,000"},
+            {"rango1": 10000000.01, "rango2": 9999999999.0, "valor": 0.3, "descripcion": "Rango $10,000,000+"}
+        ];
+
+        // Tarifas para productos controlados
+        const tarifasControlados = [
+            {"rango1": 0.0, "rango2": 1000000.0, "valor": 0.1, "descripcion": "Controlados $0 - $1,000,000"},
+            {"rango1": 1000000.01, "rango2": 5000000.0, "valor": 0.05, "descripcion": "Controlados $1,000,000 - $5,000,000"},
+            {"rango1": 5000000.01, "rango2": 9999999999.0, "valor": 0.1, "descripcion": "Controlados $5,000,000+"}
+        ];
+
+        function calcularImpuestoICS(valorVentas, tarifas) {
+            if (!valorVentas || valorVentas <= 0) {
+                return { impuestoTotal: 0, detalleCalculo: [] };
+            }
+
+            let impuestoTotal = 0;
+            let valorRestante = valorVentas;
+            const detalleCalculo = [];
+
+            for (const tarifa of tarifas) {
+                if (valorRestante <= 0) break;
+
+                const diferencialRango = tarifa.rango2 - tarifa.rango1;
+                if (diferencialRango <= 0) continue;
+
+                let valorAplicable;
+                if (valorRestante <= diferencialRango) {
+                    valorAplicable = valorRestante;
+                    valorRestante = 0;
+                } else {
+                    valorAplicable = diferencialRango;
+                    valorRestante -= diferencialRango;
+                }
+
+                const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+                impuestoTotal += impuestoRango;
+
+                detalleCalculo.push({
+                    rango1: tarifa.rango1,
+                    rango2: tarifa.rango2,
+                    valorAplicable: valorAplicable,
+                    tarifaPorMil: tarifa.valor,
+                    impuestoRango: impuestoRango,
+                    descripcion: tarifa.descripcion
+                });
+            }
+
+            return {
+                impuestoTotal: Math.round(impuestoTotal * 100) / 100,
+                detalleCalculo: detalleCalculo
+            };
+        }
+
+        function ejecutarTest() {
+            // Limpiar logs anteriores
+            document.getElementById('logs').innerHTML = '';
+            
+            log('🚀 Iniciando test suma Productos Controlados...');
+            
+            // Obtener valores de entrada
+            const ventai = parseFloat(document.getElementById('ventai').value) || 0;
+            const controlado = parseFloat(document.getElementById('controlado').value) || 0;
+            
+            log(`📊 Valores de entrada:`);
+            log(`   Ventas Rubro Producción: ${ventai.toLocaleString()}`);
+            log(`   Productos Controlados: ${controlado.toLocaleString()}`);
+            
+            // Cálculo individual de Ventas Rubro Producción
+            log(`\\n📋 CÁLCULO VENTAS RUBRO PRODUCCIÓN:`);
+            const resultadoVentai = calcularImpuestoICS(ventai, tarifasNormales);
+            log(`   Valor: ${ventai.toLocaleString()}`);
+            log(`   Cálculo: ${ventai} × 0.3/1000 = ${ventai * 0.3 / 1000}`);
+            log(`   Resultado: L. ${resultadoVentai.impuestoTotal.toFixed(2)}`);
+            
+            // Cálculo individual de Productos Controlados
+            log(`\\n📋 CÁLCULO PRODUCTOS CONTROLADOS:`);
+            const resultadoControlados = calcularImpuestoICS(controlado, tarifasControlados);
+            log(`   Valor: ${controlado.toLocaleString()}`);
+            log(`   Cálculo: ${controlado} × 0.1/1000 = ${controlado * 0.1 / 1000}`);
+            log(`   Resultado: L. ${resultadoControlados.impuestoTotal.toFixed(2)}`);
+            
+            // Suma total
+            const totalImpuesto = resultadoVentai.impuestoTotal + resultadoControlados.impuestoTotal;
+            
+            log(`\\n🎯 SUMA TOTAL:`);
+            log(`   Ventas Rubro Producción: L. ${resultadoVentai.impuestoTotal.toFixed(2)}`);
+            log(`   Productos Controlados: L. ${resultadoControlados.impuestoTotal.toFixed(2)}`);
+            log(`   = TOTAL: L. ${totalImpuesto.toFixed(2)}`);
+            
+            // Verificación
+            const esperado = 200.00; // 150 + 50
+            log(`\\n🔍 VERIFICACIÓN:`);
+            log(`   Esperado: L. ${esperado.toFixed(2)}`);
+            log(`   Obtenido: L. ${totalImpuesto.toFixed(2)}`);
+            log(`   Diferencia: L. ${Math.abs(totalImpuesto - esperado).toFixed(2)}`);
+            
+            if (Math.abs(totalImpuesto - esperado) < 0.01) {
+                log(`   ✅ CORRECTO`);
+            } else {
+                log(`   ❌ ERROR`);
+            }
+            
+            // Mostrar resultado
+            mostrarResultado(resultadoVentai, resultadoControlados, totalImpuesto, esperado);
+        }
+
+        function mostrarResultado(ventai, controlados, total, esperado) {
+            const resultadoDiv = document.getElementById('resultado');
+            const detalleDiv = document.getElementById('detalle');
+            
+            resultadoDiv.style.display = 'block';
+            
+            const esCorrecto = Math.abs(total - esperado) < 0.01;
+            const estado = esCorrecto ? 'success' : 'error';
+            const icono = esCorrecto ? '✅' : '❌';
+            
+            detalleDiv.innerHTML = `
+                <div class="${estado}">
+                    <h4>${icono} Test Suma Productos Controlados</h4>
+                    <p><strong>Ventas Rubro Producción:</strong> L. ${ventai.impuestoTotal.toFixed(2)}</p>
+                    <p><strong>Productos Controlados:</strong> L. ${controlados.impuestoTotal.toFixed(2)}</p>
+                    <p><strong>Total Obtenido:</strong> L. ${total.toFixed(2)}</p>
+                    <p><strong>Total Esperado:</strong> L. ${esperado.toFixed(2)}</p>
+                    <p><strong>Diferencia:</strong> L. ${Math.abs(total - esperado).toFixed(2)}</p>
+                    <p><strong>Estado:</strong> ${esCorrecto ? 'CORRECTO' : 'ERROR'}</p>
+                </div>
+            `;
+        }
+
+        function limpiarTest() {
+            document.getElementById('ventai').value = '';
+            document.getElementById('controlado').value = '';
+            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('logs').innerHTML = 'Los logs aparecerán aquí cuando ejecutes el test...';
+        }
+
+        function log(mensaje) {
+            console.log(mensaje);
+            const logsDiv = document.getElementById('logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log';
+            logEntry.textContent = mensaje;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        // Test inicial
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Sistema de test suma Productos Controlados iniciado');
+            log('💡 Ingresa 500,000 en ambos campos y presiona "Ejecutar Test"');
+        });
+    </script>
+</body>
+</html>

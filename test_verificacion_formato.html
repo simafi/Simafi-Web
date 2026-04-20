@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Verificación Formato Europeo</title>
+</head>
+<body>
+    <h1>Test Formato Europeo - 5.000.000</h1>
+    
+    <div>
+        <label>Ingrese valor:</label>
+        <input type="text" id="test_input" value="5.000.000" style="width: 200px;">
+        <button onclick="probarFormato()">Probar</button>
+    </div>
+    
+    <div id="resultado" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+    
+    <script src="declaracion_volumen_interactivo.js"></script>
+    <script>
+        function probarFormato() {
+            const input = document.getElementById('test_input');
+            const resultado = document.getElementById('resultado');
+            
+            console.log('🧪 Probando valor:', input.value);
+            
+            // Simular evento de formateo
+            const event = { target: input };
+            
+            if (typeof DeclaracionVolumenInteractivo !== 'undefined') {
+                const calculadora = new DeclaracionVolumenInteractivo();
+                calculadora.formatearNumero(event);
+                
+                resultado.innerHTML = `
+                    <strong>Valor original:</strong> 5.000.000<br>
+                    <strong>Valor procesado:</strong> ${input.value}<br>
+                    <strong>Estado:</strong> ${input.value === '5000000' ? '✅ CORRECTO' : '❌ ERROR'}<br>
+                    <strong>Consola:</strong> Revisar mensajes de debug
+                `;
+            } else {
+                resultado.innerHTML = '❌ DeclaracionVolumenInteractivo no disponible';
+            }
+        }
+        
+        // Probar automáticamente al cargar
+        window.onload = function() {
+            setTimeout(probarFormato, 500);
+        };
+    </script>
+</body>
+</html>
