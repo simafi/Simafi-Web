@@ -1,0 +1,20 @@
+<div class="no-print d-flex flex-wrap align-items-center gap-2 mb-3">
+	<button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()" title="Imprimir listado">
+		<i class="fas fa-print me-1"></i>Imprimir
+	</button>
+	{% if catalogo_clave %}
+	<a href="{% url 'configuracion:catalogo_catastro_export_excel' clave=catalogo_clave %}{{ export_querystring|default:'' }}" class="btn btn-outline-success btn-sm">
+		<i class="fas fa-file-excel me-1"></i>Excel
+	</a>
+	<a href="{% url 'configuracion:catalogo_catastro_export_pdf' clave=catalogo_clave %}{{ export_querystring|default:'' }}" class="btn btn-outline-danger btn-sm">
+		<i class="fas fa-file-pdf me-1"></i>PDF
+	</a>
+	{% else %}
+	<a href="{% url excel_url %}{{ export_querystring|default:'' }}" class="btn btn-outline-success btn-sm">
+		<i class="fas fa-file-excel me-1"></i>Excel
+	</a>
+	<a href="{% url pdf_url %}{{ export_querystring|default:'' }}" class="btn btn-outline-danger btn-sm">
+		<i class="fas fa-file-pdf me-1"></i>PDF
+	</a>
+	{% endif %}
+</div>

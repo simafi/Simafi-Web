@@ -1,0 +1,44 @@
+{% extends "ciudadano/base_ciudadano.html" %}
+{% block title %}Folio {{ s.referencia }}{% endblock %}
+{% block content %}
+<div class="card cdd-card">
+    <div class="card-body p-4">
+        <h1 class="h5">Solicitud {{ s.referencia }}</h1>
+        <dl class="row small mt-3 mb-0">
+            <dt class="col-sm-3">Tipo</dt><dd class="col-sm-9">{{ s.get_tipo_tramite_display }}</dd>
+            <dt class="col-sm-3">Estado</dt><dd class="col-sm-9">{{ s.get_estado_display }}</dd>
+            <dt class="col-sm-3">Identificación</dt><dd class="col-sm-9">{{ s.identificacion }}</dd>
+            <dt class="col-sm-3">Nombre</dt><dd class="col-sm-9">{{ s.nombre_completo }}</dd>
+            {% if s.numero_expediente_negocio %}
+            <dt class="col-sm-3">Expediente / RTM</dt><dd class="col-sm-9">{{ s.numero_expediente_negocio }}</dd>
+            {% endif %}
+            <dt class="col-sm-3">Detalle</dt><dd class="col-sm-9">{{ s.detalle|linebreaks }}</dd>
+            <dt class="col-sm-3">Registro</dt><dd class="col-sm-9">{{ s.created_at|date:"d/m/Y H:i" }}</dd>
+        </dl>
+
+        {% if s.respuesta_municipal %}
+        <div class="alert alert-success border-0 mt-4">
+            <h2 class="h6 text-success"><i class="fas fa-reply me-2"></i>Respuesta de la municipalidad</h2>
+            <p class="mb-2 small text-muted">
+                {% if s.fecha_respuesta %}<strong>Fecha:</strong> {{ s.fecha_respuesta|date:"d/m/Y H:i" }}{% endif %}
+                {% if s.funcionario_respuesta %} · <strong>Atendido por:</strong> {{ s.funcionario_respuesta }}{% endif %}
+            </p>
+            <div class="mb-0">{{ s.respuesta_municipal|linebreaks }}</div>
+            {% if s.archivo_respuesta %}
+            <p class="mb-0 mt-3">
+                <a href="{% url 'ciudadano:descargar_adjunto_respuesta' s.pk %}" class="btn btn-sm btn-outline-success">
+                    <i class="fas fa-paperclip me-1"></i> Descargar constancia o documento adjunto
+                </a>
+            </p>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="alert alert-light border mt-4 small text-muted">
+            <i class="fas fa-hourglass-half me-1"></i> Aún no hay respuesta municipal registrada. Cuando el municipio gestione su solicitud, el texto oficial aparecerá aquí.
+        </div>
+        {% endif %}
+
+        <a href="{% url 'ciudadano:mis_solicitudes' %}" class="btn btn-outline-secondary btn-sm mt-3">Volver al listado</a>
+    </div>
+</div>
+{% endblock %}

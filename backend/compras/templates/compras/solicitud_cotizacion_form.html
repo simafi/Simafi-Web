@@ -1,0 +1,212 @@
+{% extends "compras/base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}{{ titulo }}{% endblock %}
+{% block active_sc %}active{% endblock %}
+
+{% block content %}
+<form method="post" novalidate>
+    {% csrf_token %}
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 animate-in">
+        <div class="d-flex gap-2">
+            <a href="{% url 'compras:solicitud_cotizacion_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Listado
+            </a>
+            {% if solicitud.pk %}
+            <a href="{% url 'compras:solicitud_cotizacion_imprimir_oncae' solicitud.pk %}" target="_blank" class="btn btn-outline-primary">
+                <i class="fas fa-print me-2"></i>Imprimir ONCAE
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="d-flex gap-2">
+            {% if solicitud.pk and solicitud.estado != 'CERRADA' %}
+                <a href="{% url 'compras:generar_oc_desde_oferta' solicitud.pk %}" class="btn btn-success">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Generar Orden de Compra
+                </a>
+            {% endif %}
+            <button type="submit" class="btn-purchase" style="background-color: #3b82f6;">
+                <i class="fas fa-save me-2"></i>Guardar Cotización
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Header Panel -->
+        <div class="col-lg-12 animate-in" style="animation-delay: 0.1s;">
+            <div class="premium-card p-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Número de Solicitud</label>
+                        {{ form.numero }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Fecha</label>
+                        {{ form.fecha }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Límite de Recepción</label>
+                        {{ form.fecha_limite_respuesta }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Estado</label>
+                        {{ form.estado }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Requisición de Origen</label>
+                        {{ form.requisicion }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Observaciones Internas</label>
+                        {{ form.observaciones }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Texto Marco ONCAE (Bases)</label>
+                        {{ form.texto_marco_oncae }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Panel -->
+        <div class="col-lg-12 animate-in" style="animation-delay: 0.2s;">
+            <div class="premium-card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-list me-2"></i>Ítems a Cotizar</h5>
+                </div>
+                <div class="p-4">
+                    {{ formset_det.management_form }}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="40">#</th>
+                                    <th>Descripción / Especificación Técnica</th>
+                                    <th width="120">Cantidad</th>
+                                    <th width="100">Unidad</th>
+                                    <th>Catálogo Inventario</th>
+                                    <th width="50">Elim.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for f in formset_det.forms %}
+                                <tr>
+                                    <td>{{ f.id }}{{ f.nro_linea }}</td>
+                                    <td>{{ f.descripcion }}</td>
+                                    <td>{{ f.cantidad }}</td>
+                                    <td>{{ f.unidad }}</td>
+                                    <td>{{ f.inventario }}</td>
+                                    <td>{% if f.DELETE %}{{ f.DELETE }}{% endif %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Providers Panel -->
+        <div class="col-lg-12 animate-in" style="animation-delay: 0.3s;">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="premium-card h-100">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between">
+                            <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-user-plus me-2"></i>Invitar Proveedores</h5>
+                        </div>
+                        <div class="p-4">
+                            {{ formset_inv.management_form }}
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Nombre del Proveedor</th>
+                                            <th width="140">Fecha Inv.</th>
+                                            <th width="50">Elim.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for f in formset_inv.forms %}
+                                        <tr>
+                                            <td>{{ f.id }}{{ f.proveedor }}</td>
+                                            <td>{{ f.fecha_invitacion }}</td>
+                                            <td>{% if f.DELETE %}{{ f.DELETE }}{% endif %}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="premium-card h-100">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-file-contract me-2"></i>Ofertas Recibidas</h5>
+                        </div>
+                        <div class="p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-3">Proveedor</th>
+                                            <th>Estado</th>
+                                            <th>Monto</th>
+                                            <th class="text-end pe-3">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for inv in invitaciones %}
+                                        <tr class="{% if inv.oferta.es_seleccionada %}table-success{% endif %}">
+                                            <td class="ps-3">
+                                                <div class="fw-bold">{{ inv.proveedor.razon_social }}</div>
+                                                <div class="small text-muted">{{ inv.proveedor.rtn|default:"" }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if inv.estado == 'RECIBIDA' %}bg-info{% else %}bg-light text-dark{% endif %}">
+                                                    {{ inv.get_estado_display }}
+                                                </span>
+                                            </td>
+                                            <td class="fw-bold">
+                                                {% if inv.oferta %}L {{ inv.oferta.monto_total|floatformat:2 }}{% else %}-{% endif %}
+                                            </td>
+                                            <td class="text-end pe-3">
+                                                <a href="{% url 'compras:invitacion_oferta_edit' inv.pk %}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-edit me-1"></i>Oferta
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="4" class="text-center py-4 text-muted small">Agregue proveedores y guarde para registrar ofertas.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% if solicitud.pk %}
+                        <div class="card-footer bg-white border-0 py-3">
+                            <div class="alert alert-info small mb-0">
+                                <i class="fas fa-lightbulb me-2"></i> Use "Oferta" para registrar montos y marcar la oferta <strong>seleccionada</strong>. Luego podrá generar la Orden de Compra.
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+    }
+    .table input, .table select {
+        border-radius: 6px;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}

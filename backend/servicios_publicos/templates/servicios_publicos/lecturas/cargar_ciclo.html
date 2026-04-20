@@ -1,0 +1,130 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Cargar Ciclo de Lecturas{% endblock %}
+{% block breadcrumb %}Cargar Ciclo{% endblock %}
+{% block nav_lecturas %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#0891b2,#06b6d4)"><i class="fas fa-clipboard-check"></i></div>
+        <div>
+            <h1 class="page-title">Cargar Ciclo de Lecturas</h1>
+            <p class="page-subtitle">Hoja de campo digital para ingreso masivo de lecturas</p>
+        </div>
+    </div>
+    <a href="{% url 'servicios_publicos:lecturas_lista' %}" class="btn-sp-secondary">
+        <i class="fas fa-arrow-left"></i> Volver a Lista
+    </a>
+</div>
+
+<div class="filter-bar">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Ciclo *</label>
+            <select name="ciclo" class="form-select" required>
+                <option value="">-- Seleccione Ciclo --</option>
+                {% for c in ciclos %}
+                <option value="{{ c.ciclo }}" {% if c.ciclo == q_ciclo %}selected{% endif %}>{{ c.ciclo }} - {{ c.descripcion }} ({{ c.ruta }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Año</label>
+            <input type="number" name="ano" class="form-control" value="{{ q_ano }}" min="2000" max="2100">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Mes</label>
+            <select name="mes" class="form-select">
+                <option value="1" {% if q_mes == 1 %}selected{% endif %}>Enero</option>
+                <option value="2" {% if q_mes == 2 %}selected{% endif %}>Febrero</option>
+                <option value="3" {% if q_mes == 3 %}selected{% endif %}>Marzo</option>
+                <option value="4" {% if q_mes == 4 %}selected{% endif %}>Abril</option>
+                <option value="5" {% if q_mes == 5 %}selected{% endif %}>Mayo</option>
+                <option value="6" {% if q_mes == 6 %}selected{% endif %}>Junio</option>
+                <option value="7" {% if q_mes == 7 %}selected{% endif %}>Julio</option>
+                <option value="8" {% if q_mes == 8 %}selected{% endif %}>Agosto</option>
+                <option value="9" {% if q_mes == 9 %}selected{% endif %}>Septiembre</option>
+                <option value="10" {% if q_mes == 10 %}selected{% endif %}>Octubre</option>
+                <option value="11" {% if q_mes == 11 %}selected{% endif %}>Noviembre</option>
+                <option value="12" {% if q_mes == 12 %}selected{% endif %}>Diciembre</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn-sp-primary w-100">Generar Hoja de Campo</button>
+        </div>
+    </form>
+</div>
+
+{% if q_ciclo %}
+<div class="data-card animate-in">
+    <div class="data-card-header">
+        <h4><i class="fas fa-list-ol me-2"></i>Hoja de Ruta: Ciclo {{ q_ciclo }}</h4>
+        <div class="text-muted small">Total abonados activos: {{ abonados_ciclo|length }}</div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th style="width:50px">Sec.</th>
+                    <th>Abonado / Medidor</th>
+                    <th>Lec. Anterior</th>
+                    <th>Lectura Actual</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in abonados_ciclo %}
+                <tr>
+                    <td>{{ item.abonado.secuencia }}</td>
+                    <td>
+                        <div class="fw-bold">{{ item.abonado.nombre }}</div>
+                        <div class="small text-muted">Abonado: {{ item.abonado.codigo_abonado }} | Medidor: {{ item.medidor_activo.numero_serie|default:"SIN MEDIDOR" }}</div>
+                    </td>
+                    <td>{{ item.lectura_anterior|floatformat:2 }} m³</td>
+                    <td>
+                        {% if item.lectura_existente %}
+                        <div class="fw-bold text-success">{{ item.lectura_existente.lectura_actual|floatformat:2 }} m³</div>
+                        {% else %}
+                        <span class="text-muted italic small">Pendiente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.lectura_existente %}
+                        <span class="badge bg-success">REGISTRADO</span>
+                        {% else %}
+                        <span class="badge bg-secondary">PENDIENTE</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.lectura_existente %}
+                        <a href="{% url 'servicios_publicos:lectura_editar' item.lectura_existente.pk %}" class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        {% else %}
+                        <a href="{% url 'servicios_publicos:lectura_nueva' %}?abonado_id={{ item.abonado.pk }}&periodo_ano={{ q_ano }}&periodo_mes={{ q_mes }}" class="btn btn-sm btn-sp-primary">
+                            <i class="fas fa-plus"></i> Ingresar
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        No se encontraron abonados activos vinculados a este ciclo.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="p-5 text-center animate-in">
+    <i class="fas fa-clipboard-list fa-4x mb-4 opacity-10"></i>
+    <h4 class="text-muted">Seleccione un ciclo para cargar la hoja de campo</h4>
+</div>
+{% endif %}
+
+{% endblock %}

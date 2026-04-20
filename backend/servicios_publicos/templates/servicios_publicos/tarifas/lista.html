@@ -1,0 +1,121 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Rubros y Tarifas{% endblock %}
+{% block breadcrumb %}Rubros y Tarifas{% endblock %}
+{% block nav_rubros %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)"><i class="fas fa-list-alt"></i></div>
+        <div>
+            <h1 class="page-title">Rubros y Tarifas</h1>
+            <p class="page-subtitle">Configuración de tasas (T0001=Agua Potable, etc.)</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'servicios_publicos:rubro_nuevo' %}" class="btn-sp-primary">
+            <i class="fas fa-plus"></i> Nuevo Rubro
+        </a>
+        <a href="{% url 'servicios_publicos:tarifa_nueva' %}" class="btn-sp-secondary">
+            <i class="fas fa-plus"></i> Nueva Tarifa
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h4><i class="fas fa-list-alt me-2"></i>Rubros</h4>
+                <a href="{% url 'servicios_publicos:rubro_nuevo' %}" class="btn-link"><i class="fas fa-plus"></i> Nuevo</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr><th>Código</th><th>Descripción</th><th>Tipo</th><th>Activo</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for r in rubros %}
+                        <tr>
+                            <td><strong style="color:var(--sp-secondary)">{{ r.codigo }}</strong></td>
+                            <td>{{ r.descripcion }}</td>
+                            <td>
+                                {% if r.tipo_cobro == 'F' %}<span class="badge" style="background:rgba(6,182,212,0.15);color:#22d3ee">Fija</span>
+                                {% elif r.tipo_cobro == 'M' %}<span class="badge" style="background:rgba(245,158,11,0.15);color:#fde68a">Medición</span>
+                                {% else %}<span class="badge bg-secondary">{{ r.get_tipo_cobro_display }}</span>{% endif %}
+                            </td>
+                            <td>{% if r.activo %}<span class="badge bg-success">✓</span>{% else %}<span class="badge bg-secondary">✗</span>{% endif %}</td>
+                            <td>
+                                <a href="{% url 'servicios_publicos:rubro_editar' r.pk %}" title="Editar" style="color:var(--sp-warning)"><i class="fas fa-edit"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">
+                            No hay rubros aún. <a href="{% url 'servicios_publicos:rubro_nuevo' %}" class="btn-link">Crear T0001 Agua Potable</a>
+                        </td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h4><i class="fas fa-dollar-sign me-2"></i>Tarifas Vigentes</h4>
+                <a href="{% url 'servicios_publicos:tarifa_nueva' %}" class="btn-link"><i class="fas fa-plus"></i> Nueva</a>
+            </div>
+            <!-- Filter -->
+            <form method="get" class="d-flex gap-2 mb-3">
+                <select name="rubro" class="form-select form-select-sm w-auto">
+                    <option value="">Todos los rubros</option>
+                    {% for r in rubros %}
+                    <option value="{{ r.codigo }}" {% if r.codigo == rubro_sel %}selected{% endif %}>{{ r.codigo }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm" style="background:rgba(6,182,212,0.1);color:#22d3ee;border:1px solid rgba(6,182,212,0.3)">Filtrar</button>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr><th>Rubro</th><th>Año</th><th>Cargo Fijo</th><th>Precio/m³</th><th>Tramos</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for t in tarifas %}
+                        <tr>
+                            <td><strong>{{ t.rubro }}</strong></td>
+                            <td>{{ t.ano }}</td>
+                            <td>L {{ t.cargo_fijo|floatformat:2 }}</td>
+                            <td>L {{ t.precio_m3|floatformat:4 }}</td>
+                            <td>
+                                {% if t.usa_tramos %}
+                                <span class="badge" style="background:rgba(139,92,246,0.2);color:#c4b5fd">
+                                    {{ t.tramos.count }} tramos
+                                </span>
+                                {% else %}
+                                <span class="text-muted" style="font-size:0.8rem">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a href="{% url 'servicios_publicos:tarifa_editar' t.pk %}" style="color:var(--sp-warning)" title="Editar"><i class="fas fa-edit"></i></a>
+                                    {% if t.usa_tramos %}
+                                    <a href="{% url 'servicios_publicos:tarifa_tramos' t.pk %}" style="color:var(--sp-secondary)" title="Tramos"><i class="fas fa-layer-group"></i></a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted">
+                            No hay tarifas configuradas. <a href="{% url 'servicios_publicos:tarifa_nueva' %}" class="btn-link">Crear primera tarifa</a>
+                        </td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

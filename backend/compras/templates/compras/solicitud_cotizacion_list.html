@@ -1,0 +1,100 @@
+{% extends "compras/base.html" %}
+
+{% block title %}Solicitudes de Cotización{% endblock %}
+{% block breadcrumb %}Convocatorias y Cotizaciones{% endblock %}
+{% block active_sc %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 animate-in">
+    <div>
+        <h3 class="fw-bold mb-0">Gestión de Cotizaciones</h3>
+        <p class="text-muted small">Bases de licitación, invitaciones a proveedores y comparación de ofertas.</p>
+    </div>
+    <a href="{% url 'compras:solicitud_cotizacion_create' %}" class="btn-purchase" style="background-color: #3b82f6;">
+        <i class="fas fa-plus me-2"></i>Nueva Cotización
+    </a>
+</div>
+
+<div class="premium-card animate-in" style="animation-delay: 0.2s;">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4">Número</th>
+                    <th>Fecha</th>
+                    <th>Límite Ofertas</th>
+                    <th>Estado</th>
+                    <th>Vínculo Req.</th>
+                    <th>Proveedores</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in object_list %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold text-primary">{{ o.numero }}</div>
+                        <div class="text-muted small">Cód: {{ o.id }}</div>
+                    </td>
+                    <td>
+                        <div class="small"><i class="far fa-calendar-alt me-1 opacity-50"></i> {{ o.fecha|date:"d/m/Y" }}</div>
+                    </td>
+                    <td>
+                        {% if o.fecha_limite_respuesta %}
+                            <div class="small {% if o.fecha_limite_respuesta < hoy %}text-danger fw-bold{% endif %}">
+                                <i class="fas fa-hourglass-half me-1"></i> {{ o.fecha_limite_respuesta|date:"d/m/Y" }}
+                            </div>
+                        {% else %}
+                            <span class="text-muted small">Sin límite</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if o.estado == 'BORRADOR' %}
+                            <span class="badge bg-light text-dark border"><i class="fas fa-edit me-1"></i> {{ o.get_estado_display }}</span>
+                        {% elif o.estado == 'PUBLICADA' %}
+                            <span class="badge bg-primary text-white"><i class="fas fa-bullhorn me-1"></i> {{ o.get_estado_display }}</span>
+                        {% elif o.estado == 'CERRADA' %}
+                            <span class="badge bg-success text-white"><i class="fas fa-lock me-1"></i> {{ o.get_estado_display }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ o.get_estado_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if o.requisicion %}
+                            <a href="{% url 'compras:requisicion_edit' o.requisicion.pk %}" class="small text-decoration-none">
+                                <i class="fas fa-link me-1"></i>{{ o.requisicion.numero }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted small">Directa</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill bg-light text-dark border">
+                             <i class="fas fa-users me-1 text-primary"></i> {{ o.invitaciones.count }}
+                        </span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <div class="btn-group">
+                            <a href="{% url 'compras:solicitud_cotizacion_edit' o.pk %}" class="btn btn-sm btn-outline-primary" title="Editar / Invitaciones">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'compras:solicitud_cotizacion_imprimir_oncae' o.pk %}" class="btn btn-sm btn-outline-secondary" target="_blank" title="Imprimir Formato ONCAE">
+                                <i class="fas fa-print"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-file-contract fa-3x mb-3 opacity-20"></i>
+                        <p>No hay solicitudes de cotización registradas.</p>
+                        <a href="{% url 'compras:solicitud_cotizacion_create' %}" class="btn btn-sm btn-outline-primary">Nueva Convocatoria</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

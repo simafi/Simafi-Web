@@ -1,0 +1,80 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Ciclos y Rutas{% endblock %}
+{% block breadcrumb %}Ciclos y Rutas{% endblock %}
+{% block nav_ciclos %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#4f46e5,#6366f1)"><i class="fas fa-route"></i></div>
+        <div>
+            <h1 class="page-title">Ciclos y Rutas</h1>
+            <p class="page-subtitle">Organización geográfica para lecturas y facturación</p>
+        </div>
+    </div>
+    <a href="{% url 'servicios_publicos:ciclo_nuevo' %}" class="btn-sp-primary" style="background:linear-gradient(135deg,#4f46e5,#6366f1)">
+        <i class="fas fa-plus"></i> Nuevo Ciclo/Ruta
+    </a>
+</div>
+
+<div class="data-card animate-in">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Ciclo</th>
+                    <th>Ruta</th>
+                    <th>Descripción</th>
+                    <th>Lecturador Responsable</th>
+                    <th>Día de Lectura</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in ciclos %}
+                <tr>
+                    <td><span class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc; font-size:0.85rem; padding:0.4rem 0.8rem">{{ c.ciclo }}</span></td>
+                    <td><strong>{{ c.ruta|default:"N/A" }}</strong></td>
+                    <td>{{ c.descripcion }}</td>
+                    <td>{{ c.lecturador|default:"No asignado" }}</td>
+                    <td>Día {{ c.dia_lectura|default:"-" }}</td>
+                    <td>
+                        {% if c.activo %}
+                        <span class="text-success"><i class="fas fa-check-circle me-1"></i>Activo</span>
+                        {% else %}
+                        <span class="text-muted"><i class="fas fa-times-circle me-1"></i>Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'servicios_publicos:ciclo_editar' c.pk %}" class="btn btn-sm btn-outline-warning" style="border-radius:6px">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-map-marked-alt fa-3x mb-3 opacity-20 d-block"></i>
+                        No hay ciclos o rutas configuradas.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="form-panel animate-in" style="animation-delay:0.2s">
+            <div class="form-panel-title"><i class="fas fa-info-circle"></i> ¿Para qué sirven los ciclos?</div>
+            <p class="small text-muted mb-0" style="line-height:1.6">
+                Los <strong>Ciclos</strong> permiten agrupar abonados para realizar facturaciones escalonadas por periodos. <br>
+                Las <strong>Rutas</strong> definen el camino lógico que sigue el lecturador. <br>
+                La <strong>Secuencia</strong> (configurada en el catastro) define el orden exacto casa por casa.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

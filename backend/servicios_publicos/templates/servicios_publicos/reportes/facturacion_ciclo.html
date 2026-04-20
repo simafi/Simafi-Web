@@ -1,0 +1,141 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Facturación por Ciclo{% endblock %}
+{% block breadcrumb %}Reporte de Facturación{% endblock %}
+{% block nav_reportes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#059669,#10b981)"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div>
+            <h1 class="page-title">Facturación por Ciclo</h1>
+            <p class="page-subtitle">Emisión y recaudación por grupo de abonados - {{ empresa }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'servicios_publicos:reportes' %}" class="btn-sp-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+        <button onclick="window.print()" class="btn-sp-secondary">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label">Año</label>
+            <input type="number" name="ano" class="form-control" value="{{ q_ano }}" min="2000" max="2100">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Mes</label>
+            <select name="mes" class="form-select">
+                <option value="1" {% if q_mes == 1 %}selected{% endif %}>Enero</option>
+                <option value="2" {% if q_mes == 2 %}selected{% endif %}>Febrero</option>
+                <option value="3" {% if q_mes == 3 %}selected{% endif %}>Marzo</option>
+                <option value="4" {% if q_mes == 4 %}selected{% endif %}>Abril</option>
+                <option value="5" {% if q_mes == 5 %}selected{% endif %}>Mayo</option>
+                <option value="6" {% if q_mes == 6 %}selected{% endif %}>Junio</option>
+                <option value="7" {% if q_mes == 7 %}selected{% endif %}>Julio</option>
+                <option value="8" {% if q_mes == 8 %}selected{% endif %}>Agosto</option>
+                <option value="9" {% if q_mes == 9 %}selected{% endif %}>Septiembre</option>
+                <option value="10" {% if q_mes == 10 %}selected{% endif %}>Octubre</option>
+                <option value="11" {% if q_mes == 11 %}selected{% endif %}>Noviembre</option>
+                <option value="12" {% if q_mes == 12 %}selected{% endif %}>Diciembre</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Ciclo</label>
+            <select name="ciclo" class="form-select">
+                <option value="">-- Todos los ciclos --</option>
+                {% for c in ciclos %}
+                <option value="{{ c }}" {% if c == q_ciclo %}selected{% endif %}>Ciclo {{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn-sp-primary w-100">Consultar</button>
+            <a href="{% url 'servicios_publicos:reporte_facturacion_ciclo' %}" class="btn-sp-secondary">✕</a>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card stat-blue animate-in">
+            <div class="stat-icon"><i class="fas fa-coins"></i></div>
+            <div class="stat-body">
+                <div class="stat-value">L {{ resumen.total_monto|floatformat:2|default:"0.00" }}</div>
+                <div class="stat-label">Total Emitido</div>
+                <div class="stat-sub">{{ resumen.total_facturas }} facturas generadas</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card stat-green animate-in" style="animation-delay:0.1s">
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-body">
+                <div class="stat-value">{{ resumen.pagadas }}</div>
+                <div class="stat-label">Facturas Pagadas</div>
+                <div class="stat-sub">De un total de {{ resumen.total_facturas }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card stat-red animate-in" style="animation-delay:0.2s">
+            <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="stat-body">
+                <div class="stat-value">L {{ resumen.total_pendiente|floatformat:2|default:"0.00" }}</div>
+                <div class="stat-label">Por Recaudar</div>
+                <div class="stat-sub">Monto total pendiente del ciclo</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="data-card animate-in" style="animation-delay:0.3s">
+    <div class="data-card-header">
+        <h4><i class="fas fa-list me-2"></i>Detalle de Emisión</h4>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th># Factura</th>
+                    <th>Abonado</th>
+                    <th>Ciclo</th>
+                    <th>Fecha Emisión</th>
+                    <th>Total Facturado</th>
+                    <th>Saldo Pendiente</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in facturas %}
+                <tr>
+                    <td><strong>#{{ f.numero_factura }}</strong></td>
+                    <td>{{ f.abonado.nombre|truncatechars:35 }}</td>
+                    <td>{{ f.ciclo|default:"-" }}</td>
+                    <td>{{ f.fecha_emision|date:"d/m/Y" }}</td>
+                    <td class="fw-bold">L {{ f.total|floatformat:2 }}</td>
+                    <td class="{% if f.saldo_pendiente > 0 %}text-danger fw-bold{% endif %}">L {{ f.saldo_pendiente|floatformat:2 }}</td>
+                    <td>
+                        {% if f.estado == 'E' %}<span class="badge bg-warning text-dark">Emitida</span>
+                        {% elif f.estado == 'P' %}<span class="badge bg-success">Pagada</span>
+                        {% elif f.estado == 'V' %}<span class="badge bg-danger">Vencida</span>
+                        {% elif f.estado == 'A' %}<span class="badge bg-secondary">Anulada</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        No se encontraron registros de facturación para el criterio de búsqueda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

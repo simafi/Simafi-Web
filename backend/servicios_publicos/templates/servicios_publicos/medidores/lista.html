@@ -1,0 +1,97 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Inventario de Medidores{% endblock %}
+{% block breadcrumb %}Medidores{% endblock %}
+{% block nav_medidores %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#14b8a6,#0d9488)"><i class="fas fa-tachometer-alt"></i></div>
+        <div>
+            <h1 class="page-title">Inventario de Medidores</h1>
+            <p class="page-subtitle">Control de equipos instalados en el municipio</p>
+        </div>
+    </div>
+    <a href="{% url 'servicios_publicos:medidor_nuevo' %}" class="btn-sp-primary" style="background:linear-gradient(135deg,#14b8a6,#0d9488)">
+        <i class="fas fa-plus"></i> Registrar Medidor
+    </a>
+</div>
+
+<div class="filter-bar">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-9">
+            <label class="form-label">Buscar por Serie o Abonado</label>
+            <div class="input-group">
+                <span class="input-group-text" style="background:var(--sp-surface2); border-color:var(--sp-border); color:var(--sp-text-muted)">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" name="q" class="form-control" placeholder="Ej: Serie, Nombre del abonado, Código..." value="{{ q }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn-sp-primary w-100">Filtrar Resultados</button>
+        </div>
+    </form>
+</div>
+
+<div class="data-card animate-in">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>N. Serie</th>
+                    <th>Marca/Modelo</th>
+                    <th>Abonado</th>
+                    <th>Diámetro</th>
+                    <th>F. Instalación</th>
+                    <th>Lec. Inicial</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in medidores %}
+                <tr>
+                    <td><strong style="color:var(--sp-secondary)">{{ m.numero_serie }}</strong></td>
+                    <td>{{ m.marca|default:"-" }}</td>
+                    <td>
+                        {% if m.abonado %}
+                        <a href="{% url 'servicios_publicos:catastro_detalle' m.abonado.pk %}">{{ m.abonado.nombre|truncatechars:30 }}</a>
+                        <br><small class="text-muted">{{ m.abonado.codigo_abonado }}</small>
+                        {% else %}
+                        <span class="text-muted italic">No vinculado</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ m.diametro|default:"-" }}</td>
+                    <td>{{ m.fecha_instalacion|date:"d/m/Y" }}</td>
+                    <td>{{ m.lectura_inicial|floatformat:2 }} m³</td>
+                    <td>
+                        {% if m.estado == 'A' %}
+                        <span class="badge" style="background:rgba(16,185,129,0.15); color:#6ee7b7">Activo</span>
+                        {% elif m.estado == 'I' %}
+                        <span class="badge bg-secondary">Inactivo</span>
+                        {% elif m.estado == 'R' %}
+                        <span class="badge bg-danger">Retirado</span>
+                        {% elif m.estado == 'D' %}
+                        <span class="badge bg-warning text-dark">Dañado</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'servicios_publicos:medidor_editar' m.pk %}" class="btn btn-sm btn-outline-warning" style="border-radius:6px">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="fas fa-tachometer-alt fa-3x mb-3 opacity-20 d-block"></i>
+                        No se encontraron medidores registrados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

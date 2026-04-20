@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ modulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@2.3.0/dist/leaflet.fullscreen.css" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+	<style>
+		#map {
+			height: 600px;
+			width: 100%;
+			border-radius: 8px;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			position: relative;
+		}
+		.legend {
+			background: white;
+			padding: 10px;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+			position: absolute;
+			bottom: 30px;
+			right: 10px;
+			z-index: 1000;
+			max-width: 250px;
+		}
+		.legend-item {
+			display: flex;
+			align-items: center;
+			margin: 5px 0;
+		}
+		.legend-icon {
+			width: 20px;
+			height: 20px;
+			margin-right: 8px;
+			border-radius: 50%;
+		}
+		.info-panel {
+			background: white;
+			padding: 15px;
+			border-radius: 8px;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+			margin-bottom: 20px;
+		}
+		.popup-content {
+			max-width: 300px;
+		}
+		.popup-title {
+			font-weight: bold;
+			font-size: 16px;
+			margin-bottom: 8px;
+			color: #1e40af;
+		}
+		.popup-field {
+			margin: 5px 0;
+			font-size: 14px;
+		}
+		.popup-label {
+			font-weight: 600;
+			color: #555;
+		}
+		.map-controls {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			z-index: 1000;
+			background: white;
+			padding: 10px;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+		}
+		.search-box {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			z-index: 1000;
+			background: white;
+			padding: 10px;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+			min-width: 300px;
+		}
+		.search-results {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			background: white;
+			border: 1px solid #ddd;
+			border-radius: 5px;
+			max-height: 300px;
+			overflow-y: auto;
+			display: none;
+			z-index: 1001;
+			margin-top: 5px;
+		}
+		.search-result-item {
+			padding: 10px;
+			cursor: pointer;
+			border-bottom: 1px solid #eee;
+		}
+		.search-result-item:hover {
+			background-color: #f0f0f0;
+		}
+		.layer-control {
+			margin: 5px 0;
+		}
+		.measurement-info {
+			position: absolute;
+			bottom: 30px;
+			left: 10px;
+			z-index: 1000;
+			background: rgba(255, 255, 255, 0.9);
+			padding: 10px;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+			display: none;
+		}
+		.toolbar {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			z-index: 1000;
+			display: flex;
+			gap: 5px;
+		}
+		.toolbar button {
+			background: white;
+			border: 1px solid #ddd;
+			padding: 8px 12px;
+			border-radius: 5px;
+			cursor: pointer;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+		}
+		.toolbar button:hover {
+			background: #f0f0f0;
+		}
+		.toolbar button.active {
+			background: #007bff;
+			color: white;
+			border-color: #007bff;
+		}
+		/* Controles de zoom personalizados */
+		.custom-zoom-controls {
+			position: absolute;
+			bottom: 30px;
+			left: 10px;
+			z-index: 1000;
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+			background: white;
+			padding: 8px;
+			border-radius: 8px;
+			box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+		}
+		.custom-zoom-btn {
+			width: 45px;
+			height: 45px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: white;
+			border: 2px solid #007bff;
+			border-radius: 6px;
+			cursor: pointer;
+			font-size: 20px;
+			color: #007bff;
+			transition: all 0.3s ease;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+		}
+		.custom-zoom-btn:hover {
+			background: #007bff;
+			color: white;
+			transform: scale(1.1);
+		}
+		.custom-zoom-btn:active {
+			transform: scale(0.95);
+		}
+		.zoom-level-display {
+			text-align: center;
+			font-size: 11px;
+			color: #666;
+			margin-top: 5px;
+			padding-top: 5px;
+			border-top: 1px solid #eee;
+		}
+		/* Mejorar calidad de imágenes del mapa */
+		.leaflet-container {
+			image-rendering: -webkit-optimize-contrast;
+			image-rendering: crisp-edges;
+		}
+		.leaflet-tile {
+			image-rendering: -webkit-optimize-contrast;
+			image-rendering: crisp-edges;
+		}
+	</style>
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+				<h5 class="mb-0">
+					<i class="fas fa-map-marked-alt me-2"></i>{{ modulo }}
+				</h5>
+				<a href="{% url 'catastro:catastro_menu_principal' %}" class="btn btn-light btn-sm">
+					<i class="fas fa-arrow-left me-1"></i> Volver
+				</a>
+			</div>
+			<div class="card-body">
+				<!-- Panel de información -->
+				<div class="info-panel">
+					<div class="row">
+						<div class="col-md-3">
+							<div class="d-flex align-items-center mb-2">
+								<i class="fas fa-building text-primary me-2"></i>
+								<strong>Total de Predios:</strong>
+								<span class="badge bg-primary ms-2">{{ total_predios }}</span>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="d-flex align-items-center mb-2">
+								<i class="fas fa-store text-success me-2"></i>
+								<strong>Total de Negocios:</strong>
+								<span class="badge bg-success ms-2">{{ total_negocios }}</span>
+							</div>
+						</div>
+						<div class="col-md-6">
+							{% if municipio_descripcion %}
+							<div class="d-flex align-items-center mb-2">
+								<i class="fas fa-map-marker-alt text-info me-2"></i>
+								<strong>Municipio:</strong>
+								<span class="ms-2">{{ municipio_descripcion }}</span>
+							</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+
+				<!-- Mapa con controles -->
+				<div style="position: relative;">
+					<div id="map"></div>
+					
+					<!-- Barra de herramientas -->
+					<div class="toolbar">
+						<button id="btn-export" title="Exportar mapa como imagen">
+							<i class="fas fa-download"></i>
+						</button>
+						<button id="btn-measure" title="Medir distancia">
+							<i class="fas fa-ruler"></i>
+						</button>
+						<button id="btn-locate" title="Centrar en todos los marcadores">
+							<i class="fas fa-crosshairs"></i>
+						</button>
+					</div>
+
+					<!-- Caja de búsqueda -->
+					<div class="search-box">
+						<div class="input-group">
+							<input type="text" id="search-input" class="form-control form-control-sm" placeholder="Buscar por clave catastral o nombre...">
+							<button class="btn btn-primary btn-sm" type="button" id="btn-search">
+								<i class="fas fa-search"></i>
+							</button>
+						</div>
+						<div id="search-results" class="search-results"></div>
+					</div>
+
+					<!-- Controles de capas -->
+					<div class="map-controls">
+						<strong><i class="fas fa-layer-group me-1"></i>Capas:</strong>
+						<div class="layer-control">
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" id="toggle-predios" checked>
+								<label class="form-check-label" for="toggle-predios">
+									Predios ({{ total_predios }})
+								</label>
+							</div>
+						</div>
+						<div class="layer-control">
+							<div class="form-check">
+								<input class="form-check-input" type="checkbox" id="toggle-negocios" checked>
+								<label class="form-check-label" for="toggle-negocios">
+									Negocios ({{ total_negocios }})
+								</label>
+							</div>
+						</div>
+						<hr style="margin: 8px 0;">
+						<strong><i class="fas fa-filter me-1"></i>Filtrar por Uso:</strong>
+						<div class="layer-control">
+							<select id="filtro-uso" class="form-select form-select-sm" style="width: 100%; margin-top: 5px;">
+								<option value="">Todos los usos</option>
+								{% for uso in usos_disponibles %}
+								<option value="{{ uso.codigo }}" {% if uso_filtro_seleccionado == uso.codigo %}selected{% endif %}>
+									{{ uso.codigo }} - {{ uso.descripcion }}
+								</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+
+					<!-- Información de medición -->
+					<div id="measurement-info" class="measurement-info">
+						<strong>Distancia:</strong> <span id="measurement-distance">0</span> m
+					</div>
+
+					<!-- Controles de Zoom Personalizados -->
+					<div class="custom-zoom-controls">
+						<button id="btn-zoom-in" class="custom-zoom-btn" title="Acercar">
+							<i class="fas fa-plus"></i>
+						</button>
+						<div class="zoom-level-display">
+							<span id="zoom-level">12</span>
+						</div>
+						<button id="btn-zoom-out" class="custom-zoom-btn" title="Alejar">
+							<i class="fas fa-minus"></i>
+						</button>
+					</div>
+
+					<!-- Leyenda -->
+					<div class="legend" id="legend-container">
+						<strong>Leyenda:</strong>
+						<div id="legend-usos">
+							<!-- Se llenará dinámicamente con JavaScript -->
+						</div>
+						<hr style="margin: 8px 0;">
+						<div class="legend-item">
+							<div class="legend-icon" style="background-color: #1e40af;"></div>
+							<span>Negocios</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@2.3.0/dist/Leaflet.fullscreen.min.js"></script>
+	<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+	<script>
+		(function() {
+			'use strict';
+			
+			// Manejo global de errores no capturados (incluyendo errores de extensiones del navegador)
+			window.addEventListener('error', function(event) {
+				// Ignorar errores de extensiones del navegador relacionados con message channels
+				if (event.message) {
+					const errorMessage = event.message.toString().toLowerCase();
+					if (errorMessage.includes('message channel closed') ||
+						errorMessage.includes('asynchronous response') ||
+						errorMessage.includes('listener indicated') ||
+						errorMessage.includes('message channel') ||
+						errorMessage.includes('channel closed')) {
+						event.preventDefault();
+						event.stopPropagation();
+						return false;
+					}
+				}
+			}, true);
+			
+			// Manejo de errores de promesas no capturadas
+			window.addEventListener('unhandledrejection', function(event) {
+				// Ignorar errores de extensiones del navegador relacionados con message channels
+				if (event.reason) {
+					const errorMessage = typeof event.reason === 'string' 
+						? event.reason 
+						: (event.reason.message || event.reason.toString() || '');
+					
+					if (errorMessage && (
+						errorMessage.includes('message channel closed') ||
+						errorMessage.includes('asynchronous response') ||
+						errorMessage.includes('listener indicated') ||
+						errorMessage.includes('message channel') ||
+						errorMessage.includes('channel closed')
+					)) {
+						event.preventDefault();
+						return false;
+					}
+				}
+			});
+			
+			// Datos de predios y negocios desde el servidor
+			const predios = {{ predios|safe|default:"[]" }};
+			const negocios = {{ negocios|safe|default:"[]" }};
+			
+			// Obtener coordenadas del centro, con validación
+			let centroCx = parseFloat('{{ centro_cx|default:"-86.2419" }}');
+			let centroCy = parseFloat('{{ centro_cy|default:"15.1999" }}');
+			
+			// Validar que las coordenadas sean números válidos
+			if (isNaN(centroCx) || isNaN(centroCy)) {
+				console.warn('Coordenadas inválidas del servidor, usando coordenadas por defecto');
+				centroCx = -86.2419;
+				centroCy = 15.1999;
+			}
+			
+			// Si hay predios o negocios, intentar usar la primera coordenada válida
+			if ((predios.length === 0 && negocios.length === 0) || (centroCx === -86.2419 && centroCy === 15.1999)) {
+				// Intentar obtener coordenada del primer predio o negocio
+				if (predios.length > 0 && predios[0].cx && predios[0].cy) {
+					centroCx = parseFloat(predios[0].cx);
+					centroCy = parseFloat(predios[0].cy);
+					console.log('Usando coordenadas del primer predio:', centroCx, centroCy);
+				} else if (negocios.length > 0 && negocios[0].cx && negocios[0].cy) {
+					centroCx = parseFloat(negocios[0].cx);
+					centroCy = parseFloat(negocios[0].cy);
+					console.log('Usando coordenadas del primer negocio:', centroCx, centroCy);
+				}
+			}
+			
+			// Validar coordenadas del servidor
+			let usarGeolocalizacion = {{ usar_geolocalizacion|default:"false"|yesno:"true,false" }};
+			
+			if (isNaN(centroCx) || isNaN(centroCy) || centroCx === 0 || centroCy === 0) {
+				usarGeolocalizacion = true;
+				console.warn('Coordenadas inválidas del servidor, se intentará usar geolocalización');
+				centroCx = -86.2419;
+				centroCy = 15.1999;
+			}
+			
+			console.log('Inicializando mapa. Coordenadas del servidor: cx=' + centroCx + ', cy=' + centroCy + ', usar_geolocalizacion=' + usarGeolocalizacion + ' (se intentará geolocalizar siempre al cargar)');
+			
+			// Inicializar mapa con mejor configuración de zoom y calidad
+			let map = L.map('map', {
+				fullscreenControl: true,
+				fullscreenControlOptions: {
+					position: 'topleft'
+				},
+				zoomControl: false, // Desactivar zoom por defecto para usar el personalizado
+				minZoom: 3,
+				maxZoom: 19,
+				zoomSnap: 0.5,
+				zoomDelta: 1
+			});
+			
+			// Vista inicial con las coordenadas conocidas mientras se obtiene la ubicación real
+			map.setView([centroCy, centroCx], 16);
+
+			// Marcador dedicado para la ubicación actual del usuario
+			let userLocationMarker = null;
+
+			// Intentar centrar el mapa en la ubicación actual con zoom 19 al cargar
+			function centerOnCurrentLocation(options = { initial: false }) {
+				if (!navigator.geolocation) {
+					console.warn('Geolocalización no soportada en el navegador');
+					return;
+				}
+
+				const logPrefix = options.initial 
+					? 'Intentando obtener ubicación actual al cargar...'
+					: 'Recentrando en la ubicación actual...';
+				console.log(logPrefix);
+
+				navigator.geolocation.getCurrentPosition(
+					function(position) {
+						const lat = position.coords.latitude;
+						const lng = position.coords.longitude;
+						console.log('Ubicación actual obtenida: lat=' + lat + ', lng=' + lng);
+
+						if (userLocationMarker) {
+							userLocationMarker.setLatLng([lat, lng]);
+						} else {
+							userLocationMarker = L.marker([lat, lng], {
+								title: 'Ubicación actual',
+								icon: L.divIcon({
+									className: 'custom-marker current-location',
+									html: '<div style="background-color: #0ea5e9; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+									iconSize: [18, 18],
+									iconAnchor: [9, 9]
+								})
+							}).addTo(map);
+						}
+
+						map.setView([lat, lng], 19);
+						updateZoomDisplay();
+					},
+					function(error) {
+						console.warn('Error al obtener ubicación actual:', error.message);
+						if (options.initial) {
+							console.log('Se mantiene la vista por defecto: lat=' + centroCy + ', lng=' + centroCx);
+						}
+					},
+					{
+						enableHighAccuracy: true,
+						timeout: 5000,
+						maximumAge: 0
+					}
+				);
+			}
+
+			// Se intenta geolocalizar siempre al iniciar el formulario, con zoom 19
+			centerOnCurrentLocation({ initial: true });
+			
+			// Capas base mejoradas con mayor resolución y claridad
+			const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '© OpenStreetMap contributors',
+				maxZoom: 19,
+				minZoom: 3,
+				tileSize: 256,
+				zoomOffset: 0,
+				name: 'Calles',
+				detectRetina: true // Mejor calidad en pantallas retina
+			});
+			
+			const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+				attribution: '© Esri',
+				maxZoom: 22,
+				minZoom: 3,
+				tileSize: 256,
+				zoomOffset: 0,
+				name: 'Satelital',
+				detectRetina: true
+			});
+			
+			// Capa satelital alternativa de alta calidad
+			const googleSatelliteLayer = L.tileLayer('https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+				subdomains: ['0', '1', '2', '3'],
+				attribution: '© Google',
+				maxZoom: 22,
+				minZoom: 3,
+				tileSize: 256,
+				zoomOffset: 0,
+				name: 'Google Satelital',
+				detectRetina: true
+			});
+			
+			const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+				attribution: '© OpenTopoMap',
+				maxZoom: 19,
+				minZoom: 3,
+				tileSize: 256,
+				zoomOffset: 0,
+				name: 'Terreno',
+				detectRetina: true
+			});
+			
+			// Capa base por defecto
+			osmLayer.addTo(map);
+			
+			// Control de capas base
+			const baseLayers = {
+				"Calles": osmLayer,
+				"Satelital Esri": satelliteLayer,
+				"Satelital Google": googleSatelliteLayer,
+				"Terreno": terrainLayer
+			};
+			
+			L.control.layers(baseLayers, null, {position: 'topright'}).addTo(map);
+			
+			// Habilitar zoom con rueda del mouse
+			map.scrollWheelZoom.enable();
+			
+			// Controles de zoom personalizados (después de que el mapa esté inicializado)
+			const btnZoomIn = document.getElementById('btn-zoom-in');
+			const btnZoomOut = document.getElementById('btn-zoom-out');
+			const zoomLevelDisplay = document.getElementById('zoom-level');
+			
+			// Función para actualizar el display del nivel de zoom
+			function updateZoomDisplay() {
+				if (map && zoomLevelDisplay) {
+					const currentZoom = map.getZoom();
+					if (currentZoom !== undefined && currentZoom !== null) {
+						zoomLevelDisplay.textContent = currentZoom.toFixed(1);
+					}
+				}
+			}
+			
+			// Botón acercar
+			if (btnZoomIn) {
+				btnZoomIn.addEventListener('click', function() {
+					map.zoomIn();
+					setTimeout(updateZoomDisplay, 100);
+				});
+			}
+			
+			// Botón alejar
+			if (btnZoomOut) {
+				btnZoomOut.addEventListener('click', function() {
+					map.zoomOut();
+					setTimeout(updateZoomDisplay, 100);
+				});
+			}
+			
+			// Actualizar display cuando cambia el zoom
+			map.on('zoomend', function() {
+				updateZoomDisplay();
+			});
+			
+			// Actualizar display inicial después de que el mapa esté listo
+			setTimeout(function() {
+				updateZoomDisplay();
+			}, 500);
+			
+			// Colores por uso (paleta de colores distintivos para predios)
+			// NOTA: Azul (#1e40af) se reserva para negocios
+			const coloresPorUso = {
+				'0': '#10b981',   // Verde - Sin uso / Por defecto (bien inmueble genérico)
+				'1': '#dc2626',   // Rojo - Residencial
+				'2': '#f59e0b',   // Amarillo/Naranja - Comercial (para distinguir de verde)
+				'3': '#7c3aed',   // Púrpura - Industrial
+				'4': '#ea580c',   // Naranja - Institucional
+				'5': '#0891b2',   // Cian - Recreativo
+				'6': '#be185d',   // Rosa - Mixto
+				'7': '#65a30d',   // Verde lima - Agrícola
+				'8': '#c2410c',   // Rojo oscuro - Forestal
+				'9': '#6366f1',   // Índigo - Otros
+			};
+			
+			// Función para obtener color según uso
+			// Siempre retorna un color específico según el uso del predio
+			function obtenerColorPorUso(uso) {
+				const usoStr = String(uso || '0').trim();
+				// Si el uso existe en el mapa, retornarlo
+				if (coloresPorUso.hasOwnProperty(usoStr)) {
+					return coloresPorUso[usoStr];
+				}
+				// Si no existe, usar un color basado en el hash del código de uso para consistencia
+				// pero siempre diferente del azul de negocios
+				let hash = 0;
+				for (let i = 0; i < usoStr.length; i++) {
+					hash = usoStr.charCodeAt(i) + ((hash << 5) - hash);
+				}
+				// Generar un color que no sea azul (#1e40af)
+				const hue = Math.abs(hash % 360);
+				// Evitar tonos azules (200-260 grados)
+				const adjustedHue = hue < 200 ? hue : (hue + 60) % 360;
+				return `hsl(${adjustedHue}, 70%, 50%)`;
+			}
+			
+			// Función para crear icono de predio con color según uso
+			function crearIconoPredio(uso) {
+				const color = obtenerColorPorUso(uso);
+				return L.divIcon({
+					className: 'custom-marker',
+					html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+					iconSize: [20, 20],
+					iconAnchor: [10, 10]
+				});
+			}
+			
+			// Icono para negocios - SIEMPRE AZUL
+			const iconNegocio = L.divIcon({
+				className: 'custom-marker',
+				html: '<div style="background-color: #1e40af; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+				iconSize: [20, 20],
+				iconAnchor: [10, 10]
+			});
+			
+			// Clusters para predios y negocios
+			const markersPredios = L.markerClusterGroup({
+				maxClusterRadius: 50,
+				spiderfyOnMaxZoom: true,
+				showCoverageOnHover: false,
+				zoomToBoundsOnClick: true,
+				maxZoom: 19
+			});
+			
+			const markersNegocios = L.markerClusterGroup({
+				maxClusterRadius: 50,
+				spiderfyOnMaxZoom: true,
+				showCoverageOnHover: false,
+				zoomToBoundsOnClick: true,
+				maxZoom: 19
+			});
+			
+			// Almacenar todos los marcadores para búsqueda
+			const allMarkers = {
+				predios: [],
+				negocios: []
+			};
+			
+			// Función para crear contenido de popup de predio
+			function createPredioPopup(predio) {
+				return `
+					<div class="popup-content">
+						<div class="popup-title">Predio</div>
+						<div class="popup-field">
+							<span class="popup-label">Clave Catastral:</span> ${predio.cocata1 || '-'}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Propietario:</span> ${(predio.nombres || '') + ' ' + (predio.apellidos || '')}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Ubicación:</span> ${predio.ubicacion || '-'}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Ficha:</span> ${predio.ficha || '-'}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Uso:</span> ${predio.uso || '-'} - ${predio.uso_descripcion || 'Sin uso'}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Valor Tierra:</span> L. ${parseFloat(predio.bvl2tie || 0).toLocaleString('es-HN', {minimumFractionDigits: 2})}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Mejoras:</span> L. ${parseFloat(predio.mejoras || 0).toLocaleString('es-HN', {minimumFractionDigits: 2})}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Impuesto:</span> <strong style="color: #dc3545;">L. ${parseFloat(predio.impuesto || 0).toLocaleString('es-HN', {minimumFractionDigits: 2})}</strong>
+						</div>
+					</div>
+				`;
+			}
+			
+			// Función para crear contenido de popup de negocio
+			function createNegocioPopup(negocio) {
+				return `
+					<div class="popup-content">
+						<div class="popup-title">Negocio</div>
+						<div class="popup-field">
+							<span class="popup-label">RTM:</span> ${negocio.rtm || '-'}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Expediente:</span> ${negocio.expe || '-'}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Nombre:</span> ${negocio.nombrenego || '-'}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Comerciante:</span> ${negocio.comerciante || '-'}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Dirección:</span> ${negocio.direccion || '-'}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Clave Catastral:</span> ${negocio.catastral || '-'}
+						</div>
+						<div class="popup-field">
+							<span class="popup-label">Estatus:</span> ${negocio.estatus || '-'}
+						</div>
+					</div>
+				`;
+			}
+			
+			// Agregar predios al mapa
+			predios.forEach(function(predio) {
+				if (predio.cx && predio.cy) {
+					const icono = crearIconoPredio(predio.uso);
+					const marker = L.marker([predio.cy, predio.cx], {icon: icono})
+						.bindPopup(createPredioPopup(predio));
+					
+					// Agregar datos al marcador para búsqueda y filtrado
+					marker.predioData = predio;
+					marker.tipo = 'predio';
+					marker.uso = predio.uso || '0';
+					
+					allMarkers.predios.push(marker);
+					markersPredios.addLayer(marker);
+				}
+			});
+			
+			// Generar leyenda de usos dinámicamente
+			function actualizarLeyendaUsos() {
+				const legendUsos = document.getElementById('legend-usos');
+				if (!legendUsos) return;
+				
+				// Obtener usos únicos de los predios VISIBLES (considerando filtros)
+				const usosUnicos = {};
+				const usoFiltro = document.getElementById('filtro-uso') ? document.getElementById('filtro-uso').value : '';
+				const prediosVisibles = document.getElementById('toggle-predios') ? document.getElementById('toggle-predios').checked : true;
+				
+				// Si hay un filtro activo o si los predios están ocultos, solo mostrar los usos de los marcadores visibles
+				if (usoFiltro || !prediosVisibles) {
+					allMarkers.predios.forEach(function(marker) {
+						// Verificar si el marcador está visible en el mapa
+						if (map.hasLayer(markersPredios) && markersPredios.hasLayer(marker)) {
+							const predio = marker.predioData;
+							const uso = predio.uso || '0';
+							const descripcion = predio.uso_descripcion || 'Sin uso';
+							if (!usosUnicos[uso]) {
+								usosUnicos[uso] = descripcion;
+							}
+						}
+					});
+				} else {
+					// Si no hay filtro y los predios están visibles, mostrar todos los usos
+					predios.forEach(function(predio) {
+						const uso = predio.uso || '0';
+						const descripcion = predio.uso_descripcion || 'Sin uso';
+						if (!usosUnicos[uso]) {
+							usosUnicos[uso] = descripcion;
+						}
+					});
+				}
+				
+				// Limpiar leyenda anterior
+				legendUsos.innerHTML = '';
+				
+				// Si no hay usos, mostrar mensaje
+				if (Object.keys(usosUnicos).length === 0) {
+					legendUsos.innerHTML = '<div class="legend-item"><span class="text-muted">No hay predios visibles</span></div>';
+					return;
+				}
+				
+				// Agregar items de leyenda para cada uso
+				Object.keys(usosUnicos).sort().forEach(function(uso) {
+					const color = obtenerColorPorUso(uso);
+					const descripcion = usosUnicos[uso];
+					const item = document.createElement('div');
+					item.className = 'legend-item';
+					item.innerHTML = `
+						<div class="legend-icon" style="background-color: ${color};"></div>
+						<span><strong>Predio:</strong> ${uso} - ${descripcion}</span>
+					`;
+					legendUsos.appendChild(item);
+				});
+			}
+			
+			// Actualizar leyenda al cargar
+			actualizarLeyendaUsos();
+			
+			// Agregar negocios al mapa
+			negocios.forEach(function(negocio) {
+				if (negocio.cx && negocio.cy) {
+					const marker = L.marker([negocio.cy, negocio.cx], {icon: iconNegocio})
+						.bindPopup(createNegocioPopup(negocio));
+					
+					// Agregar datos al marcador para búsqueda
+					marker.negocioData = negocio;
+					marker.tipo = 'negocio';
+					
+					allMarkers.negocios.push(marker);
+					markersNegocios.addLayer(marker);
+				}
+			});
+			
+			// Agregar clusters al mapa
+			map.addLayer(markersPredios);
+			map.addLayer(markersNegocios);
+			
+			// El mapa ya está inicializado con las coordenadas válidas del servidor
+			// No es necesario ajustar, simplemente mostrar los marcadores
+			
+			// Controles de capas
+			document.getElementById('toggle-predios').addEventListener('change', function() {
+				if (this.checked) {
+					map.addLayer(markersPredios);
+				} else {
+					map.removeLayer(markersPredios);
+				}
+				// Actualizar leyenda cuando se muestran/ocultan predios
+				actualizarLeyendaUsos();
+			});
+			
+			document.getElementById('toggle-negocios').addEventListener('change', function() {
+				if (this.checked) {
+					map.addLayer(markersNegocios);
+				} else {
+					map.removeLayer(markersNegocios);
+				}
+			});
+			
+			// Filtro por uso
+			const filtroUso = document.getElementById('filtro-uso');
+			if (filtroUso) {
+				filtroUso.addEventListener('change', function() {
+					const usoSeleccionado = this.value;
+					
+					// Remover todos los marcadores de predios del cluster
+					markersPredios.clearLayers();
+					
+					// Agregar solo los marcadores que coincidan con el filtro
+					// IMPORTANTE: Cada predio mantiene su color según su uso, no un color fijo
+					allMarkers.predios.forEach(function(marker) {
+						if (!usoSeleccionado || marker.uso === usoSeleccionado) {
+							// El marcador ya tiene el color correcto según su uso
+							markersPredios.addLayer(marker);
+						}
+					});
+					
+					// Si la capa de predios está activa, asegurar que esté visible
+					if (document.getElementById('toggle-predios').checked) {
+						if (!map.hasLayer(markersPredios)) {
+							map.addLayer(markersPredios);
+						}
+					}
+					
+					// Actualizar leyenda con los usos visibles
+					actualizarLeyendaUsos();
+				});
+			}
+			
+			// Búsqueda
+			const searchInput = document.getElementById('search-input');
+			const searchResults = document.getElementById('search-results');
+			const btnSearch = document.getElementById('btn-search');
+			
+			function performSearch(query) {
+				if (!query || query.length < 2) {
+					searchResults.style.display = 'none';
+					return;
+				}
+				
+				query = query.toLowerCase();
+				const results = [];
+				
+				// Buscar en predios
+				allMarkers.predios.forEach(function(marker) {
+					const data = marker.predioData;
+					const clave = (data.cocata1 || '').toLowerCase();
+					const nombre = ((data.nombres || '') + ' ' + (data.apellidos || '')).toLowerCase();
+					const ubicacion = (data.ubicacion || '').toLowerCase();
+					
+					if (clave.includes(query) || nombre.includes(query) || ubicacion.includes(query)) {
+						results.push({
+							marker: marker,
+							tipo: 'predio',
+							title: data.cocata1 || 'Sin clave',
+							subtitle: (data.nombres || '') + ' ' + (data.apellidos || ''),
+							coords: [data.cy, data.cx]
+						});
+					}
+				});
+				
+				// Buscar en negocios
+				allMarkers.negocios.forEach(function(marker) {
+					const data = marker.negocioData;
+					const rtm = (data.rtm || '').toLowerCase();
+					const nombre = (data.nombrenego || '').toLowerCase();
+					const comerciante = (data.comerciante || '').toLowerCase();
+					const catastral = (data.catastral || '').toLowerCase();
+					
+					if (rtm.includes(query) || nombre.includes(query) || comerciante.includes(query) || catastral.includes(query)) {
+						results.push({
+							marker: marker,
+							tipo: 'negocio',
+							title: data.nombrenego || data.rtm || 'Sin nombre',
+							subtitle: data.comerciante || '',
+							coords: [data.cy, data.cx]
+						});
+					}
+				});
+				
+				// Mostrar resultados
+				if (results.length > 0) {
+					searchResults.innerHTML = '';
+					results.slice(0, 10).forEach(function(result) {
+						const item = document.createElement('div');
+						item.className = 'search-result-item';
+						item.innerHTML = `
+							<strong>${result.title}</strong><br>
+							<small>${result.subtitle}</small>
+						`;
+						item.addEventListener('click', function() {
+							map.setView(result.coords, 16);
+							result.marker.openPopup();
+							searchResults.style.display = 'none';
+							searchInput.value = '';
+						});
+						searchResults.appendChild(item);
+					});
+					searchResults.style.display = 'block';
+				} else {
+					searchResults.innerHTML = '<div class="search-result-item">No se encontraron resultados</div>';
+					searchResults.style.display = 'block';
+				}
+			}
+			
+			searchInput.addEventListener('input', function() {
+				performSearch(this.value);
+			});
+			
+			btnSearch.addEventListener('click', function() {
+				performSearch(searchInput.value);
+			});
+			
+			searchInput.addEventListener('keypress', function(e) {
+				if (e.key === 'Enter') {
+					performSearch(this.value);
+				}
+			});
+			
+			// Cerrar resultados al hacer clic fuera
+			document.addEventListener('click', function(e) {
+				if (!e.target.closest('.search-box')) {
+					searchResults.style.display = 'none';
+				}
+			});
+			
+			// Herramienta de medición
+			let measureControl = null;
+			let isMeasuring = false;
+			const btnMeasure = document.getElementById('btn-measure');
+			const measurementInfo = document.getElementById('measurement-info');
+			
+			btnMeasure.addEventListener('click', function() {
+				if (isMeasuring) {
+					// Desactivar medición
+					if (measureControl) {
+						map.removeControl(measureControl);
+						measureControl = null;
+					}
+					measurementInfo.style.display = 'none';
+					this.classList.remove('active');
+					isMeasuring = false;
+				} else {
+					// Activar medición
+					map.on('click', measureClickHandler);
+					measurementInfo.style.display = 'block';
+					this.classList.add('active');
+					isMeasuring = true;
+				}
+			});
+			
+			let measurePoints = [];
+			let measurePolyline = null;
+			
+			function measureClickHandler(e) {
+				if (!isMeasuring) return;
+				
+				measurePoints.push(e.latlng);
+				
+				if (measurePoints.length === 1) {
+					// Primer punto
+					if (measurePolyline) {
+						map.removeLayer(measurePolyline);
+					}
+					measurePolyline = L.polyline(measurePoints, {color: 'red', weight: 2}).addTo(map);
+				} else {
+					// Actualizar línea
+					measurePolyline.setLatLngs(measurePoints);
+					
+					// Calcular distancia total
+					let totalDistance = 0;
+					for (let i = 1; i < measurePoints.length; i++) {
+						totalDistance += measurePoints[i-1].distanceTo(measurePoints[i]);
+					}
+					
+					document.getElementById('measurement-distance').textContent = totalDistance.toFixed(2);
+				}
+			}
+			
+			// Resetear medición con doble clic
+			map.on('dblclick', function() {
+				if (isMeasuring) {
+					measurePoints = [];
+					if (measurePolyline) {
+						map.removeLayer(measurePolyline);
+						measurePolyline = null;
+					}
+					document.getElementById('measurement-distance').textContent = '0';
+				}
+			});
+			
+			// Exportar mapa como imagen
+			document.getElementById('btn-export').addEventListener('click', function() {
+				const mapElement = document.getElementById('map');
+				html2canvas(mapElement, {
+					useCORS: true,
+					logging: false,
+					width: mapElement.offsetWidth,
+					height: mapElement.offsetHeight
+				}).then(function(canvas) {
+					const link = document.createElement('a');
+					link.download = 'mapa-catastro-' + new Date().getTime() + '.png';
+					link.href = canvas.toDataURL();
+					link.click();
+				}).catch(function(error) {
+					console.error('Error al exportar el mapa:', error);
+					alert('Error al exportar el mapa. Por favor, intente nuevamente.');
+				});
+			});
+			
+			// Centrar en todos los marcadores
+			document.getElementById('btn-locate').addEventListener('click', function() {
+				const allBounds = [];
+				allMarkers.predios.forEach(function(m) {
+					allBounds.push(m.getLatLng());
+				});
+				allMarkers.negocios.forEach(function(m) {
+					allBounds.push(m.getLatLng());
+				});
+				
+				if (allBounds.length > 0) {
+					map.fitBounds(allBounds, {
+						padding: [50, 50],
+						maxZoom: 16
+					});
+				}
+			});
+		})();
+	</script>
+</body>
+</html>

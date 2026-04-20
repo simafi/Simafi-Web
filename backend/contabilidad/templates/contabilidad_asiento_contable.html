@@ -1,0 +1,256 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}Nuevo Asiento Contable{% endblock %}
+
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:asientos_lista' %}">Asientos</a></li>
+            <li class="breadcrumb-item active">{{ titulo }}</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-book-open me-2"></i>{{ titulo }}</h4>
+    </div>
+
+    <form method="post" id="formAsiento">
+        {% csrf_token %}
+        <input type="hidden" name="lineas_json" id="lineas_json" value="[]">
+
+        <!-- Encabezado del asiento -->
+        <div class="cont-card mb-3">
+            <div class="card-header"><i class="fas fa-file-alt me-1"></i> Datos del Asiento</div>
+            <div class="card-body cont-form">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Número</label>
+                        {{ form.numero }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo de Asiento</label>
+                        {{ form.tipo }}
+                        <button type="button" class="btn btn-link btn-sm p-0 mt-1 text-primary" style="font-size:0.85rem;" data-bs-toggle="collapse" data-bs-target="#ayudaTipoAsiento" aria-expanded="false">
+                            <i class="fas fa-question-circle me-1"></i>¿Qué debe ir aquí?
+                        </button>
+                        <div class="collapse small text-muted mt-2" id="ayudaTipoAsiento">
+                            <div class="p-2 rounded border" style="background:#f7fafc;">
+                                El <strong>Tipo de Asiento</strong> indica la <strong>clase de operación</strong> contable y se usa para:
+                                <ul class="mb-0" style="padding-left:1.1rem;">
+                                    <li><strong>Numeración:</strong> el tipo tiene un <em>prefijo</em> que ayuda a identificar el origen del asiento.</li>
+                                    <li><strong>Automatización:</strong> algunos tipos están marcados como <strong>“automáticos”</strong>; el sistema puede actuar distinto según esa configuración.</li>
+                                    <li><strong>Registro ordenado:</strong> permite clasificar asientos para reportes y control.</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <strong>¿Qué debes seleccionar?</strong><br>
+                                    - Para asientos normales (registro manual): <strong>Asiento Manual</strong>.<br>
+                                    - Para ajustes contables: <strong>Asiento de Ajuste</strong>.<br>
+                                    - Si el sistema genera el asiento: <strong>Asiento Automático</strong> (si aplica).<br><br>
+                                    El <strong>Estado</strong> (Borrador/Aprobado/Contabilizado) se maneja aparte; aquí solo se elige el tipo correcto para la operación.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Período Contable</label>
+                        {{ form.periodo }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha</label>
+                        {{ form.fecha }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Concepto</label>
+                        {{ form.concepto }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Referencia</label>
+                        {{ form.referencia }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">No. Documento</label>
+                        {{ form.documento }}
+                    </div>
+                </div>
+                {{ form.empresa }}
+                {{ form.moneda }}
+                {{ form.tasa_cambio }}
+            </div>
+        </div>
+
+        <!-- Líneas de detalle -->
+        <div class="cont-card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-list me-1"></i> Líneas de Detalle (Partida Doble)</span>
+                <button type="button" class="btn btn-sm btn-cont-primary" onclick="agregarLinea()">
+                    <i class="fas fa-plus"></i> Agregar Línea
+                </button>
+            </div>
+            {% if cuentas|length == 0 %}
+            <div class="alert alert-warning m-3 mb-2" role="alert">
+                No hay cuentas activas disponibles para seleccionar en el asiento.
+                Revise el <a href="{% url 'contabilidad:plan_cuentas' %}">Plan de Cuentas</a> y cree cuentas con tipo <strong>Detalle</strong> y/o con <strong>Acepta movimiento</strong> habilitado.
+            </div>
+            {% endif %}
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table cont-table mb-0" id="tablaLineas">
+                        <thead>
+                            <tr>
+                                <th style="width:40px;">#</th>
+                                <th style="width:280px;">Cuenta Contable</th>
+                                <th>Concepto</th>
+                                <th style="width:140px;" class="text-end">Debe</th>
+                                <th style="width:140px;" class="text-end">Haber</th>
+                                <th style="width:40px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="lineasBody">
+                            <!-- Líneas dinámicas -->
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#f7fafc; font-weight:700;">
+                                <td colspan="3" class="text-end">TOTALES:</td>
+                                <td class="text-end" id="totalDebe" style="color:var(--cont-accent);">0.00</td>
+                                <td class="text-end" id="totalHaber" style="color:var(--cont-success);">0.00</td>
+                                <td></td>
+                            </tr>
+                            <tr id="filaDiferencia" style="display:none;">
+                                <td colspan="3" class="text-end text-danger fw-bold">DIFERENCIA:</td>
+                                <td colspan="2" class="text-center text-danger fw-bold" id="diferencia">0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicador de cuadre -->
+        <div class="cont-card mb-3 p-3" id="indicadorCuadre">
+            <div class="d-flex align-items-center justify-content-between">
+                <div id="estadoCuadre">
+                    <i class="fas fa-info-circle text-muted"></i>
+                    <span class="text-muted">Agregue líneas al asiento para verificar el cuadre</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'contabilidad:asientos_lista' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-cont-primary" id="btnGuardar">
+                        <i class="fas fa-save me-1"></i> Guardar Asiento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let lineaCounter = 0;
+const cuentasDisponibles = [
+    {% for c in cuentas %}
+    { id: {{ c.id }}, codigo: '{{ c.codigo }}', nombre: '{{ c.nombre|escapejs }}', texto: '{{ c.codigo }} - {{ c.nombre|escapejs }}' },
+    {% endfor %}
+];
+
+function agregarLinea() {
+    lineaCounter++;
+    const tbody = document.getElementById('lineasBody');
+    const tr = document.createElement('tr');
+    tr.id = `linea_${lineaCounter}`;
+
+    let optionsCuentas = '<option value="">-- Seleccione cuenta --</option>';
+    cuentasDisponibles.forEach(c => {
+        optionsCuentas += `<option value="${c.id}">${c.texto}</option>`;
+    });
+
+    tr.innerHTML = `
+        <td class="text-center">${lineaCounter}</td>
+        <td>
+            <select class="form-control form-control-sm" name="cuenta_${lineaCounter}" onchange="recalcular()">
+                ${optionsCuentas}
+            </select>
+        </td>
+        <td><input type="text" class="form-control form-control-sm" name="concepto_${lineaCounter}"></td>
+        <td><input type="number" class="form-control form-control-sm text-end" name="debe_${lineaCounter}" step="0.01" value="0.00" onchange="recalcular()" onfocus="this.select()"></td>
+        <td><input type="number" class="form-control form-control-sm text-end" name="haber_${lineaCounter}" step="0.01" value="0.00" onchange="recalcular()" onfocus="this.select()"></td>
+        <td>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarLinea(${lineaCounter})">
+                <i class="fas fa-times"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    recalcular();
+}
+
+function eliminarLinea(num) {
+    const tr = document.getElementById(`linea_${num}`);
+    if (tr) tr.remove();
+    recalcular();
+}
+
+function recalcular() {
+    let totalDebe = 0;
+    let totalHaber = 0;
+    const lineas = [];
+
+    document.querySelectorAll('#lineasBody tr').forEach(tr => {
+        const selectCuenta = tr.querySelector('select');
+        const inputConcepto = tr.querySelector('input[type="text"]');
+        const inputs = tr.querySelectorAll('input[type="number"]');
+
+        if (selectCuenta && inputs.length >= 2) {
+            const debe = parseFloat(inputs[0].value) || 0;
+            const haber = parseFloat(inputs[1].value) || 0;
+            totalDebe += debe;
+            totalHaber += haber;
+
+            if (selectCuenta.value) {
+                lineas.push({
+                    cuenta_id: selectCuenta.value,
+                    concepto: inputConcepto ? inputConcepto.value : '',
+                    debe: debe.toFixed(2),
+                    haber: haber.toFixed(2)
+                });
+            }
+        }
+    });
+
+    document.getElementById('totalDebe').textContent = totalDebe.toFixed(2);
+    document.getElementById('totalHaber').textContent = totalHaber.toFixed(2);
+    document.getElementById('lineas_json').value = JSON.stringify(lineas);
+
+    const diferencia = Math.abs(totalDebe - totalHaber);
+    const cuadra = diferencia < 0.01 && totalDebe > 0;
+
+    const estadoDiv = document.getElementById('estadoCuadre');
+    const filaDif = document.getElementById('filaDiferencia');
+
+    if (totalDebe === 0 && totalHaber === 0) {
+        estadoDiv.innerHTML = '<i class="fas fa-info-circle text-muted"></i> <span class="text-muted">Agregue líneas al asiento</span>';
+        filaDif.style.display = 'none';
+    } else if (cuadra) {
+        estadoDiv.innerHTML = '<i class="fas fa-check-circle text-success" style="font-size:1.2rem;"></i> <strong class="text-success">¡El asiento cuadra!</strong> Puede guardarlo.';
+        filaDif.style.display = 'none';
+    } else {
+        estadoDiv.innerHTML = `<i class="fas fa-exclamation-triangle text-danger" style="font-size:1.2rem;"></i> <strong class="text-danger">El asiento NO cuadra.</strong> Diferencia: <strong>${diferencia.toFixed(2)}</strong>`;
+        document.getElementById('diferencia').textContent = diferencia.toFixed(2);
+        filaDif.style.display = '';
+    }
+}
+
+// Iniciar con 2 líneas
+agregarLinea();
+agregarLinea();
+</script>
+{% endblock %}

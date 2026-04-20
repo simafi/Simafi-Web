@@ -1,0 +1,144 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}{{ titulo }}{% endblock %}
+{% block nav_mapa %}active{% endblock %}
+
+{% block extra_head %}
+<style>
+    #map { height: 650px; border-radius: 12px; border: 1px solid var(--sp-border); z-index: 1; }
+    .map-popup { color: #1e293b; min-width: 180px; }
+    .map-popup h6 { margin: 0 0 5px; font-weight: 700; color: #0369a1; font-size: 0.9rem; }
+    .map-popup p { margin: 0; font-size: 0.8rem; line-height: 1.4; }
+    .map-popup a { 
+        display: block; 
+        margin-top: 10px; 
+        padding-top: 8px;
+        border-top: 1px solid #eee;
+        font-weight: 700; 
+        text-decoration: none; 
+        color: #0ea5e9; 
+        font-size: 0.8rem;
+    }
+    .map-popup a:hover { color: #0369a1; }
+    
+    /* Legend */
+    .map-legend {
+        background: rgba(15, 23, 42, 0.9);
+        padding: 10px 15px;
+        border-radius: 8px;
+        border: 1px solid var(--sp-border);
+        color: white;
+        font-size: 0.75rem;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .legend-color { width: 12px; height: 12px; border-radius: 50%; border: 1px solid white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#0369a1,#0ea5e9)"><i class="fas fa-map-marked-alt"></i></div>
+        <div>
+            <h1 class="page-title">{{ titulo }}</h1>
+            <p class="page-subtitle">Visualización geográfica del padrón de abonados - {{ empresa }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="filter-bar animate-in">
+    <form class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Filtrar por Ciclo</label>
+            <select name="ciclo" class="form-select" onchange="this.form.submit()">
+                <option value="">Todos los ciclos</option>
+                {% for c in ciclos %}
+                <option value="{{ c }}" {% if q_ciclo == c %}selected{% endif %}>Ciclo {{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-8 text-end">
+            <span class="badge bg-primary" style="font-size: 0.9rem; padding: 0.6em 1em;">
+                <i class="fas fa-map-marker-alt me-2"></i>{{ abonados|length }} Abonados Geolocalizados
+            </span>
+        </div>
+    </form>
+</div>
+
+<div class="data-card animate-in p-0" style="overflow: hidden;">
+    <div id="map"></div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar mapa (Centro aproximado si no hay puntos)
+        var map = L.map('map').setView([14.1, -87.2], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Leyenda personalizada
+        var legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'map-legend');
+            div.innerHTML = `
+                <div class="legend-item"><div class="legend-color" style="background:#10b981"></div> Activos</div>
+                <div class="legend-item"><div class="legend-color" style="background:#ef4444"></div> Morosos</div>
+                <div class="legend-item"><div class="legend-color" style="background:#f59e0b"></div> Suspendidos</div>
+                <div class="legend-item"><div class="legend-color" style="background:#64748b"></div> Otros</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+
+        var markers = [];
+        var bounds = L.latLngBounds();
+
+        // Colores por estado
+        const colors = {
+            'A': '#10b981', // Activo
+            'M': '#ef4444', // Moroso
+            'S': '#f59e0b', // Suspendido
+            'C': '#64748b', // Cancelado
+        };
+
+        {% for a in abonados %}
+            if ({{ a.lat|stringformat:".7f" }} != 0) {
+                var pos = [{{ a.lat|stringformat:".7f" }}, {{ a.lon|stringformat:".7f" }}];
+                var color = colors['{{ a.estado }}'] || '#3b82f6';
+                
+                var marker = L.circleMarker(pos, {
+                    radius: 7,
+                    fillColor: color,
+                    color: "#fff",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(map);
+
+                marker.bindPopup(`
+                    <div class="map-popup">
+                        <h6>{{ a.nombre }}</h6>
+                        <p><b>Abonado:</b> {{ a.codigo_abonado }}</p>
+                        <p><b>Estado:</b> {{ a.estado_label }}</p>
+                        <p><b>Ubicación:</b> {{ a.barrio|default:'N/A' }}</p>
+                        <a href="{% url 'servicios_publicos:catastro_detalle' a.id %}">IR AL EXPEDIENTE <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                `);
+
+                markers.push(marker);
+                bounds.extend(pos);
+            }
+        {% endfor %}
+
+        if (markers.length > 0) {
+            map.fitBounds(bounds, { padding: [40, 40] });
+        }
+    });
+</script>
+{% endblock %}

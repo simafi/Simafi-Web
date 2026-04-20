@@ -1,0 +1,60 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}{{ titulo }}{% endblock %}
+{% block nav_rubros %}active{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)"><i class="fas fa-tags"></i></div>
+        <div><h1 class="page-title">{{ titulo }}</h1></div>
+    </div>
+    <a href="{% url 'servicios_publicos:rubros_lista' %}" class="btn-sp-secondary"><i class="fas fa-arrow-left"></i> Volver</a>
+</div>
+<div class="row justify-content-center"><div class="col-lg-7">
+<form method="post">{% csrf_token %}
+<div class="form-panel">
+    <div class="form-panel-title"><i class="fas fa-list-alt"></i> Datos del Rubro</div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Código del Rubro *</label>
+            <input type="text" name="codigo" class="form-control" value="{{ instance.codigo|default:'' }}"
+                   placeholder="T0001" maxlength="10" required {% if instance %}readonly{% endif %}>
+            <small class="text-muted">T0001=Agua, T0002=Alcantarillado, etc.</small>
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Descripción *</label>
+            <input type="text" name="descripcion" class="form-control" value="{{ instance.descripcion|default:'' }}"
+                   placeholder="Tasa de Agua Potable" maxlength="200" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Tipo de Cobro *</label>
+            <select name="tipo_cobro" class="form-select">
+                <option value="F" {% if instance.tipo_cobro == 'F' or not instance %}selected{% endif %}>Tasa Fija</option>
+                <option value="M" {% if instance.tipo_cobro == 'M' %}selected{% endif %}>Por Medición (Consumo)</option>
+                <option value="A" {% if instance.tipo_cobro == 'A' %}selected{% endif %}>Anual</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Cuenta Corriente</label>
+            <input type="text" name="cuenta" class="form-control" value="{{ instance.cuenta|default:'' }}" maxlength="20">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Cuenta Rezago</label>
+            <input type="text" name="cuentarez" class="form-control" value="{{ instance.cuentarez|default:'' }}" maxlength="20">
+        </div>
+        <div class="col-12">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="activo" id="activo" value="1"
+                       {% if instance.activo or not instance %}checked{% endif %}>
+                <label class="form-check-label" for="activo" style="color:var(--sp-text-muted)">Rubro activo (disponible para facturación)</label>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex gap-2 justify-content-end mt-4">
+        <a href="{% url 'servicios_publicos:rubros_lista' %}" class="btn-sp-secondary">Cancelar</a>
+        <button type="submit" class="btn-sp-primary"><i class="fas fa-save"></i> Guardar</button>
+    </div>
+</div>
+</form>
+</div></div>
+{% endblock %}

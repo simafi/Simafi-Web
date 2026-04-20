@@ -1,0 +1,96 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Reportes de Servicios Públicos{% endblock %}
+{% block breadcrumb %}Reportes y Estadísticas{% endblock %}
+{% block nav_reportes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#475569,#64748b)"><i class="fas fa-chart-line"></i></div>
+        <div>
+            <h1 class="page-title">Reportes y Estadísticas</h1>
+            <p class="page-subtitle">Información clave para la toma de decisiones - {{ empresa }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:reporte_morosos' %}" class="module-card module-red animate-in">
+            <div class="module-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="module-body">
+                <h3>Reporte de Morosos</h3>
+                <p>Listado de abonados con saldo pendiente, ordenado por monto de deuda.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:reporte_consumos' %}" class="module-card module-blue animate-in" style="animation-delay:0.1s">
+            <div class="module-icon"><i class="fas fa-tint"></i></div>
+            <div class="module-body">
+                <h3>Análisis de Consumo</h3>
+                <p>Estadísticas de consumo en m³ por período, categoría y ciclo.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:reporte_facturacion_ciclo' %}" class="module-card module-green animate-in" style="animation-delay:0.2s">
+            <div class="module-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div class="module-body">
+                <h3>Facturación por Ciclo</h3>
+                <p>Resumen de montos emitidos vs pagados agrupados por ciclo de facturación.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:catastro_lista' %}" class="module-card module-indigo animate-in" style="animation-delay:0.3s">
+            <div class="module-icon"><i class="fas fa-address-card"></i></div>
+            <div class="module-body">
+                <h3>Padron Mensual</h3>
+                <p>Listado completo de abonados activos para control de recaudación.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:ordenes_lista' %}?estado=C" class="module-card module-orange animate-in" style="animation-delay:0.4s">
+            <div class="module-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="module-body">
+                <h3>Órdenes Ejecutadas</h3>
+                <p>Reporte de trabajos realizados y costos de mantenimiento operativo.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:reporte_reclamos_concepto' %}" class="module-card module-gray animate-in" style="animation-delay:0.5s">
+            <div class="module-icon"><i class="fas fa-chart-pie"></i></div>
+            <div class="module-body">
+                <h3>Reclamos por Concepto</h3>
+                <p>Sumario de OTs atendidas vs pendientes por tipo de reclamo (concepto).</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="data-card animate-in" style="animation-delay:0.5s">
+            <div class="data-card-header"><h4><i class="fas fa-info-circle me-2"></i>Información Adicional</h4></div>
+            <p class="small text-muted mb-0" style="line-height:1.7">
+                Los reportes generados están diseñados para ser compatibles con exportación a PDF y Excel (próximamente). 
+                Toda la información mostrada es en tiempo real basándose en las transacciones registradas en el sistema.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "presupuestos/menu_principal.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid mt-4 pb-5 px-4">
+    <div class="d-print-none mb-3 d-flex justify-content-between align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'presupuestos:informes_ingresos_hub' %}">Panel de Ingresos</a></li>
+                <li class="breadcrumb-item active">Liquidación Forma 01</li>
+            </ol>
+        </nav>
+        <button onclick="window.print()" class="btn btn-outline-dark">
+            <i class="fas fa-print me-2"></i>Imprimir Forma 01
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <h4 class="fw-bold mb-1">{{ empresa_nombre }}</h4>
+                <h5 class="text-dark mb-1">LIQUIDACIÓN DE INGRESOS (FORMA 01)</h5>
+                <p class="small text-muted text-uppercase">Rendición de Cuentas - Ejercicio Fiscal {{ ejercicio.anio }}</p>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered border-dark align-middle" style="font-size: 0.7rem;">
+                    <thead class="bg-light text-center fw-bold align-middle">
+                        <tr>
+                            <th rowspan="2">CUENTA</th>
+                            <th rowspan="2">DESCRIPCIÓN</th>
+                            <th rowspan="2">PRESUPUESTO INICIAL</th>
+                            <th colspan="2">AMPLIACIONES APROBADAS</th>
+                            <th rowspan="2">PRESUPUESTO DEFINITIVO</th>
+                            <th rowspan="2">INGRESO DEVENGADO</th>
+                            <th rowspan="2">INGRESO RECAUDADO</th>
+                            <th rowspan="2">PENDIENTE DE COBRO</th>
+                        </tr>
+                        <tr>
+                            <th>(+) AMPLIACIONES</th>
+                            <th>(-) DISMINUCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in datos %}
+                        <tr class="{% if d.nivel == 1 %}fw-bold table-active{% elif d.nivel == 2 %}fw-bold{% endif %}">
+                            <td class="text-nowrap">{{ d.codigo }}</td>
+                            <td>{{ d.nombre }}</td>
+                            <td class="text-end font-monospace">{{ d.inicial|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ d.ampliaciones|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ d.disminuciones|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace fw-bold">{{ d.definitivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-primary">{{ d.devengado|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-success">{{ d.recaudado|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-danger">{{ d.pendiente|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row mt-5 pt-4 text-center d-none d-print-flex">
+                <div class="col-4">
+                    <hr class="mx-4">
+                    <p class="small fw-bold">ELABORADO POR</p>
+                </div>
+                <div class="col-4">
+                    <hr class="mx-4">
+                    <p class="small fw-bold">REVISADO POR</p>
+                </div>
+                <div class="col-4">
+                    <hr class="mx-4">
+                    <p class="small fw-bold">AUTORIZADO POR</p>
+                </div>
+            </div>
+
+            <div class="mt-4 small text-muted text-center d-print-none">
+                <p>Nota: El Ingreso Devengado se calcula a partir de las declaraciones y tasas emitidas en el módulo tributario para el año {{ ejercicio.anio }}.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .breadcrumb, .d-print-none { display: none !important; }
+        .card { border: none !important; box-shadow: none !important; }
+        .table { border: 1px solid black !important; }
+        .table th, .table td { border: 1px solid black !important; }
+        body { background-color: white !important; padding: 0 !important; }
+        .container-fluid { width: 100% !important; max-width: 100% !important; padding: 0 !important; }
+    }
+    .table th { background-color: #f8f9fa !important; color: black !important; padding: 5px !important; }
+</style>
+{% endblock %}

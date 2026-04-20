@@ -1,0 +1,291 @@
+{% extends "base_tributario.html" %}
+
+{% block title %}Parámetros Tributarios{% endblock %}
+{% block breadcrumb %}Configuración / Parámetros{% endblock %}
+{% block nav_configuracion %}active{% endblock %}
+
+{% block content %}
+<div class="page-header animate-in">
+    <div class="header-content">
+        <div class="header-icon"><i class="fas fa-sliders-h"></i></div>
+        <div>
+            <h1 class="page-title">Parámetros Tributarios</h1>
+            <p class="page-subtitle">Configuración global de amnistías, descuentos por edad, pronto pago y recargos moratorios.</p>
+        </div>
+    </div>
+    <div>
+        <button class="btn-trib-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForm" aria-controls="offcanvasForm">
+            <i class="fas fa-plus me-2"></i> Nuevo Parámetro
+        </button>
+    </div>
+</div>
+
+<div class="row animate-in">
+    <div class="col-12">
+        <div class="card trib-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold"><i class="fas fa-list me-2"></i> Listado de Parámetros</span>
+                <span class="badge bg-gold">Empresa: {{ empresa }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tipo / Descripción</th>
+                                <th class="text-center">Vigencia</th>
+                                <th class="text-center">Porcentajes / Tasas</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in parametros %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-3 bg-light text-primary rounded-circle d-flex align-items-center justify-content-center">
+                                            {% if p.tipo_parametro == 'AM' %}<i class="fas fa-shield-alt text-success"></i>
+                                            {% elif p.tipo_parametro == 'TE' or p.tipo_parametro == 'CE' %}<i class="fas fa-user-clock text-info"></i>
+                                            {% elif p.tipo_parametro == 'PA' %}<i class="fas fa-calendar-check text-primary"></i>
+                                            {% else %}<i class="fas fa-percentage text-danger"></i>{% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ p.get_tipo_parametro_display }} — {{ p.ano_vigencia }}</div>
+                                            <div class="small text-muted">{{ p.descripcion }}</div>
+                                            {% if p.numero_decreto %}
+                                            <div class="badge bg-soft-info text-info small"><i class="fas fa-file-contract me-1"></i> {{ p.numero_decreto }}</div>
+                                            {% endif %}
+                                            {% if p.empresa == 'GLOB' %}
+                                            <span class="badge bg-secondary ms-1">Global</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="small">
+                                        <div><span class="text-muted">Inicio:</span> {{ p.fecha_inicio|date:"d/m/Y"|default:"-" }}</div>
+                                        <div><span class="text-muted">Corte:</span> {{ p.fecha_corte|date:"d/m/Y"|default:"-" }}</div>
+                                        {% if p.fecha_fin %}
+                                        <div class="text-danger fw-bold"><span class="text-muted">Fin:</span> {{ p.fecha_fin|date:"d/m/Y" }}</div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    {% if p.tipo_parametro == 'AM' %}
+                                        <div class="small">
+                                            <div class="badge bg-soft-success text-success">Condonación Recargos: {{ p.porcentaje_condonacion }}%</div>
+                                            {% if p.aplica_saldo_impuesto %}
+                                            <div class="badge bg-soft-primary text-primary mt-1">Desc. Impuesto: {{ p.porcentaje_descuento_saldo }}%</div>
+                                            {% endif %}
+                                        </div>
+                                    {% elif p.tipo_parametro == 'RM' %}
+                                        <div class="text-danger fw-bold">{{ p.tasa_recargo_mensual }}% <small>mensual</small></div>
+                                        {% if p.recargo_maximo_porcentaje > 0 %}
+                                        <div class="text-muted small">Tope: {{ p.recargo_maximo_porcentaje }}%</div>
+                                        {% endif %}
+                                    {% elif p.tipo_parametro == 'PA' %}
+                                        <div class="text-primary fw-bold">{{ p.porcentaje_descuento_anual }}% <small>Pronto Pago</small></div>
+                                        <div class="text-muted small">Meses ant: {{ p.meses_anticipacion }}</div>
+                                    {% else %}
+                                        <div class="text-info fw-bold">{{ p.porcentaje_condonacion }}% <small>Descuento</small></div>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if p.activo %}
+                                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-light text-muted border"><i class="fas fa-times-circle me-1"></i> Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a href="?edit={{ p.id }}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="confirmDelete({{ p.id }}, '{{ p.descripcion }}')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                        <p>No hay parámetros configurados aún.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offcanvas Form -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasForm" aria-labelledby="offcanvasFormLabel" style="width: 500px;">
+    <div class="offcanvas-header bg-gold text-white">
+        <h5 class="offcanvas-title" id="offcanvasFormLabel">
+            {% if edit_id %}<i class="fas fa-edit me-2"></i> Editar Parámetro{% else %}<i class="fas fa-plus me-2"></i> Nuevo Parámetro{% endif %}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form method="post" id="paramForm">
+            {% csrf_token %}
+            {% if edit_id %}<input type="hidden" name="id" value="{{ edit_id }}">{% endif %}
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Empresa / Municipio</label>
+                    {{ form.empresa }}
+                    <div class="form-text">Use 'GLOB' para parámetros generales.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Año Vigencia</label>
+                    {{ form.ano_vigencia }}
+                </div>
+                
+                <div class="col-12">
+                    <label class="form-label fw-bold">Tipo de Parámetro</label>
+                    {{ form.tipo_parametro }}
+                </div>
+                
+                <div class="col-12">
+                    <label class="form-label fw-bold">Descripción Corta</label>
+                    {{ form.descripcion }}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-bold">Referencia / Decreto</label>
+                    {{ form.numero_decreto }}
+                </div>
+
+                <hr class="my-3">
+                <h6 class="text-primary fw-bold mb-0">Vigencia del Beneficio</h6>
+                
+                <div class="col-md-4">
+                    <label class="form-label small">Fecha Inicio</label>
+                    {{ form.fecha_inicio }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">Fecha Fin</label>
+                    {{ form.fecha_fin }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-danger">Fecha Corte</label>
+                    {{ form.fecha_corte }}
+                </div>
+
+                <hr class="my-3">
+                <h6 class="text-primary fw-bold mb-0">Configuración de Valores</h6>
+
+                <div class="col-md-6">
+                    <label class="form-label small">% Condonación Recargos</label>
+                    {{ form.porcentaje_condonacion }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">Tasa Recargo Mensual (%)</label>
+                    {{ form.tasa_recargo_mensual }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small">% Descuento Saldo</label>
+                    {{ form.porcentaje_descuento_saldo }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">Recargo Máximo (%)</label>
+                    {{ form.recargo_maximo_porcentaje }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small">Meses Anticipación</label>
+                    {{ form.meses_anticipacion }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">% Descuento Anual</label>
+                    {{ form.porcentaje_descuento_anual }}
+                </div>
+
+                <hr class="my-3">
+                <h6 class="text-primary fw-bold mb-2">Alcance y Estado</h6>
+                
+                <div class="col-12">
+                    <div class="form-check form-switch mb-2">
+                        {{ form.aplica_recargos }}
+                        <label class="form-check-label">Aplica a Recargos Moratorios (rubros R*)</label>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        {{ form.aplica_intereses }}
+                        <label class="form-check-label">Aplica a Intereses Moratorios</label>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        {{ form.aplica_saldo_impuesto }}
+                        <label class="form-check-label">Aplica Descuento sobre Saldo de Impuesto</label>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        {{ form.activo }}
+                        <label class="form-check-label fw-bold">Parámetro Activo</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-gold py-2">
+                    <i class="fas fa-save me-2"></i> Guardar Parámetros
+                </button>
+                {% if edit_id %}
+                <a href="?" class="btn btn-outline-secondary">Cancelar Edición</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Confirmación Eliminación -->
+<form method="post" id="deleteForm">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="delete">
+    <input type="hidden" name="id" id="delete_id">
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if edit_id or form.errors %}
+        var offcanvas = new bootstrap.Offcanvas(document.getElementById('offcanvasForm'));
+        offcanvas.show();
+        {% endif %}
+    });
+
+    function confirmDelete(id, desc) {
+        Swal.fire({
+            title: '¿Eliminar parámetro?',
+            text: "Está por eliminar la configuración: " + desc,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete_id').value = id;
+                document.getElementById('deleteForm').submit();
+            }
+        });
+    }
+</script>
+
+<style>
+    .bg-soft-success { background-color: rgba(25, 135, 84, 0.1); }
+    .bg-soft-primary { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-soft-info { background-color: rgba(13, 202, 240, 0.1); }
+    .avatar-sm { width: 40px; height: 40px; }
+    .offcanvas-body { background-color: #fcfcfc; }
+</style>
+{% endblock %}

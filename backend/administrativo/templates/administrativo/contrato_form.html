@@ -1,0 +1,20 @@
+{% extends "administrativo/base.html" %}
+{% block content %}
+<h1 class="h4 mb-3">{{ titulo }}</h1>
+<form method="post" class="card shadow-sm" novalidate>
+	{% csrf_token %}
+	<div class="card-body row g-3">
+		{% for field in form %}
+		<div class="col-md-6">
+			<label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+			{{ field }}
+			{% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+		</div>
+		{% endfor %}
+	</div>
+	<div class="card-footer bg-white d-flex gap-2">
+		<button type="submit" class="btn btn-success">Guardar</button>
+		<a href="{% url 'administrativo:contrato_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+	</div>
+</form>
+{% endblock %}

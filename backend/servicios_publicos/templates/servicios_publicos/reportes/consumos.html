@@ -1,0 +1,106 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Análisis de Consumos{% endblock %}
+{% block breadcrumb %}Consumos{% endblock %}
+{% block nav_reportes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#0369a1,#0ea5e9)"><i class="fas fa-chart-pie"></i></div>
+        <div>
+            <h1 class="page-title">Análisis de Consumos</h1>
+            <p class="page-subtitle">Consumo de agua por período y abonado - {{ empresa }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'servicios_publicos:reportes' %}" class="btn-sp-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+        <button onclick="window.print()" class="btn-sp-secondary">
+            <i class="fas fa-print"></i> Imprimir Reporte
+        </button>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Año</label>
+            <input type="number" name="ano" class="form-control" value="{{ q_ano }}" min="2000" max="2100">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Mes</label>
+            <select name="mes" class="form-select">
+                <option value="1" {% if q_mes == 1 %}selected{% endif %}>Enero</option>
+                <option value="2" {% if q_mes == 2 %}selected{% endif %}>Febrero</option>
+                <option value="3" {% if q_mes == 3 %}selected{% endif %}>Marzo</option>
+                <option value="4" {% if q_mes == 4 %}selected{% endif %}>Abril</option>
+                <option value="5" {% if q_mes == 5 %}selected{% endif %}>Mayo</option>
+                <option value="6" {% if q_mes == 6 %}selected{% endif %}>Junio</option>
+                <option value="7" {% if q_mes == 7 %}selected{% endif %}>Julio</option>
+                <option value="8" {% if q_mes == 8 %}selected{% endif %}>Agosto</option>
+                <option value="9" {% if q_mes == 9 %}selected{% endif %}>Septiembre</option>
+                <option value="10" {% if q_mes == 10 %}selected{% endif %}>Octubre</option>
+                <option value="11" {% if q_mes == 11 %}selected{% endif %}>Noviembre</option>
+                <option value="12" {% if q_mes == 12 %}selected{% endif %}>Diciembre</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn-sp-primary w-100">Cargar Datos del Mes</button>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="stat-card stat-blue animate-in">
+            <div class="stat-icon"><i class="fas fa-tint"></i></div>
+            <div class="stat-body">
+                <div class="stat-value">{{ total_m3|floatformat:2 }} m³</div>
+                <div class="stat-label">Total Consumido del Mes</div>
+                <div class="stat-sub">Basado en {{ lecturas.count }} lecturas registradas</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="data-card animate-in" style="animation-delay:0.1s">
+    <div class="data-card-header">
+        <h4><i class="fas fa-list-ul me-2"></i>Detalle de Consumos (Mayor a Menor)</h4>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Abonado</th>
+                    <th>Categoría</th>
+                    <th>Ciclo/Ruta</th>
+                    <th>Ant. (m³)</th>
+                    <th>Act. (m³)</th>
+                    <th class="text-end">Consumo (m³)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in lecturas %}
+                <tr>
+                    <td><strong>{{ l.abonado.codigo_abonado }}</strong></td>
+                    <td>{{ l.abonado.nombre|truncatechars:35 }}</td>
+                    <td>{{ l.abonado.get_categoria_display }}</td>
+                    <td>{{ l.abonado.ciclo|default:"-" }} / {{ l.abonado.ruta|default:"-" }}</td>
+                    <td>{{ l.lectura_anterior|floatformat:2 }}</td>
+                    <td>{{ l.lectura_actual|floatformat:2 }}</td>
+                    <td class="text-end fw-bold" style="color:var(--sp-secondary)">{{ l.consumo_m3|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        No hay lecturas registradas para este período.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

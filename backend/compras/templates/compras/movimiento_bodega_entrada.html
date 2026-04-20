@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ titulo }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" crossorigin="anonymous" />
+    <style>
+        .select2-container { width: 100% !important; max-width: 100%; }
+        .select2-container--default .select2-selection--single { min-height: 38px; padding: 4px 8px; border-radius: 6px; }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-success mb-3">
+        <div class="container">
+            <span class="navbar-brand">{{ titulo }}</span>
+            <a class="btn btn-outline-light btn-sm" href="{% url 'compras:movimiento_bodega_list' %}">Kardex</a>
+        </div>
+    </nav>
+    <div class="container" style="max-width: 640px;">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <p class="small text-muted">Registra una <strong>entrada</strong> y actualiza cantidades y costo promedio en inventario (NIC 2).</p>
+        <p class="small text-secondary mb-2"><strong>Fecha de la compra</strong> corresponde al documento o factura del proveedor; <strong>fecha de registro en bodega</strong> es la fecha del movimiento en kardex (si no indica compra, se copia la de registro).</p>
+        <p class="small text-info mb-3"><strong>Ítem inventario:</strong> escriba código, descripción, nomenclatura o tipo para buscar. <strong>Línea OC (opcional):</strong> use el cuadro de búsqueda del desplegable.</p>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.name == 'inventario' %}
+                <p class="small text-muted mb-1">Búsqueda por código, descripción o tipo de material.</p>
+                {% endif %}
+                {{ field.errors }}
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-success">Registrar entrada</button>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/es.js" crossorigin="anonymous"></script>
+    <script>
+    (function () {
+        var urlInv = "{% url 'compras:ajax_buscar_inventario_entrada' %}";
+        $(function () {
+            $('.js-select2-inv-entrada').each(function () {
+                var $el = $(this);
+                $el.select2({
+                    language: 'es',
+                    width: '100%',
+                    placeholder: 'Buscar material (código, nombre, tipo)…',
+                    allowClear: false,
+                    minimumInputLength: 0,
+                    ajax: {
+                        url: urlInv,
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) { return { q: params.term || '' }; },
+                        processResults: function (data) {
+                            if (!data || !data.resultados) return { results: [] };
+                            return {
+                                results: data.resultados.map(function (r) {
+                                    return { id: r.id, text: r.texto };
+                                })
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            });
+            $('.js-select2-oc-entrada').each(function () {
+                $(this).select2({
+                    language: 'es',
+                    width: '100%',
+                    placeholder: 'Buscar línea de orden de compra…',
+                    allowClear: true,
+                    minimumResultsForSearch: 0
+                });
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

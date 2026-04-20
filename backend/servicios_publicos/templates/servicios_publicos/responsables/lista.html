@@ -1,0 +1,61 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Responsables (Fontaneros){% endblock %}
+{% block breadcrumb %}Responsables{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-content">
+    <div class="header-icon" style="background:linear-gradient(135deg,#0ea5e9,#06b6d4)"><i class="fas fa-user-hard-hat"></i></div>
+    <div>
+      <h1 class="page-title">Responsables (Fontaneros)</h1>
+      <p class="page-subtitle">Catálogo por código para asignación y cierre de OTs</p>
+    </div>
+  </div>
+  <a href="{% url 'servicios_publicos:responsable_nuevo' %}" class="btn-sp-primary">
+    <i class="fas fa-plus"></i> Nuevo
+  </a>
+</div>
+
+{% if messages %}
+  <div class="mb-3">
+    {% for message in messages %}
+      <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}">{{ message }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="data-card">
+  <div class="data-card-header"><h4><i class="fas fa-list me-2"></i>Listado</h4></div>
+  <div class="table-responsive p-2">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Teléfono</th>
+          <th>Activo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in responsables %}
+          <tr>
+            <td class="fw-bold">{{ r.codigo }}</td>
+            <td>{{ r.nombre }}</td>
+            <td>{{ r.telefono|default:"-" }}</td>
+            <td>{% if r.activo %}<span class="badge bg-success">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-light" href="{% url 'servicios_publicos:responsable_editar' r.pk %}">
+                <i class="fas fa-edit"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-4">No hay responsables registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+

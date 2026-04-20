@@ -1,0 +1,55 @@
+{% extends "administrativo/base.html" %}
+{% block extra_css %}{% include 'configuracion/includes/list_print_styles.html' %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2 no-print">
+	<h1 class="h4 mb-0">{{ titulo }}</h1>
+	<a href="{% url 'administrativo:proveedor_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Nuevo</a>
+</div>
+<p class="small text-muted mb-2 no-print"><i class="fas fa-filter me-1"></i>{{ reporte_subtitulo }}</p>
+<p class="small text-muted mb-2 no-print border-start border-3 ps-2"><i class="fas fa-building me-1"></i>Los proveedores y sus archivos digitales son <strong>exclusivos del municipio en sesión</strong>; no se mezclan con otros municipios.</p>
+<form method="get" class="row g-2 align-items-end mb-2 no-print">
+	<div class="col-md-4">
+		<label class="form-label small mb-0">Búsqueda</label>
+		<input type="text" name="search" value="{{ search }}" class="form-control form-control-sm" placeholder="Razón social, RTN / DNI / NIT, correo...">
+	</div>
+	<div class="col-md-3">
+		<label class="form-label small mb-0">Perfil del registro</label>
+		<select name="perfil" class="form-select form-select-sm" title="Categoría interna por estado operativo">
+			<option value="" {% if not perfil_filtro %}selected{% endif %}>Todos</option>
+			<option value="activo" {% if perfil_filtro == 'activo' %}selected{% endif %}>Solo activos</option>
+			<option value="inactivo" {% if perfil_filtro == 'inactivo' %}selected{% endif %}>Solo inactivos</option>
+		</select>
+	</div>
+	<div class="col-auto">
+		<button type="submit" class="btn btn-outline-secondary btn-sm">Aplicar filtros</button>
+	</div>
+</form>
+{% include 'configuracion/includes/list_export_toolbar.html' with excel_url='administrativo:proveedor_export_excel' pdf_url='administrativo:proveedor_export_pdf' %}
+<div class="table-responsive card shadow-sm">
+	<table class="table table-hover mb-0">
+		<thead class="table-light"><tr><th>Razón social</th><th>RTN / DNI / NIT</th><th>Teléfono</th><th>Activo</th><th class="no-print"></th></tr></thead>
+		<tbody>
+			{% for o in object_list %}
+			<tr>
+				<td>{{ o.razon_social }}</td>
+				<td>{{ o.nit }}</td>
+				<td>{{ o.telefono }}</td>
+				<td>{% if o.activo %}<span class="badge bg-success">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+				<td class="text-center no-print">
+					{% if o.documentacion_cargada %}
+					<a href="{% url 'administrativo:proveedor_documentacion_descargar' o.pk %}" class="btn btn-sm btn-outline-secondary" title="Descargar documentación"><i class="fas fa-paperclip"></i></a>
+					{% else %}<span class="text-muted">—</span>{% endif %}
+				</td>
+				<td class="text-end text-nowrap no-print">
+					<a href="{% url 'administrativo:proveedor_update' o.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+					<a href="{% url 'administrativo:proveedor_delete' o.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+				</td>
+			</tr>
+			{% empty %}
+			<tr><td colspan="7" class="text-center text-muted py-4">Sin proveedores. Cree el primero con «Nuevo».</td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+<p class="mt-3 no-print"><a href="{% url 'administrativo:menu_principal' %}" class="text-decoration-none">&larr; Volver al inicio administrativo</a></p>
+{% endblock %}

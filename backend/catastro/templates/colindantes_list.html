@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+	<style>
+		@media print {
+			body {
+				background: white !important;
+			}
+			.navbar, .card-header .btn, .btn, .alert, .mb-3 form {
+				display: none !important;
+			}
+			.card {
+				border: none !important;
+				box-shadow: none !important;
+			}
+			.card-header {
+				background: #f8f9fa !important;
+				color: #000 !important;
+				border-bottom: 2px solid #000 !important;
+			}
+			.table {
+				border-collapse: collapse;
+			}
+			.table th, .table td {
+				border: 1px solid #000 !important;
+				padding: 8px;
+			}
+			.table thead th {
+				background: #f0f0f0 !important;
+				color: #000 !important;
+			}
+			.table-info {
+				background: #e9ecef !important;
+			}
+			.accordion-collapse {
+				display: block !important;
+			}
+			.accordion-collapse.collapse {
+				display: block !important;
+			}
+			.accordion-button {
+				display: block !important;
+				cursor: default !important;
+				background: #f8f9fa !important;
+				border: 1px solid #000 !important;
+			}
+			.accordion-button::after {
+				display: none !important;
+			}
+			.accordion-button:not(.collapsed) {
+				background: #f8f9fa !important;
+			}
+			.accordion-item {
+				page-break-inside: avoid;
+				margin-bottom: 10px;
+				border: 1px solid #000 !important;
+			}
+		}
+	</style>
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ request.session.catastro_usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+				<h5 class="mb-0">
+					<i class="fas fa-ruler-combined me-2"></i>{{ titulo }}
+				</h5>
+				<div class="d-flex gap-2 flex-wrap">
+					{% if empresa and cocata1 %}
+					<a href="{% url 'catastro:colindante_create' empresa=empresa cocata1=cocata1 %}" class="btn btn-light btn-sm">
+						<i class="fas fa-plus me-1"></i> Nuevo Colindante
+					</a>
+					{% endif %}
+					{% if colindantes %}
+					<button onclick="window.print()" class="btn btn-light btn-sm">
+						<i class="fas fa-print me-1"></i> Imprimir
+					</button>
+					{% endif %}
+					{% if empresa and cocata1 %}
+					<a href="{% url 'catastro:colindantes_export_excel' empresa=empresa cocata1=cocata1 %}{% if search %}?search={{ search }}{% endif %}" class="btn btn-light btn-sm">
+						<i class="fas fa-file-excel me-1"></i> Exportar Excel
+					</a>
+					<a href="{% url 'catastro:colindantes_export_pdf' empresa=empresa cocata1=cocata1 %}{% if search %}?search={{ search }}{% endif %}" class="btn btn-light btn-sm">
+						<i class="fas fa-file-pdf me-1"></i> Generar PDF
+					</a>
+					{% endif %}
+					{% if empresa and cocata1 %}
+					<a href="{% url 'catastro:bienes_inmuebles_registrar' %}?cocata1={{ cocata1|urlencode }}" class="btn btn-light btn-sm">
+						<i class="fas fa-arrow-left me-1"></i> Volver
+					</a>
+					{% else %}
+					<a href="{% url 'catastro:catastro_configuracion' %}" class="btn btn-light btn-sm">
+						<i class="fas fa-arrow-left me-1"></i> Volver
+					</a>
+					{% endif %}
+				</div>
+			</div>
+			<div class="card-body">
+				<!-- Información del bien inmueble -->
+				{% if bien_inmueble %}
+				<div class="alert alert-info mb-4">
+					<strong>Clave Catastral:</strong> {{ cocata1 }}<br>
+					<strong>Propietario:</strong> {{ bien_inmueble.nombres|default:"" }} {{ bien_inmueble.apellidos|default:"" }}<br>
+					<strong>Ubicación:</strong> {{ bien_inmueble.ubicacion|default:"-" }}
+				</div>
+				{% elif cocata1 %}
+				<div class="alert alert-info mb-4">
+					<strong>Clave Catastral:</strong> {{ cocata1 }}
+				</div>
+				{% endif %}
+
+				<!-- Mensajes -->
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<!-- Búsqueda -->
+				<div class="mb-3">
+					<form method="get" class="row g-3">
+						<div class="col-md-8">
+							<input type="text" name="search" class="form-control" placeholder="Buscar por tipo, colindante o código..." value="{{ search }}">
+						</div>
+						<div class="col-md-4">
+							<button type="submit" class="btn btn-primary">
+								<i class="fas fa-search me-1"></i> Buscar
+							</button>
+							{% if search %}
+							<a href="{% if empresa and cocata1 %}{% url 'catastro:colindantes_list' empresa=empresa cocata1=cocata1 %}{% else %}{% url 'catastro:colindantes_list' empresa=empresa cocata1='' %}{% endif %}" class="btn btn-secondary">
+								<i class="fas fa-times me-1"></i> Limpiar
+							</a>
+							{% endif %}
+						</div>
+					</form>
+				</div>
+
+				<!-- Colindantes agrupados por tipo -->
+				{% if colindantes_por_tipo %}
+				<div class="accordion" id="accordionColindantes">
+					{% for tipo_key, datos_tipo in colindantes_por_tipo %}
+					<div class="accordion-item mb-2">
+						<h2 class="accordion-header" id="heading{{ tipo_key }}">
+							<button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ tipo_key }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ tipo_key }}">
+								<i class="fas fa-compass me-2"></i>
+								<strong>Colindantes al {{ datos_tipo.tipo_label }} ({{ tipo_key }})</strong>
+								<span class="ms-auto me-3">
+									<span class="badge bg-primary">{{ datos_tipo.colindantes|length }} registro{{ datos_tipo.colindantes|length|pluralize }}</span>
+								</span>
+							</button>
+						</h2>
+						<div id="collapse{{ tipo_key }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ tipo_key }}" data-bs-parent="#accordionColindantes">
+							<div class="accordion-body">
+								<div class="table-responsive">
+									<table class="table table-sm table-bordered table-striped">
+										<thead class="table-light">
+											<tr>
+												<th>ID</th>
+												<th>Colindante</th>
+												<th>Código Colindante</th>
+												<th>Usuario</th>
+												<th>Fecha Sistema</th>
+												<th>Acciones</th>
+											</tr>
+										</thead>
+										<tbody>
+											{% for colindante in datos_tipo.colindantes %}
+											<tr>
+												<td>{{ colindante.id }}</td>
+												<td>{{ colindante.colindante|default:"-" }}</td>
+												<td>
+													{% if colindante.codcolinda %}
+														{{ colindante.codcolinda }}
+														{% if colindante.descripcion_codcolinda %}
+															- {{ colindante.descripcion_codcolinda }}
+														{% endif %}
+													{% else %}
+														-
+													{% endif %}
+												</td>
+												<td>{{ colindante.usuario|default:"-" }}</td>
+												<td>{{ colindante.fechasys|date:"d/m/Y H:i"|default:"-" }}</td>
+												<td>
+													{% if empresa and cocata1 %}
+													<a href="{% url 'catastro:colindante_update' empresa=empresa cocata1=cocata1 pk=colindante.id %}" class="btn btn-sm btn-warning" title="Editar">
+														<i class="fas fa-edit"></i>
+													</a>
+													<a href="{% url 'catastro:colindante_delete' empresa=empresa cocata1=cocata1 pk=colindante.id %}" class="btn btn-sm btn-danger" title="Eliminar">
+														<i class="fas fa-trash"></i>
+													</a>
+													{% endif %}
+												</td>
+											</tr>
+											{% endfor %}
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+					{% endfor %}
+				</div>
+				{% else %}
+				<div class="alert alert-info text-center">
+					<i class="fas fa-inbox fa-2x mb-2"></i><br>
+					No se encontraron colindantes.
+				</div>
+				{% endif %}
+
+				<!-- Información de totales -->
+				<div class="mt-3">
+					<strong>Total de registros:</strong> {{ total_registros }}
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

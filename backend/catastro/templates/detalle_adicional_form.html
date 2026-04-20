@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ request.session.catastro_usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header {% if detalle %}bg-warning text-dark{% else %}bg-primary text-white{% endif %}">
+				<h5 class="mb-0">
+					<i class="fas {% if detalle %}fa-edit{% else %}fa-plus-circle{% endif %} me-2"></i>{{ titulo }}
+				</h5>
+			</div>
+			<div class="card-body">
+				<!-- Mensajes -->
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<!-- Formulario -->
+				<form method="post" id="form-detalle-adicional">
+					{% csrf_token %}
+					<!-- Campo oculto para valorporch (valores menores a 1) -->
+					<input type="hidden" name="valorporch" id="valorporch" value="">
+					<!-- Campo oculto para almacenar la concatenación de uso+clase+calidad cuando es porch -->
+					<input type="hidden" name="codedi" id="codedi_hidden" value="{{ form.codedi.value|default:'' }}">
+					<div class="row g-3">
+						<!-- Empresa (oculto) -->
+						<div class="col-md-6" style="display: none;">
+							<label class="form-label" for="{{ form.empresa.id_for_label }}">
+								<strong>{{ form.empresa.label }}</strong>
+							</label>
+							{{ form.empresa }}
+							{{ form.empresa.errors }}
+						</div>
+						
+						<!-- Clave Catastral (oculto) -->
+						<div class="col-md-6" style="display: none;">
+							<label class="form-label" for="{{ form.clave.id_for_label }}">
+								<strong>{{ form.clave.label }}</strong>
+							</label>
+							{{ form.clave }}
+							{{ form.clave.errors }}
+						</div>
+						
+						<!-- Código con búsqueda -->
+						<div class="col-md-4">
+							<label class="form-label" for="{{ form.codigo.id_for_label }}">
+								<strong>{{ form.codigo.label }}</strong>
+							</label>
+							<div class="input-group">
+								<input type="text" name="codigo" id="{{ form.codigo.id_for_label }}" class="form-control" maxlength="50" placeholder="Ingrese código o descripción y busque" autocomplete="off" style="border-top-right-radius: 0; border-bottom-right-radius: 0;" value="{{ form.codigo.value|default:'' }}">
+								<button type="button" class="btn btn-outline-secondary" id="btn-buscar-codigo" title="Buscar por código o descripción">
+									<i class="fas fa-search" id="icono-buscar"></i>
+								</button>
+							</div>
+							<small class="form-text text-muted">Puede buscar por código o por descripción (texto)</small>
+							{{ form.codigo.errors }}
+							<!-- Mensaje de búsqueda -->
+							<div id="mensaje-busqueda-codigo" class="mt-2" style="display: none;"></div>
+							<!-- Lista de resultados múltiples -->
+							<div id="lista-resultados" class="mt-2" style="display: none;">
+								<div class="list-group" style="max-height: 200px; overflow-y: auto;">
+									<!-- Los resultados se insertarán aquí dinámicamente -->
+								</div>
+							</div>
+						</div>
+						
+						<!-- Descripción -->
+						<div class="col-md-6">
+							<label class="form-label" for="{{ form.descripcion.id_for_label }}">
+								<strong>{{ form.descripcion.label }}</strong>
+							</label>
+							{{ form.descripcion }}
+							{{ form.descripcion.errors }}
+							<small class="form-text text-muted">Descripción del detalle adicional</small>
+						</div>
+						
+					<!-- Edif. No. (oculto, se actualiza automáticamente desde el combobox) -->
+					<div class="col-md-3" style="display: none;">
+						<label class="form-label" for="{{ form.edifino.id_for_label }}">
+							<strong>{{ form.edifino.label }}</strong>
+						</label>
+						{{ form.edifino }}
+						{{ form.edifino.errors }}
+					</div>
+					
+					<!-- Piso (oculto, se actualiza automáticamente desde el combobox) -->
+					<div class="col-md-3" style="display: none;">
+						<label class="form-label" for="{{ form.piso.id_for_label }}">
+							<strong>{{ form.piso.label }}</strong>
+						</label>
+						{{ form.piso }}
+						{{ form.piso.errors }}
+					</div>
+						
+						<!-- Área -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.area.id_for_label }}">
+								<strong>{{ form.area.label }}</strong>
+							</label>
+							{{ form.area }}
+							{{ form.area.errors }}
+							<small class="form-text text-muted">Área en m²</small>
+						</div>
+						
+						<!-- Porcentaje -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.porce.id_for_label }}">
+								<strong>{{ form.porce.label }}</strong>
+							</label>
+							{{ form.porce }}
+							{{ form.porce.errors }}
+							<small class="form-text text-muted">Porcentaje (%)</small>
+						</div>
+						
+						<!-- Valor Unitario -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.unit.id_for_label }}">
+								<strong>{{ form.unit.label }}</strong>
+							</label>
+							{{ form.unit }}
+							{{ form.unit.errors }}
+							<small class="form-text text-muted">Valor unitario</small>
+						</div>
+						
+						<!-- Total (readonly) -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.total.id_for_label }}">
+								<strong>{{ form.total.label }}</strong>
+							</label>
+							{{ form.total }}
+							{{ form.total.errors }}
+							<small class="form-text text-muted">Total calculado automáticamente</small>
+						</div>
+						
+						<!-- Código Edific. (Combobox de Edificaciones) -->
+						<div class="col-md-6" id="contenedor-codigo-especial" style="display: none;">
+							<label class="form-label" for="id_codedi">
+								<strong>{{ form.codedi.label }}</strong>
+							</label>
+							<select id="id_codedi" class="form-select">
+								<option value="">Seleccione una edificación...</option>
+							</select>
+							{{ form.codedi.errors }}
+							<small class="form-text text-muted">Seleccione una edificación existente (se guardará uso+clase+calidad)</small>
+						</div>
+						
+						<!-- Fracción (ahora se guarda en BD) -->
+						<div class="col-md-3" id="contenedor-fraccion" style="display: none;">
+							<label class="form-label" for="{{ form.fraccion.id_for_label }}">
+								<strong>{{ form.fraccion.label }}</strong>
+							</label>
+							{{ form.fraccion }}
+							{{ form.fraccion.errors }}
+							<small class="form-text text-muted">Valor del porch</small>
+						</div>
+						
+						<!-- Valor Unit Edif. M2 (ahora se guarda en BD) -->
+						<div class="col-md-3" id="contenedor-valor-unit-edif-m2" style="display: none;">
+							<label class="form-label" for="{{ form.valuedi.id_for_label }}">
+								<strong>{{ form.valuedi.label }}</strong>
+							</label>
+							{{ form.valuedi }}
+							{{ form.valuedi.errors }}
+							<small class="form-text text-muted">Valor de edificación por m²</small>
+						</div>
+						
+						<!-- Usuario (readonly) -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.usuario.id_for_label }}">
+								<strong>{{ form.usuario.label }}</strong>
+							</label>
+							{{ form.usuario }}
+							{{ form.usuario.errors }}
+							<small class="form-text text-muted">Usuario que registra</small>
+						</div>
+						
+						<!-- Fecha Sistema (readonly) -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.fechasys.id_for_label }}">
+								<strong>{{ form.fechasys.label }}</strong>
+							</label>
+							{{ form.fechasys }}
+							{{ form.fechasys.errors }}
+							<small class="form-text text-muted">Fecha del sistema</small>
+						</div>
+					</div>
+
+					<!-- Botones -->
+					<div class="row mt-4">
+						<div class="col-12 d-flex justify-content-between">
+							{% if clave %}
+							<a href="{% url 'catastro:detalles_adicionales_list_clave' clave=clave %}" class="btn btn-secondary">
+								<i class="fas fa-arrow-left me-1"></i> Volver
+							</a>
+							{% else %}
+							<a href="{% url 'catastro:detalles_adicionales_list' %}" class="btn btn-secondary">
+								<i class="fas fa-arrow-left me-1"></i> Volver
+							</a>
+							{% endif %}
+							<button type="submit" class="btn btn-primary" id="btn-guardar">
+								<i class="fas fa-save me-1"></i> Guardar
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal de confirmación -->
+	<div class="modal fade" id="modalConfirmacion" tabindex="-1" aria-labelledby="modalConfirmacionLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modalConfirmacionLabel">Confirmar Guardado</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>¿Está seguro de guardar este detalle adicional?</p>
+					<div class="card border-primary">
+						<div class="card-body">
+							<p><strong>Clave Catastral:</strong> <span id="resumen-clave">-</span></p>
+							<p><strong>Código:</strong> <span id="resumen-codigo">-</span></p>
+							<p><strong>Descripción:</strong> <span id="resumen-descripcion">-</span></p>
+							<p><strong>Área:</strong> <span id="resumen-area">-</span></p>
+							<p><strong>Porcentaje:</strong> <span id="resumen-porcentaje">-</span></p>
+							<p><strong>Valor Unitario:</strong> <span id="resumen-unitario">-</span></p>
+							<p><strong>Total:</strong> <span id="resumen-total" class="text-primary"><strong>-</strong></span></p>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" id="btn-confirmar-guardar">
+						<i class="fas fa-check me-1"></i> Sí, Guardar
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const form = document.getElementById('form-detalle-adicional');
+			const btnGuardar = document.getElementById('btn-guardar');
+			const modalConfirmacion = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
+			const btnConfirmarGuardar = document.getElementById('btn-confirmar-guardar');
+			
+			// Campos del formulario para el resumen
+			const claveInput = document.getElementById('{{ form.clave.id_for_label }}');
+			const codigoInput = document.getElementById('{{ form.codigo.id_for_label }}');
+			const descripcionInput = document.getElementById('{{ form.descripcion.id_for_label }}');
+			const areaInput = document.getElementById('{{ form.area.id_for_label }}');
+			const porceInput = document.getElementById('{{ form.porce.id_for_label }}');
+			const unitInput = document.getElementById('{{ form.unit.id_for_label }}');
+			const totalInput = document.getElementById('{{ form.total.id_for_label }}');
+			const codediInput = document.getElementById('id_codedi');
+			const contenedorCodigoEspecial = document.getElementById('contenedor-codigo-especial');
+			const fraccionInput = document.getElementById('{{ form.fraccion.id_for_label }}');
+			const contenedorFraccion = document.getElementById('contenedor-fraccion');
+			const valorUnitEdifM2Input = document.getElementById('{{ form.valuedi.id_for_label }}');
+			const contenedorValorUnitEdifM2 = document.getElementById('contenedor-valor-unit-edif-m2');
+			const edifinoInput = document.getElementById('{{ form.edifino.id_for_label }}');
+			const pisoInput = document.getElementById('{{ form.piso.id_for_label }}');
+			
+			// Elementos para búsqueda de código
+			const btnBuscarCodigo = document.getElementById('btn-buscar-codigo');
+			const iconoBuscar = document.getElementById('icono-buscar');
+			const mensajeBusqueda = document.getElementById('mensaje-busqueda-codigo');
+			const listaResultados = document.getElementById('lista-resultados');
+			let timeoutBusqueda = null;
+			let buscandoCodigo = false;
+			let valorporch = null; // Variable temporal para valores menores a 1
+			
+			// Campo oculto para almacenar la concatenación
+			const codediHiddenInput = document.getElementById('codedi_hidden');
+			
+			// Función para actualizar codedi con la concatenación de uso+clase+calidad si es necesario
+			// También actualiza edifino y piso
+			function actualizarCodediAntesDeGuardar() {
+				// Verificar si el código es porch (primer carácter '3', '6', 'P' o 'G')
+				const codigoActual = codigoInput ? codigoInput.value.trim() : '';
+				const primerCaracter = codigoActual.length > 0 ? codigoActual.charAt(0).toUpperCase() : '';
+				const esPorch = ['3', '6', 'P', 'G'].includes(primerCaracter);
+				
+				// Verificar si hay una edificación seleccionada en Código Edific.
+				if (codediInput && codediInput.value && codediInput.value !== '' && esPorch) {
+					const selectedOption = codediInput.options[codediInput.selectedIndex];
+					
+					if (selectedOption && selectedOption.dataset) {
+						const uso = selectedOption.dataset.uso || '';
+						const clase = selectedOption.dataset.clase || '';
+						const calidad = selectedOption.dataset.calidad || '';
+						const edifino = selectedOption.dataset.edifino || '';
+						const piso = selectedOption.dataset.piso || '';
+						
+						// Concatenar uso + clase + calidad
+						const concatenacion = (uso + clase + calidad).trim();
+						
+						if (concatenacion) {
+							// Actualizar el campo oculto codedi con la concatenación
+							// Limitar a 4 caracteres según el modelo
+							if (codediHiddenInput) {
+								codediHiddenInput.value = concatenacion.substring(0, 4);
+								console.log('✅ Campo codedi (oculto) actualizado con concatenación:', concatenacion.substring(0, 4));
+								console.log('   Uso:', uso, 'Clase:', clase, 'Calidad:', calidad);
+							}
+						}
+						
+						// Actualizar campos edifino y piso automáticamente (están ocultos pero se guardan en BD)
+						if (edifinoInput && edifino) {
+							edifinoInput.value = edifino;
+							console.log('✅ Campo Edif. No. actualizado automáticamente con:', edifino);
+						}
+						if (pisoInput && piso) {
+							pisoInput.value = piso;
+							console.log('✅ Campo Piso actualizado automáticamente con:', piso);
+						}
+					}
+				} else {
+					// Si no hay edificación seleccionada o no es porch, limpiar codedi
+					if (codediHiddenInput) {
+						codediHiddenInput.value = '';
+					}
+				}
+			}
+			
+			// Interceptar el submit del formulario
+			form.addEventListener('submit', function(e) {
+				e.preventDefault(); // Prevenir envío inmediato
+				
+				// Actualizar codedi con la concatenación si es necesario
+				actualizarCodediAntesDeGuardar();
+				
+				// Calcular total antes de mostrar el modal
+				calcularTotal();
+				
+				// Llenar el resumen en el modal
+				actualizarResumen();
+				
+				// Mostrar el modal de confirmación
+				modalConfirmacion.show();
+			});
+			
+			// Confirmar guardado
+			btnConfirmarGuardar.addEventListener('click', function() {
+				// Actualizar codedi una vez más antes del envío real (por si acaso)
+				actualizarCodediAntesDeGuardar();
+				
+				// Obtener la clave catastral para redirigir después de guardar
+				const claveCatastral = claveInput ? claveInput.value.trim() : '';
+				
+				// Agregar un campo oculto para indicar que debe calcular el impuesto después de guardar
+				let calcularImpuestoInput = document.getElementById('calcular_impuesto_after_save');
+				if (!calcularImpuestoInput) {
+					calcularImpuestoInput = document.createElement('input');
+					calcularImpuestoInput.type = 'hidden';
+					calcularImpuestoInput.id = 'calcular_impuesto_after_save';
+					calcularImpuestoInput.name = 'calcular_impuesto_after_save';
+					calcularImpuestoInput.value = '1';
+					form.appendChild(calcularImpuestoInput);
+				}
+				
+				// Enviar el formulario (los campos fraccion y valuedi ahora se guardan en BD)
+				form.submit();
+			});
+			
+			// Función para calcular total automáticamente
+			function calcularTotal() {
+				if (!areaInput || !porceInput || !unitInput || !totalInput) {
+					return;
+				}
+				
+				const area = parseFloat(areaInput.value) || 0;
+				const porce = parseFloat(porceInput.value) || 0;
+				const unit = parseFloat(unitInput.value) || 0;
+				
+				if (area && porce && unit) {
+					const total = unit * area * (porce / 100);
+					totalInput.value = total.toFixed(2);
+				} else {
+					totalInput.value = '0.00';
+				}
+			}
+			
+			// Función para mostrar/ocultar campo Código Edific. y Fraccion
+			// La visibilidad se actualiza inmediatamente según el primer carácter del código
+			// Si el primer carácter es '3', '6', 'P' o 'G', los campos serán visibles
+			function actualizarVisibilidadCodigoEspecial(forzarOcultar = false, codigo = null) {
+				// Controlar visibilidad del campo Código Edific.
+				if (contenedorCodigoEspecial) {
+					// Si se fuerza ocultar (cuando cambia el código de tipo de detalle)
+					if (forzarOcultar) {
+						contenedorCodigoEspecial.style.display = 'none';
+						// Limpiar el campo cuando se oculta
+						if (codediInput) {
+							codediInput.value = '';
+							// Limpiar opciones excepto la primera
+							if (codediInput.options.length > 1) {
+								codediInput.innerHTML = '<option value="">Seleccione una edificación...</option>';
+							}
+						}
+						// Ocultar también el campo Fraccion
+						if (contenedorFraccion) {
+							contenedorFraccion.style.display = 'none';
+							if (fraccionInput) {
+								fraccionInput.value = '';
+							}
+						}
+						// Ocultar también el campo Valor Unit Edif. M2
+						if (contenedorValorUnitEdifM2) {
+							contenedorValorUnitEdifM2.style.display = 'none';
+							if (valorUnitEdifM2Input) {
+								valorUnitEdifM2Input.value = '';
+							}
+						}
+						return;
+					}
+					
+					// Obtener el código del campo si no se proporciona como parámetro
+					let codigoActual = codigo;
+					if (!codigoActual && codigoInput) {
+						codigoActual = codigoInput.value.trim();
+					}
+					
+					// Verificar el primer carácter del código
+					if (codigoActual && codigoActual.length > 0) {
+						const primerCaracter = codigoActual.charAt(0).toUpperCase(); // Convertir a mayúscula para comparación
+						
+						// Si el primer carácter es '3', '6', 'P' o 'G', mostrar los campos
+						if (primerCaracter === '3' || primerCaracter === '6' || primerCaracter === 'P' || primerCaracter === 'G') {
+							// Mostrar el campo Código Edific. inmediatamente
+							contenedorCodigoEspecial.style.display = 'block';
+							console.log('Código Edific. visible - Primer carácter:', primerCaracter);
+							// Cargar edificaciones solo si está vacío o no tiene opciones
+							if (!codediInput || codediInput.options.length <= 1) {
+								cargarEdificaciones();
+							}
+							// Mostrar también el campo Fraccion
+							if (contenedorFraccion) {
+								contenedorFraccion.style.display = 'block';
+								console.log('Campo Fraccion visible - Primer carácter:', primerCaracter);
+							}
+							// Mostrar también el campo Valor Unit Edif. M2 (se actualizará cuando se seleccione una edificación)
+							if (contenedorValorUnitEdifM2) {
+								contenedorValorUnitEdifM2.style.display = 'block';
+								console.log('Campo Valor Unit Edif. M2 visible - Primer carácter:', primerCaracter);
+							}
+						} else {
+							// Si el primer carácter no es '3', '6', 'P' o 'G', ocultar los campos inmediatamente
+							contenedorCodigoEspecial.style.display = 'none';
+							console.log('Código Edific. oculto - Primer carácter:', primerCaracter);
+							// Limpiar el campo cuando se oculta
+							if (codediInput) {
+								codediInput.value = '';
+								// Limpiar opciones excepto la primera
+								if (codediInput.options.length > 1) {
+									codediInput.innerHTML = '<option value="">Seleccione una edificación...</option>';
+								}
+							}
+							// Ocultar también el campo Fraccion
+							if (contenedorFraccion) {
+								contenedorFraccion.style.display = 'none';
+								if (fraccionInput) {
+									fraccionInput.value = '';
+								}
+							}
+							// Ocultar también el campo Valor Unit Edif. M2
+							if (contenedorValorUnitEdifM2) {
+								contenedorValorUnitEdifM2.style.display = 'none';
+								if (valorUnitEdifM2Input) {
+									valorUnitEdifM2Input.value = '';
+								}
+							}
+						}
+					} else {
+						// Si no hay código, ocultar los campos
+						contenedorCodigoEspecial.style.display = 'none';
+						if (codediInput) {
+							codediInput.value = '';
+							if (codediInput.options.length > 1) {
+								codediInput.innerHTML = '<option value="">Seleccione una edificación...</option>';
+							}
+						}
+						// Ocultar también el campo Fraccion
+						if (contenedorFraccion) {
+							contenedorFraccion.style.display = 'none';
+							if (fraccionInput) {
+								fraccionInput.value = '';
+							}
+						}
+						// Ocultar también el campo Valor Unit Edif. M2
+						if (contenedorValorUnitEdifM2) {
+							contenedorValorUnitEdifM2.style.display = 'none';
+							if (valorUnitEdifM2Input) {
+								valorUnitEdifM2Input.value = '';
+							}
+						}
+					}
+				}
+			}
+			
+			// Función para cargar edificaciones desde la API
+			function cargarEdificaciones() {
+				if (!codediInput || !claveInput) {
+					return Promise.reject('Faltan elementos necesarios');
+				}
+				
+				const empresa = '{{ request.session.catastro_empresa|default:"" }}';
+				const clave = claveInput.value.trim();
+				
+				if (!empresa || !clave) {
+					console.warn('No se puede cargar edificaciones: falta empresa o clave');
+					return Promise.reject('Falta empresa o clave');
+				}
+				
+				codediInput.disabled = true;
+				
+				return fetch(`{% url 'catastro:api_listar_edificaciones' %}?empresa=${encodeURIComponent(empresa)}&clave=${encodeURIComponent(clave)}`, {
+					method: 'GET',
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest',
+					}
+				})
+				.then(response => response.json())
+				.then(data => {
+					codediInput.disabled = false;
+					
+					if (data.exito && data.edificaciones && data.edificaciones.length > 0) {
+						// Limpiar opciones existentes
+						codediInput.innerHTML = '<option value="">Seleccione una edificación...</option>';
+						
+						// Agregar opciones de edificaciones
+						data.edificaciones.forEach(function(edificacion) {
+							const option = document.createElement('option');
+							option.value = edificacion.id;
+							// Almacenar datos adicionales en data attributes
+							option.dataset.edifino = edificacion.edifino;
+							option.dataset.piso = edificacion.piso;
+							option.dataset.uso = edificacion.uso;
+							option.dataset.clase = edificacion.clase;
+							option.dataset.calidad = edificacion.calidad;
+							option.dataset.usoClaseCalidad = edificacion.uso_clase_calidad;
+							option.textContent = edificacion.texto_display;
+							codediInput.appendChild(option);
+						});
+						
+						return data; // Retornar datos para que el then pueda usarlos
+					} else {
+						codediInput.innerHTML = '<option value="">No se encontraron edificaciones</option>';
+						return data;
+					}
+				})
+				.catch(error => {
+					codediInput.disabled = false;
+					console.error('Error al cargar edificaciones:', error);
+					codediInput.innerHTML = '<option value="">Error al cargar edificaciones</option>';
+					throw error;
+				});
+			}
+			
+			// Función para buscar costo y calcular valor unitario
+			// Multiplica: costo_edificacion (de tabla costos) * valorporch (de tabla tipodetalle)
+			// Esta función SIEMPRE debe multiplicar por valorporch cuando esté disponible
+			function buscarCostoYCalcular(uso, clase, calidad) {
+				if (!uso || !clase || !calidad) {
+					console.warn('Faltan datos para buscar costo: uso, clase o calidad');
+					return;
+				}
+				
+				const empresa = '{{ request.session.catastro_empresa|default:"" }}';
+				
+				if (!empresa) {
+					console.warn('No se puede buscar costo: falta empresa');
+					return;
+				}
+				
+				// SIEMPRE obtener valorporch actualizado del campo oculto antes de calcular
+				// valorporch viene de la tabla tipodetalle según el código ingresado
+				const valorporchInput = document.getElementById('valorporch');
+				if (valorporchInput && valorporchInput.value) {
+					valorporch = parseFloat(valorporchInput.value);
+					console.log('valorporch obtenido del campo oculto:', valorporch);
+				} else {
+					// Si no está en el campo oculto, verificar la variable global
+					if (valorporch !== null && valorporch !== undefined && valorporch > 0) {
+						console.log('valorporch obtenido de la variable global:', valorporch);
+						// Actualizar el campo oculto con el valor de la variable
+						if (valorporchInput) {
+							valorporchInput.value = valorporch;
+						}
+						// NO actualizar campo Fraccion aquí - solo debe cambiar cuando se selecciona el Código
+					} else {
+						console.warn('valorporch no está disponible en el campo oculto ni en la variable');
+						// No retornar inmediatamente, intentar continuar si hay un código válido
+						if (codigoInput && codigoInput.value) {
+							const codigoActual = codigoInput.value.trim();
+							const primerCaracter = codigoActual.length > 0 ? codigoActual.charAt(0).toUpperCase() : '';
+							if (primerCaracter === '3' || primerCaracter === '6' || primerCaracter === 'P' || primerCaracter === 'G') {
+								console.warn('Código válido pero valorporch no disponible. Se requiere buscar el código nuevamente.');
+								return;
+							}
+						}
+						return;
+					}
+				}
+				
+				// Verificar que valorporch esté disponible
+				if (valorporch === null || valorporch === undefined || valorporch <= 0) {
+					console.warn('valorporch no está disponible o es inválido. Valor actual:', valorporch);
+					return;
+				}
+				
+				// Realizar petición AJAX para buscar costo de la edificación (tabla costos)
+				fetch(`{% url 'catastro:api_buscar_costo' %}?empresa=${encodeURIComponent(empresa)}&uso=${encodeURIComponent(uso)}&clase=${encodeURIComponent(clase)}&calidad=${encodeURIComponent(calidad)}`, {
+					method: 'GET',
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest',
+					}
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.encontrado && data.costo) {
+						// Obtener costo unitario de la edificación (de tabla costos)
+						const costoEdificacion = parseFloat(data.costo) || 0;
+						
+						// Actualizar campo Valor Unit Edif. M2 con el costo de la edificación
+						// Este valor se actualiza automáticamente cada vez que se selecciona una edificación
+						if (valorUnitEdifM2Input) {
+							valorUnitEdifM2Input.value = costoEdificacion.toFixed(2);
+							console.log('✅ Campo Valor Unit Edif. M2 actualizado con costo de edificación:', costoEdificacion);
+						}
+						
+						// Obtener valor de Fracción directamente del campo fraccionInput
+						// Fracción solo cambia cuando se selecciona el Código, mantiene su valor constante
+						const valorFraccion = fraccionInput ? parseFloat(fraccionInput.value) || 0 : 0;
+						
+						// Calcular Valor Unitario = Valor Unit Edif. M2 * Fracción
+						// Solo si ambos valores son > 0
+						if (valorFraccion > 0 && costoEdificacion > 0) {
+							const nuevoValorUnitario = (costoEdificacion * valorFraccion).toFixed(2);
+							
+							// Actualizar campo valor unitario INMEDIATAMENTE
+							if (unitInput) {
+								unitInput.value = nuevoValorUnitario;
+								// Disparar evento para recalcular total
+								unitInput.dispatchEvent(new Event('input'));
+							}
+							
+							console.log(`✅ Cálculo completado - Valor Unit Edif. M2: ${costoEdificacion}, Fracción: ${valorFraccion}, Valor Unitario: ${nuevoValorUnitario}`);
+						} else {
+							console.warn('No se puede calcular: Valor Unit Edif. M2=' + costoEdificacion + ', Fracción=' + valorFraccion + '. Ambos valores deben ser > 0.');
+							// Si no se puede calcular porque falta alguno de los valores, mantener el valor actual del campo
+						}
+					} else {
+						console.warn('No se encontró costo para uso=' + uso + ', clase=' + clase + ', calidad=' + calidad);
+						// Si no se encuentra costo, limpiar el campo Valor Unit Edif. M2
+						if (valorUnitEdifM2Input) {
+							valorUnitEdifM2Input.value = '';
+						}
+						// Si no se encuentra costo, mantener el valor actual
+					}
+				})
+				.catch(error => {
+					console.error('Error al buscar costo:', error);
+				});
+			}
+			
+			// Función para recalcular valor unitario basado en la edificación seleccionada
+			// Se ejecuta automáticamente cuando cambia la selección de edificación
+			// Multiplica: costo_edificacion (de tabla costos) * valorporch (de tabla tipodetalle)
+			// Esta función se ejecuta INMEDIATAMENTE al cambiar la selección
+			function recalcularValorUnitarioDesdeEdificacion() {
+				// Obtener referencia actualizada del campo (por si cambió)
+				const codediInputActual = document.getElementById('id_codedi');
+				
+				if (!codediInputActual) {
+					console.warn('Campo codediInput no está disponible');
+					return;
+				}
+				
+				const selectedOption = codediInputActual.options[codediInputActual.selectedIndex];
+				
+				if (!selectedOption || !selectedOption.value) {
+					console.warn('No hay edificación seleccionada en Código Edific.');
+					return;
+				}
+				
+				// Verificar que el campo Código Edific. esté visible (significa que el código cumple la condición)
+				const contenedorCodigoEspecialActual = document.getElementById('contenedor-codigo-especial');
+				if (!contenedorCodigoEspecialActual || contenedorCodigoEspecialActual.style.display === 'none') {
+					console.warn('Campo Código Edific. no está visible. El código no cumple la condición (3, 6, P o G)');
+					return;
+				}
+				
+				// SIEMPRE obtener valorporch actualizado del campo oculto antes de calcular
+				// valorporch viene de la tabla tipodetalle según el código ingresado
+				const valorporchInput = document.getElementById('valorporch');
+				if (valorporchInput && valorporchInput.value) {
+					valorporch = parseFloat(valorporchInput.value);
+					console.log('valorporch obtenido del campo oculto:', valorporch);
+				} else {
+					// Si no está en el campo oculto, intentar obtenerlo del código actual
+					// Si el campo está visible, significa que el código cumple la condición
+					if (codigoInput && codigoInput.value) {
+						const codigoActual = codigoInput.value.trim();
+						const primerCaracter = codigoActual.length > 0 ? codigoActual.charAt(0).toUpperCase() : '';
+						
+						// Si el código cumple la condición pero valorporch no está disponible,
+						// intentar buscarlo nuevamente desde tipodetalle de forma asíncrona
+						if (primerCaracter === '3' || primerCaracter === '6' || primerCaracter === 'P' || primerCaracter === 'G') {
+							console.warn('valorporch no está en el campo oculto. Intentando obtenerlo del código actual...');
+							
+							// Si la variable global tiene el valor, usarlo
+							if (valorporch !== null && valorporch !== undefined && valorporch > 0) {
+								console.log('Usando valorporch de la variable global:', valorporch);
+								// Actualizar el campo oculto con el valor de la variable
+								if (valorporchInput) {
+									valorporchInput.value = valorporch;
+								}
+								// NO actualizar campo Fraccion aquí - solo debe cambiar cuando se selecciona el Código
+							} else {
+								// Si no está disponible, mostrar mensaje y retornar
+								console.warn('valorporch no está disponible. Por favor, busque el código nuevamente.');
+								alert('Por favor, busque el código nuevamente para obtener el valor de porch.');
+								return;
+							}
+						} else {
+							console.warn('El código no cumple la condición para usar valorporch');
+							return;
+						}
+					} else {
+						if (valorporch === null || valorporch === undefined) {
+							console.warn('valorporch no está disponible y no hay código ingresado.');
+							return;
+						}
+					}
+				}
+				
+				// Verificar que valorporch esté disponible (solo verificar que sea > 0, sin límite superior)
+				if (valorporch === null || valorporch === undefined || valorporch <= 0) {
+					console.warn('valorporch no está disponible o es inválido. Valor actual:', valorporch);
+					alert('El valor de porch no está disponible. Por favor, busque el código nuevamente.');
+					return;
+				}
+				
+				// Obtener datos de la edificación seleccionada
+				const uso = selectedOption.dataset.uso || '';
+				const clase = selectedOption.dataset.clase || '';
+				const calidad = selectedOption.dataset.calidad || '';
+				
+				if (!uso || !clase || !calidad) {
+					console.warn('Faltan datos de la edificación: uso=' + uso + ', clase=' + clase + ', calidad=' + calidad);
+					return;
+				}
+				
+				console.log('🔄 Recalculando valor unitario INMEDIATAMENTE para edificación: uso=' + uso + ', clase=' + clase + ', calidad=' + calidad + ', valorporch=' + valorporch);
+				
+				// Buscar costo de la edificación y calcular automáticamente
+				// Multiplicará: costo_edificacion * valorporch
+				// Esta función se ejecuta INMEDIATAMENTE sin delays
+				buscarCostoYCalcular(uso, clase, calidad);
+			}
+			
+			// Función para actualizar el resumen en el modal
+			function actualizarResumen() {
+				document.getElementById('resumen-clave').textContent = 'Clave Catastral: ' + (claveInput ? claveInput.value || '-' : '-');
+				document.getElementById('resumen-codigo').textContent = 'Código: ' + (codigoInput ? codigoInput.value || '-' : '-');
+				document.getElementById('resumen-descripcion').textContent = 'Descripción: ' + (descripcionInput ? descripcionInput.value || '-' : '-');
+				document.getElementById('resumen-area').textContent = 'Área: ' + (areaInput ? (parseFloat(areaInput.value) || 0).toFixed(2) + ' m²' : '0.00 m²');
+				document.getElementById('resumen-porcentaje').textContent = 'Porcentaje: ' + (porceInput ? (parseFloat(porceInput.value) || 0).toFixed(2) + '%' : '0.00%');
+				document.getElementById('resumen-unitario').textContent = 'Valor Unitario: L. ' + (unitInput ? (parseFloat(unitInput.value) || 0).toFixed(2) : '0.00');
+				document.getElementById('resumen-total').textContent = 'Total: L. ' + (totalInput ? (parseFloat(totalInput.value) || 0).toFixed(2) : '0.00');
+			}
+			
+			// Calcular total automáticamente cuando cambian los campos
+			if (areaInput) {
+				areaInput.addEventListener('input', calcularTotal);
+				areaInput.addEventListener('blur', calcularTotal);
+			}
+			if (porceInput) {
+				porceInput.addEventListener('input', calcularTotal);
+				porceInput.addEventListener('blur', calcularTotal);
+			}
+			if (unitInput) {
+				unitInput.addEventListener('input', function() {
+					// Si el usuario modifica manualmente el valor unitario, verificar si es menor a 1
+					const valorManual = parseFloat(unitInput.value) || 0;
+					// Verificar si el código cumple la condición para usar valorporch
+					const codigoActual = codigoInput ? codigoInput.value.trim() : '';
+					const primerCaracter = codigoActual.length > 0 ? codigoActual.charAt(0).toUpperCase() : '';
+					const codigoValido = primerCaracter === '3' || primerCaracter === '6' || primerCaracter === 'P' || primerCaracter === 'G';
+					
+					if (codigoValido && valorManual > 0) {
+						valorporch = valorManual;
+						const valorporchInput = document.getElementById('valorporch');
+						if (valorporchInput) {
+							valorporchInput.value = valorporch;
+						}
+						// NO actualizar campo Fraccion aquí - solo debe cambiar cuando se selecciona el Código
+						// El campo Fraccion mantiene el valor original del código seleccionado
+					} else {
+						valorporch = null;
+						const valorporchInput = document.getElementById('valorporch');
+						if (valorporchInput) {
+							valorporchInput.value = '';
+						}
+						// NO limpiar campo Fraccion aquí - solo debe cambiar cuando se selecciona el Código
+						// El campo Fraccion mantiene el valor original del código seleccionado
+					}
+					// Actualizar visibilidad según el código actual
+					if (codigoInput && codigoInput.value) {
+						actualizarVisibilidadCodigoEspecial(false, codigoInput.value);
+					} else {
+						actualizarVisibilidadCodigoEspecial(false);
+					}
+					calcularTotal();
+				});
+				unitInput.addEventListener('blur', function() {
+					// Actualizar visibilidad según el código actual
+					if (codigoInput && codigoInput.value) {
+						actualizarVisibilidadCodigoEspecial(false, codigoInput.value);
+					} else {
+						actualizarVisibilidadCodigoEspecial(false);
+					}
+					calcularTotal();
+				});
+			}
+			
+			// Event listener para cuando se selecciona una edificación en Código Edific.
+			// Se ejecuta automáticamente cuando cambia la selección (cada vez que se selecciona otra edificación)
+			// El recálculo debe ser INMEDIATO
+			if (codediInput) {
+				codediInput.addEventListener('change', function(e) {
+					console.log('=== Cambio detectado en Código Edific. ===');
+					console.log('Edificación seleccionada:', this.value);
+					console.log('Índice seleccionado:', this.selectedIndex);
+					
+					// Verificar que haya una selección válida
+					if (this.value && this.value !== '') {
+						// Actualizar campo oculto codedi con la concatenación de uso+clase+calidad
+						// También actualizar campos edifino y piso
+						const selectedOption = this.options[this.selectedIndex];
+						if (selectedOption && selectedOption.dataset) {
+							const uso = selectedOption.dataset.uso || '';
+							const clase = selectedOption.dataset.clase || '';
+							const calidad = selectedOption.dataset.calidad || '';
+							const edifino = selectedOption.dataset.edifino || '';
+							const piso = selectedOption.dataset.piso || '';
+							const concatenacion = (uso + clase + calidad).trim();
+							
+							// Actualizar campos edifino y piso automáticamente
+							if (edifinoInput && edifino) {
+								edifinoInput.value = edifino;
+								console.log('✅ Campo Edif. No. actualizado con:', edifino);
+							}
+							if (pisoInput && piso) {
+								pisoInput.value = piso;
+								console.log('✅ Campo Piso actualizado con:', piso);
+							}
+							
+							if (concatenacion && codediHiddenInput) {
+								// Verificar si el código es porch (primer carácter '3', '6', 'P' o 'G')
+								const codigoActual = codigoInput ? codigoInput.value.trim() : '';
+								const primerCaracter = codigoActual.length > 0 ? codigoActual.charAt(0).toUpperCase() : '';
+								const esPorch = ['3', '6', 'P', 'G'].includes(primerCaracter);
+								
+								if (esPorch) {
+									codediHiddenInput.value = concatenacion.substring(0, 4);
+									console.log('✅ Campo codedi (oculto) actualizado inmediatamente con:', concatenacion.substring(0, 4));
+								}
+							}
+						}
+						
+						// Recalcular INMEDIATAMENTE cuando cambia la selección de edificación
+						// Multiplicará automáticamente: costo_edificacion * valorporch
+						console.log('Ejecutando recálculo automático INMEDIATO...');
+						recalcularValorUnitarioDesdeEdificacion();
+					} else {
+						console.log('No hay edificación seleccionada, limpiando valor unitario');
+						// Limpiar campo oculto codedi
+						if (codediHiddenInput) {
+							codediHiddenInput.value = '';
+						}
+						// Limpiar campos edifino y piso
+						if (edifinoInput) {
+							edifinoInput.value = '';
+						}
+						if (pisoInput) {
+							pisoInput.value = '';
+						}
+						// Limpiar campo Valor Unit Edif. M2 cuando se deselecciona una edificación
+						if (valorUnitEdifM2Input) {
+							valorUnitEdifM2Input.value = '';
+							console.log('Campo Valor Unit Edif. M2 limpiado');
+						}
+						// Si se deselecciona, restaurar valorporch si existe
+						if (unitInput) {
+							const valorporchInput = document.getElementById('valorporch');
+							if (valorporchInput && valorporchInput.value) {
+								valorporch = parseFloat(valorporchInput.value);
+								if (valorporch > 0) {
+									unitInput.value = valorporch.toFixed(2);
+									// Disparar evento para recalcular total
+									unitInput.dispatchEvent(new Event('input'));
+								}
+							}
+						}
+					}
+				});
+			}
+			
+			// Inicializar visibilidad del campo Código Edific. al cargar la página
+			// Verificar el código actual si existe
+			if (codigoInput && codigoInput.value) {
+				actualizarVisibilidadCodigoEspecial(false, codigoInput.value);
+				
+				// Si hay un código al cargar (modo edición), buscar automáticamente los datos
+				const codigoCargado = codigoInput.value.trim();
+				if (codigoCargado) {
+					console.log('🔄 Código encontrado al cargar:', codigoCargado);
+					console.log('🔄 Ejecutando búsqueda automática para cargar datos relacionados...');
+					
+					// Ejecutar búsqueda automática después de un pequeño delay para asegurar que todo esté cargado
+					setTimeout(function() {
+						buscarTipoDetalle();
+						
+						// Si hay valor en codedi_hidden, cargar y seleccionar la edificación
+						// Los campos edifino y piso se actualizarán automáticamente desde el combobox
+						const codediHiddenValor = codediHiddenInput ? codediHiddenInput.value.trim() : '';
+						
+						// Verificar si el código es porch (primer carácter '3', '6', 'P' o 'G')
+						const primerCaracter = codigoCargado.length > 0 ? codigoCargado.charAt(0).toUpperCase() : '';
+						const esPorch = ['3', '6', 'P', 'G'].includes(primerCaracter);
+						
+						if (esPorch && codediHiddenValor) {
+							console.log('🔄 Modo edición detectado - Cargando edificaciones para seleccionar automáticamente...');
+							console.log('   Codedi (uso+clase+calidad):', codediHiddenValor);
+							
+							// Cargar edificaciones y luego seleccionar la correcta
+							cargarEdificaciones().then(function() {
+								// Función para seleccionar la edificación correcta
+								function seleccionarEdificacion() {
+									if (!codediInput) return;
+									
+									let edificacionEncontrada = null;
+									
+									// Buscar la edificación que coincida con codedi (uso+clase+calidad)
+									for (let i = 0; i < codediInput.options.length; i++) {
+										const option = codediInput.options[i];
+										if (!option.value) continue; // Saltar la opción vacía
+										
+										const optionUso = option.dataset.uso || '';
+										const optionClase = option.dataset.clase || '';
+										const optionCalidad = option.dataset.calidad || '';
+										const optionUsoClaseCalidad = (optionUso + optionClase + optionCalidad).trim().substring(0, 4);
+										
+										// Comparar codedi (concatenación de uso+clase+calidad)
+										if (optionUsoClaseCalidad === codediHiddenValor) {
+											edificacionEncontrada = option;
+											break;
+										}
+									}
+									
+									if (edificacionEncontrada) {
+										codediInput.value = edificacionEncontrada.value;
+										console.log('✅ Edificación seleccionada automáticamente:', edificacionEncontrada.textContent);
+										
+										// Disparar evento change para que se ejecuten los cálculos y se actualicen edifino y piso
+										codediInput.dispatchEvent(new Event('change'));
+									} else {
+										console.warn('⚠️ No se encontró una edificación que coincida con Codedi:', codediHiddenValor);
+									}
+								}
+								
+								// Intentar seleccionar inmediatamente
+								seleccionarEdificacion();
+								
+								// Si no se encontró, intentar de nuevo después de un pequeño delay
+								// (por si las edificaciones aún se están cargando)
+								setTimeout(seleccionarEdificacion, 300);
+							}).catch(function(error) {
+								console.error('Error al cargar edificaciones en modo edición:', error);
+							});
+						}
+					}, 500);
+				}
+			} else {
+				actualizarVisibilidadCodigoEspecial(false);
+			}
+			
+			// ====================================================================
+			// BÚSQUEDA INTERACTIVA DE CÓDIGO DE TIPO DE DETALLE
+			// ====================================================================
+			
+			// Función para buscar tipo de detalle por código
+			function buscarTipoDetalle() {
+				const codigo = codigoInput.value.trim();
+				
+				if (!codigo) {
+					mostrarMensajeBusqueda(
+						'<i class="fas fa-info-circle me-1"></i>Ingrese un código o descripción para buscar.',
+						'info'
+					);
+					return;
+				}
+				
+				if (buscandoCodigo) {
+					return; // Evitar múltiples búsquedas simultáneas
+				}
+				
+				buscandoCodigo = true;
+				iconoBuscar.classList.remove('fa-search');
+				iconoBuscar.classList.add('fa-spinner', 'fa-spin');
+				btnBuscarCodigo.disabled = true;
+				ocultarMensajeBusqueda();
+				listaResultados.style.display = 'none';
+				// Limpiar solo el contenido del .list-group, no todo el innerHTML
+				const listGroup = listaResultados.querySelector('.list-group');
+				if (listGroup) {
+					listGroup.innerHTML = '';
+				}
+				
+				const empresa = '{{ request.session.catastro_empresa|default:"" }}';
+				
+				fetch(`{% url 'catastro:api_buscar_tipo_detalle' %}?empresa=${encodeURIComponent(empresa)}&codigo=${encodeURIComponent(codigo)}`, {
+					method: 'GET',
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest',
+					}
+				})
+				.then(response => response.json())
+				.then(data => {
+					buscandoCodigo = false;
+					iconoBuscar.classList.remove('fa-spinner', 'fa-spin');
+					iconoBuscar.classList.add('fa-search');
+					btnBuscarCodigo.disabled = false;
+					
+					if (data.encontrado) {
+						if (data.unico) {
+							// Resultado único, llenar campos directamente
+							llenarCamposConResultado(data);
+							codigoInput.classList.add('is-valid');
+							codigoInput.classList.remove('is-invalid');
+						} else {
+							// Múltiples resultados, mostrar lista
+							if (data.resultados && data.resultados.length > 0) {
+								listaResultados.style.display = 'block';
+								
+								// Obtener o crear el contenedor .list-group
+								let listGroup = listaResultados.querySelector('.list-group');
+								if (!listGroup) {
+									// Si no existe, crearlo
+									listGroup = document.createElement('div');
+									listGroup.className = 'list-group';
+									listGroup.style.maxHeight = '200px';
+									listGroup.style.overflowY = 'auto';
+									listaResultados.innerHTML = '';
+									listaResultados.appendChild(listGroup);
+								} else {
+									// Si existe, solo limpiar su contenido
+									listGroup.innerHTML = '';
+								}
+								
+								data.resultados.forEach(function(resultado) {
+									const item = document.createElement('div');
+									item.className = 'list-group-item list-group-item-action';
+									item.style.cursor = 'pointer';
+									item.setAttribute('role', 'button');
+									item.setAttribute('tabindex', '0');
+									item.innerHTML = `
+										<div class="d-flex w-100 justify-content-between">
+											<h6 class="mb-1">${resultado.codigo} - ${resultado.descripcion}</h6>
+										</div>
+										<p class="mb-1">Costo: L. ${parseFloat(resultado.costo || 0).toFixed(2)}</p>
+									`;
+									
+									// Función para manejar la selección
+									const seleccionarResultado = function(e) {
+										if (e) {
+											e.preventDefault();
+											e.stopPropagation();
+											e.stopImmediatePropagation();
+										}
+										llenarCamposConResultado(resultado);
+										listaResultados.style.display = 'none';
+										// Remover el foco del elemento
+										if (item.blur) {
+											item.blur();
+										}
+										return false;
+									};
+									
+									// Agregar evento click con captura para mejor respuesta
+									item.addEventListener('click', seleccionarResultado, true);
+									// Prevenir comportamiento por defecto en mousedown
+									item.addEventListener('mousedown', function(e) {
+										e.preventDefault();
+									}, true);
+									// Permitir selección con Enter o Espacio
+									item.addEventListener('keydown', function(e) {
+										if (e.key === 'Enter' || e.key === ' ') {
+											e.preventDefault();
+											seleccionarResultado(e);
+										}
+									}, true);
+									
+									listGroup.appendChild(item);
+								});
+								
+								mostrarMensajeBusqueda(
+									`<i class="fas fa-info-circle me-1"></i>Se encontraron ${data.total} resultados. Seleccione uno de la lista.`,
+									'info'
+								);
+							}
+						}
+					} else {
+						mostrarMensajeBusqueda(
+							`<i class="fas fa-times-circle me-1"></i>${data.mensaje || 'No se encontró el código'}`,
+							'danger'
+						);
+						
+						// Agregar clase de advertencia al campo código
+						codigoInput.classList.add('is-invalid');
+						codigoInput.classList.remove('is-valid');
+					}
+				})
+				.catch(error => {
+					buscandoCodigo = false;
+					iconoBuscar.classList.remove('fa-spinner', 'fa-spin');
+					iconoBuscar.classList.add('fa-search');
+					btnBuscarCodigo.disabled = false;
+					
+					console.error('Error al buscar tipo de detalle:', error);
+					mostrarMensajeBusqueda(
+						'<i class="fas fa-times-circle me-1"></i>Error al buscar código. Intente nuevamente.',
+						'danger'
+					);
+					
+					codigoInput.classList.add('is-invalid');
+					codigoInput.classList.remove('is-valid');
+				});
+			}
+			
+			// Función para mostrar mensaje de búsqueda
+			function mostrarMensajeBusqueda(mensaje, tipo) {
+				mensajeBusqueda.className = `alert alert-${tipo} alert-dismissible fade show mt-2`;
+				mensajeBusqueda.innerHTML = mensaje + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+				mensajeBusqueda.style.display = 'block';
+			}
+			
+			// Función para ocultar mensaje de búsqueda
+			function ocultarMensajeBusqueda() {
+				mensajeBusqueda.style.display = 'none';
+				mensajeBusqueda.innerHTML = '';
+			}
+			
+			// Función para llenar campos con un resultado
+			function llenarCamposConResultado(resultado) {
+				// Actualizar código primero
+				if (codigoInput && resultado.codigo) {
+					codigoInput.value = resultado.codigo;
+				}
+				
+				// Obtener el código para validar el primer carácter
+				const codigo = resultado.codigo || '';
+				const primerCaracter = codigo.length > 0 ? codigo.charAt(0).toUpperCase() : '';
+				
+				// Actualizar visibilidad del campo Código Edific. INMEDIATAMENTE según el primer carácter del código
+				// Si el primer carácter es '3', '6', 'P' o 'G', será visible
+				actualizarVisibilidadCodigoEspecial(false, codigo);
+				
+				// Llenar descripción
+				if (descripcionInput && resultado.descripcion) {
+					descripcionInput.value = resultado.descripcion;
+				}
+				
+				// Si hay costo, actualizar valor unitario siempre (sin importar si ya tiene valor)
+				if (unitInput && resultado.costo) {
+					const costoValor = parseFloat(resultado.costo) || 0;
+					const valorporchInput = document.getElementById('valorporch');
+					
+					// Validar si el primer carácter del código es '3', '6', 'P' o 'G'
+					// Si cumple la condición, almacenar el costo en valorporch (campo oculto) y en Fraccion
+					if (primerCaracter === '3' || primerCaracter === '6' || primerCaracter === 'P' || primerCaracter === 'G') {
+						// Almacenar el costo en valorporch (campo oculto)
+						if (costoValor > 0) {
+							valorporch = costoValor;
+							console.log('✅ Código válido (' + primerCaracter + ') - Costo almacenado en valorporch:', valorporch);
+							
+							// Actualizar campo oculto
+							if (valorporchInput) {
+								valorporchInput.value = valorporch;
+							}
+							
+							// Actualizar campo Fraccion con el valor del porch
+							if (fraccionInput) {
+								fraccionInput.value = valorporch.toFixed(2);
+								console.log('✅ Campo Fraccion actualizado con valorporch:', valorporch);
+							}
+							
+							// Mostrar el valor en el campo valor unitario
+							unitInput.value = costoValor.toFixed(2);
+							
+							// Si hay una edificación seleccionada, recalcular el valor unitario automáticamente
+							// Multiplicará: costo_edificacion (de costos) * valorporch (de tipodetalle)
+							if (codediInput && codediInput.value) {
+								recalcularValorUnitarioDesdeEdificacion();
+							}
+						} else {
+							// Si el costo es 0 o inválido, limpiar valorporch y Fraccion
+							valorporch = null;
+							unitInput.value = '0.00';
+							if (valorporchInput) {
+								valorporchInput.value = '';
+							}
+							if (fraccionInput) {
+								fraccionInput.value = '';
+							}
+						}
+					} else {
+						// Si el primer carácter NO es '3', '6', 'P' o 'G', NO almacenar en valorporch
+						console.log('❌ Código no válido (' + primerCaracter + ') - No se almacena en valorporch');
+						valorporch = null;
+						
+						// Limpiar campo oculto
+						if (valorporchInput) {
+							valorporchInput.value = '';
+						}
+						
+						// Limpiar campo Fraccion
+						if (fraccionInput) {
+							fraccionInput.value = '';
+						}
+						
+						// Mostrar el costo directamente en el campo valor unitario
+						unitInput.value = costoValor.toFixed(2);
+					}
+					
+					// Disparar evento input para recalcular total
+					unitInput.dispatchEvent(new Event('input'));
+				}
+				
+				// Recalcular total si hay valores
+				calcularTotal();
+			}
+			
+			// Event listeners para búsqueda de código
+			if (codigoInput) {
+				// Búsqueda con debounce al escribir
+				codigoInput.addEventListener('input', function() {
+					// Actualizar visibilidad inmediatamente según el primer carácter
+					actualizarVisibilidadCodigoEspecial(false, this.value);
+					
+					// Limpiar timeout anterior
+					if (timeoutBusqueda) {
+						clearTimeout(timeoutBusqueda);
+					}
+					
+					// Esperar 500ms antes de buscar (debounce)
+					timeoutBusqueda = setTimeout(function() {
+						if (codigoInput.value.trim().length >= 1) {
+							buscarTipoDetalle();
+						}
+					}, 500);
+				});
+				
+				// Búsqueda al perder el foco
+				codigoInput.addEventListener('blur', function() {
+					if (timeoutBusqueda) {
+						clearTimeout(timeoutBusqueda);
+					}
+					if (this.value.trim().length >= 1) {
+						buscarTipoDetalle();
+					}
+					// Actualizar visibilidad según el código actual
+					actualizarVisibilidadCodigoEspecial(false, this.value);
+				});
+				
+				// Búsqueda al presionar Enter
+				codigoInput.addEventListener('keypress', function(e) {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+						if (timeoutBusqueda) {
+							clearTimeout(timeoutBusqueda);
+						}
+						buscarTipoDetalle();
+					}
+					// Actualizar visibilidad inmediatamente al escribir
+					actualizarVisibilidadCodigoEspecial(false, this.value);
+				});
+			}
+			
+			// Event listener para el botón de búsqueda
+			if (btnBuscarCodigo) {
+				btnBuscarCodigo.addEventListener('click', function() {
+					if (timeoutBusqueda) {
+						clearTimeout(timeoutBusqueda);
+					}
+					buscarTipoDetalle();
+				});
+			}
+		});
+	</script>
+</body>
+</html>

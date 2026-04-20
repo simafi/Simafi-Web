@@ -1,0 +1,87 @@
+{% extends "presupuestos/menu_principal.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid mt-4 pb-5 px-4">
+    <div class="d-print-none mb-3 d-flex justify-content-between align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'presupuestos:informes_ingresos_hub' %}">Panel de Ingresos</a></li>
+                <li class="breadcrumb-item active">{{ titulo }}</li>
+            </ol>
+        </nav>
+        <button onclick="window.print()" class="btn btn-outline-dark">
+            <i class="fas fa-print me-2"></i>Imprimir Reporte
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <h4 class="fw-bold mb-1">{{ empresa_nombre }}</h4>
+                <h5 class="text-muted mb-1">{{ titulo }}</h5>
+                <p class="small text-muted">{{ subtitulo }}</p>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle border">
+                    <thead class="bg-light text-center small fw-bold">
+                        <tr>
+                            <th rowspan="2" class="border-bottom-0" style="width: 120px;">Código</th>
+                            <th rowspan="2" class="border-bottom-0 text-start">Descripción de la Cuenta</th>
+                            <th colspan="3" class="border-bottom">Presupuesto</th>
+                            <th rowspan="2" class="border-bottom-0">Ejecución (Recaudado)</th>
+                            <th rowspan="2" class="border-bottom-0">Por Recaudar</th>
+                            <th rowspan="2" class="border-bottom-0">% Rec.</th>
+                        </tr>
+                        <tr>
+                            <th>Aprobado</th>
+                            <th>Reformas</th>
+                            <th>Total Aprobado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for d in datos %}
+                        <tr class="{% if d.nivel == 1 %}table-secondary fw-bold{% elif d.nivel == 2 %}fw-bold bg-light{% endif %}">
+                            <td class="text-nowrap">{{ d.codigo }}</td>
+                            <td style="padding-left: {{ d.nivel|add:d.nivel }}rem !important;">
+                                {{ d.nombre }}
+                            </td>
+                            <td class="text-end font-monospace">{{ d.aprobado|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ d.reformas|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ d.total_aprobado|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-primary fw-bold">{{ d.recaudado|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-danger">{{ d.por_recaudar|floatformat:2|intcomma }}</td>
+                            <td class="text-center">
+                                <span class="badge {% if d.porcentaje > 90 %}bg-success{% elif d.porcentaje > 50 %}bg-info{% else %}bg-warning{% endif %}">
+                                    {{ d.porcentaje|floatformat:1 }}%
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">No se encontraron datos para los filtros seleccionados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4 small text-muted d-flex justify-content-between">
+                <span>Fecha de Generación: {{ hoy }}</span>
+                <span>SIMAFI WEB - Módulo de Presupuestos</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .breadcrumb, .btn-print, .d-print-none { display: none !important; }
+        .card { border: none !important; box-shadow: none !important; }
+        body { background-color: white !important; }
+        .container-fluid { padding: 0 !important; }
+    }
+    .table-sm td, .table-sm th { padding: 0.4rem 0.5rem; }
+</style>
+{% endblock %}

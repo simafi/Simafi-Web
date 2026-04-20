@@ -1,0 +1,1520 @@
+
+{% extends 'base.html' %}
+{% block extra_head %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+{% endblock %}
+{% block content %}
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        color: #333;
+    }
+    
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    /* Header */
+    header {
+        text-align: center;
+        padding: 30px 20px;
+        background: linear-gradient(90deg, #1e88e5 0%, #0d47a1 100%);
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    header:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+        background-size: cover;
+        background-position: center;
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 600;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        position: relative;
+    }
+    
+    .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+    }
+    
+    /* Card */
+    .card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        margin-bottom: 30px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .form-container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+    
+    /* Form Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+    
+    label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    label i {
+        color: #1e88e5;
+    }
+    
+    label .required {
+        color: #e53935;
+        margin-left: 4px;
+    }
+    
+    /* Input Wrapper for Character Counter */
+    .input-wrapper {
+        position: relative;
+    }
+    
+    .input-wrapper button.btn-sm {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+        height: 32px;
+        padding: 4px 8px;
+    }
+    
+    .input-wrapper input[type="text"] {
+        padding-right: 50px;
+    }
+    
+    .char-counter {
+        position: absolute;
+        right: 50px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.75rem;
+        color: #78909c;
+        background: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        pointer-events: none;
+    }
+    
+    .input-wrapper:not(:has(button)) .char-counter {
+        right: 10px;
+    }
+    
+    input[type="text"], select, textarea {
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1em;
+        background: #fff;
+        transition: all 0.3s;
+        width: 100%;
+        font-family: inherit;
+    }
+    
+    input[type="text"]:focus, select:focus, textarea:focus {
+        border-color: #1e88e5;
+        box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.15);
+        outline: none;
+    }
+    
+    input[type="text"]:disabled,
+    input[type="text"][readonly] {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
+    }
+    
+    /* Search Bar */
+    .search-container {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .search-box {
+        flex: 1;
+        position: relative;
+    }
+    
+    .search-box input {
+        padding-left: 40px;
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #78909c;
+    }
+    
+    /* Buttons */
+    .button-group {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 25px;
+    }
+    
+    .btn {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 120px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        text-decoration: none;
+    }
+    
+    .btn:active {
+        transform: translateY(1px);
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+        color: #fff;
+    }
+    
+    .btn-success:hover {
+        background: linear-gradient(135deg, #388e3c 0%, #1b5e20 100%);
+        box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+        color: #fff;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+        box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #ffa726 0%, #f57c00 100%);
+        color: #fff;
+    }
+    
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #fb8c00 0%, #e65100 100%);
+        box-shadow: 0 4px 12px rgba(255, 167, 38, 0.3);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+        color: #fff;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+        box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #78909c 0%, #546e7a 100%);
+        color: #fff;
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #607d8b 0%, #37474f 100%);
+        box-shadow: 0 4px 12px rgba(120, 144, 156, 0.3);
+    }
+    
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        min-width: 80px;
+    }
+    
+    /* Messages */
+    .mensaje {
+        text-align: center;
+        margin: 20px 0;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .mensaje.success {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        color: #2e7d32;
+        border: 2px solid #81c784;
+    }
+    
+    .mensaje.error {
+        background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        color: #c62828;
+        border: 2px solid #e57373;
+    }
+    
+    .mensaje.info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        color: #1565c0;
+        border: 2px solid #64b5f6;
+    }
+    
+    /* Section Title */
+    .section-title {
+        text-align: center;
+        margin: 40px 0 25px;
+        color: #1e88e5;
+        font-size: 1.8rem;
+        position: relative;
+        padding-bottom: 12px;
+    }
+    
+    .section-title:after {
+        content: '';
+        display: block;
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(90deg, #1e88e5 0%, #42a5f5 100%);
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 2px;
+    }
+    
+    /* Table */
+    .tabla-container {
+        overflow-x: auto;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-top: 20px;
+    }
+    
+    .tabla-actividades {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+    }
+    
+    .tabla-actividades thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .tabla-actividades th {
+        background: linear-gradient(90deg, #1e88e5 0%, #0d47a1 100%);
+        color: white;
+        font-weight: 600;
+        text-align: left;
+        padding: 16px;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .tabla-actividades th:first-child {
+        border-radius: 10px 0 0 0;
+    }
+    
+    .tabla-actividades th:last-child {
+        border-radius: 0 10px 0 0;
+    }
+    
+    .tabla-actividades td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #eaeaea;
+        font-size: 0.95rem;
+    }
+    
+    .tabla-actividades tbody tr {
+        transition: all 0.2s;
+    }
+    
+    .tabla-actividades tbody tr:nth-child(even) {
+        background-color: #f5f9ff;
+    }
+    
+    .tabla-actividades tbody tr:hover {
+        background-color: #e3f2fd;
+        transform: scale(1.01);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tabla-actividades .accion {
+        text-align: center;
+        width: 250px;
+    }
+    
+    .no-actividades {
+        text-align: center;
+        padding: 40px;
+        color: #78909c;
+        font-size: 1.1rem;
+        font-style: italic;
+    }
+    
+    /* Loading Spinner */
+    .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+    
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #1e88e5;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Toast Notification */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+    }
+    
+    .toast {
+        background: white;
+        padding: 16px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 300px;
+        max-width: 400px;
+        animation: slideInRight 0.3s ease;
+        border-left: 4px solid;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .toast.success {
+        border-left-color: #43a047;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    }
+    
+    .toast.error {
+        border-left-color: #e53935;
+        background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    }
+    
+    .toast.info {
+        border-left-color: #1e88e5;
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    }
+    
+    /* Tooltip */
+    .tooltip {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 200px;
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -100px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.85rem;
+    }
+    
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+    }
+    
+    /* Stats Bar */
+    .stats-bar {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .stat-card {
+        flex: 1;
+        min-width: 200px;
+        background: linear-gradient(135deg, #fff 0%, #f5f9ff 100%);
+        padding: 15px 20px;
+        border-radius: 8px;
+        border-left: 4px solid #1e88e5;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .stat-card h3 {
+        font-size: 0.85rem;
+        color: #78909c;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .stat-card p {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1e88e5;
+        margin: 0;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .form-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 1.8rem;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1;
+        }
+        
+        .button-group {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+        
+        .tabla-actividades {
+            font-size: 0.85rem;
+        }
+        
+        .toast {
+            min-width: 250px;
+        }
+    }
+    
+    /* Accessibility */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+</style>
+
+<div class="container">
+    <header>
+        <h1><i class="fas fa-building"></i> Sistema de Gestión de Actividades Económicas</h1>
+        <p class="subtitle">Administre y registre las actividades de la Municipalidad de manera eficiente</p>
+    </header>
+    
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loading-spinner">
+        <div class="spinner"></div>
+        <p>Procesando...</p>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <div class="card">
+        <div class="form-container">
+            {% if mensaje %}
+                <div class="mensaje {% if exito %}success{% else %}error{% endif %}">
+                    <i class="fas fa-{% if exito %}check-circle{% else %}exclamation-triangle{% endif %} fa-lg"></i> 
+                    <span>{{ mensaje }}</span>
+                </div>
+            {% endif %}
+            
+            <form method="post" id="actividad-form" autocomplete="off" novalidate>
+                {% csrf_token %}
+                <!-- Input hidden para asegurar que cuentarec siempre se envíe -->
+                <input type="hidden" id="hidden_cuentarec" name="cuentarec" value="">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id_empresa">
+                            <i class="fas fa-building"></i> Municipio
+                            <span class="required">*</span>
+                        </label>
+                        <input type="text" id="id_empresa" name="empresa" value="{{ empresa_filtro }}" 
+                               readonly tabindex="-1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_cuenta">
+                            <i class="fas fa-wallet"></i> Cuenta
+                            <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="id_cuenta" name="cuenta" maxlength="20" 
+                                   tabindex="1" placeholder="Ingrese cuenta">
+                            <span class="char-counter" id="cuenta-counter">0/20</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_cuentarez">
+                            <i class="fas fa-book"></i> Cuenta Rezago
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="id_cuentarez" name="cuentarez" maxlength="20" 
+                                   tabindex="2" placeholder="Cuenta de rezago">
+                            <span class="char-counter" id="cuentarez-counter">0/20</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_cuentarec">
+                            <i class="fas fa-receipt"></i> Cuenta Recargos
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="id_cuentarec" maxlength="20" 
+                                   tabindex="3" placeholder="Cuenta de recargos">
+                            <span class="char-counter" id="cuentarec-counter">0/20</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_cuentaint">
+                            <i class="fas fa-percent"></i> Cuenta Intereses
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="id_cuentaint" name="cuentaint" maxlength="20" 
+                                   tabindex="4" placeholder="Cuenta de intereses">
+                            <span class="char-counter" id="cuentaint-counter">0/20</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="id_descripcion">
+                            <i class="fas fa-file-alt"></i> Descripción
+                            <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="id_descripcion" name="descripcion" maxlength="200" 
+                                   tabindex="5" placeholder="Ingrese descripción de la actividad">
+                            <span class="char-counter" id="descripcion-counter">0/200</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-success" type="submit" name="accion" value="nuevo" id="btn-nuevo" tabindex="5">
+                        <i class="fas fa-plus-circle"></i> Nuevo
+                    </button>
+                    <button class="btn btn-primary" type="submit" name="accion" value="guardar" id="btn-guardar" tabindex="6">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <button class="btn btn-secondary" type="button" id="btn-limpiar" tabindex="7">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </button>
+                    <a href="{% url 'tributario:tributario_menu_principal' %}" class="btn btn-secondary" tabindex="8">
+                        <i class="fas fa-arrow-left"></i> Salir
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <h2 class="section-title">
+        <i class="fas fa-list-ul"></i> Actividades Registradas
+    </h2>
+    
+    {% if not empresa_filtro %}
+        <div class="mensaje error">
+            <i class="fas fa-exclamation-triangle fa-lg"></i>
+            <span>Ingrese un código de municipio para ver las actividades.</span>
+        </div>
+    {% endif %}
+    
+    {% if empresa_filtro %}
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <h3>Total de Actividades</h3>
+                <p id="total-actividades">{{ actividades|length }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Municipio</h3>
+                <p style="font-size: 1.5rem;">{{ empresa_filtro }}</p>
+            </div>
+        </div>
+        
+        <div class="mensaje info">
+            <i class="fas fa-filter fa-lg"></i>
+            <span>Mostrando actividades para municipio: <strong>{{ empresa_filtro }}</strong></span>
+        </div>
+    {% endif %}
+    
+    <div class="card">
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Buscar en la tabla..." 
+                       aria-label="Buscar actividades">
+            </div>
+        </div>
+        
+        <div class="tabla-container">
+            <table class="tabla-actividades" id="tabla-actividades">
+                <thead>
+                    <tr>
+                        <th>Cuenta</th>
+                        <th>Cuenta Rezago</th>
+                        <th>Cuenta Recargos</th>
+                        <th>Cuenta Intereses</th>
+                        <th>Descripción</th>
+                        <th class="accion">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for act in actividades %}
+                    <tr data-cuenta="{{ act.codigo }}" data-cuentarez="{{ act.cuentarez|default:'' }}" 
+                        data-cuentarec="{{ act.cuentarec|default:'' }}" data-cuentaint="{{ act.cuentaint|default:'' }}" 
+                        data-descripcion="{{ act.descripcion }}">
+                        <td><strong>{{ act.codigo }}</strong></td>
+                        <td>{{ act.cuentarez|default:"-" }}</td>
+                        <td>{{ act.cuentarec|default:"-" }}</td>
+                        <td>{{ act.cuentaint|default:"-" }}</td>
+                        <td>{{ act.descripcion }}</td>
+                        <td class="accion">
+                            <button class="btn btn-warning btn-sm btn-editar" 
+                                    data-cuenta="{{ act.codigo }}"
+                                    data-cuentarez="{{ act.cuentarez|default:'' }}"
+                                    data-cuentarec="{{ act.cuentarec|default:'' }}"
+                                    data-cuentaint="{{ act.cuentaint|default:'' }}"
+                                    data-descripcion="{{ act.descripcion }}"
+                                    title="Editar actividad" style="margin-right: 8px;">
+                                <i class="fas fa-edit"></i> Editar
+                            </button><form method="post" style="display:inline-block; margin:0;" class="form-eliminar">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="eliminar">
+                                <input type="hidden" name="codigo" value="{{ act.codigo }}">
+                                <input type="hidden" name="empresa" value="{{ act.empresa }}">
+                                <button class="btn btn-danger btn-sm" type="submit" title="Eliminar actividad">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="no-actividades">
+                            <i class="fas fa-inbox fa-3x" style="color: #ccc; margin-bottom: 10px;"></i>
+                            <br>No hay actividades registradas.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Variable de empresa que viene del login (siempre existe)
+    // Esta variable se guarda en la sesión durante el login como request.session['empresa']
+    const empresaFiltro = '{{ empresa_filtro|default:"" }}'; // Variable de empresa/municipio desde sesión
+    
+    // Referencias a elementos del DOM
+    const empresaInput = document.getElementById('id_empresa');
+    const cuentaInput = document.getElementById('id_cuenta');
+    const cuentarezInput = document.getElementById('id_cuentarez');
+    const cuentarecInput = document.getElementById('id_cuentarec');
+    const cuentaintInput = document.getElementById('id_cuentaint');
+    const descripcionInput = document.getElementById('id_descripcion');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const searchInput = document.getElementById('search-input');
+    
+    // Función para obtener el valor de empresa (siempre viene del login)
+    function obtenerEmpresa() {
+        // Prioridad 1: empresa_filtro del contexto (viene de request.session['empresa'])
+        if (empresaFiltro && empresaFiltro.trim()) {
+            return empresaFiltro.trim();
+        }
+        // Prioridad 2: valor del input (debería coincidir con empresa_filtro)
+        if (empresaInput && empresaInput.value && empresaInput.value.trim()) {
+            return empresaInput.value.trim();
+        }
+        // Si no hay empresa, mostrar error (no debería pasar porque viene del login)
+        console.error('❌ [ERROR] No se encontró empresa en la sesión. Debe venir del login.');
+        return '';
+    }
+    
+    // Contadores de caracteres
+    setupCharCounter('id_cuenta', 'cuenta-counter', 20);
+    setupCharCounter('id_cuentarez', 'cuentarez-counter', 20);
+    setupCharCounter('id_cuentarec', 'cuentarec-counter', 20);
+    setupCharCounter('id_cuentaint', 'cuentaint-counter', 20);
+    setupCharCounter('id_descripcion', 'descripcion-counter', 200);
+    
+    // CRÍTICO: Sincronizar input hidden con campo visible cuando el usuario edita
+    if (cuentarecInput) {
+        cuentarecInput.addEventListener('input', function() {
+            const hiddenCuentarec = document.getElementById('hidden_cuentarec');
+            if (hiddenCuentarec) {
+                hiddenCuentarec.value = this.value || '';
+                console.log('✅ Input hidden cuentarec sincronizado desde campo visible:', hiddenCuentarec.value);
+            }
+        });
+    }
+    
+    // Función para configurar contador de caracteres
+    function setupCharCounter(inputId, counterId, maxLength) {
+        const input = document.getElementById(inputId);
+        const counter = document.getElementById(counterId);
+        
+        if (input && counter) {
+            input.addEventListener('input', function() {
+                const length = this.value.length;
+                counter.textContent = `${length}/${maxLength}`;
+                
+                if (length >= maxLength * 0.9) {
+                    counter.style.color = '#e53935';
+                } else if (length >= maxLength * 0.7) {
+                    counter.style.color = '#ffa726';
+                } else {
+                    counter.style.color = '#78909c';
+                }
+            });
+        }
+    }
+    
+    // Función para mostrar toast
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icon = type === 'success' ? 'check-circle' : 
+                     type === 'error' ? 'exclamation-circle' : 'info-circle';
+        
+        toast.innerHTML = `
+            <i class="fas fa-${icon} fa-lg"></i>
+            <span>${message}</span>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideInRight 0.3s ease reverse';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+    
+    
+    // Función para limpiar campos
+    function limpiarCampos() {
+        if (cuentaInput) {
+            cuentaInput.value = '';
+            cuentaInput.style.backgroundColor = '';
+        }
+        if (cuentarezInput) {
+            cuentarezInput.value = '';
+            cuentarezInput.style.backgroundColor = '';
+        }
+        if (cuentarecInput) {
+            cuentarecInput.value = '';
+            cuentarecInput.style.backgroundColor = '';
+        }
+        if (cuentaintInput) {
+            cuentaintInput.value = '';
+            cuentaintInput.style.backgroundColor = '';
+        }
+        if (descripcionInput) {
+            descripcionInput.value = '';
+            descripcionInput.style.backgroundColor = '';
+        }
+        
+        // CRÍTICO: Actualizar también el input hidden cuando se limpian los campos
+        const hiddenCuentarec = document.getElementById('hidden_cuentarec');
+        if (hiddenCuentarec) {
+            hiddenCuentarec.value = '';
+            console.log('✅ Input hidden cuentarec limpiado desde limpiarCampos');
+        }
+        
+        // Resetear contadores
+        document.getElementById('cuenta-counter').textContent = '0/20';
+        document.getElementById('cuentarez-counter').textContent = '0/20';
+        document.getElementById('cuentarec-counter').textContent = '0/20';
+        document.getElementById('cuentaint-counter').textContent = '0/20';
+        document.getElementById('descripcion-counter').textContent = '0/200';
+        
+        if (cuentaInput) cuentaInput.focus();
+    }
+    
+    // Botón Limpiar
+    const btnLimpiar = document.getElementById('btn-limpiar');
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', function() {
+            limpiarCampos();
+            showToast('Formulario limpiado', 'info');
+        });
+    }
+    
+    // Botón Nuevo
+    const nuevoBtn = document.getElementById('btn-nuevo');
+    if (nuevoBtn) {
+        nuevoBtn.addEventListener('click', function(e) {
+            const empresa = obtenerEmpresa();
+            if (!empresa) {
+                e.preventDefault();
+                showToast('Por favor seleccione un municipio antes de crear una nueva actividad.', 'error');
+                if (empresaInput) empresaInput.focus();
+                return false;
+            }
+        });
+    }
+    
+    // Botón Guardar - Validaciones
+    const guardarBtn = document.getElementById('btn-guardar');
+    if (guardarBtn) {
+        guardarBtn.addEventListener('click', function(e) {
+            const empresa = obtenerEmpresa();
+            if (!empresa) {
+                e.preventDefault();
+                showToast('Por favor seleccione un municipio.', 'error');
+                if (empresaInput) empresaInput.focus();
+                return false;
+            }
+            
+            if (!cuentaInput || !cuentaInput.value.trim()) {
+                e.preventDefault();
+                showToast('Por favor ingrese una cuenta.', 'error');
+                if (cuentaInput) cuentaInput.focus();
+                return false;
+            }
+            
+            if (!descripcionInput || !descripcionInput.value.trim()) {
+                e.preventDefault();
+                showToast('Por favor ingrese una descripción para la actividad.', 'error');
+                if (descripcionInput) descripcionInput.focus();
+                return false;
+            }
+            
+            // Verificar datos antes de enviar
+            const datos = {
+                empresa: obtenerEmpresa(), // Usar función para obtener empresa filtrada
+                cuenta: cuentaInput ? cuentaInput.value.trim() : '',
+                cuentarez: cuentarezInput ? cuentarezInput.value.trim() : '',
+                cuentarec: cuentarecInput ? cuentarecInput.value.trim() : '',
+                cuentaint: cuentaintInput ? cuentaintInput.value.trim() : '',
+                descripcion: descripcionInput ? descripcionInput.value.trim() : ''
+            };
+            
+            console.log('💾 [GUARDAR] Datos a enviar:', datos);
+            console.log('   Cuenta Rezago:', datos.cuentarez);
+            console.log('   Cuenta Recargos:', datos.cuentarec);
+            
+            loadingSpinner.style.display = 'block';
+        });
+    }
+    
+    // Verificar datos al enviar el formulario
+    const actividadForm = document.getElementById('actividad-form');
+    if (actividadForm) {
+        // CRÍTICO: Capturar la acción del botón que se hizo clic ANTES del submit
+        let accionGuardada = '';
+        const botonesAccion = actividadForm.querySelectorAll('button[type="submit"][name="accion"], input[type="submit"][name="accion"]');
+        botonesAccion.forEach(btn => {
+            btn.addEventListener('click', function() {
+                accionGuardada = this.value || '';
+                console.log('🔘 [BOTÓN CLIC] Acción capturada:', accionGuardada);
+            });
+        });
+        
+        actividadForm.addEventListener('submit', function(e) {
+            // Prevenir envío por defecto
+            e.preventDefault();
+            
+            // Obtener acción del botón
+            let accion = accionGuardada || document.activeElement?.value || '';
+            if (!accion) {
+                const btn = actividadForm.querySelector('button[type="submit"]:focus');
+                if (btn) accion = btn.value || '';
+            }
+            
+            if (!accion) {
+                showToast('Error: No se pudo detectar la acción.', 'error');
+                return false;
+            }
+            
+            // Si es guardar, validar campos obligatorios
+            if (accion === 'guardar') {
+                // Obtener valores de los campos
+                const empresa = obtenerEmpresa();
+                const cuenta = cuentaInput ? cuentaInput.value.trim() : '';
+                const descripcion = descripcionInput ? descripcionInput.value.trim() : '';
+                
+                // Validar campos obligatorios: Municipio, Cuenta y Descripción
+                let hayErrores = false;
+                if (!empresa || empresa.trim() === '') {
+                    showToast('El municipio es obligatorio.', 'error');
+                    if (empresaInput) empresaInput.focus();
+                    hayErrores = true;
+                } else if (!cuenta || cuenta.trim() === '') {
+                    showToast('La cuenta es obligatoria.', 'error');
+                    if (cuentaInput) cuentaInput.focus();
+                    hayErrores = true;
+                } else if (!descripcion || descripcion.trim() === '') {
+                    showToast('La descripción es obligatoria.', 'error');
+                    if (descripcionInput) descripcionInput.focus();
+                    hayErrores = true;
+                }
+                
+                if (hayErrores) {
+                    return false;
+                }
+                
+                // Asegurar empresa si está vacía
+                if (empresaInput && (!empresaInput.value || empresaInput.value.trim() === '')) {
+                    empresaInput.value = empresa;
+                }
+                
+                // Actualizar input hidden cuentarec
+                const hiddenCuentarec = document.getElementById('hidden_cuentarec');
+                if (hiddenCuentarec && cuentarecInput) {
+                    hiddenCuentarec.value = cuentarecInput.value || '';
+                }
+                
+                // Asegurar campo accion
+                let accionInput = this.querySelector('input[name="accion"]');
+                if (!accionInput) {
+                    accionInput = document.createElement('input');
+                    accionInput.type = 'hidden';
+                    accionInput.name = 'accion';
+                    this.appendChild(accionInput);
+                }
+                accionInput.value = accion;
+                
+                // Remover TODOS los required y disabled para evitar validación HTML5
+                this.querySelectorAll('[required]').forEach(el => el.removeAttribute('required'));
+                this.querySelectorAll('[disabled]').forEach(el => el.removeAttribute('disabled'));
+                
+                // Asegurar novalidate
+                if (!this.hasAttribute('novalidate')) {
+                    this.setAttribute('novalidate', 'novalidate');
+                }
+            }
+            
+            // Enviar formulario
+            this.submit();
+        });
+    }
+    
+    // Búsqueda automática al cambiar cuenta
+    if (cuentaInput) {
+        cuentaInput.addEventListener('change', function() {
+            // Usar la función para obtener empresa (prioriza empresa_filtro del contexto)
+            const empresa = obtenerEmpresa();
+            // Obtener el valor de cuenta del campo de entrada
+            const cuenta = cuentaInput.value.trim();
+            
+            // Validaciones
+            if (!empresa) {
+                showToast('Error: No se encontró el código de empresa en la sesión.', 'error');
+                return;
+            }
+            
+            if (!cuenta) {
+                showToast('Por favor ingrese una cuenta para realizar la búsqueda.', 'info');
+                return;
+            }
+            
+            // Depuración de parámetros
+            console.log('🔍 [DEBUG] Parámetros antes de enviar:');
+            console.log('   - empresa:', empresa, '(tipo:', typeof empresa, ')');
+            console.log('   - cuenta:', cuenta, '(tipo:', typeof cuenta, ')');
+            console.log('   - cuenta.length:', cuenta.length);
+            
+            // Mostrar indicador de búsqueda
+            if (descripcionInput) {
+                descripcionInput.value = 'Buscando...';
+                descripcionInput.style.backgroundColor = '#fff3cd';
+            }
+            
+            // Realizar búsqueda AJAX - asegurar que los parámetros se codifiquen correctamente
+            const empresaEncoded = encodeURIComponent(empresa);
+            const cuentaEncoded = encodeURIComponent(cuenta);
+            const url = `/tributario/ajax/buscar-actividad/?empresa=${empresaEncoded}&cuenta=${cuentaEncoded}`;
+            
+            console.log('📡 Búsqueda AJAX:');
+            console.log('   - URL completa:', url);
+            console.log('   - empresa codificado:', empresaEncoded);
+            console.log('   - cuenta codificado:', cuentaEncoded);
+            
+            // CRÍTICO: Manejar la promesa de fetch correctamente para evitar errores de listener
+            fetch(url)
+                .then(response => {
+                    // Verificar que la respuesta sea válida
+                    if (!response || !response.ok) {
+                        throw new Error(`HTTP ${response ? response.status : 'unknown'}: ${response ? response.statusText : 'No response'}`);
+                    }
+                    // Verificar que la respuesta sea JSON
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('La respuesta no es JSON válido');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Verificar que data sea válido
+                    if (!data) {
+                        throw new Error('No se recibieron datos del servidor');
+                    }
+                    // Mostrar respuesta completa en consola
+                    console.log('📦 Respuesta recibida:', JSON.stringify(data, null, 2));
+                    console.log('   - exito:', data.exito);
+                    console.log('   - existe:', data.existe);
+                    console.log('   - descripcion:', data.descripcion);
+                    console.log('   - cuentarez:', data.cuentarez);
+                    console.log('   - cuentarec:', data.cuentarec);
+                    console.log('   - cuentaint:', data.cuentaint);
+                    
+                    // Verificar si existe la actividad
+                    if (data && data.exito === true && data.existe === true) {
+                        // Actividad encontrada - llenar todos los campos y hacerlos editables
+                        const descVal = String(data.descripcion || '').trim();
+                        const cuentarezVal = String(data.cuentarez || '').trim();
+                        const cuentarecVal = String(data.cuentarec || '').trim();
+                        const cuentaintVal = String(data.cuentaint || '').trim();
+                        
+                        // Llenar descripción y hacer editable
+                        if (descripcionInput) {
+                            descripcionInput.value = descVal;
+                            descripcionInput.removeAttribute('readonly');
+                            descripcionInput.style.backgroundColor = '#d4edda';
+                            descripcionInput.style.borderColor = '#28a745';
+                            const counter = document.getElementById('descripcion-counter');
+                            if (counter) counter.textContent = `${descVal.length}/200`;
+                        }
+                        
+                        // Llenar cuenta rezago y hacer editable
+                        if (cuentarezInput) {
+                            cuentarezInput.value = cuentarezVal;
+                            cuentarezInput.removeAttribute('readonly');
+                            cuentarezInput.style.backgroundColor = '#d4edda';
+                            cuentarezInput.style.borderColor = '#28a745';
+                            const counter = document.getElementById('cuentarez-counter');
+                            if (counter) counter.textContent = `${cuentarezVal.length}/20`;
+                        }
+                        
+                        // Llenar cuenta recargos y hacer editable
+                        if (cuentarecInput) {
+                            cuentarecInput.value = cuentarecVal;
+                            cuentarecInput.removeAttribute('readonly');
+                            cuentarecInput.style.backgroundColor = '#d4edda';
+                            cuentarecInput.style.borderColor = '#28a745';
+                            const counter = document.getElementById('cuentarec-counter');
+                            if (counter) counter.textContent = `${cuentarecVal.length}/20`;
+                        }
+                        
+                        // Llenar cuenta intereses y hacer editable
+                        if (cuentaintInput) {
+                            cuentaintInput.value = cuentaintVal;
+                            cuentaintInput.removeAttribute('readonly');
+                            cuentaintInput.style.backgroundColor = '#d4edda';
+                            cuentaintInput.style.borderColor = '#28a745';
+                            const counter = document.getElementById('cuentaint-counter');
+                            if (counter) counter.textContent = `${cuentaintVal.length}/20`;
+                        }
+                        
+                        // CRÍTICO: Actualizar también el input hidden
+                        const hiddenCuentarec = document.getElementById('hidden_cuentarec');
+                        if (hiddenCuentarec) {
+                            hiddenCuentarec.value = cuentarecVal;
+                            console.log('✅ Input hidden cuentarec actualizado desde AJAX:', cuentarecVal);
+                        }
+                        
+                        // Asegurar que el campo cuenta también sea editable (aunque ya lo es por defecto)
+                        if (cuentaInput) {
+                            cuentaInput.style.backgroundColor = '#d4edda';
+                            cuentaInput.style.borderColor = '#28a745';
+                        }
+                        
+                        showToast('Actividad encontrada. Puede modificar los datos y hacer clic en "Guardar" para actualizar.', 'success');
+                    } else {
+                        // Actividad no encontrada - limpiar campos y hacerlos editables para crear nueva
+                        if (descripcionInput) {
+                            descripcionInput.value = '';
+                            descripcionInput.removeAttribute('readonly');
+                            descripcionInput.style.backgroundColor = '#fff';
+                            descripcionInput.style.borderColor = '#ced4da';
+                        }
+                        
+                        if (cuentarezInput) {
+                            cuentarezInput.value = '';
+                            cuentarezInput.removeAttribute('readonly');
+                            cuentarezInput.style.backgroundColor = '#fff';
+                            cuentarezInput.style.borderColor = '#ced4da';
+                        }
+                        
+                        if (cuentarecInput) {
+                            cuentarecInput.value = '';
+                            cuentarecInput.removeAttribute('readonly');
+                            cuentarecInput.style.backgroundColor = '#fff';
+                            cuentarecInput.style.borderColor = '#ced4da';
+                        }
+                        
+                        if (cuentaintInput) {
+                            cuentaintInput.value = '';
+                            cuentaintInput.removeAttribute('readonly');
+                            cuentaintInput.style.backgroundColor = '#fff';
+                            cuentaintInput.style.borderColor = '#ced4da';
+                        }
+                        
+                        // CRÍTICO: Actualizar también el input hidden cuando se limpia
+                        const hiddenCuentarec = document.getElementById('hidden_cuentarec');
+                        if (hiddenCuentarec) {
+                            hiddenCuentarec.value = '';
+                            console.log('✅ Input hidden cuentarec limpiado');
+                        }
+                        
+                        // Resetear estilo del campo cuenta
+                        if (cuentaInput) {
+                            cuentaInput.style.backgroundColor = '#fff';
+                            cuentaInput.style.borderColor = '#ced4da';
+                        }
+                        
+                        showToast('Actividad no encontrada. Puede ingresar los datos y hacer clic en "Guardar" para crear una nueva.', 'info');
+                    }
+                })
+                .catch(error => {
+                    // CRÍTICO: Manejar errores de forma silenciosa para evitar problemas con extensiones
+                    // El error "message channel closed" es típicamente causado por extensiones del navegador
+                    const errorMessage = error ? (error.message || String(error)) : 'Error desconocido';
+                    const isExtensionError = errorMessage.includes('message channel') || 
+                                           errorMessage.includes('listener') || 
+                                           errorMessage.includes('extension') ||
+                                           errorMessage.includes('asynchronous response');
+                    
+                    if (isExtensionError) {
+                        // Ignorar errores de extensiones del navegador (no son errores reales)
+                        console.warn('⚠️ Error de extensión del navegador ignorado:', errorMessage);
+                        // Ocultar spinner si existe
+                        if (loadingSpinner) {
+                            loadingSpinner.style.display = 'none';
+                        }
+                        return; // Salir sin mostrar error al usuario
+                    }
+                    
+                    // Para errores reales, mostrar mensaje
+                    console.error('❌ Error en búsqueda AJAX:', error);
+                    console.error('   - Tipo:', error ? error.constructor.name : 'unknown');
+                    console.error('   - Mensaje:', errorMessage);
+                    
+                    // Limpiar campos en caso de error real
+                    if (descripcionInput) {
+                        descripcionInput.value = '';
+                        descripcionInput.style.backgroundColor = '#f8d7da';
+                        descripcionInput.style.borderColor = '#dc3545';
+                    }
+                    if (cuentarezInput) {
+                        cuentarezInput.value = '';
+                        cuentarezInput.style.backgroundColor = '#f8d7da';
+                        cuentarezInput.style.borderColor = '#dc3545';
+                    }
+                    if (cuentarecInput) {
+                        cuentarecInput.value = '';
+                        cuentarecInput.style.backgroundColor = '#f8d7da';
+                        cuentarecInput.style.borderColor = '#dc3545';
+                    }
+                    
+                    // Ocultar spinner
+                    if (loadingSpinner) {
+                        loadingSpinner.style.display = 'none';
+                    }
+                    
+                    showToast('Error al buscar la actividad. Verifique la conexión.', 'error');
+                })
+                .finally(() => {
+                    // Asegurar que el spinner se oculte siempre, incluso si hay errores
+                    if (loadingSpinner) {
+                        loadingSpinner.style.display = 'none';
+                    }
+                });
+        });
+    }
+    
+    // Contador de caracteres para cuenta
+    if (cuentaInput) {
+        cuentaInput.addEventListener('input', function() {
+            document.getElementById('cuenta-counter').textContent = `${this.value.length}/20`;
+        });
+        
+        // Búsqueda al presionar Enter
+        cuentaInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.blur(); // Esto disparará el evento 'change' automáticamente
+            }
+        });
+    }
+    
+    // Contador de caracteres para cuentarez
+    if (cuentarezInput) {
+        cuentarezInput.addEventListener('input', function() {
+            document.getElementById('cuentarez-counter').textContent = `${this.value.length}/20`;
+        });
+    }
+    
+    // Contador de caracteres para cuentarec
+    if (cuentarecInput) {
+        cuentarecInput.addEventListener('input', function() {
+            document.getElementById('cuentarec-counter').textContent = `${this.value.length}/20`;
+        });
+    }
+    
+    // Botones de Editar
+    const botonesEditar = document.querySelectorAll('.btn-editar');
+    botonesEditar.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const cuenta = this.dataset.cuenta; // Cuenta es el mismo que código
+            const cuentarez = this.dataset.cuentarez;
+            const cuentarec = this.dataset.cuentarec;
+            const cuentaint = this.dataset.cuentaint;
+            const descripcion = this.dataset.descripcion;
+            
+            if (cuentaInput) cuentaInput.value = cuenta || '';
+            if (cuentarezInput) cuentarezInput.value = cuentarez || '';
+            if (cuentarecInput) cuentarecInput.value = cuentarec || '';
+            if (cuentaintInput) cuentaintInput.value = cuentaint || '';
+            if (descripcionInput) descripcionInput.value = descripcion || '';
+            
+            // CRÍTICO: Actualizar también el input hidden cuando se edita
+            const hiddenCuentarec = document.getElementById('hidden_cuentarec');
+            if (hiddenCuentarec) {
+                hiddenCuentarec.value = cuentarec || '';
+                console.log('✅ Input hidden cuentarec actualizado desde botón Editar:', cuentarec || '');
+            }
+            
+            // Actualizar contadores
+            if (cuentaInput && cuenta) {
+                document.getElementById('cuenta-counter').textContent = `${cuenta.length}/20`;
+            }
+            if (cuentarezInput && cuentarez) {
+                document.getElementById('cuentarez-counter').textContent = `${cuentarez.length}/20`;
+            }
+            if (cuentarecInput && cuentarec) {
+                document.getElementById('cuentarec-counter').textContent = `${cuentarec.length}/20`;
+            }
+            if (cuentaintInput && cuentaint) {
+                document.getElementById('cuentaint-counter').textContent = `${cuentaint.length}/20`;
+            }
+            if (descripcionInput && descripcion) {
+                document.getElementById('descripcion-counter').textContent = `${descripcion.length}/200`;
+            }
+            
+            // Scroll al formulario
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            if (cuentaInput) cuentaInput.focus();
+            
+            showToast('Datos cargados. Modifique y guarde los cambios.', 'info');
+        });
+    });
+    
+    // Confirmación mejorada para eliminar
+    const formsEliminar = document.querySelectorAll('.form-eliminar');
+    formsEliminar.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const codigo = this.querySelector('input[name="codigo"]').value; // En backend se usa codigo
+            const confirmado = confirm(`¿Está seguro de eliminar la actividad con cuenta "${codigo}"?\n\nEsta acción no se puede deshacer.`);
+            
+            if (!confirmado) {
+                e.preventDefault();
+                return false;
+            }
+            
+            loadingSpinner.style.display = 'block';
+        });
+    });
+    
+    // Contador de caracteres para cuentaint
+    if (cuentaintInput) {
+        cuentaintInput.addEventListener('input', function() {
+            document.getElementById('cuentaint-counter').textContent = `${this.value.length}/20`;
+        });
+    }
+    
+    // Filtro de búsqueda en tabla
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#tabla-actividades tbody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                if (row.querySelector('.no-actividades')) return;
+                
+                const cuenta = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                const cuentarez = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const cuentarec = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                const cuentaint = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+                const descripcion = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
+                
+                if (cuenta.includes(searchTerm) || 
+                    cuentarez.includes(searchTerm) || 
+                    cuentarec.includes(searchTerm) ||
+                    cuentaint.includes(searchTerm) ||
+                    descripcion.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Actualizar contador
+            const totalElement = document.getElementById('total-actividades');
+            if (totalElement && searchTerm) {
+                totalElement.textContent = visibleCount;
+            } else if (totalElement) {
+                totalElement.textContent = rows.length - 1; // -1 para excluir fila de "no hay datos"
+            }
+        });
+    }
+    
+    // Navegar con teclas en la tabla
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'f') {
+            e.preventDefault();
+            if (searchInput) searchInput.focus();
+        }
+    });
+});
+</script>
+{% endblock %}

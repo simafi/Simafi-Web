@@ -1,0 +1,69 @@
+{% extends "presupuestos/menu_principal.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid mt-4 pb-5 px-4">
+    <div class="d-print-none mb-3 d-flex justify-content-between align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'presupuestos:informes_ingresos_hub' %}">Panel de Ingresos</a></li>
+                <li class="breadcrumb-item active">Resumen Mensual</li>
+            </ol>
+        </nav>
+        <button onclick="window.print()" class="btn btn-outline-dark">
+            <i class="fas fa-print me-2"></i>Imprimir
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <h4 class="fw-bold mb-1">{{ empresa_nombre }}</h4>
+                <h5 class="text-muted mb-1">Resumen Mensual de Ingresos Recaudados</h5>
+                <p class="small text-muted">Ejercicio Fiscal {{ ejercicio.anio }} - Niveles 1 y 2</p>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered border-secondary-subtle align-middle" style="font-size: 0.75rem;">
+                    <thead class="bg-dark text-white text-center">
+                        <tr>
+                            <th>Código</th>
+                            <th>Descripción</th>
+                            {% for mes in meses_nombres %}
+                            <th>{{ mes }}</th>
+                            {% endfor %}
+                            <th>Total Anual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in datos %}
+                        <tr class="{% if d.nivel == 1 %}table-dark bg-opacity-75 fw-bold{% elif d.nivel == 2 %}table-secondary fw-bold{% endif %}">
+                            <td class="text-nowrap">{{ d.codigo }}</td>
+                            <td class="text-truncate" style="max-width: 200px;">{{ d.nombre }}</td>
+                            {% for m_val in d.meses %}
+                            <td class="text-end font-monospace">{{ m_val|floatformat:0|intcomma }}</td>
+                            {% endfor %}
+                            <td class="text-end font-monospace fw-bold">{{ d.total|floatformat:0|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 small text-muted d-flex justify-content-between">
+                <span>Generado el: {{ now }}</span>
+                <span>SIMAFI WEB - Reporte Comparativo Mensual</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .breadcrumb, .d-print-none { display: none !important; }
+        .card { border: none !important; box-shadow: none !important; }
+        .table { font-size: 0.65rem !important; }
+    }
+    .table-sm td, .table-sm th { padding: 0.25rem 0.4rem; vertical-align: middle; }
+</style>
+{% endblock %}

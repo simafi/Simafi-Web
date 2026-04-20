@@ -1,0 +1,216 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║           ✅ INSTRUCCIONES PARA PROBAR EL FORMULARIO CORREGIDO               ║
+║                    DECLARACIÓN DE VOLUMEN DE VENTAS                          ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════════
+  📋 CAMPOS VALIDADOS (TODOS CORREGIDOS)
+═══════════════════════════════════════════════════════════════════════════════
+
+El formulario ahora valida correctamente estos campos en el frontend:
+
+  1. ✅ EMPRESA      (empresa_field)  → Campo oculto de sesión
+  2. ✅ RTM          (rtm_field)      → Número Registro Tributario
+  3. ✅ EXPEDIENTE   (expe_field)     → Número de Expediente
+  4. ✅ AÑO          (id_ano)         → Año de declaración
+  5. ✅ MES          (id_mes)         → Mes de declaración
+  6. ✅ VENTAS       (calculado)      → Total ventas > 0
+  7. ✅ IMPUESTO     (id_impuesto)    → Debe estar calculado
+
+═══════════════════════════════════════════════════════════════════════════════
+  🚀 PASO 1: INICIAR EL SERVIDOR
+═══════════════════════════════════════════════════════════════════════════════
+
+Abre una terminal en: C:\simafiweb\venv\Scripts
+
+Ejecuta:
+    python manage.py runserver 0.0.0.0:8080
+
+Espera el mensaje:
+    "Starting development server at http://0.0.0.0:8080/"
+
+═══════════════════════════════════════════════════════════════════════════════
+  🌐 PASO 2: LIMPIAR CACHE DEL NAVEGADOR (MUY IMPORTANTE)
+═══════════════════════════════════════════════════════════════════════════════
+
+Esto es CRÍTICO porque el JavaScript cambió:
+
+  OPCIÓN A - Recarga Forzada:
+    - Windows/Linux: Ctrl + Shift + R
+    - Mac:           Cmd + Shift + R
+
+  OPCIÓN B - Limpiar Cache Completo:
+    1. Abre DevTools (F12)
+    2. Click derecho en el botón de recarga
+    3. Selecciona "Vaciar caché y recargar de manera forzada"
+
+  OPCIÓN C - Modo Incógnito:
+    - Abre una ventana de incógnito/privada
+    - El cache estará limpio automáticamente
+
+═══════════════════════════════════════════════════════════════════════════════
+  🎯 PASO 3: ACCEDER AL FORMULARIO
+═══════════════════════════════════════════════════════════════════════════════
+
+URL con parámetros de prueba:
+
+  http://localhost:8080/tributario/declaracion-volumen/?rtm=123456789&expe=EXP123456
+
+IMPORTANTE:
+  - Cambia RTM y EXPE por valores reales de tu base de datos
+  - Estos deben existir en la tabla "Negocio"
+  - Deben estar asociados a la empresa de tu sesión
+
+═══════════════════════════════════════════════════════════════════════════════
+  📝 PASO 4: LLENAR EL FORMULARIO
+═══════════════════════════════════════════════════════════════════════════════
+
+Campos a llenar:
+
+  1. AÑO: Selecciona un año (ej: 2024)
+  
+  2. MES: Selecciona un mes (ej: Enero)
+  
+  3. TIPO DE DECLARACIÓN: Selecciona una opción
+  
+  4. VENTAS INTERNAS: Ingresa un valor (ej: 10000.00)
+     - Se calculará automáticamente el impuesto
+     - Espera 1-2 segundos para el cálculo
+  
+  5. (Opcional) Otros campos de ventas:
+     - Ventas a Contribuyentes
+     - Ventas sin Factura
+     - Valor Excento
+     - Productos Controlados
+
+═══════════════════════════════════════════════════════════════════════════════
+  🔍 PASO 5: VERIFICAR VALIDACIONES (OPCIONAL)
+═══════════════════════════════════════════════════════════════════════════════
+
+Prueba estos escenarios para confirmar que las validaciones funcionan:
+
+  ❌ NO llenar el AÑO:
+     → Debe mostrar: "Por favor seleccione un año."
+  
+  ❌ NO llenar el MES:
+     → Debe mostrar: "Por favor seleccione un mes."
+  
+  ❌ NO ingresar ventas:
+     → Debe mostrar: "Por favor ingrese al menos un valor de ventas mayor a 0."
+  
+  ❌ Presionar guardar antes del cálculo:
+     → Debe mostrar: "El cálculo del impuesto no se ha completado..."
+
+═══════════════════════════════════════════════════════════════════════════════
+  💾 PASO 6: GUARDAR LA DECLARACIÓN
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Asegúrate de que todos los campos estén llenos correctamente
+
+2. Presiona el botón: "Guardar Declaración"
+
+3. RESULTADO ESPERADO:
+   ✅ Mensaje de éxito: "Declaración 2024/01 creada correctamente"
+   ✅ Los datos aparecen en la tabla inferior
+   ✅ El formulario se mantiene con los datos
+
+4. VERIFICAR EN BASE DE DATOS (Opcional):
+   - Consulta: SELECT * FROM declaracion_volumen WHERE ano=2024 AND mes=1
+   - Debe existir el registro con todos los datos
+
+═══════════════════════════════════════════════════════════════════════════════
+  🐛 PASO 7: DEBUG SI NO FUNCIONA
+═══════════════════════════════════════════════════════════════════════════════
+
+Si el botón NO responde:
+
+  1. Abre la Consola del Navegador (F12 → Console)
+  
+  2. Busca errores JavaScript en rojo
+  
+  3. Verifica que no haya errores tipo:
+     - "Cannot read property 'value' of null"
+     - "getElementById(...) is null"
+  
+  4. Si hay errores:
+     - LIMPIA el cache nuevamente (Ctrl+Shift+R)
+     - Cierra y abre el navegador
+     - Prueba en modo incógnito
+
+Si el formulario se envía pero NO guarda:
+
+  1. Revisa la terminal donde corre el servidor
+  
+  2. Busca mensajes de error en Python
+  
+  3. Verifica que la sesión tenga el campo 'empresa':
+     - En la vista, debe aparecer: empresa = '0301' (o tu código)
+
+═══════════════════════════════════════════════════════════════════════════════
+  ✅ CONFIRMACIÓN DE ÉXITO
+═══════════════════════════════════════════════════════════════════════════════
+
+Sabrás que TODO funciona correctamente cuando:
+
+  ✅ El botón "Guardar Declaración" responde inmediatamente
+  ✅ Aparece el mensaje: "Declaración XXXX/XX creada correctamente"
+  ✅ Los datos aparecen en la tabla inferior del formulario
+  ✅ Puedes refrescar la página y los datos persisten
+  ✅ La base de datos tiene el registro guardado
+
+═══════════════════════════════════════════════════════════════════════════════
+  📊 EJEMPLO COMPLETO DE PRUEBA
+═══════════════════════════════════════════════════════════════════════════════
+
+Datos de ejemplo para llenar:
+
+  RTM:                 123456789 (debe existir en BD)
+  Expediente:          EXP123456 (debe existir en BD)
+  Año:                 2024
+  Mes:                 Enero (1)
+  Tipo:                Normal
+  Ventas Internas:     50000.00
+  Ventas Contrib.:     25000.00
+  Ventas s/Factura:    0.00
+  Valor Excento:       0.00
+  Productos Control.:  0.00
+
+Resultado Esperado:
+  - Total Ventas:      75000.00
+  - Impuesto ICS:      (se calcula automáticamente según tarifa)
+  - Mensaje:           "Declaración 2024/01 creada correctamente"
+
+═══════════════════════════════════════════════════════════════════════════════
+  🎉 CORRECCIONES APLICADAS
+═══════════════════════════════════════════════════════════════════════════════
+
+Se corrigieron estos problemas:
+
+  1. ✅ IDs JavaScript incorrectos:
+     - id_rtm     → rtm_field
+     - id_expe    → expe_field
+     - (id_ano e id_mes ya estaban correctos)
+  
+  2. ✅ Validación de empresa agregada:
+     - Se valida que empresa_field no esté vacío
+  
+  3. ✅ Backend corregido:
+     - Se asigna empresa desde la sesión
+     - Se obtiene idneg del modelo Negocio
+     - Se incluye empresa en filtros de búsqueda
+  
+  4. ✅ URLs corregidas:
+     - declaracion-volumen/ apunta a la vista correcta
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Para más detalles técnicos, revisa:
+  → RESUMEN_VALIDACIONES_CORREGIDAS.md
+
+¡BUENA SUERTE CON LAS PRUEBAS! 🚀
+
+═══════════════════════════════════════════════════════════════════════════════
+
+

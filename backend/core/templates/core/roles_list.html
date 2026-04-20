@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roles y permisos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-info mb-4">
+        <div class="container">
+            <span class="navbar-brand"><i class="fas fa-user-shield me-2"></i>Roles y permisos</span>
+            <div>
+                <a class="btn btn-outline-light btn-sm me-1" href="{% url 'modules_core:usuarios_sistema_list' %}">Usuarios</a>
+                <a class="btn btn-outline-light btn-sm" href="{% url 'modules_core:menu_principal' %}">Menú modular</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        {% if configuracion_inicial %}
+        <div class="alert alert-warning border-warning mb-3">
+            <strong>Configuración inicial:</strong> mientras no exista un superusuario en la base de datos, puede definir roles y permisos.
+            Cree primero un superusuario en <a href="{% url 'modules_core:usuarios_sistema_list' %}">Usuarios del sistema</a>.
+        </div>
+        {% endif %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="h4 mb-0">Roles definidos</h1>
+            <a href="{% url 'modules_core:roles_create' %}" class="btn btn-info text-white btn-sm">
+                <i class="fas fa-plus me-1"></i>Nuevo rol
+            </a>
+        </div>
+        <p class="small text-muted">Cada rol agrupa permisos del catálogo (<code>mod_usuarios_permiso</code>). Asigne roles a los usuarios desde <strong>Usuarios del sistema</strong>.</p>
+        <div class="table-responsive card shadow-sm">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Permisos</th>
+                        <th>Activo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in object_list %}
+                    <tr>
+                        <td><strong>{{ r.nombre }}</strong></td>
+                        <td>{{ r.descripcion|default:"—"|truncatechars:80 }}</td>
+                        <td><span class="badge bg-secondary">{{ r.permisos.count }}</span></td>
+                        <td>{% if r.is_active %}<span class="badge bg-success">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+                        <td class="text-nowrap">
+                            <a href="{% url 'modules_core:roles_update' r.pk %}" class="btn btn-sm btn-outline-info">Editar</a>
+                            <form action="{% url 'modules_core:roles_delete' r.pk %}" method="post" class="d-inline"
+                                  onsubmit="return confirm('¿Eliminar el rol «{{ r.nombre|escapejs }}»?{% if r.usuarios_asignados.count %} Quitará este rol de {{ r.usuarios_asignados.count }} usuario(s).{% endif %}');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No hay roles. Cree uno para asignarlo a usuarios.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,149 @@
+{% extends "contabilidad_base.html" %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" crossorigin="anonymous" />
+<style>
+    .select2-container--default .select2-selection--single {
+        min-height: 38px;
+        padding: 4px 8px;
+        border-radius: 8px;
+        border: 1.5px solid var(--cont-border, #e2e8f0);
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 28px; }
+    .select2-container { width: 100% !important; max-width: 100%; }
+    .select2-dropdown { border-radius: 8px; }
+</style>
+{% endblock %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}
+<div class="cont-breadcrumb"><nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:inventarios' %}">Inventarios</a></li>
+    <li class="breadcrumb-item active">{{ titulo }}</li>
+</ol></nav></div>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="cont-card">
+                <div class="card-header"><i class="fas fa-boxes me-2"></i>{{ titulo }}</div>
+                <div class="card-body cont-form">
+                    <p class="small text-muted mb-3">Clasifique el tipo de inventario y, si aplica, la nomenclatura del material (catálogo UNSPSC, CPV u homologación interna). El <strong>código</strong> es el identificador único del ítem en su empresa.</p>
+                    <p class="small mb-2"><a href="{% url 'contabilidad:tipo_inventario_list' %}"><i class="fas fa-tags me-1"></i>Configurar tipos de inventario</a> (catálogo por empresa; los del listado estándar quedan como referencia editable).</p>
+                    <details class="border rounded px-3 py-2 mb-3 bg-light">
+                        <summary class="fw-semibold text-secondary" style="cursor:pointer;">Ver explicación de tipo y nomenclatura</summary>
+                        <ul class="small mb-0 mt-2 ps-3">
+                            <li><strong>Tipo de inventario:</strong> categoría tomada del catálogo de su municipio; puede añadir tipos propios o desactivar referencias que no apliquen.</li>
+                            <li><strong>Nomenclatura:</strong> código estándar del bien según catálogo oficial o tablas internas; facilita comparar cotizaciones y unificar descripciones.</li>
+                        </ul>
+                    </details>
+                    <form method="post">{% csrf_token %}
+                        {% if plan_cuentas_opciones == 0 %}
+                        <div class="alert alert-warning border-warning mb-3" role="alert">
+                            <strong>No hay cuentas disponibles para vincular.</strong>
+                            {% if not empresa %}
+                            Su sesión no tiene <strong>empresa/municipio</strong> asignado; inicie sesión en el menú modular eligiendo municipio, o cree cuentas en <a href="{% url 'contabilidad:plan_cuentas' %}">Plan de cuentas</a> para la empresa correcta.
+                            {% else %}
+                            En el plan de cuentas de la empresa <code>{{ empresa }}</code> no hay cuentas activas, o todas son títulos sin movimiento.
+                            Cree <strong>cuentas de detalle</strong> (tipo «Detalle/Movimiento») con «Acepta movimiento» en
+                            <a href="{% url 'contabilidad:plan_cuentas' %}">Plan de cuentas</a>.
+                            Para inventario suelen usarse una cuenta de <strong>Activo</strong> (existencias) y una de <strong>Gastos/Costo</strong> (venta o consumo); el sistema no etiqueta automáticamente «inventario»: usted elige la cuenta contable adecuada del catálogo.
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        <div class="row g-3">
+                            <div class="col-md-3"><label class="form-label">Código interno</label>{{ form.codigo }}{% if form.codigo.errors %}<div class="text-danger small">{{ form.codigo.errors }}</div>{% endif %}</div>
+                            <div class="col-md-5">
+                                <label class="form-label" for="{{ form.tipo_inventario.id_for_label }}">Tipo de inventario</label>
+                                <p class="small text-info mb-2"><i class="fas fa-search me-1"></i>Escriba en el desplegable para <strong>filtrar por nombre</strong>.</p>
+                                {{ form.tipo_inventario }}{% if form.tipo_inventario.errors %}<div class="text-danger small">{{ form.tipo_inventario.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4"><label class="form-label">Nomenclatura / clasificación</label>{{ form.nomenclatura }}{% if form.nomenclatura.errors %}<div class="text-danger small">{{ form.nomenclatura.errors }}</div>{% endif %}</div>
+                            <div class="col-12"><label class="form-label">Descripción</label>{{ form.descripcion }}{% if form.descripcion.errors %}<div class="text-danger small">{{ form.descripcion.errors }}</div>{% endif %}</div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.cuenta_inventario.id_for_label }}">Cuenta de inventario</label>
+                                <p class="small text-muted mb-2 border-start border-3 border-success ps-2">{{ form.cuenta_inventario.help_text }}</p>
+                                <p class="small text-info mb-2"><i class="fas fa-search me-1"></i>Escriba en el campo para <strong>buscar por código o nombre</strong> (no hace falta desplazar todo el catálogo).</p>
+                                {{ form.cuenta_inventario }}{% if form.cuenta_inventario.errors %}<div class="text-danger small">{{ form.cuenta_inventario.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.cuenta_costo_venta.id_for_label }}">Cuenta costo de venta / consumo</label>
+                                <p class="small text-muted mb-2 border-start border-3 border-secondary ps-2">{{ form.cuenta_costo_venta.help_text }}</p>
+                                <p class="small text-info mb-2"><i class="fas fa-search me-1"></i>Misma búsqueda por <strong>código o nombre</strong>.</p>
+                                {{ form.cuenta_costo_venta }}{% if form.cuenta_costo_venta.errors %}<div class="text-danger small">{{ form.cuenta_costo_venta.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-2"><label class="form-label">Unidad medida</label>{{ form.unidad_medida }}</div>
+                            <div class="col-md-2"><label class="form-label">Cantidad</label>{{ form.cantidad }}</div>
+                            <div class="col-md-2"><label class="form-label">Costo unitario</label>{{ form.costo_unitario }}</div>
+                            <div class="col-md-2"><label class="form-label">VNR</label>{{ form.valor_neto_realizable }}</div>
+                            <div class="col-md-2"><label class="form-label">Valoración</label>{{ form.metodo_valoracion }}</div>
+                            <div class="col-md-2"><label class="form-label">Stock mínimo</label>{{ form.stock_minimo }}</div>
+                        </div>
+                        {{ form.empresa }}
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'contabilidad:inventarios' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Volver al listado</a>
+                            <button type="submit" class="btn btn-cont-primary"><i class="fas fa-save me-1"></i> Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/es.js" crossorigin="anonymous"></script>
+<script>
+(function () {
+    var urlBuscarCuentas = "{% url 'contabilidad:ajax_buscar_cuentas' %}";
+    function initCuentaSelect2($el) {
+        if (!$el.length || typeof $.fn.select2 !== 'function') return;
+        $el.select2({
+            language: 'es',
+            width: '100%',
+            placeholder: 'Buscar por código o nombre…',
+            allowClear: true,
+            minimumInputLength: 0,
+            ajax: {
+                url: urlBuscarCuentas,
+                dataType: 'json',
+                delay: 280,
+                data: function (params) {
+                    return { q: params.term || '' };
+                },
+                processResults: function (data) {
+                    if (!data || !data.resultados) return { results: [] };
+                    return {
+                        results: data.resultados.map(function (r) {
+                            return { id: r.id, text: r.texto };
+                        })
+                    };
+                },
+                cache: true
+            }
+        });
+    }
+    function initTipoInventarioSelect2($el) {
+        if (!$el.length || typeof $.fn.select2 !== 'function') return;
+        $el.select2({
+            language: 'es',
+            width: '100%',
+            placeholder: 'Buscar tipo por nombre…',
+            allowClear: true,
+            minimumResultsForSearch: 0
+        });
+    }
+    $(function () {
+        $('.js-cuenta-select2-inventario').each(function () {
+            initCuentaSelect2($(this));
+        });
+        $('.js-select2-tipo-inventario').each(function () {
+            initTipoInventarioSelect2($(this));
+        });
+    });
+})();
+</script>
+{% endblock %}

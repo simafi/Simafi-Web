@@ -1,0 +1,61 @@
+{% extends "ciudadano/base_ciudadano.html" %}
+{% block title %}Bandeja municipal{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+        <h1 class="h5 mb-0"><i class="fas fa-inbox me-2 text-warning"></i>Bandeja de solicitudes (municipalidad)</h1>
+        <p class="small text-muted mb-0">Empresa: <strong>{{ empresa }}</strong> · Usuario: {{ usuario }}</p>
+    </div>
+    <a href="{% url 'ciudadano:portal_inicio' %}" class="btn btn-sm btn-outline-secondary">Volver al portal</a>
+</div>
+
+<p class="small text-muted">
+    Aquí el personal municipal registra la <strong>respuesta oficial</strong> que verá el contribuyente en
+    «Mis solicitudes». El ciclo recomendado es: <em>Recibida</em> → <em>En revisión</em> → <em>Respondida</em> o <em>Cerrada</em>.
+</p>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-auto">
+        <label class="form-label small mb-0">Filtrar por estado</label>
+        <select name="estado" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            {% for val, label in estados %}
+            <option value="{{ val }}" {% if estado_filtro == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
+<div class="card cdd-card">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Folio</th>
+                    <th>Tipo</th>
+                    <th>Contribuyente</th>
+                    <th>Estado</th>
+                    <th>Respuesta</th>
+                    <th>Fecha</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in items %}
+                <tr>
+                    <td class="font-monospace small">{{ s.referencia }}</td>
+                    <td class="small">{{ s.get_tipo_tramite_display }}</td>
+                    <td class="small">{{ s.nombre_completo|truncatechars:35 }}</td>
+                    <td><span class="badge bg-secondary">{{ s.get_estado_display }}</span></td>
+                    <td class="small">{% if s.respuesta_municipal %}<i class="fas fa-check text-success"></i> Sí{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                    <td class="small text-nowrap">{{ s.created_at|date:"d/m/Y" }}</td>
+                    <td><a href="{% url 'ciudadano:gestion_solicitud' s.pk %}" class="btn btn-sm btn-primary">Gestionar</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">No hay solicitudes.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

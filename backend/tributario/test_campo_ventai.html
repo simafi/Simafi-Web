@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Campo Ventas Rubro Producción</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .input-test {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input[type="number"] {
+            width: 200px;
+            padding: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Campo "Ventas Rubro Producción"</h1>
+        <p class="info test-result">
+            <strong>Instrucciones:</strong> Esta página te ayudará a probar diferentes valores en el campo "Ventas Rubro Producción" 
+            para identificar qué está causando la restricción.
+        </p>
+        
+        <div class="input-test">
+            <h3>📊 Prueba de Valores:</h3>
+            <label>Ventas Rubro Producción:</label>
+            <input type="number" id="test_ventai" placeholder="0.00" step="0.01" min="0">
+            <button onclick="testValorVentai()">Probar Valor</button>
+        </div>
+        
+        <div class="input-test">
+            <h3>🔍 Verificar Campo Real:</h3>
+            <button onclick="verificarCampoReal()">Verificar Campo en Formulario</button>
+        </div>
+        
+        <div class="input-test">
+            <h3>🧮 Test Validación Completa:</h3>
+            <button onclick="testValidacionCompleta()">Test Validación Completa</button>
+        </div>
+        
+        <div id="resultados" style="margin-top: 20px;"></div>
+    </div>
+    
+    <script>
+        function mostrarResultado(mensaje, tipo = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${tipo}`;
+            div.innerHTML = mensaje;
+            document.getElementById('resultados').appendChild(div);
+        }
+        
+        function testValorVentai() {
+            document.getElementById('resultados').innerHTML = '<h2>📊 Test de Valor Ventas Rubro Producción:</h2>';
+            
+            const valor = document.getElementById('test_ventai').value;
+            
+            if (!valor) {
+                mostrarResultado('❌ Por favor ingrese un valor para probar.', 'error');
+                return;
+            }
+            
+            // Simular las validaciones del formulario
+            const valorNumerico = parseFloat(valor);
+            
+            mostrarResultado(`<strong>Valor ingresado:</strong> "${valor}"`, 'info');
+            mostrarResultado(`<strong>Valor parseado:</strong> ${valorNumerico}`, 'info');
+            mostrarResultado(`<strong>Tipo de dato:</strong> ${typeof valorNumerico}`, 'info');
+            
+            // Test 1: Validación básica
+            if (valorNumerico < 0) {
+                mostrarResultado('❌ <strong>Error:</strong> El valor no puede ser negativo.', 'error');
+            } else if (valorNumerico === 0) {
+                mostrarResultado('⚠️ <strong>Advertencia:</strong> El valor es 0 (permitido, pero puede causar problemas en validaciones).', 'error');
+            } else {
+                mostrarResultado('✅ <strong>Valor válido:</strong> El valor es mayor a 0.', 'success');
+            }
+            
+            // Test 2: Validación de formato decimal
+            if (!/^\d+(\.\d{1,2})?$/.test(valor)) {
+                mostrarResultado('❌ <strong>Error de formato:</strong> El valor debe tener máximo 2 decimales.', 'error');
+            } else {
+                mostrarResultado('✅ <strong>Formato válido:</strong> El valor tiene formato decimal correcto.', 'success');
+            }
+            
+            // Test 3: Validación de longitud (16 dígitos máximo)
+            const valorSinPunto = valor.replace('.', '');
+            if (valorSinPunto.length > 16) {
+                mostrarResultado('❌ <strong>Error de longitud:</strong> El valor tiene más de 16 dígitos.', 'error');
+            } else {
+                mostrarResultado('✅ <strong>Longitud válida:</strong> El valor tiene menos de 16 dígitos.', 'success');
+            }
+            
+            // Test 4: Validación de rango
+            if (valorNumerico > 999999999999999.99) {
+                mostrarResultado('❌ <strong>Error de rango:</strong> El valor excede el máximo permitido (999,999,999,999,999.99).', 'error');
+            } else {
+                mostrarResultado('✅ <strong>Rango válido:</strong> El valor está dentro del rango permitido.', 'success');
+            }
+        }
+        
+        function verificarCampoReal() {
+            document.getElementById('resultados').innerHTML = '<h2>🔍 Verificación del Campo Real:</h2>';
+            
+            // Buscar el campo ventai en el formulario real
+            const campoVentai = document.querySelector('input[name="ventai"]');
+            
+            if (!campoVentai) {
+                mostrarResultado('❌ <strong>Campo no encontrado:</strong> No se encontró el campo "ventai" en el formulario actual.', 'error');
+                mostrarResultado('💡 <strong>Sugerencia:</strong> Abre el formulario de declaración en otra pestaña y vuelve a ejecutar esta prueba.', 'info');
+                return;
+            }
+            
+            mostrarResultado('✅ <strong>Campo encontrado:</strong> El campo "ventai" existe en el formulario.', 'success');
+            
+            // Verificar atributos del campo
+            mostrarResultado(`<strong>Valor actual:</strong> "${campoVentai.value}"`, 'info');
+            mostrarResultado(`<strong>Placeholder:</strong> "${campoVentai.placeholder}"`, 'info');
+            mostrarResultado(`<strong>MaxLength:</strong> ${campoVentai.maxLength}`, 'info');
+            mostrarResultado(`<strong>InputMode:</strong> ${campoVentai.inputMode}`, 'info');
+            mostrarResultado(`<strong>Data Format:</strong> ${campoVentai.getAttribute('data-format')}`, 'info');
+            
+            // Verificar si está habilitado
+            if (campoVentai.disabled) {
+                mostrarResultado('❌ <strong>Campo deshabilitado:</strong> El campo está deshabilitado.', 'error');
+            } else if (campoVentai.readOnly) {
+                mostrarResultado('⚠️ <strong>Campo solo lectura:</strong> El campo está en modo solo lectura.', 'error');
+            } else {
+                mostrarResultado('✅ <strong>Campo habilitado:</strong> El campo está habilitado para edición.', 'success');
+            }
+        }
+        
+        function testValidacionCompleta() {
+            document.getElementById('resultados').innerHTML = '<h2>🧮 Test de Validación Completa:</h2>';
+            
+            // Simular la validación completa del formulario
+            const camposVentas = ['ventai', 'ventac', 'ventas', 'valorexcento', 'controlado'];
+            let totalVentas = 0;
+            let camposConValor = 0;
+            
+            mostrarResultado('<strong>Verificando campos de ventas:</strong>', 'info');
+            
+            camposVentas.forEach(name => {
+                const campo = document.querySelector('input[name="' + name + '"]');
+                if (campo) {
+                    const valor = parseFloat(campo.value) || 0;
+                    totalVentas += valor;
+                    if (valor > 0) {
+                        camposConValor++;
+                    }
+                    const estado = valor > 0 ? '✅' : '⚠️';
+                    mostrarResultado(`${estado} <strong>${name}:</strong> "${campo.value}" → ${valor}`, valor > 0 ? 'success' : 'info');
+                } else {
+                    mostrarResultado(`❌ <strong>${name}:</strong> Campo no encontrado`, 'error');
+                }
+            });
+            
+            mostrarResultado(`<strong>Total de ventas:</strong> ${totalVentas}`, 'info');
+            mostrarResultado(`<strong>Campos con valor > 0:</strong> ${camposConValor}`, 'info');
+            
+            // Aplicar la validación
+            if (camposConValor === 0) {
+                mostrarResultado('❌ <strong>VALIDACIÓN FALLA:</strong> No hay ningún campo de ventas con valor > 0.', 'error');
+                mostrarResultado('💡 <strong>Solución:</strong> Ingrese al menos un valor > 0 en cualquier campo de ventas.', 'info');
+            } else {
+                mostrarResultado('✅ <strong>VALIDACIÓN PASA:</strong> Al menos un campo de ventas tiene valor > 0.', 'success');
+                mostrarResultado('🎉 <strong>El formulario se enviaría correctamente.</strong>', 'success');
+            }
+        }
+        
+        // Mostrar instrucciones al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('='.repeat(80));
+            console.log('INSTRUCCIONES PARA DEBUGGING CAMPO VENTAI:');
+            console.log('');
+            console.log('1. Abre el formulario de declaración en otra pestaña');
+            console.log('2. Ejecuta este código para verificar el campo:');
+            console.log('');
+            console.log('const campo = document.querySelector("input[name=\\"ventai\\"]");');
+            console.log('if (campo) {');
+            console.log('    console.log("Campo encontrado:", campo);');
+            console.log('    console.log("Valor:", campo.value);');
+            console.log('    console.log("Disabled:", campo.disabled);');
+            console.log('    console.log("ReadOnly:", campo.readOnly);');
+            console.log('} else {');
+            console.log('    console.log("Campo NO encontrado");');
+            console.log('}');
+            console.log('='.repeat(80));
+        });
+    </script>
+</body>
+</html>
+

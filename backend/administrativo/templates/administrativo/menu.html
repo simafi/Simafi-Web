@@ -1,0 +1,122 @@
+{% extends "administrativo/base.html" %}
+{% block title %}Inicio — Gestión administrativa{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4"><i class="fas fa-th-large text-info me-2"></i>Gestión administrativa y financiera</h1>
+<p class="text-muted mb-4">Coordinación de compras, contratos y expedientes; acceso rápido a presupuesto, tesorería y contabilidad.</p>
+
+{% if sin_empresa %}
+<div class="alert alert-warning">No hay código de empresa/municipio en la sesión. Inicie sesión eligiendo municipio para asociar proveedores y expedientes.</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+	<div class="col-md-3 col-6">
+		<div class="card border-0 shadow-sm h-100">
+			<div class="card-body text-center">
+				<div class="display-6 text-primary">{{ count_proveedores }}</div>
+				<small class="text-muted">Proveedores</small>
+				<div class="small text-success">{{ count_proveedores_activos }} activos</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-3 col-6">
+		<div class="card border-0 shadow-sm h-100">
+			<div class="card-body text-center">
+				<div class="display-6 text-success">{{ count_contratos }}</div>
+				<small class="text-muted">Contratos / órdenes</small>
+				<div class="small">{{ count_contratos_vigentes }} vigentes</div>
+				{% if count_contratos_revision_fecha %}
+				<div class="small text-warning"><i class="fas fa-exclamation-triangle"></i> {{ count_contratos_revision_fecha }} con fecha fin vencida (revisar)</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	<div class="col-md-3 col-6">
+		<div class="card border-0 shadow-sm h-100">
+			<div class="card-body text-center">
+				<div class="display-6 text-info">{{ count_expedientes }}</div>
+				<small class="text-muted">Expedientes</small>
+				<div class="small">{{ count_expedientes_abiertos }} abiertos / en trámite</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<h2 class="h5 mb-3">Gestión propia</h2>
+<div class="row g-3 mb-4">
+	<div class="col-md-4">
+		<div class="card h-100 shadow-sm">
+			<div class="card-body">
+				<h3 class="h6"><i class="fas fa-truck text-primary me-2"></i>Proveedores</h3>
+				<p class="small text-muted mb-3">Contratistas y proveedores por municipio.</p>
+				<a href="{% url 'administrativo:proveedor_list' %}" class="btn btn-primary btn-sm">Ir al listado</a>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="card h-100 shadow-sm">
+			<div class="card-body">
+				<h3 class="h6"><i class="fas fa-file-contract text-success me-2"></i>Contratos</h3>
+				<p class="small text-muted mb-3">Seguimiento de contratos y órdenes administrativas.</p>
+				<a href="{% url 'administrativo:contrato_list' %}" class="btn btn-success btn-sm">Ir al listado</a>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="card h-100 shadow-sm">
+			<div class="card-body">
+				<h3 class="h6"><i class="fas fa-folder-open text-info me-2"></i>Expedientes</h3>
+				<p class="small text-muted mb-3">Trámites y expedientes de compras y contratación.</p>
+				<a href="{% url 'administrativo:expediente_list' %}" class="btn btn-info btn-sm text-white">Ir al listado</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<h2 class="h5 mb-3">Módulos financieros del sistema</h2>
+<div class="row g-3 mb-4">
+	<div class="col-md-4">
+		<div class="card h-100 border-primary">
+			<div class="card-body">
+				<h3 class="h6"><i class="fas fa-chart-pie me-2"></i>Presupuestos</h3>
+				<p class="small text-muted">Compromisos, órdenes de pago, reformas e informes.</p>
+				<a href="{% url 'presupuestos:presupuestos_menu_principal' %}" class="btn btn-outline-primary btn-sm">Abrir módulo</a>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="card h-100 border-secondary">
+			<div class="card-body">
+				<h3 class="h6"><i class="fas fa-cash-register me-2"></i>Tesorería</h3>
+				<p class="small text-muted">Caja, pagos, cheques y conciliación bancaria.</p>
+				<a href="{% url 'tesoreria:tesoreria_menu_principal' %}" class="btn btn-outline-secondary btn-sm">Abrir módulo</a>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="card h-100 border-warning">
+			<div class="card-body">
+				<h3 class="h6"><i class="fas fa-book me-2"></i>Contabilidad</h3>
+				<p class="small text-muted">Plan de cuentas, asientos y estados financieros (NIC).</p>
+				<a href="{% url 'contabilidad:contabilidad_menu_principal' %}" class="btn btn-outline-warning btn-sm">Abrir módulo</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<h2 class="h5 mb-3">Parametría global</h2>
+<div class="card shadow-sm mb-4">
+	<div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-2">
+		<div>
+			<strong><i class="fas fa-cog me-2 text-secondary"></i>Configuración</strong>
+			<p class="small text-muted mb-0">Departamentos, municipios, caseríos, nacionalidades y catálogos de predio.</p>
+		</div>
+		<a href="{% url 'configuracion:sistema_general_menu' %}" class="btn btn-outline-dark btn-sm">Abrir configuración</a>
+	</div>
+</div>
+
+<div class="card bg-light border-0">
+	<div class="card-body small text-muted">
+		<strong>Próximas extensiones:</strong> bienes muebles / inventario patrimonial no catastral, cuadro de mando con datos de ejecución presupuestaria (cuando se integren APIs), y vínculo formal entre órdenes de pago y contratos.
+	</div>
+</div>
+{% endblock %}

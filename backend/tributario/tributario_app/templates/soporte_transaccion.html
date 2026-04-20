@@ -1,0 +1,227 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Comprobante de Pago</title>
+    <style>
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 10px;
+            font-size: 10px;
+            line-height: 1.2;
+            max-width: 300px;
+            background: white;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+            margin-bottom: 8px;
+        }
+        
+        .title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .subtitle {
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 3px;
+            font-size: 9px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 80px;
+        }
+        
+        .info-value {
+            flex: 1;
+        }
+        
+        .conceptos-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 8px;
+        }
+        
+        .conceptos-table th,
+        .conceptos-table td {
+            border: 1px solid #000;
+            padding: 3px;
+            text-align: left;
+        }
+        
+        .conceptos-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 8px;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+        
+        .comentario-section {
+            margin-top: 8px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            font-size: 8px;
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin-top: 8px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+        }
+        
+        .qr-code {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .footer {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 7px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .separator {
+            border-top: 1px dashed #000;
+            margin: 5px 0;
+        }
+        
+        .amount {
+            font-weight: bold;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">Imprimir</button>
+    
+    <div class="header">
+        <div class="title">COMPROBANTE DE PAGO</div>
+        <div class="subtitle">MUNICIPALIDAD</div>
+        <div style="font-size: 8px;">Fecha: {{ fecha }}</div>
+    </div>
+    
+    <div class="separator"></div>
+    
+    <div class="info-row">
+        <div class="info-label">Recibo:</div>
+        <div class="info-value">{{ numero_recibo }}</div>
+    </div>
+    <div class="info-row">
+        <div class="info-label">DNI:</div>
+        <div class="info-value">{{ dni|default:"N/A" }}</div>
+    </div>
+    <div class="info-row">
+        <div class="info-label">Nombre:</div>
+        <div class="info-value">{{ nombre|default:"N/A" }}</div>
+    </div>
+    <div class="info-row">
+        <div class="info-label">Dirección:</div>
+        <div class="info-value">{{ direccion|default:"N/A" }}</div>
+    </div>
+    
+    <div class="separator"></div>
+    
+    <div style="font-size: 9px; font-weight: bold; margin-bottom: 3px;">CONCEPTOS DE COBRO</div>
+    <table class="conceptos-table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Descripción</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for concepto in conceptos %}
+            <tr>
+                <td>{{ concepto.codigo }}</td>
+                <td>{{ concepto.descripcion }}</td>
+                <td style="text-align: right;">{{ concepto.valor|format_number }}</td>
+            </tr>
+            {% endfor %}
+            {% if conceptos %}
+            <tr class="total-row">
+                <td colspan="2" style="text-align: right;"><strong>TOTAL:</strong></td>
+                <td style="text-align: right;" class="amount"><strong>{{ total_general|format_number }}</strong></td>
+            </tr>
+            {% else %}
+            <tr class="total-row">
+                <td colspan="3" style="text-align: center;"><strong>Sin conceptos</strong></td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    
+    {% if comentario %}
+    <div class="separator"></div>
+    <div class="comentario-section">
+        <div style="font-weight: bold; margin-bottom: 2px;">COMENTARIO:</div>
+        <div style="border: 1px solid #000; padding: 3px; min-height: 20px; font-size: 7px;">
+            {{ comentario }}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="separator"></div>
+    
+    <div class="qr-section">
+        <div style="font-size: 8px; font-weight: bold; margin-bottom: 3px;">CÓDIGO QR</div>
+        {% if qr_data_uri %}
+        <img src="{{ qr_data_uri }}" alt="QR Code" class="qr-code">
+        {% else %}
+        <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="qr-code">
+        {% endif %}
+        <div style="margin-top: 3px; font-size: 6px;">
+            Escanee para verificar
+        </div>
+    </div>
+    
+    <div class="separator"></div>
+    
+    <div class="footer">
+        <p>Documento oficial de transacción</p>
+        <p>Conserve como comprobante</p>
+    </div>
+</body>
+</html> 

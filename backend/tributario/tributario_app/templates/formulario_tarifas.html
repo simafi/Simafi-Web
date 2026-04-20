@@ -1,0 +1,1320 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gestión de Tarifas</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            width: 100%;
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(90deg, #1e88e5 0%, #0d47a1 100%);
+            border-radius: 20px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .titulo-formulario {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .card h2 {
+            color: #1e88e5;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        /* Estilos para todos los campos del formulario */
+        input, select, textarea {
+            padding: 12px 15px;
+            border: 1px solid #d1d5da;
+            border-radius: 8px;
+            font-size: 1em;
+            background: #fff;
+            transition: all 0.3s;
+            width: 100%;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: #1e88e5;
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+            outline: none;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1e88e5 0%, #0d47a1 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 136, 229, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
+        }
+        
+        .table-container {
+            margin-top: 30px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        tbody tr:hover {
+            background-color: #f8f9fa;
+            transition: background-color 0.2s ease;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+        
+        tbody tr {
+            height: 50px;
+        }
+        
+        tbody td {
+            vertical-align: middle;
+            padding: 8px 12px;
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+        
+        /* Estilos para la columna de acciones */
+        td:last-child {
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+        
+        .btn-group-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-start;
+            align-items: center;
+            flex-wrap: nowrap;
+            flex-direction: row;
+            height: 40px;
+            position: relative;
+        }
+        
+        .btn-group-actions .btn-sm {
+            margin: 0;
+            flex-shrink: 0;
+            white-space: nowrap;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            bottom: 0;
+        }
+        
+        .btn-group-actions .btn-sm {
+            margin-right: 8px;
+        }
+        
+        .btn-group-actions .btn-sm:last-child {
+            margin-right: 0;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        
+        /* Asegurar que el botón de eliminar esté siempre a la izquierda */
+        .btn-group-actions .btn-danger {
+            order: -1;
+            margin-right: 8px;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+        }
+        
+        .btn-info:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            white-space: pre-line;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .field-errors {
+            margin-top: 5px;
+        }
+        
+        .error-message {
+            display: block;
+            color: #dc3545;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 2px;
+            padding: 4px 8px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+        }
+        
+        .error-message:before {
+            content: "⚠️ ";
+            margin-right: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .btn-group-actions {
+                flex-direction: row;
+                gap: 4px;
+                flex-wrap: wrap;
+                align-items: center;
+                height: 36px;
+            }
+            
+            .btn-group-actions .btn-sm {
+                flex: 1;
+                min-width: 80px;
+                font-size: 0.7rem;
+                padding: 4px 8px;
+                height: 28px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                bottom: 0;
+            }
+            
+            .btn-group-actions .btn-sm {
+                margin-right: 4px;
+            }
+            
+            .btn-group-actions .btn-sm:last-child {
+                margin-right: 0;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .form-grid {
+                gap: 25px;
+            }
+            
+            label {
+                font-size: 1.2rem;
+            }
+            
+            input, select, textarea {
+                font-size: 1.1rem;
+                padding: 12px 15px;
+            }
+        }
+        
+        @media (min-width: 1400px) {
+            .form-grid {
+                gap: 30px;
+            }
+            
+            label {
+                font-size: 1.2rem;
+            }
+            
+            input, select, textarea {
+                font-size: 1.1rem;
+                padding: 12px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="titulo-formulario"><i class="fas fa-dollar-sign"></i> Gestión de Tarifas</h1>
+            <p class="subtitle">Configure las tarifas municipales para los diferentes rubros y servicios</p>
+        </header>
+
+        <!-- Formulario de Tarifas -->
+        <div class="card">
+            <h2><i class="fas fa-edit"></i> Formulario de Tarifas</h2>
+            
+            <!-- Mensajes de Django -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'info' %}info{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert" style="border-left: 4px solid {% if message.tags == 'error' %}#dc3545{% elif message.tags == 'info' %}#17a2b8{% else %}#28a745{% endif %}; background: {% if message.tags == 'info' %}linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%){% else %}inherit{% endif %}; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
+                            <div style="flex-shrink: 0; margin-top: 2px;">
+                                <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'info' %}lightbulb{% else %}check-circle{% endif %}" style="color: {% if message.tags == 'error' %}#dc3545{% elif message.tags == 'info' %}#17a2b8{% else %}#28a745{% endif %}; font-size: 18px;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 8px; color: {% if message.tags == 'info' %}#0c5460{% else %}inherit{% endif %};">
+                                    {% if message.tags == 'info' %}Información Importante{% elif message.tags == 'error' %}Error de Validación{% else %}Éxito{% endif %}
+                                </div>
+                                <div style="white-space: pre-line; line-height: 1.5; color: {% if message.tags == 'info' %}#495057{% else %}inherit{% endif %};">
+                                    {{ message }}
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="flex-shrink: 0;"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                {% if codigo_rubro %}
+                <input type="hidden" name="codigo_rubro_heredado" value="{{ codigo_rubro }}" id="id_codigo_rubro_heredado">
+                {% endif %}
+                {% if ano_filtro %}
+                <input type="hidden" name="ano_heredado" value="{{ ano_filtro }}" id="id_ano_heredado">
+                {% endif %}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id_empresa">
+                            <i class="fas fa-building"></i> Municipio
+                            <span style="color: #e53935;">*</span>
+                        </label>
+                        <input type="text" id="id_empresa" name="empresa" value="{{ form.empresa.value|default:empresa_filtro|default:'' }}" readonly style="background-color: #f8f9fa; color: #6c757d; cursor: not-allowed;">
+                        <small style="color: #6c757d; font-size: 0.85rem; display: block; margin-top: 5px;">
+                            <i class="fas fa-lock"></i> Campo heredado (solo lectura)
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.rubro.id_for_label }}">
+                            <i class="fas fa-tag"></i> Rubro
+                            <span style="color: #e53935;">*</span>
+                        </label>
+                        {{ form.rubro }}
+                        {% if form.rubro.errors %}
+                            <div class="field-errors">
+                                {% for error in form.rubro.errors %}
+                                    <small class="error-message">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if form.rubro.value %}
+                        <small style="color: #6c757d; font-size: 0.85rem; display: block; margin-top: 5px;">
+                            <i class="fas fa-check-circle" style="color: #28a745;"></i> Rubro heredado
+                        </small>
+                        {% else %}
+                        <small style="color: #6c757d; font-size: 0.85rem; display: block; margin-top: 5px;">
+                            <i class="fas fa-info-circle"></i> El rubro puede ser heredado desde el formulario de rubros
+                        </small>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.ano.id_for_label }}">Año</label>
+                        {{ form.ano }}
+                        {% if form.ano.errors %}
+                            <div class="field-errors">
+                                {% for error in form.ano.errors %}
+                                    <small class="error-message">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_cod_tarifa">Código de Tarifa</label>
+                        <input type="text" id="id_cod_tarifa" name="cod_tarifa" maxlength="4" style="text-transform: uppercase;" placeholder="">
+                        <div id="tarifa-description" class="tarifa-description" style="display: none; margin-top: 5px; padding: 8px; background-color: #e8f5e8; border: 1px solid #4caf50; border-radius: 4px; font-size: 0.9em; color: #2e7d32;"></div>
+                        {% if form.cod_tarifa.errors %}
+                            <div class="field-errors">
+                                {% for error in form.cod_tarifa.errors %}
+                                    <small class="error-message">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_descripcion">Descripción</label>
+                        <input type="text" id="id_descripcion" name="descripcion" maxlength="200" placeholder="">
+                        {% if form.descripcion.errors %}
+                            <div class="field-errors">
+                                {% for error in form.descripcion.errors %}
+                                    <small class="error-message">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_valor">Valor</label>
+                        <input type="number" id="id_valor" name="valor" step="0.01" min="0" placeholder="0.00">
+                        {% if form.valor.errors %}
+                            <div class="field-errors">
+                                {% for error in form.valor.errors %}
+                                    <small class="error-message">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_frecuencia">Frecuencia</label>
+                        <select id="id_frecuencia" name="frecuencia">
+                            <option value="">Seleccione frecuencia</option>
+                            <option value="M">Mensual</option>
+                            <option value="A">Anual</option>
+                        </select>
+                        {% if form.frecuencia.errors %}
+                            <div class="field-errors">
+                                {% for error in form.frecuencia.errors %}
+                                    <small class="error-message">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_tipo">Tipo</label>
+                        <select id="id_tipo" name="tipo">
+                            <option value="">Seleccione tipo</option>
+                            <option value="F">Fija</option>
+                            <option value="V">Variable</option>
+                        </select>
+                        {% if form.tipo.errors %}
+                            <div class="field-errors">
+                                {% for error in form.tipo.errors %}
+                                    <small class="error-message">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.tipomodulo.id_for_label }}">Módulo</label>
+                        {{ form.tipomodulo }}
+                        {% if form.tipomodulo.errors %}
+                            <div class="field-errors">
+                                {% for error in form.tipomodulo.errors %}
+                                    <small class="error-message">{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Tarifa
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="limpiarFormulario()">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </button>
+                    <button type="button" class="btn btn-info" onclick="navegarAPlanArbitrio()">
+                        <i class="fas fa-calculator"></i> Plan de Arbitrio
+                    </button>
+                    <a href="{% url 'tributario:rubros_crud' %}{% if codigo_rubro %}?codigo_rubro={{ codigo_rubro }}{% endif %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Rubros
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        {% if tarifas %}
+        <!-- Información de filtros activos -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; color: #495057;">
+                <i class="fas fa-filter" style="color: #1e88e5;"></i>
+                <span><strong>Filtros activos:</strong></span>
+                {% if request.GET.codigo_rubro %}
+                <span class="badge" style="background-color: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 4px;">
+                    <i class="fas fa-tag"></i> Rubro: {{ form.rubro.value }}
+                </span>
+                {% endif %}
+                {% if request.GET.ano %}
+                <span class="badge" style="background-color: #f3e5f5; color: #7b1fa2; padding: 4px 8px; border-radius: 4px;">
+                    <i class="fas fa-calendar"></i> Año: {{ request.GET.ano }}
+                </span>
+                {% endif %}
+                {% if not request.GET.ano %}
+                <span class="badge" style="background-color: #e8f5e8; color: #2e7d32; padding: 4px 8px; border-radius: 4px;">
+                    <i class="fas fa-calendar-alt"></i> Todos los años
+                </span>
+                {% endif %}
+                {% if request.GET.ano %}
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="limpiarFiltroAno()" style="margin-left: 10px;">
+                    <i class="fas fa-times"></i> Limpiar filtro de año
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rubro</th>
+                        <th>Año</th>
+                        <th>Código</th>
+                        <th>Descripción</th>
+                        <th>Valor</th>
+                        <th>Frecuencia</th>
+                        <th>Tipo</th>
+                         <th>Tipo Módulo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tarifa in tarifas %}
+                    <tr>
+                        <td>{{ tarifa.rubro|default:"-" }}</td>
+                        <td>{{ tarifa.ano|default:"-" }}</td>
+                        <td><strong>{{ tarifa.cod_tarifa|default:"-" }}</strong></td>
+                        <td>{{ tarifa.descripcion|default:"-" }}</td>
+                        <td>${{ tarifa.valor|default:"0.00" }}</td>
+                        <td>
+                            {% if tarifa.frecuencia == 'A' %}Anual{% elif tarifa.frecuencia == 'M' %}Mensual{% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if tarifa.tipo == 'F' %}Fija{% elif tarifa.tipo == 'V' %}Variable{% else %}-{% endif %}
+                        </td>
+                        <td>{{ tarifa.tipomodulo|default:"-" }}</td>
+                        <td>
+                            <div class="btn-group-actions">
+                                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarTarifa('{{ tarifa.empresa }}', '{{ tarifa.cod_tarifa }}', '{{ tarifa.descripcion }}', '{{ tarifa.rubro }}', '{{ tarifa.ano }}')">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                                {% if tarifa.tipo == 'V' %}
+                                <button type="button" class="btn btn-sm btn-info" onclick="planArbitrio('{{ tarifa.empresa }}', '{{ tarifa.rubro }}', '{{ tarifa.descripcion }}', '{{ tarifa.cod_tarifa }}', '{{ tarifa.ano }}')">
+                                    <i class="fas fa-calculator"></i> Plan Arbitrio
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card">
+            <p style="text-align: center; color: #6c757d; font-size: 1.1rem;">
+                <i class="fas fa-info-circle"></i> No hay tarifas registradas para este municipio.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Variable para controlar el timeout de búsqueda
+        let searchTimeout;
+        
+        // Función para búsqueda asíncrona de tarifa
+        function buscarTarifaAsincrono() {
+            const codigoInput = document.getElementById('id_cod_tarifa');
+            const descripcionDiv = document.getElementById('tarifa-description');
+            const descripcionInput = document.getElementById('id_descripcion');
+            const valorInput = document.getElementById('id_valor');
+            const frecuenciaInput = document.getElementById('id_frecuencia');
+            const tipoInput = document.getElementById('id_tipo');
+            const moduloInput = document.getElementById('id_tipomodulo');
+            const empresaInput = document.getElementById('id_empresa');
+            
+            // Validar que todos los elementos existan
+            console.log('🔍 Validando elementos DOM:', {
+                codigoInput: !!codigoInput,
+                empresaInput: !!empresaInput,
+                descripcionDiv: !!descripcionDiv,
+                descripcionInput: !!descripcionInput,
+                valorInput: !!valorInput,
+                frecuenciaInput: !!frecuenciaInput,
+                tipoInput: !!tipoInput,
+                moduloInput: !!moduloInput
+            });
+            
+            if (!codigoInput || !empresaInput || !descripcionDiv || !descripcionInput || !valorInput || !frecuenciaInput || !tipoInput || !moduloInput) {
+                console.error('❌ Error: No se pueden encontrar todos los elementos del DOM');
+                console.error('Elementos faltantes:', {
+                    codigoInput: !codigoInput,
+                    empresaInput: !empresaInput,
+                    descripcionDiv: !descripcionDiv,
+                    descripcionInput: !descripcionInput,
+                    valorInput: !valorInput,
+                    frecuenciaInput: !frecuenciaInput,
+                    tipoInput: !tipoInput,
+                    moduloInput: !moduloInput
+                });
+                return;
+            }
+            
+            const codigo = codigoInput.value.trim().toUpperCase();
+            const empresa = empresaInput.value.trim();
+            
+            console.log('🔍 Valores obtenidos:', { codigo, empresa });
+            console.log('🔍 Elementos encontrados:', {
+                codigoInput: !!codigoInput,
+                empresaInput: !!empresaInput,
+                descripcionDiv: !!descripcionDiv,
+                descripcionInput: !!descripcionInput,
+                valorInput: !!valorInput,
+                frecuenciaInput: !!frecuenciaInput,
+                tipoInput: !!tipoInput
+            });
+            
+            // Limpiar timeout anterior
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Ocultar descripción si el campo está vacío o tiene menos de 1 carácter
+            if (!codigo || codigo.length < 1) {
+                descripcionDiv.style.display = 'none';
+                descripcionDiv.textContent = '';
+                // Limpiar campos si no hay código
+                if (!codigo) {
+                    descripcionInput.value = '';
+                    valorInput.value = '';
+                    frecuenciaInput.value = '';
+                    tipoInput.value = '';
+                    moduloInput.value = '';
+                }
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            descripcionDiv.style.display = 'block';
+            descripcionDiv.style.backgroundColor = '#fff3cd';
+            descripcionDiv.style.borderColor = '#ffc107';
+            descripcionDiv.style.color = '#856404';
+            descripcionDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando tarifa...';
+            
+            // Debounce: esperar 500ms después de que el usuario deje de escribir
+            searchTimeout = setTimeout(() => {
+                // ============================================================================
+                // OBTENER TODOS LOS CRITERIOS: EMPRESA, RUBRO, AÑO, CODIGO DE TARIFA
+                // ============================================================================
+                const rubroInput = document.getElementById('id_rubro');
+                const anoInput = document.getElementById('id_ano');
+                const rubroHeredado = document.getElementById('id_codigo_rubro_heredado');
+                const anoHeredado = document.getElementById('id_ano_heredado');
+                
+                console.log('🔍 DEBUG - Elementos encontrados:');
+                console.log('   - rubroInput:', rubroInput ? 'ENCONTRADO' : 'NO ENCONTRADO');
+                console.log('   - anoInput:', anoInput ? 'ENCONTRADO' : 'NO ENCONTRADO');
+                console.log('   - rubroHeredado:', rubroHeredado ? 'ENCONTRADO' : 'NO ENCONTRADO');
+                console.log('   - anoHeredado:', anoHeredado ? 'ENCONTRADO' : 'NO ENCONTRADO');
+                
+                // Intentar obtener rubro de múltiples fuentes
+                let rubro = '';
+                if (rubroInput) {
+                    const valorRubro = rubroInput.value ? rubroInput.value.trim() : '';
+                    console.log('   - rubroInput.value:', `"${valorRubro}"`);
+                    if (valorRubro !== '') {
+                        rubro = valorRubro;
+                        console.log('✅ Rubro obtenido del campo formulario (id_rubro):', rubro);
+                    }
+                }
+                
+                if (!rubro && rubroHeredado) {
+                    const valorHeredado = rubroHeredado.value ? rubroHeredado.value.trim() : '';
+                    console.log('   - rubroHeredado.value:', `"${valorHeredado}"`);
+                    if (valorHeredado !== '') {
+                        rubro = valorHeredado;
+                        console.log('✅ Rubro obtenido del campo heredado:', rubro);
+                    }
+                }
+                
+                if (!rubro) {
+                    const rubroAuxiliar = obtenerValorRubro();
+                    console.log('   - obtenerValorRubro():', `"${rubroAuxiliar}"`);
+                    if (rubroAuxiliar) {
+                        rubro = rubroAuxiliar;
+                        console.log('✅ Rubro obtenido de función auxiliar:', rubro);
+                    }
+                }
+                
+                // Intentar obtener año de múltiples fuentes
+                let ano = '';
+                if (anoInput) {
+                    const valorAno = anoInput.value ? anoInput.value.trim() : '';
+                    console.log('   - anoInput.value:', `"${valorAno}"`);
+                    if (valorAno !== '') {
+                        ano = valorAno;
+                        console.log('✅ Año obtenido del select (id_ano):', ano);
+                    }
+                }
+                
+                if (!ano && anoHeredado) {
+                    const valorHeredado = anoHeredado.value ? anoHeredado.value.trim() : '';
+                    console.log('   - anoHeredado.value:', `"${valorHeredado}"`);
+                    if (valorHeredado !== '') {
+                        ano = valorHeredado;
+                        console.log('✅ Año obtenido del campo heredado:', ano);
+                    }
+                }
+                
+                if (!ano) {
+                    // Intentar obtener de URL params
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const anoUrl = urlParams.get('ano') || '';
+                    console.log('   - URL params ano:', `"${anoUrl}"`);
+                    if (anoUrl) {
+                        ano = anoUrl;
+                        console.log('✅ Año obtenido de URL params:', ano);
+                    }
+                }
+                
+                console.log('🔍 Criterios de búsqueda FINALES capturados:', { 
+                    empresa, 
+                    rubro, 
+                    ano, 
+                    codigo 
+                });
+                
+                // ============================================================================
+                // VALIDAR CRITERIOS MÍNIMOS
+                // ============================================================================
+                // RUBRO es OBLIGATORIO para evitar mezclas entre rubros
+                if (!rubro) {
+                    console.warn('⚠️ FALTA RUBRO - No se puede buscar sin rubro');
+                    descripcionDiv.style.backgroundColor = '#fff3cd';
+                    descripcionDiv.style.borderColor = '#ffc107';
+                    descripcionDiv.style.color = '#856404';
+                    descripcionDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Seleccione un rubro para búsqueda automática';
+                    return;
+                }
+                
+                // AÑO es OBLIGATORIO para la búsqueda
+                if (!ano) {
+                    console.warn('⚠️ FALTA AÑO - No se puede buscar sin año');
+                    descripcionDiv.style.backgroundColor = '#fff3cd';
+                    descripcionDiv.style.borderColor = '#ffc107';
+                    descripcionDiv.style.color = '#856404';
+                    descripcionDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Seleccione un año para búsqueda automática';
+                    return;
+                }
+                
+                console.log('✅ CRITERIOS PARA BÚSQUEDA (TODOS REQUERIDOS):');
+                console.log('   - Empresa:', empresa);
+                console.log('   - Rubro:', rubro);
+                console.log('   - Año:', ano);
+                console.log('   - Código:', codigo);
+                
+                // Crear FormData para enviar al servidor
+                const formData = new FormData();
+                formData.append('cod_tarifa', codigo);
+                formData.append('empresa', empresa);
+                formData.append('rubro', rubro);
+                formData.append('ano', ano);
+                
+                console.log('🔍 Enviando búsqueda AJAX de tarifa con 4 criterios:', { 
+                    empresa, 
+                    rubro, 
+                    ano, 
+                    codigo 
+                });
+                
+                // Realizar petición AJAX
+                fetch('/tributario/buscar-tarifa-automatica/?t=' + Date.now(), {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('📥 Respuesta del servidor:', data);
+                    if (data.exito) {
+                        // Tarifa encontrada - mostrar descripción y llenar campos
+                        descripcionDiv.style.backgroundColor = '#d4edda';
+                        descripcionDiv.style.borderColor = '#28a745';
+                        descripcionDiv.style.color = '#155724';
+                        
+                        // Mensaje diferente si se encontró en otro año
+                        let mensajeTarifa = `<i class="fas fa-check-circle"></i> <strong>${data.tarifa.descripcion}</strong>`;
+                        if (data.encontrado_en_otro_ano) {
+                            mensajeTarifa += ` <span style="background:#ffc107; color:#000; padding:2px 6px; border-radius:4px; font-size:0.85em; margin-left:8px;">Año: ${data.tarifa.ano}</span>`;
+                        } else if (data.tarifa.ano) {
+                            mensajeTarifa += ` <span style="background:#17a2b8; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.85em; margin-left:8px;">Año: ${data.tarifa.ano}</span>`;
+                        }
+                        descripcionDiv.innerHTML = mensajeTarifa;
+                        
+                        // Auto-llenar campos del formulario
+                        descripcionInput.value = data.tarifa.descripcion || '';
+                        valorInput.value = data.tarifa.valor || '';
+                        frecuenciaInput.value = data.tarifa.frecuencia || '';
+                        tipoInput.value = data.tarifa.tipo || '';
+                        
+                        // Si se encontró en otro año y no había año seleccionado, llenar el año automáticamente
+                        if (data.tarifa.ano && anoInput && !anoInput.value) {
+                            anoInput.value = data.tarifa.ano;
+                            console.log('✅ Año cargado automáticamente en el select:', data.tarifa.ano);
+                        }
+                        
+                        // Llenar combobox tipomodulo
+                        const tipomoduloValue = data.tarifa.tipomodulo || '';
+                        console.log('🔍 Llenando combobox tipomodulo:', {
+                            valorRecibido: tipomoduloValue,
+                            elementoEncontrado: !!moduloInput,
+                            elementoId: moduloInput ? moduloInput.id : 'NO_ENCONTRADO'
+                        });
+                        moduloInput.value = tipomoduloValue;
+                        console.log('✅ Combobox tipomodulo llenado con:', moduloInput.value);
+                        
+                        console.log('✅ Tarifa encontrada y campos llenados:', data.tarifa);
+                    } else {
+                        // Tarifa no encontrada
+                        descripcionDiv.style.backgroundColor = '#f8d7da';
+                        descripcionDiv.style.borderColor = '#dc3545';
+                        descripcionDiv.style.color = '#721c24';
+                        descripcionDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.mensaje}`;
+                        
+                        // Limpiar campos
+                        descripcionInput.value = '';
+                        valorInput.value = '';
+                        frecuenciaInput.value = '';
+                        tipoInput.value = '';
+                        moduloInput.value = '';
+                        
+                        console.log('❌ Tarifa no encontrada:', data.mensaje);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error en la búsqueda AJAX:', error);
+                    descripcionDiv.style.backgroundColor = '#f8d7da';
+                    descripcionDiv.style.borderColor = '#dc3545';
+                    descripcionDiv.style.color = '#721c24';
+                    descripcionDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error en la búsqueda';
+                });
+            }, 500); // Esperar 500ms después de que el usuario deje de escribir
+        }
+        
+        function limpiarFormulario() {
+            if (confirm('¿Está seguro de que desea limpiar el formulario? Se perderán todos los datos ingresados.')) {
+                const campos = [
+                    '{{ form.rubro.id_for_label }}', '{{ form.cod_tarifa.id_for_label }}',
+                    '{{ form.descripcion.id_for_label }}', '{{ form.valor.id_for_label }}',
+                    '{{ form.frecuencia.id_for_label }}', '{{ form.tipo.id_for_label }}',
+                     '{{ form.tipomodulo.id_for_label }}'
+                ];
+                
+                campos.forEach(campoId => {
+                    const campo = document.getElementById(campoId);
+                    if (campo) {
+                        campo.value = '';
+                    }
+                });
+                
+                console.log('Formulario de tarifas limpiado correctamente.');
+            }
+        }
+
+        function eliminarTarifa(empresa, cod_tarifa, descripcion, rubro, ano) {
+            console.log('🚀 ELIMINAR TARIFA - INICIANDO PROCESO');
+            console.log('=' * 50);
+            console.log('📋 Parámetros recibidos:');
+            console.log(`   - empresa: "${empresa}" (tipo: ${typeof empresa})`);
+            console.log(`   - cod_tarifa: "${cod_tarifa}" (tipo: ${typeof cod_tarifa})`);
+            console.log(`   - descripcion: "${descripcion}" (tipo: ${typeof descripcion})`);
+            console.log(`   - rubro: "${rubro}" (tipo: ${typeof rubro})`);
+            console.log(`   - ano: "${ano}" (tipo: ${typeof ano})`);
+            
+            // Validar parámetros básicos
+            if (!empresa || !cod_tarifa || !rubro || !ano) {
+                console.error('❌ ERROR: Parámetros faltantes');
+                console.error(`   - empresa: ${empresa ? 'OK' : 'FALTANTE'}`);
+                console.error(`   - cod_tarifa: ${cod_tarifa ? 'OK' : 'FALTANTE'}`);
+                console.error(`   - rubro: ${rubro ? 'OK' : 'FALTANTE'}`);
+                console.error(`   - ano: ${ano ? 'OK' : 'FALTANTE'}`);
+                alert('Error: Faltan parámetros necesarios para la eliminación.');
+                return;
+            }
+            
+            const mensajeConfirmacion = `¿Está seguro de que desea eliminar la tarifa "${descripcion}" (${cod_tarifa}) del rubro ${rubro} año ${ano}?`;
+            console.log('📝 Mensaje de confirmación:', mensajeConfirmacion);
+            
+            if (confirm(mensajeConfirmacion)) {
+                console.log('✅ Usuario confirmó la eliminación');
+                
+                try {
+                    // Crear formulario
+                const form = document.createElement('form');
+                form.method = 'POST';
+                    
+                    // Obtener URL base
+                    const urlBase = '{% url "tributario:tarifas_crud" %}';
+                    console.log('🔗 URL base:', urlBase);
+                    
+                    // Preservar rubro en URL
+                    const rubroParaUrl = obtenerValorRubro();
+                    console.log('🔍 Rubro para URL:', rubroParaUrl);
+                    
+                    if (rubroParaUrl) {
+                        form.action = urlBase + '?codigo_rubro=' + encodeURIComponent(rubroParaUrl);
+                    } else {
+                        form.action = urlBase;
+                    }
+                    
+                    console.log('🔗 URL final:', form.action);
+                    
+                    // Obtener CSRF token
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                    if (!csrfToken) {
+                        console.error('❌ ERROR: No se encontró CSRF token');
+                        alert('Error: No se encontró token de seguridad. Recargue la página.');
+                        return;
+                    }
+                    
+                    // Preparar datos para envío
+                    const datosEnvio = {
+                        'csrfmiddlewaretoken': csrfToken.value,
+                        'accion': 'eliminar',
+                        'empresa': String(empresa).trim(),
+                        'rubro': String(rubro).trim(),
+                        'ano': String(ano).trim(),
+                        'cod_tarifa': String(cod_tarifa).trim()
+                    };
+                    
+                    console.log('📤 Datos preparados para envío:');
+                    Object.entries(datosEnvio).forEach(([clave, valor]) => {
+                        if (clave !== 'csrfmiddlewaretoken') {
+                            console.log(`   - ${clave}: "${valor}"`);
+                        }
+                    });
+                    
+                    // Verificar datos críticos
+                    const camposCriticos = ['empresa', 'rubro', 'ano', 'cod_tarifa'];
+                    let datosValidos = true;
+                    
+                    for (const campo of camposCriticos) {
+                        if (!datosEnvio[campo] || datosEnvio[campo].trim() === '') {
+                            console.error(`❌ Campo crítico vacío: ${campo}`);
+                            datosValidos = false;
+                        }
+                    }
+                    
+                    if (!datosValidos) {
+                        console.error('❌ ERROR: Datos inválidos para envío');
+                        alert('Error: Datos inválidos para la eliminación.');
+                        return;
+                    }
+                    
+                    // Crear campos del formulario
+                    Object.entries(datosEnvio).forEach(([nombre, valor]) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = nombre;
+                        input.value = valor;
+                        form.appendChild(input);
+                        console.log(`✅ Campo creado: ${nombre}`);
+                    });
+                    
+                    console.log('✅ Formulario preparado correctamente');
+                    console.log(`📊 Total de campos: ${form.querySelectorAll('input').length}`);
+                    console.log('🚀 Enviando formulario...');
+                    
+                    // Enviar formulario
+                document.body.appendChild(form);
+                form.submit();
+                    
+                } catch (error) {
+                    console.error('❌ ERROR durante la eliminación:', error);
+                    alert('Error inesperado durante la eliminación: ' + error.message);
+                }
+            } else {
+                console.log('❌ Eliminación cancelada por el usuario');
+            }
+        }
+
+        function planArbitrio(empresa, rubro, descripcion, codTarifa, ano) {
+            // Redirigir al plan de arbitrio con los parámetros necesarios
+            // Usar codigo_rubro para mantener la herencia correcta
+            var url = "{% url 'tributario:plan_arbitrio_crud' %}?empresa=" + encodeURIComponent(empresa);
+            
+            // Agregar codigo_rubro/rubro
+            if (rubro && rubro.trim() !== '') {
+                url += "&rubro=" + encodeURIComponent(rubro);
+            }
+            
+            // Agregar codigo_tarifa si está disponible
+            if (codTarifa && codTarifa.trim() !== '') {
+                url += "&codigo_tarifa=" + encodeURIComponent(codTarifa);
+            }
+            
+            // Agregar año si está disponible
+            if (ano && ano.trim() !== '') {
+                url += "&ano=" + encodeURIComponent(ano);
+            }
+            
+            console.log('🔗 Navegando a Plan Arbitrio con URL:', url);
+            console.log('   - Empresa:', empresa);
+            console.log('   - Rubro:', rubro);
+            console.log('   - Cod. Tarifa:', codTarifa);
+            console.log('   - Año:', ano);
+            window.location.href = url;
+        }
+
+        function navegarAPlanArbitrio() {
+            // Función para navegar a Plan de Arbitrio desde la barra de acciones
+            // Usa la herencia actual del formulario (empresa, rubro, codigo_tarifa, ano)
+            console.log('🔗 Navegando a Plan de Arbitrio desde barra de acciones...');
+            
+            // Obtener empresa del formulario
+            const empresaInput = document.getElementById('id_empresa');
+            const empresa = empresaInput ? empresaInput.value.trim() : '';
+            
+            const rubro = obtenerValorRubro();
+            const codigo_tarifa = document.getElementById('id_cod_tarifa') ? document.getElementById('id_cod_tarifa').value.trim() : '';
+            const ano = document.getElementById('id_ano') ? document.getElementById('id_ano').value.trim() : '';
+            
+            if (!rubro) {
+                alert('❌ Error: No se puede navegar a Plan de Arbitrio sin un rubro seleccionado.\n\nPor favor, seleccione un rubro primero.');
+                return;
+            }
+            
+            if (!empresa) {
+                console.warn('⚠️ Advertencia: No se encontró empresa en el formulario, se usará el valor de la sesión');
+            }
+            
+            // Construir URL con herencia completa
+            var url = "{% url 'tributario:plan_arbitrio_crud' %}";
+            
+            // Agregar empresa (si está disponible)
+            if (empresa && empresa.trim() !== '') {
+                url += "?empresa=" + encodeURIComponent(empresa);
+            } else {
+                // Si no hay empresa, iniciar con ?
+                url += "?";
+            }
+            
+            // Agregar rubro
+            if (rubro && rubro.trim() !== '') {
+                url += (url.includes('?') ? '&' : '?') + "rubro=" + encodeURIComponent(rubro);
+            }
+            
+            // Agregar código de tarifa si está disponible
+            if (codigo_tarifa && codigo_tarifa.trim() !== '') {
+                url += "&codigo_tarifa=" + encodeURIComponent(codigo_tarifa);
+            }
+            
+            // Agregar año si está disponible
+            if (ano && ano.trim() !== '') {
+                url += "&ano=" + encodeURIComponent(ano);
+            }
+            
+            console.log('✅ Navegando a Plan de Arbitrio con herencia:');
+            console.log(`   - Empresa: ${empresa || 'No encontrada (se usará sesión)'}`);
+            console.log(`   - Rubro: ${rubro}`);
+            console.log(`   - Código Tarifa: ${codigo_tarifa || 'No seleccionado'}`);
+            console.log(`   - Año: ${ano || 'No seleccionado'}`);
+            console.log(`   - URL: ${url}`);
+            
+            window.location.href = url;
+        }
+
+        function mostrarMensaje(mensaje, esExito) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${esExito ? 'success' : 'danger'}`;
+            alertDiv.innerHTML = mensaje;
+
+            const container = document.querySelector('.container');
+            container.insertBefore(alertDiv, container.firstChild);
+
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // Función auxiliar para obtener el valor del campo de rubro (sin crear variables temporales)
+        function obtenerValorRubro() {
+            console.log('🔍 obtenerValorRubro ejecutándose...');
+            
+            // Prioridad: campo heredado > campo del formulario > valor por defecto
+            const codigoRubroHeredado = document.getElementById('id_codigo_rubro_heredado');
+            const campoRubro = document.getElementById('id_rubro');
+            
+            console.log('🔍 codigoRubroHeredado:', codigoRubroHeredado);
+            console.log('🔍 campoRubro:', campoRubro);
+            
+            if (codigoRubroHeredado && codigoRubroHeredado.value && codigoRubroHeredado.value.trim() !== '') {
+                console.log('🔍 Usando campo heredado:', codigoRubroHeredado.value);
+                return codigoRubroHeredado.value;
+            } else if (campoRubro && campoRubro.value && campoRubro.value.trim() !== '') {
+                console.log('🔍 Usando campo formulario:', campoRubro.value);
+                return campoRubro.value;
+            }
+            
+            console.log('🔍 No se encontró valor de rubro válido');
+            return '';
+        }
+        
+        // Función auxiliar para crear campos ocultos temporales SOLO cuando sea necesario
+        
+        // Función para filtrar tarifas por año
+        function filtrarPorAno() {
+            console.log('🔍 filtrarPorAno() ejecutándose...');
+            
+            const anoSelect = document.getElementById('id_ano');
+            console.log('🔍 anoSelect encontrado:', !!anoSelect);
+            
+            if (anoSelect) {
+                const ano = anoSelect.value;
+                const rubro = obtenerValorRubro();
+                
+                console.log('🔍 Valores obtenidos:', {
+                    ano: ano,
+                    rubro: rubro
+                });
+                
+                // Construir URL con parámetros de filtro
+                let url = window.location.pathname;
+                const params = new URLSearchParams();
+                
+                // Siempre incluir el rubro si está disponible
+                if (rubro) {
+                    params.append('codigo_rubro', rubro);
+                    console.log('🔍 Agregando rubro a parámetros:', rubro);
+                }
+                
+                // Incluir el año solo si está seleccionado
+                if (ano) {
+                    params.append('ano', ano);
+                    console.log('🔍 Agregando año a parámetros:', ano);
+                }
+                
+                // Redirigir a la URL con los parámetros
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                console.log('🔍 URL final construida:', url);
+                console.log('🔍 Redirigiendo a:', url);
+                
+                window.location.href = url;
+            } else {
+                console.error('❌ No se encontró el elemento id_ano');
+            }
+        }
+        
+        // Función para limpiar el filtro de año
+        function limpiarFiltroAno() {
+            console.log('🔍 limpiarFiltroAno() ejecutándose...');
+            
+            const rubro = obtenerValorRubro();
+            console.log('🔍 Rubro obtenido para limpiar filtro:', rubro);
+            
+            // Construir URL solo con el rubro
+            let url = window.location.pathname;
+            const params = new URLSearchParams();
+            
+            // Solo incluir el rubro
+            if (rubro) {
+                params.append('codigo_rubro', rubro);
+                console.log('🔍 Agregando rubro a parámetros (sin año):', rubro);
+            }
+            
+            // Redirigir a la URL sin el parámetro de año
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+            
+            console.log('🔍 URL final (sin filtro de año):', url);
+            console.log('🔍 Redirigiendo a:', url);
+            
+            window.location.href = url;
+        }
+        
+        // Event listener para búsqueda automática
+        document.addEventListener('DOMContentLoaded', function() {
+            // ============================================================================
+            // DEBUG: Mostrar valores disponibles al cargar la página
+            // ============================================================================
+            console.log('='.repeat(80));
+            console.log('🔍 FORMULARIO TARIFAS - VALORES DISPONIBLES AL CARGAR');
+            console.log('='.repeat(80));
+            
+            const rubroInput = document.getElementById('id_rubro');
+            const anoInput = document.getElementById('id_ano');
+            const rubroHeredado = document.getElementById('id_codigo_rubro_heredado');
+            const empresaInput = document.getElementById('id_empresa');
+            
+            console.log('📋 Elementos del DOM:');
+            console.log('   - rubroInput (select):', rubroInput ? `ENCONTRADO (valor: "${rubroInput.value}")` : 'NO ENCONTRADO');
+            console.log('   - anoInput (select):', anoInput ? `ENCONTRADO (valor: "${anoInput.value}")` : 'NO ENCONTRADO');
+            console.log('   - rubroHeredado (hidden):', rubroHeredado ? `ENCONTRADO (valor: "${rubroHeredado.value}")` : 'NO ENCONTRADO');
+            console.log('   - empresaInput:', empresaInput ? `ENCONTRADO (valor: "${empresaInput.value}")` : 'NO ENCONTRADO');
+            
+            console.log('📋 Valores desde template Django:');
+            console.log('   - codigo_rubro:', '{{ codigo_rubro|default:"NO DISPONIBLE" }}');
+            console.log('   - ano_filtro:', '{{ ano_filtro|default:"NO DISPONIBLE" }}');
+            console.log('   - empresa_filtro:', '{{ empresa_filtro|default:"NO DISPONIBLE" }}');
+            
+            console.log('='.repeat(80));
+            // ============================================================================
+            
+            const codigoInput = document.getElementById('id_cod_tarifa');
+            if (codigoInput) {
+                codigoInput.addEventListener('input', buscarTarifaAsincrono);
+                codigoInput.addEventListener('blur', buscarTarifaAsincrono);
+            }
+            
+            // Event listener para filtrar por año
+            const anoSelect = document.getElementById('id_ano');
+            if (anoSelect) {
+                anoSelect.addEventListener('change', filtrarPorAno);
+            }
+        });
+    </script>
+</body>
+</html>

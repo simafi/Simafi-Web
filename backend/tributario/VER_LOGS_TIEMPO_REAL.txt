@@ -1,0 +1,142 @@
+================================================================================
+INSTRUCCIONES PARA VER LOGS EN TIEMPO REAL
+================================================================================
+
+IMPORTANTE: Ahora el servidor tiene logging DETALLADO activado.
+Podrás ver exactamente qué está pasando cuando uses el formulario.
+
+================================================================================
+PASO 1: DETENER EL SERVIDOR ACTUAL
+================================================================================
+
+Si el servidor está corriendo:
+1. Ir a la ventana del PowerShell donde está corriendo
+2. Presionar CTRL + C para detenerlo
+3. Esperar a que se detenga completamente
+
+================================================================================
+PASO 2: INICIAR EL SERVIDOR CON LOGS VISIBLES
+================================================================================
+
+1. Abrir PowerShell en: C:\simafiweb\venv\Scripts
+2. Ejecutar: python manage.py runserver 127.0.0.1:8080
+3. Dejar esta ventana ABIERTA y VISIBLE
+4. Verás los logs aquí en tiempo real
+
+================================================================================
+PASO 3: USAR EL FORMULARIO Y VER LOS LOGS
+================================================================================
+
+1. Abrir el navegador
+2. Ir a: http://127.0.0.1:8080/
+3. Hacer login
+4. Ir a Maestro de Negocios
+5. Abrir Declaración de Volumen de un negocio
+6. Llenar el formulario
+7. Hacer clic en "Guardar Declaración"
+
+8. **INMEDIATAMENTE** ve a la ventana del PowerShell
+
+Verás mensajes como:
+================================================================================
+[DECLARACION_VOLUMEN] Vista llamada - Method: POST
+[SESSION] Empresa: 0001
+[SESSION] Usuario: nombre_usuario
+[GET PARAMS] RTM: RTM001, EXPE: EXP001
+[POST] Detectado POST request!
+[POST DATA] Datos recibidos: {...}
+[ACCION] Acción recibida: 'guardar'
+[ACCION] Procesando 'guardar'
+[FORM] Form is_valid: True
+[FORM] Formulario válido, procediendo a guardar...
+[NEGOCIO] Negocio encontrado: ID=1234
+[DECLARACION] Datos a guardar: empresa=0001, idneg=1234, rtm=RTM001, ...
+[BUSCAR] Buscando declaración existente: None
+[INSERT] Creando nueva declaración
+[SUCCESS] Declaración creada: ID=62, Declaración 2024/06 creada correctamente
+[FINAL] exito=True, mensaje=Declaración 2024/06 creada correctamente
+================================================================================
+
+================================================================================
+QUÉ BUSCAR EN LOS LOGS
+================================================================================
+
+1. SI VES "[POST] Detectado POST request!":
+   ✅ El formulario SÍ se está enviando
+
+2. SI VES "[ACCION] Acción recibida: 'guardar'":
+   ✅ El botón de guardar funciona correctamente
+
+3. SI VES "[FORM] Form is_valid: True":
+   ✅ Los datos del formulario son válidos
+
+4. SI VES "[FORM ERROR] Errores del formulario:":
+   ❌ HAY ERRORES en los datos, mira qué campos fallan
+
+5. SI VES "[SUCCESS] Declaración creada":
+   ✅ ¡SE GUARDÓ CORRECTAMENTE!
+
+6. SI VES "[EXCEPTION] Error procesando POST":
+   ❌ Hay un error de programación, copia el error completo
+
+7. SI NO VES NINGÚN LOG:
+   ❌ El formulario NO se está enviando (problema de JavaScript o cache)
+
+================================================================================
+POSIBLES RESULTADOS
+================================================================================
+
+RESULTADO 1: VES LOGS Y DICE "SUCCESS"
+---------------------------------------
+¡FUNCIONA! El problema era que no estabas viendo los mensajes de éxito.
+Refresca la página y verás la declaración en la lista.
+
+RESULTADO 2: VES "[FORM ERROR]"
+--------------------------------
+Hay campos con datos inválidos. Los logs mostrarán qué campos.
+Ejemplo: "[FORM ERROR] Errores del formulario: {'ano': ['Este campo es obligatorio']}"
+
+RESULTADO 3: VES "[EXCEPTION]"
+-------------------------------
+Hay un error de programación. Copia TODO el stacktrace y envíamelo.
+
+RESULTADO 4: NO VES NINGÚN LOG
+-------------------------------
+El formulario NO se está enviando. Esto significa:
+- JavaScript está bloqueando el envío
+- El formulario tiene un error de HTML
+- El navegador tiene cache antiguo
+
+Para este caso:
+1. Abre la consola del navegador (F12)
+2. Ve a la pestaña "Console"
+3. Intenta guardar nuevamente
+4. Mira si hay errores rojos
+5. Copia cualquier error que veas
+
+================================================================================
+EJEMPLO DE SESIÓN EXITOSA
+================================================================================
+
+[INFO] [DECLARACION_VOLUMEN] Vista llamada - Method: GET
+[INFO] [SESSION] Empresa: 0001
+[INFO] [GET PARAMS] RTM: RTM001, EXPE: EXP001
+[INFO] [BUSCAR NEGOCIO] rtm=RTM001, expe=EXP001
+... (usuario llena el formulario)
+[INFO] [DECLARACION_VOLUMEN] Vista llamada - Method: POST
+[INFO] [SESSION] Empresa: 0001
+[INFO] [POST] Detectado POST request!
+[INFO] [POST DATA] Datos recibidos: {'ano': ['2024'], 'mes': ['6'], ...}
+[INFO] [ACCION] Acción recibida: 'guardar'
+[INFO] [FORM] Form is_valid: True
+[INFO] [NEGOCIO] Negocio encontrado: ID=1112
+[INFO] [DECLARACION] Datos a guardar: empresa=0001, idneg=1112, ...
+[INFO] [INSERT] Creando nueva declaración
+[INFO] [SUCCESS] Declaración creada: ID=62
+[INFO] [FINAL] exito=True, mensaje=Declaración 2024/06 creada correctamente
+
+¡ESTO SIGNIFICA QUE FUNCIONÓ!
+
+================================================================================
+
+

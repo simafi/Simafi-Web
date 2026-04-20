@@ -1,0 +1,127 @@
+{% extends "presupuestos/menu_principal.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid mt-4 pb-5 px-4">
+    <div class="d-print-none mb-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'presupuestos:informes_ingresos_hub' %}">Panel de Ingresos</a></li>
+                <li class="breadcrumb-item active">Consulta por Cuenta</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Formulario de búsqueda -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-search me-2 text-secondary"></i>Consultar Ingresos por Cuenta</h5>
+            <form method="GET" action="{% url 'presupuestos:consulta_por_cuenta' %}" class="row g-3 align-items-end">
+                <input type="hidden" name="ejercicio" value="{{ ejercicio_id }}">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small">Código de Cuenta (o fracción)</label>
+                    <input type="text" name="cuenta" class="form-control" 
+                           value="{{ cuenta_filtro }}" 
+                           placeholder="Ej: 11, 1101, 110101..."
+                           autofocus>
+                    <div class="form-text">Ingrese el código completo o parcial de la cuenta a consultar.</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small">Nivel Máximo de Detalle</label>
+                    <select name="nivel" class="form-select">
+                        <option value="1" {% if nivel_filtro == "1" %}selected{% endif %}>Nivel 1 - Títulos Principales</option>
+                        <option value="2" {% if nivel_filtro == "2" %}selected{% endif %}>Nivel 2 - Subtítulos</option>
+                        <option value="3" {% if nivel_filtro == "3" %}selected{% endif %}>Nivel 3 - Cuentas</option>
+                        <option value="4" {% if nivel_filtro == "4" %}selected{% endif %}>Nivel 4 - Subcuentas</option>
+                        <option value="5" {% if nivel_filtro == "5" or not nivel_filtro %}selected{% endif %}>Nivel 5 - Máximo Detalle</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small">Ejercicio Fiscal</label>
+                    <select name="ejercicio" class="form-select">
+                        {% for ej in ejercicios %}
+                        <option value="{{ ej.id }}" {% if ej.id|stringformat:"s" == ejercicio_id %}selected{% endif %}>{{ ej.anio }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="fas fa-search me-1"></i>Consultar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if datos %}
+    <!-- Resultados -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Resultados de la Consulta</h5>
+                    <p class="small text-muted mb-0">
+                        Cuenta: <strong>{{ cuenta_filtro|default:"Todas" }}</strong> | 
+                        Nivel máximo: <strong>{{ nivel_filtro }}</strong> | 
+                        Ejercicio: <strong>{{ ejercicio.anio }}</strong> |
+                        Registros: <strong>{{ datos|length }}</strong>
+                    </p>
+                </div>
+                <button onclick="window.print()" class="btn btn-sm btn-outline-dark d-print-none">
+                    <i class="fas fa-print me-1"></i>Imprimir
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle border">
+                    <thead class="bg-light text-center small fw-bold">
+                        <tr>
+                            <th rowspan="2" style="width: 120px;">Código</th>
+                            <th rowspan="2" class="text-start">Descripción</th>
+                            <th colspan="3">Presupuesto</th>
+                            <th rowspan="2">Recaudado</th>
+                            <th rowspan="2">Por Recaudar</th>
+                            <th rowspan="2">% Rec.</th>
+                        </tr>
+                        <tr>
+                            <th>Aprobado</th>
+                            <th>Reformas</th>
+                            <th>Total Aprobado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for d in datos %}
+                        <tr class="{% if d.nivel == 1 %}table-secondary fw-bold{% elif d.nivel == 2 %}fw-bold bg-light{% endif %}">
+                            <td class="text-nowrap">{{ d.codigo }}</td>
+                            <td style="padding-left: {{ d.nivel }}rem !important;">{{ d.nombre }}</td>
+                            <td class="text-end font-monospace">{{ d.aprobado|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ d.reformas|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ d.total_aprobado|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-primary fw-bold">{{ d.recaudado|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-danger">{{ d.por_recaudar|floatformat:2|intcomma }}</td>
+                            <td class="text-center">
+                                <span class="badge {% if d.porcentaje > 90 %}bg-success{% elif d.porcentaje > 50 %}bg-info{% else %}bg-warning{% endif %}">
+                                    {{ d.porcentaje|floatformat:1 }}%
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% elif cuenta_filtro %}
+    <div class="alert alert-warning text-center">
+        <i class="fas fa-exclamation-triangle me-2"></i>No se encontraron cuentas que coincidan con el código <strong>"{{ cuenta_filtro }}"</strong> para el ejercicio seleccionado.
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    @media print {
+        .d-print-none, .breadcrumb { display: none !important; }
+        .card:first-of-type { display: none !important; }
+    }
+</style>
+{% endblock %}

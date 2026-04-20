@@ -1,0 +1,1700 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Estado de Cuenta</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+            animation: backgroundShift 15s ease infinite;
+        }
+        
+        @keyframes backgroundShift {
+            0% { background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%); }
+            25% { background: linear-gradient(135deg, #f093fb 0%, #f5576c 20%, #4facfe 40%, #00d4ff 60%, #667eea 80%, #764ba2 100%); }
+            50% { background: linear-gradient(135deg, #4facfe 0%, #00d4ff 20%, #667eea 40%, #764ba2 60%, #f093fb 80%, #f5576c 100%); }
+            75% { background: linear-gradient(135deg, #764ba2 0%, #f093fb 20%, #f5576c 40%, #4facfe 60%, #00d4ff 80%, #667eea 100%); }
+            100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%); }
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            margin-bottom: 45px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.25);
+            background: rgba(255, 255, 255, 0.98);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%) !important;
+            border: none;
+            padding: 1.5rem;
+            animation: headerGradient 10s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @keyframes headerGradient {
+            0% { background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%) !important; }
+            25% { background: linear-gradient(135deg, #f093fb 0%, #f5576c 20%, #4facfe 40%, #00d4ff 60%, #667eea 80%, #764ba2 100%) !important; }
+            50% { background: linear-gradient(135deg, #4facfe 0%, #00d4ff 20%, #667eea 40%, #764ba2 60%, #f093fb 80%, #f5576c 100%) !important; }
+            75% { background: linear-gradient(135deg, #764ba2 0%, #f093fb 20%, #f5576c 40%, #4facfe 60%, #00d4ff 80%, #667eea 100%) !important; }
+            100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%) !important; }
+        }
+        
+        .card-header h5 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .info-card {
+            border-radius: 18px;
+            border: none;
+            transition: all 0.4s ease;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+        }
+        
+        .info-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        }
+        
+        .info-card-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .info-card-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .info-card-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .info-card-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        
+        .info-card .small {
+            opacity: 0.9;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .info-card .fw-semibold {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+        
+        .btn {
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        /* Estilos mejorados para tablas - IDÉNTICOS A declaracion_volumen */
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 15px 12px;
+            border: none;
+            position: relative;
+        }
+        
+        .table thead th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+            transform: scale(1.01);
+        }
+        
+        .table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .saldo-positivo {
+            color: #28a745;
+            font-weight: 700;
+        }
+        
+        .saldo-negativo {
+            color: #dc3545;
+            font-weight: 700;
+        }
+        
+        .saldo-cero {
+            color: #6c757d;
+        }
+        
+        .text-danger {
+            color: #e74c3c !important;
+            font-weight: 700;
+        }
+        
+        .table tfoot th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            padding: 15px 12px;
+            border: none;
+        }
+        
+        /* Animaciones para elementos */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-control {
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-1px);
+            outline: none;
+        }
+        
+        .form-control:hover {
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .alert {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+        }
+        
+        .btn-light {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-light:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            color: white;
+            transform: translateX(-3px);
+        }
+        
+        .badge-operacion {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .operacion-F {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        
+        .operacion-D {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            opacity: 0.3;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div class="card shadow-lg border-0">
+            <div class="card-header d-flex justify-content-between align-items-center text-white">
+                <h5 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Estado de Cuenta</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {% for message in messages %}
+                            <div>{{ message }}</div>
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+                
+                {% if error_mensaje %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ error_mensaje }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+                
+                <div class="mb-4 p-4" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.2);">
+                    <form method="get" id="formEstadoCuenta" class="row g-3">
+                        <input type="hidden" name="empresa" id="inputEmpresa" value="{{ empresa|default:municipio_codigo }}" />
+                        <div class="col-md-3">
+                            <label class="form-label"><i class="fas fa-id-card text-primary"></i> RTM</label>
+                            <div class="input-group">
+                                <input type="text" name="rtm" id="inputRTM" class="form-control" value="{{ rtm }}" placeholder="RTM" />
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalBuscarNegocio" title="Buscar Negocio">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label"><i class="fas fa-file-alt text-primary"></i> Expediente</label>
+                            <input type="text" name="expe" id="inputExpe" class="form-control" value="{{ expe }}" placeholder="Expediente" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label"><i class="fas fa-calendar-alt text-primary"></i> Año desde</label>
+                            <input type="number" name="ano_desde" class="form-control" min="1990" max="2100" value="{{ request.GET.ano_desde }}" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label"><i class="fas fa-calendar text-primary"></i> Mes desde</label>
+                            <input type="text" name="mes_desde" class="form-control" placeholder="01-12" value="{{ request.GET.mes_desde }}" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label"><i class="fas fa-calendar-alt text-primary"></i> Año hasta</label>
+                            <input type="number" name="ano_hasta" class="form-control" min="1990" max="2100" value="{{ request.GET.ano_hasta }}" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label"><i class="fas fa-calendar text-primary"></i> Mes hasta</label>
+                            <input type="text" name="mes_hasta" class="form-control" placeholder="01-12" value="{{ request.GET.mes_hasta }}" />
+                        </div>
+                        <div class="col-md-2 align-self-end">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Consultar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                {% if negocio %}
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="p-3 info-card info-card-1">
+                            <div class="small"><i class="fas fa-building"></i> Empresa</div>
+                            <div class="fw-semibold">{{ empresa|default:municipio_codigo }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 info-card info-card-2">
+                            <div class="small"><i class="fas fa-id-card"></i> RTM/Expediente</div>
+                            <div class="fw-semibold">{{ rtm }} / {{ expe }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 info-card info-card-3">
+                            <div class="small"><i class="fas fa-store"></i> Negocio</div>
+                            <div class="fw-semibold">{{ negocio.nombrenego|truncatewords:5 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 info-card info-card-4">
+                            <div class="small"><i class="fas fa-user-tie"></i> Contribuyente</div>
+                            <div class="fw-semibold">{{ negocio.comerciante|truncatewords:5 }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% elif rtm and expe and not error_mensaje %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> No se encontró información del negocio con los datos proporcionados. Verifique RTM, Expediente y Empresa.
+                </div>
+                {% endif %}
+
+                {% if negocio and transacciones %}
+                <div class="mb-4 d-flex justify-content-center align-items-center gap-3">
+                    <a href="/tributario/maestro-negocios/?empresa={{ municipio_codigo }}&rtm={{ rtm }}&expe={{ expe }}" class="btn btn-secondary btn-lg" style="min-width: 150px;">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                    <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#modalGenerarPago" id="btnGenerarPago" style="min-width: 250px;">
+                        <i class="fas fa-money-bill-wave"></i> Generar Transacción de Pago
+                    </button>
+                </div>
+                {% else %}
+                <div class="mb-4 d-flex justify-content-center">
+                    <a href="/tributario/maestro-negocios/?empresa={{ municipio_codigo }}&rtm={{ rtm }}&expe={{ expe }}" class="btn btn-secondary btn-lg" style="min-width: 150px;">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-calendar-day"></i> Fecha</th>
+                                <th><i class="fas fa-calendar-alt"></i> Año</th>
+                                <th><i class="fas fa-calendar"></i> Mes</th>
+                                <th><i class="fas fa-exchange-alt"></i> Operación</th>
+                                <th><i class="fas fa-code"></i> Rubro</th>
+                                <th><i class="fas fa-info-circle"></i> Descripción</th>
+                                <th class="text-end"><i class="fas fa-dollar-sign"></i> Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in transacciones %}
+                            <tr>
+                                <td>{{ t.fecha|date:'Y-m-d' }}</td>
+                                <td>{{ t.ano|default_if_none:'' }}</td>
+                                <td>{{ t.mes }}</td>
+                                <td>
+                                    {% if t.operacion == 'F' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 5px 10px; border-radius: 6px;">Facturación</span>
+                                    {% elif t.operacion == 'D' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #f5576c 0%, #c82333 100%); color: white; padding: 5px 10px; border-radius: 6px;">Débitos</span>
+                                    {% elif t.operacion == 'C' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #4facfe 0%, #00d4ff 100%); color: white; padding: 5px 10px; border-radius: 6px;">Créditos</span>
+                                    {% elif t.operacion == 'P' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; padding: 5px 10px; border-radius: 6px;">Pagos</span>
+                                    {% else %}
+                                        <span class="badge" style="background: #6c757d; color: white; padding: 5px 10px; border-radius: 6px;">{{ t.operacion|default:"-" }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ t.rubro|default:"-" }}</td>
+                                <td>{{ t.rubro_descripcion|default:"-" }}</td>
+                                <td class="text-end" style="font-weight: bold; {% if t.monto < 0 %}color: #dc3545;{% else %}color: #28a745;{% endif %}">{{ t.monto|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <p class="mb-0">Sin transacciones para los filtros aplicados</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="6" class="text-end" style="font-size: 1.1rem; font-weight: 700; padding: 15px 10px; color: #212529; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-top: 3px solid #667eea; border-radius: 8px 0 0 8px;">Saldo Final (suma de montos)</th>
+                                <th class="text-end" style="font-size: 1.3rem; font-weight: 900; padding: 15px 10px; {% if totales.saldo_final < 0 %}color: #ffffff; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); text-shadow: 1px 1px 2px rgba(0,0,0,0.3);{% else %}color: #ffffff; background: linear-gradient(135deg, #28a745 0%, #218838 100%); text-shadow: 1px 1px 2px rgba(0,0,0,0.3);{% endif %} border-top: 3px solid {% if totales.saldo_final < 0 %}#dc3545{% else %}#28a745{% endif %}; border-radius: 0 8px 8px 0;">{{ totales.saldo_final|floatformat:2 }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Generar Transacción de Pago -->
+    <div class="modal fade" id="modalGenerarPago" tabindex="-1" aria-labelledby="modalGenerarPagoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                    <h5 class="modal-title" id="modalGenerarPagoLabel">
+                        <i class="fas fa-money-bill-wave"></i> Generar Transacción de Pago
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 25px;">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="fas fa-calendar-check"></i> Tipo de Pago</label>
+                            <select id="tipoPago" class="form-select">
+                                <option value="cuota">Pagar hasta cuota específica</option>
+                                <option value="parcial">Abono parcial</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="divCuota" style="display: block;">
+                            <label class="form-label"><i class="fas fa-list-ol"></i> Pagar hasta la cuota (mes) número</label>
+                            <input type="number" id="cuotaHasta" class="form-control" min="1" value="1" />
+                            <small class="text-muted">Cada cuota corresponde a un mes (periodo año-mes)</small>
+                        </div>
+                        <div class="col-md-6" id="divMonto" style="display: none;">
+                            <label class="form-label"><i class="fas fa-dollar-sign"></i> Monto a Abonar</label>
+                            <input type="number" id="montoAbono" class="form-control" min="0.01" step="0.01" placeholder="0.00" />
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-comment-dots"></i> Comentario para Caja</label>
+                        <textarea id="comentarioPago" class="form-control" rows="2" maxlength="500" placeholder="Agregar nota para el recibo (opcional)"></textarea>
+                        <small class="text-muted">Este comentario aparecerá en el recibo enviado a caja.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-primary" id="btnCalcularPago">
+                            <i class="fas fa-calculator"></i> Calcular Transacción
+                        </button>
+                    </div>
+
+                    <div id="resultadoPago" style="display: none;">
+                        <!-- Recibo Temporal de Transacciones -->
+                        <div class="card" style="border: 2px solid #28a745; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
+                            <div class="card-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-0"><i class="fas fa-receipt"></i> Recibo Temporal de Transacciones</h5>
+                                        <small id="fechaRecibo"></small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="badge bg-light text-dark" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                                            <i class="fas fa-file-invoice"></i> TEMPORAL
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Información del Negocio -->
+                                <div class="row mb-4" style="border-bottom: 2px solid #e9ecef; padding-bottom: 1rem;">
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Empresa:</strong> <span id="reciboEmpresa"></span></p>
+                                        <p class="mb-1"><strong>RTM:</strong> <span id="reciboRTM"></span></p>
+                                        <p class="mb-0"><strong>Expediente:</strong> <span id="reciboExpe"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Negocio:</strong> <span id="reciboNegocio"></span></p>
+                                        <p class="mb-1"><strong>Contribuyente:</strong> <span id="reciboContribuyente"></span></p>
+                                        <p class="mb-0"><strong>Tipo de Pago:</strong> <span id="reciboTipoPago"></span></p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Resumen -->
+                                <div class="alert alert-info mb-3">
+                                    <h6 class="mb-2"><i class="fas fa-info-circle"></i> Resumen de Transacción</h6>
+                                    <p class="mb-0" id="resumenPago"></p>
+                                </div>
+                                
+                                <!-- Tabla de Transacciones por Cuenta -->
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                                            <tr>
+                                                <th style="width: 15%;">Rubro</th>
+                                                <th style="width: 15%;">Cuenta</th>
+                                                <th style="width: 45%;">Descripción</th>
+                                                <th class="text-end" style="width: 25%;">Valor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyTransaccionPago">
+                                            <!-- Los resultados se cargarán aquí -->
+                                        </tbody>
+                                        <tfoot style="background: #f8f9fa; font-weight: bold;">
+                                            <tr>
+                                                <td colspan="2" class="text-end"><strong>TOTAL:</strong></td>
+                                                <td class="text-end" id="totalValor">L. 0.00</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                
+                                <!-- Nota -->
+                                <div class="alert alert-warning mt-3 mb-0">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    <strong>Nota:</strong> Este es un recibo temporal. Los datos no se han guardado en la base de datos. 
+                                    Para procesar el pago, deberá guardar la transacción.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="reciboCajaFinal" style="display: none;" class="mt-4">
+                        <div class="card" style="border: 2px solid #0d6efd; box-shadow: 0 6px 20px rgba(13, 110, 253, 0.25);">
+                            <div class="card-header" style="background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%); color: white;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-0"><i class="fas fa-receipt"></i> Recibo Generado para Caja</h5>
+                                        <small id="reciboFechaFinal"></small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-light text-dark" id="reciboNumeroBadge" style="font-size: 0.95rem; padding: 0.45rem 0.85rem;">
+                                            <i class="fas fa-hashtag"></i> <span id="reciboNumeroFinal"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-4">
+                                    <div class="col-lg-8">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p class="mb-1"><strong>Empresa:</strong> <span id="reciboEmpresaFinal"></span></p>
+                                                <p class="mb-1"><strong>RTM:</strong> <span id="reciboRTMFinal"></span></p>
+                                                <p class="mb-1"><strong>Expediente:</strong> <span id="reciboExpeFinal"></span></p>
+                                                <p class="mb-0"><strong>Tipo de Pago:</strong> <span id="reciboTipoPagoFinal"></span></p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p class="mb-1"><strong>Negocio:</strong> <span id="reciboNegocioFinal"></span></p>
+                                                <p class="mb-1"><strong>Contribuyente:</strong> <span id="reciboContribuyenteFinal"></span></p>
+                                                <p class="mb-0"><strong>Dirección:</strong> <span id="reciboDireccionFinal"></span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 text-center">
+                                        <div class="border rounded-3 p-3 bg-light">
+                                            <img id="qrReciboFinal" src="" alt="Código QR del Recibo" style="max-width: 160px; width: 100%; height: auto; display: none;">
+                                            <small class="d-block mt-2 text-muted">Escanee para validar recibo</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-primary mb-4" id="mensajeReciboFinal" style="display: none;"></div>
+
+                                <!-- Desglose mora/base por año (se llena si backend lo envía) -->
+                                <div class="mb-4" id="boxDesgloseMoraIcs" style="display:none;">
+                                    <div class="p-3 border rounded bg-light">
+                                        <div class="fw-bold mb-2">Desglose (año referencia <span id="desgloseAnioRefIcs"></span>)</div>
+                                        <div class="row g-2">
+                                            <div class="col-md-6">
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Base año actual</span>
+                                                    <span>L. <span id="desgloseBaseActualIcs">0.00</span></span>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Mora año actual</span>
+                                                    <span>L. <span id="desgloseMoraActualIcs">0.00</span></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Base años anteriores</span>
+                                                    <span>L. <span id="desgloseBaseAntIcs">0.00</span></span>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Mora años anteriores</span>
+                                                    <span>L. <span id="desgloseMoraAntIcs">0.00</span></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead style="background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%); color: white;">
+                                            <tr>
+                                                <th style="width: 14%;">Rubro</th>
+                                                <th style="width: 18%;">Cuenta</th>
+                                                <th style="width: 30%;">Descripción</th>
+                                                <th style="width: 18%;">Periodo</th>
+                                                <th class="text-end" style="width: 10%;">Valor</th>
+                                                <th class="text-end" style="width: 10%;">Aplicado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyReciboFinal">
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted">Sin información disponible</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot style="background: #f1f3f5; font-weight: bold;">
+                                            <tr>
+                                                <td colspan="5" class="text-end text-uppercase">Total Recibo:</td>
+                                                <td class="text-end" id="reciboTotalFinal">L. 0.00</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <p class="mb-0"><strong>Comentario:</strong> <span id="reciboComentarioFinal">-</span></p>
+                                </div>
+                                
+                                <div class="mt-3 text-end">
+                                    <button type="button" class="btn btn-primary" id="btnImprimirRecibo" style="display: none;">
+                                        <i class="fas fa-print"></i> Imprimir Recibo
+                                    </button>
+                                </div>
+                                
+                                <div class="alert alert-success mt-3 mb-0">
+                                    <i class="fas fa-check-circle"></i>
+                                    Recibo listo para ser cobrado en el módulo de caja. Conserve este número como referencia.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="cargandoPago" class="text-center py-5" style="display: none;">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Calculando...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Calculando transacción de pago...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success me-auto" id="btnEnviarCaja">
+                        <i class="fas fa-paper-plane"></i> Enviar a Caja
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Búsqueda de Negocios -->
+    <div class="modal fade" id="modalBuscarNegocio" tabindex="-1" aria-labelledby="modalBuscarNegocioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="modal-title" id="modalBuscarNegocioLabel">
+                        <i class="fas fa-search"></i> Buscar Negocio
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 25px;">
+                    <!-- Formulario de Búsqueda -->
+                    <div class="card mb-4" style="border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <div class="card-body">
+                            <form id="formBuscarNegocio" class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label"><i class="fas fa-filter"></i> Tipo de Búsqueda</label>
+                                    <select id="tipoBusqueda" class="form-select">
+                                        <option value="todo">Todos los campos</option>
+                                        <option value="dni">DNI / Identidad</option>
+                                        <option value="comerciante">Comerciante</option>
+                                        <option value="nombre">Nombre del Negocio</option>
+                                        <option value="direccion">Dirección</option>
+                                        <option value="rtm">RTM</option>
+                                        <option value="expe">Expediente</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="fas fa-search"></i> Criterio de Búsqueda</label>
+                                    <input type="text" id="criterioBusqueda" class="form-control" placeholder="Ingrese el término de búsqueda..." />
+                                </div>
+                                <div class="col-md-3 align-self-end">
+                                    <button type="button" id="btnBuscarNegocios" class="btn btn-primary w-100">
+                                        <i class="fas fa-search"></i> Buscar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Resultados -->
+                    <div id="resultadosBusqueda" style="display: none;">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    <tr>
+                                        <th>RTM</th>
+                                        <th>Expediente</th>
+                                        <th>Nombre del Negocio</th>
+                                        <th>Comerciante</th>
+                                        <th>DNI</th>
+                                        <th>Dirección</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyResultados">
+                                    <!-- Los resultados se cargarán aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="mensajeResultados" class="alert alert-info mt-3" style="display: none;">
+                            <i class="fas fa-info-circle"></i> <span id="textoMensajeResultados"></span>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje de carga -->
+                    <div id="cargandoBusqueda" class="text-center py-5" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Buscando...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Buscando negocios...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const empresaActual = '{{ empresa|default:municipio_codigo }}';
+        const csrfToken = '{{ csrf_token }}';
+        let ultimaSolicitudPago = null;
+        let ultimaRespuestaPago = null;
+        let botonEnviarCaja = null;
+        const textoBotonEnviarCaja = '<i class="fas fa-paper-plane"></i> Enviar a Caja';
+
+        function obtenerDatoTemplate(valorTemplate, elementoId) {
+            if (valorTemplate && valorTemplate !== 'None') {
+                return String(valorTemplate).trim();
+            }
+            const elemento = document.getElementById(elementoId);
+            return elemento ? elemento.value.trim() : '';
+        }
+
+        function buscarNegocios() {
+            const criterio = document.getElementById('criterioBusqueda').value.trim();
+            const tipo = document.getElementById('tipoBusqueda').value;
+
+            if (!criterio) {
+                alert('Por favor ingrese un criterio de búsqueda');
+                return;
+            }
+
+            document.getElementById('cargandoBusqueda').style.display = 'block';
+            document.getElementById('resultadosBusqueda').style.display = 'none';
+
+            const url = `/tributario/buscar-negocios-listado/?empresa=${encodeURIComponent(empresaActual)}&criterio=${encodeURIComponent(criterio)}&tipo=${encodeURIComponent(tipo)}`;
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(texto => {
+                            throw new Error(`Error HTTP ${response.status}: ${texto.substring(0, 200)}`);
+                        });
+                    }
+
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        return response.text().then(texto => {
+                            console.error('Respuesta no-JSON recibida:', texto.substring(0, 500));
+                            throw new Error('El servidor devolvió HTML en lugar de JSON. Verifique la consola para más detalles.');
+                        });
+                    }
+
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('cargandoBusqueda').style.display = 'none';
+
+                    if (data.exito) {
+                        mostrarResultados(data.resultados);
+                    } else {
+                        mostrarError(data.mensaje || 'Error al buscar negocios');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('cargandoBusqueda').style.display = 'none';
+                    console.error('Error en búsqueda:', error);
+                    mostrarError('Error de conexión: ' + error.message);
+                });
+        }
+
+        function mostrarResultados(resultados) {
+            const tbody = document.getElementById('tbodyResultados');
+            const mensajeDiv = document.getElementById('mensajeResultados');
+            const textoMensaje = document.getElementById('textoMensajeResultados');
+
+            tbody.innerHTML = '';
+
+            if (resultados.length === 0) {
+                document.getElementById('resultadosBusqueda').style.display = 'block';
+                mensajeDiv.style.display = 'block';
+                mensajeDiv.className = 'alert alert-warning mt-3';
+                textoMensaje.textContent = 'No se encontraron negocios con los criterios especificados.';
+                return;
+            }
+
+            mensajeDiv.style.display = 'block';
+            mensajeDiv.className = 'alert alert-success mt-3';
+            textoMensaje.textContent = `Se encontraron ${resultados.length} negocio(s).`;
+
+            resultados.forEach(negocio => {
+                const tr = document.createElement('tr');
+                tr.style.cursor = 'pointer';
+                tr.innerHTML = `
+                    <td>${negocio.rtm || '-'}</td>
+                    <td>${negocio.expe || '-'}</td>
+                    <td>${negocio.nombrenego || '-'}</td>
+                    <td>${negocio.comerciante || '-'}</td>
+                    <td>${negocio.identidad || '-'}</td>
+                    <td>${negocio.direccion || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success btn-seleccionar-negocio"
+                                data-rtm="${negocio.rtm || ''}"
+                                data-expe="${negocio.expe || ''}">
+                            <i class="fas fa-check"></i> Seleccionar
+                        </button>
+                    </td>
+                `;
+
+                const btn = tr.querySelector('.btn-seleccionar-negocio');
+                btn.addEventListener('click', function() {
+                    seleccionarNegocio(negocio.rtm || '', negocio.expe || '');
+                });
+
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('resultadosBusqueda').style.display = 'block';
+        }
+
+        function mostrarError(mensaje) {
+            const mensajeDiv = document.getElementById('mensajeResultados');
+            const textoMensaje = document.getElementById('textoMensajeResultados');
+
+            mensajeDiv.style.display = 'block';
+            mensajeDiv.className = 'alert alert-danger mt-3';
+            textoMensaje.textContent = mensaje;
+            document.getElementById('resultadosBusqueda').style.display = 'block';
+        }
+
+        function seleccionarNegocio(rtm, expe) {
+            document.getElementById('inputRTM').value = rtm;
+            document.getElementById('inputExpe').value = expe;
+
+            const empresaField = document.getElementById('inputEmpresa');
+            if (!empresaField.value) {
+                empresaField.value = empresaActual;
+            }
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalBuscarNegocio'));
+            if (modal) {
+                modal.hide();
+            }
+
+            document.getElementById('formEstadoCuenta').submit();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnBuscar = document.getElementById('btnBuscarNegocios');
+            if (btnBuscar) {
+                btnBuscar.addEventListener('click', buscarNegocios);
+            }
+
+            const criterioInput = document.getElementById('criterioBusqueda');
+            if (criterioInput) {
+                criterioInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        buscarNegocios();
+                    }
+                });
+            }
+
+            const modalElement = document.getElementById('modalBuscarNegocio');
+            if (modalElement) {
+                modalElement.addEventListener('hidden.bs.modal', function() {
+                    document.getElementById('criterioBusqueda').value = '';
+                    document.getElementById('tipoBusqueda').value = 'todo';
+                    document.getElementById('resultadosBusqueda').style.display = 'none';
+                    document.getElementById('cargandoBusqueda').style.display = 'none';
+                    document.getElementById('tbodyResultados').innerHTML = '';
+                });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const tipoPago = document.getElementById('tipoPago');
+            const divCuota = document.getElementById('divCuota');
+            const divMonto = document.getElementById('divMonto');
+            const btnCalcularPago = document.getElementById('btnCalcularPago');
+            botonEnviarCaja = document.getElementById('btnEnviarCaja');
+
+            if (botonEnviarCaja) {
+                botonEnviarCaja.disabled = true;
+                botonEnviarCaja.innerHTML = textoBotonEnviarCaja;
+                botonEnviarCaja.addEventListener('click', guardarTransaccionPago);
+            }
+
+            if (tipoPago) {
+                tipoPago.addEventListener('change', function() {
+                    if (this.value === 'cuota') {
+                        divCuota.style.display = 'block';
+                        divMonto.style.display = 'none';
+                    } else {
+                        divCuota.style.display = 'none';
+                        divMonto.style.display = 'block';
+                    }
+                });
+            }
+
+            if (btnCalcularPago) {
+                btnCalcularPago.addEventListener('click', function() {
+                    calcularTransaccionPago();
+                });
+            }
+
+            const btnImprimirRecibo = document.getElementById('btnImprimirRecibo');
+            if (btnImprimirRecibo) {
+                btnImprimirRecibo.addEventListener('click', function() {
+                    const url = btnImprimirRecibo.dataset.urlRecibo;
+                    if (url) {
+                        window.open(url, '_blank', 'noopener');
+                    } else {
+                        alert('No se encontró el recibo para imprimir. Intente enviar nuevamente a caja.');
+                    }
+                });
+            }
+        });
+
+        function resetReciboCajaFinal() {
+            const contenedor = document.getElementById('reciboCajaFinal');
+            if (contenedor) {
+                contenedor.style.display = 'none';
+            }
+            
+            const tbody = document.getElementById('tbodyReciboFinal');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Sin información disponible</td></tr>';
+            }
+            
+            const totalSpan = document.getElementById('reciboTotalFinal');
+            if (totalSpan) {
+                totalSpan.textContent = 'L. 0.00';
+            }
+            
+            const qrImg = document.getElementById('qrReciboFinal');
+            if (qrImg) {
+                qrImg.src = '';
+                qrImg.style.display = 'none';
+            }
+            
+            const mensaje = document.getElementById('mensajeReciboFinal');
+            if (mensaje) {
+                mensaje.style.display = 'none';
+                mensaje.textContent = '';
+            }
+            
+            const comentarioSpan = document.getElementById('reciboComentarioFinal');
+            if (comentarioSpan) {
+                comentarioSpan.textContent = '-';
+            }
+            
+            const btnImprimir = document.getElementById('btnImprimirRecibo');
+            if (btnImprimir) {
+                btnImprimir.style.display = 'none';
+                btnImprimir.dataset.urlRecibo = '';
+            }
+        }
+        
+        let ultimoDesgloseMoraIcs = null;
+
+        function mostrarReciboCajaFinal(recibo, reciboUrl, mensajeServidor) {
+            if (!recibo) {
+                return;
+            }
+            
+            const contenedor = document.getElementById('reciboCajaFinal');
+            if (contenedor) {
+                contenedor.style.display = 'block';
+            }
+            
+            const numeroSpan = document.getElementById('reciboNumeroFinal');
+            if (numeroSpan) {
+                numeroSpan.textContent = recibo.numero_formateado || recibo.numero || '';
+            }
+            
+            const fechaSpan = document.getElementById('reciboFechaFinal');
+            if (fechaSpan) {
+                let texto = recibo.fecha_legible || '';
+                if (!texto && recibo.fecha_iso) {
+                    const fecha = new Date(recibo.fecha_iso);
+                    if (!isNaN(fecha.getTime())) {
+                        texto = fecha.toLocaleString('es-HN', {
+                            dateStyle: 'short',
+                            timeStyle: 'short'
+                        });
+                    }
+                }
+                fechaSpan.textContent = texto;
+            }
+            
+            const empresaSpan = document.getElementById('reciboEmpresaFinal');
+            if (empresaSpan) {
+                empresaSpan.textContent = recibo.empresa || '';
+            }
+            
+            const rtmSpan = document.getElementById('reciboRTMFinal');
+            if (rtmSpan) {
+                rtmSpan.textContent = (recibo.negocio && recibo.negocio.rtm) || '';
+            }
+            
+            const expeSpan = document.getElementById('reciboExpeFinal');
+            if (expeSpan) {
+                expeSpan.textContent = (recibo.negocio && recibo.negocio.expe) || '';
+            }
+            
+            const tipoSpan = document.getElementById('reciboTipoPagoFinal');
+            if (tipoSpan) {
+                tipoSpan.textContent = recibo.tipo_pago === 'parcial'
+                    ? `Abono parcial (${formatearLempiras(recibo.total || 0)})`
+                    : `Pago por cuotas (${formatearLempiras(recibo.total || 0)})`;
+            }
+            
+            const negocioSpan = document.getElementById('reciboNegocioFinal');
+            if (negocioSpan) {
+                negocioSpan.textContent = (recibo.negocio && recibo.negocio.nombre) || '-';
+            }
+            
+            const contribuyenteSpan = document.getElementById('reciboContribuyenteFinal');
+            if (contribuyenteSpan) {
+                contribuyenteSpan.textContent = (recibo.negocio && recibo.negocio.comerciante) || '-';
+            }
+            
+            const direccionSpan = document.getElementById('reciboDireccionFinal');
+            if (direccionSpan) {
+                direccionSpan.textContent = (recibo.negocio && recibo.negocio.direccion) || '-';
+            }
+            
+            const comentarioSpanFinal = document.getElementById('reciboComentarioFinal');
+            if (comentarioSpanFinal) {
+                comentarioSpanFinal.textContent = recibo.comentario ? recibo.comentario : '-';
+            }
+
+            // Mostrar desglose mora/base si viene en la respuesta del servidor
+            try {
+                const box = document.getElementById('boxDesgloseMoraIcs');
+                const d = ultimoDesgloseMoraIcs;
+                if (box && d) {
+                    const fmt = (n) => (Number(n) || 0).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    document.getElementById('desgloseAnioRefIcs').textContent = String(d.anio_referencia || '');
+                    document.getElementById('desgloseBaseActualIcs').textContent = fmt(d.base_actual);
+                    document.getElementById('desgloseBaseAntIcs').textContent = fmt(d.base_anteriores);
+                    document.getElementById('desgloseMoraActualIcs').textContent = fmt(d.mora_actual);
+                    document.getElementById('desgloseMoraAntIcs').textContent = fmt(d.mora_anteriores);
+                    box.style.display = 'block';
+                } else if (box) {
+                    box.style.display = 'none';
+                }
+            } catch (e) {
+                // no-op
+            }
+            
+            const detalle = Array.isArray(recibo.detalle) ? recibo.detalle : [];
+            const tbody = document.getElementById('tbodyReciboFinal');
+            if (tbody) {
+                tbody.innerHTML = '';
+                if (detalle.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Sin información disponible</td></tr>';
+                } else {
+                    detalle.forEach(item => {
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                            <td>${item.rubro || '-'}</td>
+                            <td>${item.cuenta || '-'}</td>
+                            <td>${item.descripcion || '-'}</td>
+                            <td>${item.periodo || '-'}</td>
+                            <td class="text-end">${formatearLempiras(item.valor || 0)}</td>
+                        `;
+                        tbody.appendChild(fila);
+                    });
+                }
+            }
+            
+            const totalSpan = document.getElementById('reciboTotalFinal');
+            if (totalSpan) {
+                totalSpan.textContent = formatearLempiras(recibo.total || 0);
+            }
+            
+            const qrImg = document.getElementById('qrReciboFinal');
+            if (qrImg) {
+                if (recibo.qr_data_uri) {
+                    qrImg.src = recibo.qr_data_uri;
+                    qrImg.style.display = 'block';
+                } else if (recibo.qr_base64) {
+                    qrImg.src = `data:image/png;base64,${recibo.qr_base64}`;
+                    qrImg.style.display = 'block';
+                } else {
+                    qrImg.src = '';
+                    qrImg.style.display = 'none';
+                }
+            }
+            
+            const mensaje = document.getElementById('mensajeReciboFinal');
+            if (mensaje) {
+                if (mensajeServidor) {
+                    mensaje.style.display = 'block';
+                    mensaje.textContent = mensajeServidor;
+                } else {
+                    mensaje.style.display = 'none';
+                    mensaje.textContent = '';
+                }
+            }
+            
+            const btnImprimir = document.getElementById('btnImprimirRecibo');
+            if (btnImprimir) {
+                const urlParaImprimir = reciboUrl || (recibo && recibo.url) || '';
+                if (urlParaImprimir) {
+                    btnImprimir.style.display = 'inline-block';
+                    btnImprimir.dataset.urlRecibo = urlParaImprimir;
+                } else {
+                    btnImprimir.style.display = 'none';
+                    btnImprimir.dataset.urlRecibo = '';
+                }
+            }
+        }
+        
+        function calcularTransaccionPago() {
+            const tipoPago = document.getElementById('tipoPago').value;
+            const empresaInput = document.getElementById('inputEmpresa');
+            const empresa = empresaInput ? empresaInput.value.trim() : '{{ empresa|default:municipio_codigo }}';
+            const rtmInput = document.getElementById('inputRTM');
+            const expeInput = document.getElementById('inputExpe');
+            const rtm = rtmInput ? rtmInput.value.trim() : ('{{ rtm }}' || '').trim();
+            const expe = expeInput ? expeInput.value.trim() : ('{{ expe }}' || '').trim();
+
+            if (!empresa || empresa === 'None') {
+                alert('Debe seleccionar una empresa antes de generar la transacción de pago.');
+                if (empresaInput) {
+                    empresaInput.focus();
+                }
+                return;
+            }
+
+            if (!rtm || !expe) {
+                alert('Debe seleccionar un negocio antes de generar la transacción de pago.');
+                if (rtmInput) {
+                    rtmInput.focus();
+                }
+                return;
+            }
+
+            let url = `/tributario/calcular-transaccion-pago/?empresa=${encodeURIComponent(empresa)}&rtm=${encodeURIComponent(rtm)}&expe=${encodeURIComponent(expe)}`;
+            const solicitud = { empresa, rtm, expe, tipo: tipoPago };
+
+            if (tipoPago === 'cuota') {
+                const cuotaHasta = document.getElementById('cuotaHasta').value;
+                const cuotaHastaNumero = parseInt(cuotaHasta, 10);
+                if (!cuotaHastaNumero || cuotaHastaNumero < 1) {
+                    alert('Por favor ingrese un número de cuota válido');
+                    return;
+                }
+                solicitud.cuotaHasta = cuotaHastaNumero;
+                url += `&tipo=cuota&cuota_hasta=${encodeURIComponent(cuotaHastaNumero)}`;
+            } else {
+                const montoAbono = document.getElementById('montoAbono').value;
+                const montoNumero = parseFloat(montoAbono);
+                if (!montoNumero || montoNumero <= 0) {
+                    alert('Por favor ingrese un monto válido');
+                    return;
+                }
+                solicitud.monto = montoNumero;
+                url += `&tipo=parcial&monto=${encodeURIComponent(montoNumero)}`;
+            }
+
+            ultimaSolicitudPago = solicitud;
+            ultimaRespuestaPago = null;
+
+            resetReciboCajaFinal();
+            
+            const contenedorCargando = document.getElementById('cargandoPago');
+            const contenedorResultado = document.getElementById('resultadoPago');
+
+            if (contenedorCargando) {
+                contenedorCargando.style.display = 'block';
+            }
+            if (contenedorResultado) {
+                contenedorResultado.style.display = 'none';
+            }
+
+            if (botonEnviarCaja) {
+                botonEnviarCaja.disabled = true;
+                botonEnviarCaja.innerHTML = textoBotonEnviarCaja;
+            }
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        return response.text().then(texto => {
+                            console.error('❌ Respuesta no es JSON:', texto.substring(0, 500));
+                            throw new Error('El servidor no devolvió JSON. Ver consola para más detalles.');
+                        });
+                    }
+
+                    return response.json().then(data => {
+                        if (!response.ok) {
+                            const mensaje = data.mensaje || `Error HTTP ${response.status}: ${response.statusText}`;
+                            throw new Error(mensaje);
+                        }
+
+                        if (data && data.transacciones_por_rubro && !Array.isArray(data.transacciones_por_rubro)) {
+                            data.transacciones_por_rubro = Object.values(data.transacciones_por_rubro || {});
+                        }
+
+                        return data;
+                    });
+                })
+                .then(data => {
+                    if (contenedorCargando) {
+                        contenedorCargando.style.display = 'none';
+                    }
+
+                    if (!data || !data.exito) {
+                        const mensaje = (data && data.mensaje) ? data.mensaje : 'No se pudo calcular la transacción de pago.';
+                        alert(mensaje);
+                        return;
+                    }
+
+                    ultimaRespuestaPago = data;
+                    mostrarReciboTemporal(data, solicitud);
+                })
+                .catch(error => {
+                    if (contenedorCargando) {
+                        contenedorCargando.style.display = 'none';
+                    }
+                    console.error('Error al calcular transacción de pago:', error);
+                    alert(error.message || 'Error inesperado al calcular la transacción de pago.');
+                });
+        }
+
+        function formatearLempiras(valor) {
+            const numero = Number(valor) || 0;
+            return 'L. ' + numero.toLocaleString('es-HN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function formatearPeriodoLista(periodos) {
+            if (!Array.isArray(periodos) || periodos.length === 0) {
+                return 'Sin periodos asociados';
+            }
+
+            return periodos
+                .map(periodo => {
+                    const mes = String(periodo.mes || '').padStart(2, '0');
+                    const ano = periodo.ano || '';
+                    return `${mes}/${ano}`;
+                })
+                .join(', ');
+        }
+
+        function obtenerRubrosParaMostrar(transaccionesPorRubro = [], detalleFallback = []) {
+            const normalizarColeccion = (coleccion) => {
+                if (!coleccion) {
+                    return [];
+                }
+
+                if (Array.isArray(coleccion)) {
+                    return coleccion;
+                }
+
+                if (typeof coleccion === 'object') {
+                    return Object.values(coleccion);
+                }
+
+                return [];
+            };
+
+            const rubrosEntrada = normalizarColeccion(transaccionesPorRubro);
+            const detalleEntrada = normalizarColeccion(detalleFallback);
+
+            if (rubrosEntrada.length > 0) {
+                return rubrosEntrada.map(item => ({
+                    rubro: item.rubro || '',
+                    cuenta: item.cuenta || '',
+                    descripcion: item.descripcion || '-',
+                    valor: Number(item.valor) || 0,
+                }));
+            }
+
+            const agrupados = {};
+            detalleEntrada.forEach(item => {
+                if (!item) {
+                    return;
+                }
+
+                const rubro = item.rubro || '';
+                if (!agrupados[rubro]) {
+                    agrupados[rubro] = {
+                        rubro,
+                        cuenta: item.cuenta || '',
+                        descripcion: item.descripcion || '-',
+                        valor: 0,
+                    };
+                }
+
+                agrupados[rubro].valor += Number(item.monto) || 0;
+            });
+
+            return Object.values(agrupados);
+        }
+
+        function actualizarTablaTransacciones(rubrosParaMostrar) {
+            const tbody = document.getElementById('tbodyTransaccionPago');
+            if (!tbody) {
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            const registros = Array.isArray(rubrosParaMostrar) ? rubrosParaMostrar : [];
+
+            if (registros.length === 0) {
+                const fila = document.createElement('tr');
+                fila.innerHTML = '<td colspan="6" class="text-center text-muted">No se encontraron transacciones para mostrar.</td>';
+                tbody.appendChild(fila);
+                return;
+            }
+
+            registros.forEach(item => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${item.rubro || '-'}</td>
+                    <td>${item.cuenta || '-'}</td>
+                    <td>${item.descripcion || '-'}</td>
+                    <td>${item.periodo || '-'}</td>
+                    <td class="text-end">${formatearLempiras(item.valor || 0)}</td>
+                    <td class="text-end">${formatearLempiras(item.aplicado || item.valor || 0)}</td>
+                `;
+                tbody.appendChild(fila);
+            });
+        }
+
+        function actualizarResumenTransaccion(data, solicitud, rubrosParaMostrar) {
+            const resumen = document.getElementById('resumenPago');
+            if (!resumen) {
+                return;
+            }
+
+            const partes = [];
+            const rubrosUtilizados = Array.isArray(rubrosParaMostrar) ? rubrosParaMostrar.length : 0;
+
+            partes.push(`Se incluyeron ${data.total_transacciones || 0} transacción(es) distribuidas en ${rubrosUtilizados} rubro(s).`);
+
+            if (data.total_periodos) {
+                partes.push(`Periodos cubiertos: ${formatearPeriodoLista(data.periodos_info || [])}.`);
+            }
+
+            if (solicitud.tipo === 'cuota') {
+                partes.push(`Pago hasta la cuota número ${solicitud.cuotaHasta || 1}.`);
+            } else {
+                partes.push(`Abono parcial por un monto de ${formatearLempiras(solicitud.monto || 0)}.`);
+            }
+
+            partes.push(`Total a pagar: ${formatearLempiras(data.total_valor || 0)}.`);
+
+            resumen.innerHTML = partes.join('<br>');
+        }
+
+        function mostrarReciboTemporal(data, solicitud) {
+            const { datos_negocio = {}, transacciones_por_rubro = [], transacciones_detalle = [], total_valor = 0 } = data;
+
+            const contenedorCargando = document.getElementById('cargandoPago');
+            if (contenedorCargando) {
+                contenedorCargando.style.display = 'none';
+            }
+
+            const rubrosParaMostrar = obtenerRubrosParaMostrar(transacciones_por_rubro, transacciones_detalle);
+            console.debug('📦 Datos cálculo pago:', {
+                transacciones_por_rubro,
+                transacciones_detalle,
+                rubrosParaMostrar,
+            });
+
+            if (!Array.isArray(transacciones_por_rubro)) {
+                console.warn('⚠️ transacciones_por_rubro no es un array después de la normalización:', transacciones_por_rubro);
+            }
+
+            const fechaRecibo = document.getElementById('fechaRecibo');
+            if (fechaRecibo) {
+                const ahora = new Date();
+                fechaRecibo.textContent = ahora.toLocaleString('es-HN', {
+                    dateStyle: 'short',
+                    timeStyle: 'short'
+                });
+            }
+
+            const empresaSpan = document.getElementById('reciboEmpresa');
+            if (empresaSpan) {
+                empresaSpan.textContent = solicitud.empresa || empresaActual || '-';
+            }
+
+            const rtmSpan = document.getElementById('reciboRTM');
+            if (rtmSpan) {
+                rtmSpan.textContent = solicitud.rtm || datos_negocio.rtm || '-';
+            }
+
+            const expeSpan = document.getElementById('reciboExpe');
+            if (expeSpan) {
+                expeSpan.textContent = solicitud.expe || datos_negocio.expe || '-';
+            }
+
+            const negocioSpan = document.getElementById('reciboNegocio');
+            if (negocioSpan) {
+                negocioSpan.textContent = datos_negocio.nombre_negocio || '-';
+            }
+
+            const contribuyenteSpan = document.getElementById('reciboContribuyente');
+            if (contribuyenteSpan) {
+                contribuyenteSpan.textContent = datos_negocio.comerciante || '-';
+            }
+
+            const tipoPagoSpan = document.getElementById('reciboTipoPago');
+            if (tipoPagoSpan) {
+                tipoPagoSpan.textContent = solicitud.tipo === 'cuota'
+                    ? `Pago completo hasta la cuota ${solicitud.cuotaHasta}`
+                    : `Abono parcial por ${formatearLempiras(solicitud.monto || 0)}`;
+            }
+
+            actualizarTablaTransacciones(rubrosParaMostrar);
+
+            const totalValorSpan = document.getElementById('totalValor');
+            if (totalValorSpan) {
+                totalValorSpan.textContent = formatearLempiras(total_valor);
+            }
+
+            actualizarResumenTransaccion(data, solicitud, rubrosParaMostrar);
+
+            const contenedorResultado = document.getElementById('resultadoPago');
+            if (contenedorResultado) {
+                contenedorResultado.style.display = 'block';
+            }
+
+            if (botonEnviarCaja) {
+                botonEnviarCaja.disabled = false;
+                botonEnviarCaja.innerHTML = textoBotonEnviarCaja;
+            }
+        }
+
+        function guardarTransaccionPago() {
+            if (!ultimaSolicitudPago || !ultimaRespuestaPago) {
+                alert('Debe calcular la transacción antes de enviarla a caja.');
+                return;
+            }
+
+            if (!confirm('¿Desea enviar esta transacción a caja?')) {
+                return;
+            }
+
+            if (!botonEnviarCaja) {
+                return;
+            }
+
+            let envioExitoso = false;
+
+            botonEnviarCaja.disabled = true;
+            botonEnviarCaja.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Enviando...';
+
+            const comentarioInput = document.getElementById('comentarioPago');
+            const comentarioValor = comentarioInput ? comentarioInput.value.trim() : '';
+            const payload = { ...ultimaSolicitudPago };
+            payload.comentario = comentarioValor;
+            if (ultimaSolicitudPago) {
+                ultimaSolicitudPago.comentario = comentarioValor;
+            }
+
+            fetch('/tributario/guardar-transaccion-pago/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        return response.text().then(texto => {
+                            console.error('Respuesta no-JSON al guardar:', texto.substring(0, 500));
+                            throw new Error('El servidor no devolvió JSON. Ver consola para más detalles.');
+                        });
+                    }
+
+                    return response.json().then(data => {
+                        if (!response.ok) {
+                            const mensaje = data.mensaje || `Error HTTP ${response.status}: ${response.statusText}`;
+                            throw new Error(mensaje);
+                        }
+                        return data;
+                    });
+                })
+                .then(data => {
+                    if (!data || !data.exito) {
+                        throw new Error((data && data.mensaje) || 'No se pudo guardar la transacción.');
+                    }
+
+                    envioExitoso = true;
+                    ultimoDesgloseMoraIcs = data.desglose_mora || null;
+                    mostrarReciboCajaFinal(data.recibo || null, data.recibo_url || (data.recibo && data.recibo.url) || '', data.mensaje || '');
+                    if (data.mensaje) {
+                        alert(data.mensaje);
+                    } else {
+                        alert('Transacción enviada a caja correctamente.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al guardar transacción de pago:', error);
+                    alert(error.message || 'Error inesperado al guardar la transacción de pago.');
+                })
+                .finally(() => {
+                    if (botonEnviarCaja) {
+                        botonEnviarCaja.innerHTML = textoBotonEnviarCaja;
+                        botonEnviarCaja.disabled = envioExitoso;
+                    }
+                });
+        }
+    </script>
+</body>
+</html>
+
+
+

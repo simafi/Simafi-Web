@@ -1,0 +1,57 @@
+{% extends "constancia_base_word.html" %}
+
+{% block title %}Constancia de Valor Catastral - {{ cocata1 }}{% endblock %}
+
+{% block paper_content %}
+    <span class="title">CONSTANCIA DE VALOR CATASTRAL</span>
+
+    <div class="content-para">
+        El suscrito Jefe del Departamento de Ordenamiento Territorial por medio de la Presente 
+        <span class="bold">HACE CONSTAR</span> que de acuerdo a los mapas Catastrales y a la base de Datos Catastral del Municipio de Puerto Cortés, se encuentra el predio identificado con Clave Catastral 
+        <span class="bold">{{ cocata1 }}</span> bajo la Matrícula 
+        <span class="bold">{{ legales.numero|default:"N/A" }}</span> Tomo 
+        <span class="bold">{{ legales.tomo|default:"N/A" }}</span> Asiento 
+        <span class="bold">{{ legales.asiento|default:"N/A" }}</span> Ubicado en 
+        <span class="bold">{{ datos_bien.ubicacion|upper }}</span> a nombre de 
+        <span class="bold">{% if datos_bien.apellidos %}{{ datos_bien.apellidos|upper }}{% endif %} / {% if datos_bien.nombres %}{{ datos_bien.nombres|upper }}{% endif %}</span>
+    </div>
+
+    <div style="margin: 40px auto; width: 90%; font-size: 13pt;">
+        <div style="display: flex; margin-bottom: 12px;">
+            <div style="width: 300px;">Extensión Superficial de</div>
+            <div class="bold" style="flex-grow: 1; text-align: right;">{{ area_total|floatformat:2 }} M²</div>
+        </div>
+        
+        <div style="display: flex; margin-bottom: 8px;">
+            <div style="width: 300px;">Valor Catastral Terreno</div>
+            <div style="width: 40px;">L.</div>
+            <div class="bold" style="flex-grow: 1; text-align: right;">{{ valor_terreno|floatformat:2 }}</div>
+        </div>
+
+        <div style="display: flex; margin-bottom: 8px;">
+            <div style="width: 300px;">Valor Catastral Mejoras</div>
+            <div style="width: 40px;">L.</div>
+            <div class="bold" style="flex-grow: 1; text-align: right;">{{ valor_mejoras|floatformat:2 }}</div>
+        </div>
+
+        <div style="display: flex; margin-top: 5px; border-top: 1px solid #000; padding-top: 5px;">
+            <div style="width: 300px;" class="bold">Valor Catastral Neto</div>
+            <div style="width: 40px;" class="bold">L.</div>
+            <div class="bold" style="flex-grow: 1; text-align: right;">{{ valor_neto|floatformat:2 }}</div>
+        </div>
+    </div>
+
+    <div class="content-para">
+        <span class="bold">OBSERVACIONES :</span> N/A
+    </div>
+
+    <div class="content-para" style="margin-top: 30px;">
+        Y para los fines que el interesado convenga se le extiende la presente constancia en la ciudad de Puerto Cortés a los {{ dia }} días del mes de {{ mes_nombre }} de {{ ano }} la cual tiene una vigencia de 6 meses 
+    </div>
+
+    <div class="signature-section">
+        <br><br><br>
+        <span class="bold">Ing. Melissa Gavarrete</span><br>
+        <span class="bold">Jefe Ordenamiento Territorial</span>
+    </div>
+{% endblock %}

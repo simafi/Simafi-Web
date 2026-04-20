@@ -1,0 +1,35 @@
+{% extends "contabilidad_base.html" %}
+{% block title %}Ejercicios Fiscales{% endblock %}
+{% block breadcrumb %}
+<div class="cont-breadcrumb"><nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+    <li class="breadcrumb-item active">Ejercicios Fiscales</li>
+</ol></nav></div>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-calendar-alt me-2"></i>Ejercicios Fiscales</h4>
+        <a href="{% url 'contabilidad:ejercicio_crear' %}" class="btn btn-cont-primary"><i class="fas fa-plus me-1"></i> Nuevo Ejercicio</a>
+    </div>
+    <div class="cont-card">
+        <div class="card-body p-0">
+            <table class="table cont-table mb-0">
+                <thead><tr><th>Año</th><th>Descripción</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Períodos</th></tr></thead>
+                <tbody>
+                    {% for e in ejercicios %}
+                    <tr>
+                        <td class="fw-bold">{{ e.anio }}</td><td>{{ e.descripcion }}</td>
+                        <td>{{ e.fecha_inicio|date:"d/m/Y" }}</td><td>{{ e.fecha_fin|date:"d/m/Y" }}</td>
+                        <td><span class="badge bg-{% if e.estado == 'ABIERTO' %}success{% elif e.estado == 'EN_CIERRE' %}warning{% else %}secondary{% endif %}">{{ e.get_estado_display }}</span></td>
+                        <td>{{ e.periodos.count }} períodos</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center py-4 text-muted"><i class="fas fa-inbox" style="font-size:2rem;"></i><p class="mt-2 mb-0">No hay ejercicios fiscales. <a href="{% url 'contabilidad:ejercicio_crear' %}">Crear el primero</a></p></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

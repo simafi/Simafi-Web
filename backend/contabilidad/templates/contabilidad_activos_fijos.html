@@ -1,0 +1,48 @@
+{% extends "contabilidad_base.html" %}
+{% block title %}Activos Fijos{% endblock %}
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item active">Activos Fijos</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-industry me-2"></i>Activos Fijos (NIC 16 - Propiedad, Planta y Equipo)</h4>
+        <a href="{% url 'contabilidad:activo_fijo_crear' %}" class="btn btn-cont-primary"><i class="fas fa-plus me-1"></i> Nuevo Activo</a>
+    </div>
+    <div class="cont-card">
+        <div class="card-body p-0">
+            <table class="table cont-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Código</th><th>Descripción</th><th class="text-end">Costo</th>
+                        <th class="text-end">Depr. Acum.</th><th class="text-end">Valor Libros</th>
+                        <th>Método</th><th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in activos %}
+                    <tr>
+                        <td><code>{{ a.codigo }}</code></td>
+                        <td>{{ a.descripcion|truncatechars:50 }}</td>
+                        <td class="text-end">{{ a.costo_adquisicion|floatformat:2 }}</td>
+                        <td class="text-end">{{ a.depreciacion_acumulada|floatformat:2 }}</td>
+                        <td class="text-end fw-bold">{{ a.valor_en_libros|floatformat:2 }}</td>
+                        <td><small>{{ a.get_metodo_depreciacion_display }}</small></td>
+                        <td><span class="badge bg-{% if a.estado == 'ACTIVO' %}success{% elif a.estado == 'DEPRECIADO' %}warning{% else %}secondary{% endif %}">{{ a.get_estado_display }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-inbox" style="font-size:2rem;"></i><p class="mt-2 mb-0">No hay activos fijos registrados.</p></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

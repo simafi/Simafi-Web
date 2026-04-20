@@ -1,0 +1,144 @@
+{% extends "base_tributario.html" %}
+
+{% block title %}Informes{% endblock %}
+{% block breadcrumb %}Informes{% endblock %}
+{% block nav_informes %}active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+  .report-card {
+    background: var(--trib-surface);
+    border: 1px solid var(--trib-border);
+    border-radius: 16px;
+    padding: 1.1rem 1.15rem;
+  }
+  .report-card h3 { margin: 0 0 .35rem; font-size: .95rem; font-weight: 800; color: white; }
+  .report-card p  { margin: 0 0 .85rem; font-size: .8rem; color: var(--trib-text-muted); line-height: 1.35; }
+  .report-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .btn-mini {
+    background: var(--trib-surface2);
+    border: 1px solid var(--trib-border);
+    color: var(--trib-text);
+    border-radius: 10px;
+    padding: .45rem .75rem;
+    font-size: .8rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    cursor: pointer;
+  }
+  .btn-mini:hover { border-color: var(--trib-secondary); color: var(--trib-secondary); background: rgba(245,158,11,0.08); }
+  .btn-mini.primary { border-color: rgba(59,130,246,0.45); }
+  .btn-mini.primary:hover { border-color: rgba(59,130,246,0.75); color: #93c5fd; background: rgba(59,130,246,0.10); }
+
+  .viewer {
+    margin-top: 1rem;
+    background: var(--trib-surface);
+    border: 1px solid var(--trib-border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .viewer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid var(--trib-border);
+    background: rgba(255,255,255,0.03);
+  }
+  .viewer-title { font-weight: 800; font-size: .9rem; color: white; }
+  .viewer-hint  { font-size: .78rem; color: var(--trib-text-muted); }
+  .viewer-frame { width: 100%; height: min(70vh, 820px); border: 0; background: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header animate-in">
+  <div class="header-content">
+    <div class="header-icon"><i class="fas fa-chart-bar"></i></div>
+    <div>
+      <h1 class="page-title">Informes</h1>
+      <p class="page-subtitle">Visualización de reportes del Tributario y del módulo Caja</p>
+    </div>
+  </div>
+</div>
+
+<div class="report-grid animate-in">
+  <div class="report-card">
+    <h3><i class="fas fa-cash-register me-2" style="color:var(--trib-secondary)"></i>Caja — Cierre diario</h3>
+    <p>Resumen del día de caja (cobros, totales y control operativo).</p>
+    <div class="report-actions">
+      <button type="button" class="btn-mini primary" data-viewer-url="{% url 'tesoreria:cierre_diario_caja' %}?origen=tributario" data-viewer-title="Caja — Cierre diario">
+        <i class="fas fa-eye"></i> Ver aquí
+      </button>
+      <a class="btn-mini" href="{% url 'tesoreria:cierre_diario_caja' %}?origen=tributario" target="_blank" rel="noopener">
+        <i class="fas fa-up-right-from-square"></i> Abrir
+      </a>
+    </div>
+  </div>
+
+  <div class="report-card">
+    <h3><i class="fas fa-file-invoice-dollar me-2" style="color:var(--trib-secondary)"></i>Caja — Resumen de facturas</h3>
+    <p>Listado y resumen de facturas generadas/cobradas en caja.</p>
+    <div class="report-actions">
+      <button type="button" class="btn-mini primary" data-viewer-url="{% url 'tesoreria:resumen_facturas_caja' %}?origen=tributario" data-viewer-title="Caja — Resumen de facturas">
+        <i class="fas fa-eye"></i> Ver aquí
+      </button>
+      <a class="btn-mini" href="{% url 'tesoreria:resumen_facturas_caja' %}?origen=tributario" target="_blank" rel="noopener">
+        <i class="fas fa-up-right-from-square"></i> Abrir
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="viewer animate-in" id="reportViewer" style="display:none">
+  <div class="viewer-bar">
+    <div>
+      <div class="viewer-title" id="viewerTitle">Visor</div>
+      <div class="viewer-hint">Si el reporte requiere filtros, se pueden usar dentro del visor.</div>
+    </div>
+    <div class="report-actions">
+      <button type="button" class="btn-mini" id="viewerClose"><i class="fas fa-xmark"></i> Cerrar</button>
+      <a class="btn-mini" id="viewerOpen" href="#" target="_blank" rel="noopener">
+        <i class="fas fa-up-right-from-square"></i> Abrir en pestaña
+      </a>
+    </div>
+  </div>
+  <iframe class="viewer-frame" id="viewerFrame" title="Visor de reportes"></iframe>
+</div>
+
+<script>
+  (function () {
+    var viewer = document.getElementById('reportViewer');
+    var frame = document.getElementById('viewerFrame');
+    var title = document.getElementById('viewerTitle');
+    var open = document.getElementById('viewerOpen');
+    var close = document.getElementById('viewerClose');
+
+    function show(url, t) {
+      if (!url) return;
+      viewer.style.display = 'block';
+      frame.src = url;
+      title.textContent = t || 'Visor';
+      open.href = url;
+      viewer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    document.querySelectorAll('[data-viewer-url]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        show(btn.getAttribute('data-viewer-url'), btn.getAttribute('data-viewer-title'));
+      });
+    });
+
+    close?.addEventListener('click', function () {
+      frame.src = 'about:blank';
+      viewer.style.display = 'none';
+    });
+  })();
+</script>
+{% endblock %}
+

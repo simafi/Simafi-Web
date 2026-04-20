@@ -1,0 +1,54 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Sumario Reclamos por Concepto{% endblock %}
+{% block breadcrumb %}Reportes · Reclamos{% endblock %}
+{% block nav_reportes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-content">
+    <div class="header-icon" style="background:linear-gradient(135deg,#64748b,#334155)"><i class="fas fa-chart-pie"></i></div>
+    <div>
+      <h1 class="page-title">Sumario de Reclamos por Concepto</h1>
+      <p class="page-subtitle">Atendidas vs pendientes por tipo de reclamo (concepto de OT)</p>
+    </div>
+  </div>
+  <a href="{% url 'servicios_publicos:reportes' %}" class="btn-sp-secondary">
+    <i class="fas fa-arrow-left"></i> Volver a Reportes
+  </a>
+</div>
+
+<div class="data-card">
+  <div class="data-card-header">
+    <h4><i class="fas fa-table me-2"></i>Resumen</h4>
+  </div>
+  <div class="table-responsive p-2">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th class="text-end">Total</th>
+          <th class="text-end">Atendidas</th>
+          <th class="text-end">Pendientes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data %}
+          <tr>
+            <td><span class="fw-bold">{{ row.concepto.codigo }}</span> - {{ row.concepto.descripcion }}</td>
+            <td class="text-end">{{ row.total }}</td>
+            <td class="text-end"><span class="badge bg-success">{{ row.atendidas }}</span></td>
+            <td class="text-end"><span class="badge bg-warning text-dark">{{ row.pendientes }}</span></td>
+          </tr>
+        {% endfor %}
+        <tr>
+          <td class="text-muted">Sin clasificar</td>
+          <td class="text-end">{{ sin_clasificar.total }}</td>
+          <td class="text-end"><span class="badge bg-success">{{ sin_clasificar.atendidas }}</span></td>
+          <td class="text-end"><span class="badge bg-warning text-dark">{{ sin_clasificar.pendientes }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+

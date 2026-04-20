@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reformas Presupuestarias - SIMAFI Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .bg-presu { background: #f8f9fa; }
+        .table-reformas th { font-size: 0.85rem; text-transform: uppercase; color: #6c757d; }
+        .tipo-ampliacion { color: #198754; font-weight: bold; }
+        .tipo-reduccion { color: #dc3545; font-weight: bold; }
+        .tipo-traspaso { color: #ffc107; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-presu">
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <div>
+            <h4 class="mb-0 text-warning"><i class="fas fa-exchange-alt me-2"></i>Reformas y Modificaciones</h4>
+            <p class="text-muted small mb-0">Registra traspasos entre cuentas, ampliaciones y reducciones presupuestarias.</p>
+        </div>
+        <a href="{% url 'presupuestos:presupuestos_menu_principal' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="px-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4 px-3">
+        <!-- Formulario -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 text-warning"><i class="fas fa-plus-circle me-2"></i>Nueva Reforma</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Fecha</label>
+                                {{ form.fecha }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Ejercicio</label>
+                                {{ form.ejercicio }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Tipo de Reforma</label>
+                                {{ form.tipo }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Referencia / No. Doc</label>
+                                {{ form.referencia }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Concepto</label>
+                                {{ form.concepto }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Cuenta Destino / Afectada</label>
+                                {{ form.cuenta_destino }}
+                            </div>
+                            <div class="col-12" id="div-origen">
+                                <label class="form-label small fw-bold">Cuenta Origen (Solo Traspasos)</label>
+                                {{ form.cuenta_origen }}
+                            </div>
+                            <div class="col-12 text-center text-muted x-small italic">
+                                * En traspasos, la cuenta origen se debita y la destino se acredita.
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Monto</label>
+                                {{ form.monto }}
+                            </div>
+                            {{ form.empresa }}
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100 py-2 mt-4 text-white fw-bold">
+                            <i class="fas fa-check-circle me-2"></i>Aplicar Reforma
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-reformas align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Fecha / Ref</th>
+                                    <th>Tipo</th>
+                                    <th>Fondo</th>
+                                    <th>Detalle Movimiento</th>
+                                    <th class="text-end pe-4">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in items %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold">{{ i.fecha|date:"d/m/Y" }}</div>
+                                        <div class="text-muted small">Ref: {{ i.referencia }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="{% if i.tipo == 'AMPLIACION' %}tipo-ampliacion{% elif i.tipo == 'REDUCCION' %}tipo-reduccion{% else %}tipo-traspaso{% endif %}">
+                                            {{ i.get_tipo_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if i.fondo %}
+                                            <span class="small badge bg-light text-dark border">{{ i.fondo.nombre }}</span>
+                                        {% else %}
+                                            <span class="text-muted small">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="small fw-bold">{{ i.cuenta_destino.codigo }} - {{ i.cuenta_destino.nombre }}</div>
+                                        {% if i.cuenta_origen %}
+                                        <div class="x-small text-muted"><i class="fas fa-long-arrow-alt-left me-1"></i>Desde: {{ i.cuenta_origen.codigo }}</div>
+                                        {% endif %}
+                                        <div class="x-small text-muted italic">{{ i.concepto }}</div>
+                                    </td>
+                                    <td class="text-end pe-4 fw-bold">{{ i.monto|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        No se han registrado reformas presupuestarias.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pequeño script para ocultar/mostrar cuenta origen según el tipo
+    const tipoSelect = document.getElementById('id_tipo');
+    const divOrigen = document.getElementById('div-origen');
+    
+    function toggleOrigen() {
+        if (tipoSelect.value === 'TRASPASO') {
+            divOrigen.style.display = 'block';
+        } else {
+            divOrigen.style.display = 'none';
+        }
+    }
+    
+    tipoSelect.addEventListener('change', toggleOrigen);
+    window.onload = toggleOrigen;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

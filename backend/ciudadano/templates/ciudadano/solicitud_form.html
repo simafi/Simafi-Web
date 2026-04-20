@@ -1,0 +1,30 @@
+{% extends "ciudadano/base_ciudadano.html" %}
+{% block title %}Nueva solicitud{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card cdd-card">
+            <div class="card-body p-4">
+                <h1 class="h5 mb-3">Registrar solicitud</h1>
+                <p class="small text-muted">
+                    Describa con claridad su petición. Recibirá un <strong>folio</strong> para seguimiento.
+                    La respuesta oficial puede requerir comparecencia o documentación según el trámite.
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+                    <a href="{% url 'ciudadano:menu_ciudadano' %}" class="btn btn-link">Volver</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

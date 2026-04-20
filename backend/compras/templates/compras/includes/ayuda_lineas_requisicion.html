@@ -1,0 +1,19 @@
+{# Ayuda contextual: líneas de requisición (catálogo bodega / presupuesto) #}
+<details class="border rounded px-3 py-2 mb-3 bg-white compras-ayuda-campos">
+    <summary class="fw-semibold text-success" style="cursor: pointer;">
+        <i class="fas fa-circle-question me-1" aria-hidden="true"></i>Ver explicación de los campos clave
+    </summary>
+    <div class="mt-2 small">
+        <p class="mb-2 text-muted">Estos campos enlazan la necesidad interna con el inventario contable (NIC&nbsp;2) y la partida presupuestaria.</p>
+        <ul class="mb-0 ps-3">
+            <li><strong># / Línea:</strong> Orden del renglón en el documento; sirve para referencia y trazabilidad.</li>
+            <li><strong>Descripción:</strong> Qué se solicita; si elige material de bodega, puede completarse desde el catálogo.</li>
+            <li><strong>Cantidad solicitada:</strong> Unidades necesarias según la unidad de medida del ítem.</li>
+            <li><strong>Unidad:</strong> Medida (UND, kg, etc.); suele tomarse del catálogo de inventario.</li>
+            <li><strong>Material (bodega):</strong> Ítem obligatorio del catálogo; la existencia mostrada es la cantidad actual en bodega.</li>
+            <li><strong>Exist. bodega / Faltante:</strong> Informativo. <em>Faltante</em> = cantidad pedida menos existencia; si es mayor que cero, indica compra o abastecimiento adicional.</li>
+            <li><strong>Partida presupuestaria:</strong> Clasificación presupuestaria con la que se imputará el gasto al aprobar la compra.</li>
+            <li><strong>Borrar:</strong> Marca la línea para eliminarla al guardar.</li>
+        </ul>
+    </div>
+</details>

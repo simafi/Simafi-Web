@@ -1,0 +1,2 @@
+# Migrations for tesoreria module
+

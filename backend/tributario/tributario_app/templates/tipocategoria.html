@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+{% block extra_head %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+{% endblock %}
+{% block content %}
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        color: #333;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    /* Header */
+    header {
+        text-align: center;
+        padding: 30px 20px;
+        background: linear-gradient(90deg, #1e88e5 0%, #0d47a1 100%);
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 600;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    
+    .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    /* Card */
+    .card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #37474f;
+        font-size: 0.95rem;
+    }
+    
+    input[type="text"] {
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s;
+        width: 100%;
+    }
+    
+    input[type="text"]:focus {
+        outline: none;
+        border-color: #1e88e5;
+        box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+    }
+    
+    /* Buttons */
+    .button-group {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 25px;
+    }
+    
+    .btn {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 120px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+        color: #fff;
+    }
+    
+    .btn-success:hover {
+        background: linear-gradient(135deg, #388e3c 0%, #1b5e20 100%);
+        box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #ffa726 0%, #f57c00 100%);
+        color: #fff;
+    }
+    
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #fb8c00 0%, #e65100 100%);
+        box-shadow: 0 4px 12px rgba(255, 167, 38, 0.3);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+        color: #fff;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+        box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #78909c 0%, #546e7a 100%);
+        color: #fff;
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #607d8b 0%, #37474f 100%);
+        box-shadow: 0 4px 12px rgba(120, 144, 156, 0.3);
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        min-width: 70px;
+    }
+    
+    /* Messages */
+    .mensaje {
+        text-align: center;
+        margin: 20px 0;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 500;
+    }
+    
+    .mensaje.success {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        color: #2e7d32;
+        border: 2px solid #81c784;
+    }
+    
+    .mensaje.error {
+        background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        color: #c62828;
+        border: 2px solid #e57373;
+    }
+    
+    /* Table */
+    .table-container {
+        overflow-x: auto;
+        margin-top: 30px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    thead {
+        background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+        color: white;
+    }
+    
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    
+    tbody tr:hover {
+        background: #f5f5f5;
+    }
+    
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .section-title {
+        text-align: center;
+        margin: 40px 0 25px;
+        color: #1e88e5;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container">
+    <header>
+        <h1><i class="fas fa-tags"></i> Gestión de Tipos de Categoría</h1>
+        <p class="subtitle">Administre los tipos de categoría para el Plan de Arbitrio</p>
+    </header>
+    
+    {% if mensaje %}
+        <div class="mensaje {% if exito %}success{% else %}error{% endif %}">
+            {{ mensaje }}
+        </div>
+    {% endif %}
+    
+    <div class="card">
+        <h2 style="margin-bottom: 20px; color: #1e88e5;">
+            <i class="fas fa-plus-circle"></i> 
+            {% if categoria %}
+                Editar Categoría: {{ categoria.codigo }}
+            {% else %}
+                Nueva Categoría
+            {% endif %}
+        </h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="guardar">
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.codigo.id_for_label }}">
+                        <i class="fas fa-barcode"></i> Código *
+                    </label>
+                    {{ form.codigo }}
+                    {% if form.codigo.errors %}
+                        <div style="color: #c62828; font-size: 0.85rem; margin-top: 5px;">
+                            {% for error in form.codigo.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <small style="color: #78909c; margin-top: 5px; font-size: 0.85rem;">
+                        Un solo carácter (ej: 1, 2, 3, A, B)
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.descripcion.id_for_label }}">
+                        <i class="fas fa-align-left"></i> Descripción *
+                    </label>
+                    {{ form.descripcion }}
+                    {% if form.descripcion.errors %}
+                        <div style="color: #c62828; font-size: 0.85rem; margin-top: 5px;">
+                            {% for error in form.descripcion.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+                <a href="{% url 'tributario_app:tipocategoria_crud' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <h2 class="section-title">
+        <i class="fas fa-list"></i> Categorías Registradas
+    </h2>
+    
+    <div class="card table-container">
+        {% if categorias %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categorias %}
+                        <tr>
+                            <td><strong>{{ cat.codigo }}</strong></td>
+                            <td>{{ cat.descripcion }}</td>
+                            <td>
+                                <form method="post" style="display: inline;" onsubmit="return confirm('¿Está seguro de que desea eliminar esta categoría?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="accion" value="eliminar">
+                                    <input type="hidden" name="codigo_eliminar" value="{{ cat.codigo }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                                <form method="post" style="display: inline; margin-left: 10px;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="accion" value="editar">
+                                    <input type="hidden" name="codigo_editar" value="{{ cat.codigo }}">
+                                    <button type="submit" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div style="text-align: center; padding: 40px; color: #78909c;">
+                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                <p>No hay categorías registradas aún.</p>
+                <p style="margin-top: 10px; font-size: 0.9rem;">Use el formulario superior para crear la primera categoría.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="{% url 'tributario_app:tributario_menu_principal' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver al Menú
+        </a>
+    </div>
+</div>
+
+<script>
+    // Convertir código a mayúsculas automáticamente
+    document.addEventListener('DOMContentLoaded', function() {
+        const codigoInput = document.getElementById('{{ form.codigo.id_for_label }}');
+        if (codigoInput) {
+            codigoInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.toUpperCase();
+                // Limitar a 1 carácter
+                if (e.target.value.length > 1) {
+                    e.target.value = e.target.value.charAt(0);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+

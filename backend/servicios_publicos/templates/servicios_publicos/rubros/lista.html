@@ -1,0 +1,90 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Catálogo de Rubros{% endblock %}
+{% block breadcrumb %}Rubros de Servicios{% endblock %}
+{% block nav_rubros %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)"><i class="fas fa-tags"></i></div>
+        <div>
+            <h1 class="page-title">Catálogo de Rubros</h1>
+            <p class="page-subtitle">Configuración de tasas y servicios municipales - {{ empresa }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'servicios_publicos:tarifa_nueva' %}" class="btn-sp-secondary">
+            <i class="fas fa-dollar-sign"></i> Configurar Tarifas
+        </a>
+        <a href="{% url 'servicios_publicos:rubro_nuevo' %}" class="btn-sp-primary" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">
+            <i class="fas fa-plus"></i> Nuevo Rubro
+        </a>
+    </div>
+</div>
+
+<div class="data-card animate-in">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Descripción</th>
+                    <th>Tipo de Cobro</th>
+                    <th>Cuenta C.</th>
+                    <th>Cuenta Rez.</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in rubros %}
+                <tr>
+                    <td><strong style="color:var(--sp-secondary)">{{ r.codigo }}</strong></td>
+                    <td class="fw-bold">{{ r.descripcion }}</td>
+                    <td>
+                        {% if r.tipo_cobro == 'F' %}<span class="badge" style="background:rgba(6,182,212,0.15); color:#22d3ee">Fijo / Mensual</span>
+                        {% elif r.tipo_cobro == 'M' %}<span class="badge" style="background:rgba(245,158,11,0.15); color:#fde68a">Por Medición</span>
+                        {% elif r.tipo_cobro == 'A' %}<span class="badge bg-secondary">Anual</span>{% endif %}
+                    </td>
+                    <td class="small">{{ r.cuenta|default:"-" }}</td>
+                    <td class="small">{{ r.cuentarez|default:"-" }}</td>
+                    <td>
+                        {% if r.activo %}
+                        <span class="text-success"><i class="fas fa-check-circle me-1"></i>Activo</span>
+                        {% else %}
+                        <span class="text-muted"><i class="fas fa-times-circle me-1"></i>Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'servicios_publicos:rubro_editar' r.pk %}" class="btn btn-sm btn-outline-warning" style="border-radius:6px">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-tags fa-3x mb-3 opacity-20 d-block"></i>
+                        No se han definido rubros de servicios públicos. <br>
+                        <a href="{% url 'servicios_publicos:rubro_nuevo' %}" class="btn-link">Crear T0001 Agua Potable ahora</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-7">
+        <div class="form-panel animate-in" style="animation-delay:0.2s">
+            <div class="form-panel-title"><i class="fas fa-info-circle"></i> Configuración de Rubros</div>
+            <p class="small text-muted mb-0" style="line-height:1.6">
+                Un <strong>Rubro</strong> representa el concepto que se cobra (ej. Agua Potable). <br>
+                Cada rubro debe tener una o más <strong>Tarifas</strong> asociadas a un año fiscal específico para poder ser facturado.
+                El tipo "Por Medición" requiere que el abonado tenga un medidor instalado y lecturas registradas.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

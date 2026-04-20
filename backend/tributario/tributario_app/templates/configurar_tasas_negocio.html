@@ -1,0 +1,1138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Configurar Tasas del Negocio</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Select2 CSS para búsqueda en combobox -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(90deg, #1e88e5 0%, #0d47a1 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        header:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #545b62 0%, #3d4449 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            background: white;
+        }
+        
+        /* Estilo específico para el campo de edición de valor */
+        .valor-edit:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            background: white;
+        }
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+            display: block;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -15px;
+        }
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 0 15px;
+        }
+        .col-md-4 {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+            padding: 0 15px;
+        }
+        .col-md-3 {
+            flex: 0 0 25%;
+            max-width: 25%;
+            padding: 0 15px;
+        }
+        .col-md-12 {
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding: 0 15px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .form-section h5 {
+            color: #1e88e5;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mensaje {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mensaje-exito {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .mensaje-error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .table th {
+            background: linear-gradient(135deg, #1e88e5 0%, #0d47a1 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .btn-action {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .negocio-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 2px solid #2196f3;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .negocio-info h4 {
+            color: #1976d2;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        .negocio-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .negocio-detail {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        .negocio-detail strong {
+            color: #1976d2;
+        }
+        @media (max-width: 768px) {
+            .col-md-6, .col-md-4, .col-md-3 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+        
+        /* Estilos personalizados para Select2 */
+        .select2-container {
+            width: 100% !important;
+        }
+        .select2-container .select2-selection--single {
+            height: 40px !important;
+            border: 1px solid #d1d5da !important;
+            border-radius: 6px !important;
+            padding: 6px 12px !important;
+            background: #fff !important;
+            transition: all 0.3s ease !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 26px !important;
+            color: #333 !important;
+            padding-left: 0 !important;
+            font-size: 0.95rem !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 38px !important;
+            right: 8px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: #6c757d !important;
+        }
+        .select2-container--default.select2-container--open .select2-selection--single,
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #1e88e5 !important;
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1) !important;
+            outline: none !important;
+        }
+        .select2-dropdown {
+            border: 1px solid #1e88e5 !important;
+            border-radius: 6px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+        .select2-search--dropdown .select2-search__field {
+            border: 1px solid #d1d5da !important;
+            border-radius: 4px !important;
+            padding: 8px 12px !important;
+            font-size: 0.95rem !important;
+        }
+        .select2-search--dropdown .select2-search__field:focus {
+            border-color: #1e88e5 !important;
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.1) !important;
+            outline: none !important;
+        }
+        .select2-results__option {
+            padding: 10px 14px !important;
+            font-size: 0.95rem !important;
+        }
+        .select2-results__option--highlighted {
+            background-color: #1e88e5 !important;
+            color: white !important;
+        }
+        .select2-container--default .select2-results__option[aria-selected=true] {
+            background-color: #e3f2fd !important;
+            color: #1e88e5 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1><i class="fas fa-cog"></i> Configurar Tasas del Negocio</h1>
+            <p class="subtitle">Gestionar las tasas y tarifas aplicables a este negocio específico</p>
+        </header>
+
+        <!-- Información del Negocio -->
+        {% if negocio %}
+        <div class="negocio-info">
+            <h4><i class="fas fa-building"></i> Información del Negocio</h4>
+            <div class="negocio-details">
+                <div class="negocio-detail">
+                    <strong>RTM:</strong> {{ negocio.rtm }}
+                </div>
+                <div class="negocio-detail">
+                    <strong>Expediente:</strong> {{ negocio.expe }}
+                </div>
+                <div class="negocio-detail">
+                    <strong>Nombre:</strong> {{ negocio.nombrenego }}
+                </div>
+                <div class="negocio-detail">
+                    <strong>Comerciante:</strong> {{ negocio.comerciante }}
+                </div>
+                <div class="negocio-detail">
+                    <strong>Dirección:</strong> {{ negocio.direccion }}
+                </div>
+                <div class="negocio-detail">
+                    <strong>Estado:</strong> 
+                    <span class="{% if negocio.estatus == 'A' %}text-success{% else %}text-danger{% endif %} font-weight-bold">
+                        {% if negocio.estatus == 'A' %}Activo{% else %}Inactivo{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Mensajes -->
+        {% if mensaje %}
+            <div class="mensaje {% if exito %}mensaje-exito{% else %}mensaje-error{% endif %}">
+                <i class="fas {% if exito %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %}"></i>
+                {{ mensaje }}
+            </div>
+        {% endif %}
+
+        <!-- Formulario para Agregar Tarifa -->
+        {% if form %}
+        <div class="card">
+            <h5><i class="fas fa-plus-circle"></i> Agregar Nueva Tarifa</h5>
+            <form method="post" id="formTarifaICS">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="agregar_tarifa">
+                
+                <!-- Campos ocultos del negocio -->
+                <input type="hidden" name="idneg" value="{{ negocio.id }}">
+                <input type="hidden" name="rtm" value="{{ negocio.rtm }}">
+                <input type="hidden" name="expe" value="{{ negocio.expe }}">
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="id_rubro" class="form-label">Rubro *</label>
+                        {{ form.rubro }}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="id_tarifa_rubro" class="form-label">Tarifa del Rubro *</label>
+                        {{ form.tarifa_rubro }}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="id_valor_personalizado" class="form-label">Valor *</label>
+                        {{ form.valor_personalizado }}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="id_cod_tarifa" class="form-label">Código Tarifa</label>
+                        <input type="text" class="form-control" id="id_cod_tarifa" name="cod_tarifa" maxlength="4" readonly style="background-color: #e9ecef;">
+                    </div>
+                </div>
+                
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-md-6">
+                        <label for="id_cuenta" class="form-label">Cuenta Contable (Actividad)</label>
+                        <select class="form-control" id="id_cuenta" name="cuenta">
+                            <option value="">Seleccione una cuenta</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_cuentarez" class="form-label">Cuenta Rezago (Actividad)</label>
+                        <select class="form-control" id="id_cuentarez" name="cuentarez">
+                            <option value="">Seleccione cuenta rezago</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-md-12">
+                        <!-- Campo oculto para almacenar el ID del registro en modo edición -->
+                        <input type="hidden" id="tarifa_id_edicion" name="tarifa_id" value="">
+                        
+                        <button type="submit" class="btn btn-success btn-action" id="btn-guardar-tarifa">
+                            <i class="fas fa-plus"></i> <span id="btn-texto">Agregar Tarifa</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-action" onclick="limpiarFormularioCompleto()">
+                            <i class="fas fa-eraser"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Lista de Tarifas Configuradas -->
+        <div class="card">
+            <h5><i class="fas fa-list"></i> Tarifas Configuradas</h5>
+            {% if tarifas_ics %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Rubro</th>
+                                <th>Código Tarifa</th>
+                                <th>Valor</th>
+                                <th>Cuenta</th>
+                                <th>Cuenta Rezago</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tarifa in tarifas_ics %}
+                            <tr data-tarifa-id="{{ tarifa.id }}" 
+                                data-rubro="{{ tarifa.rubro }}" 
+                                data-cod-tarifa="{{ tarifa.cod_tarifa }}"
+                                data-valor="{{ tarifa.valor }}"
+                                data-cuenta="{{ tarifa.cuenta }}"
+                                data-cuentarez="{{ tarifa.cuentarez }}">
+                                <td>{{ tarifa.rubro|default:"N/A" }}</td>
+                                <td>{{ tarifa.cod_tarifa }}</td>
+                                <td>{{ tarifa.valor|floatformat:2 }}</td>
+                                <td>{{ tarifa.cuenta|default:"" }}</td>
+                                <td>{{ tarifa.cuentarez|default:"" }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" 
+                                            onclick="editarTarifa('{{ tarifa.id }}', '{{ tarifa.rubro }}', '{{ tarifa.cod_tarifa }}', '{{ tarifa.valor }}', '{{ tarifa.cuenta }}', '{{ tarifa.cuentarez }}')">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" 
+                                            onclick="eliminarTarifa('{{ tarifa.id }}')">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 40px; color: #6c757d;">
+                    <i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                    <h4>No hay tarifas configuradas</h4>
+                    <p>Use el formulario de arriba para agregar las primeras tarifas a este negocio.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Botón Volver -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{% url 'tributario:maestro_negocios' %}?empresa={{ negocio.empresa }}&rtm={{ negocio.rtm }}&expe={{ negocio.expe }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Maestro de Negocios
+            </a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Función para cargar tarifas de un rubro
+        function cargarTarifasRubro() {
+            const rubroSelect = document.getElementById('id_rubro');
+            const tarifaSelect = document.getElementById('id_tarifa_rubro');
+            
+            if (!rubroSelect || !tarifaSelect) return;
+            
+            rubroSelect.addEventListener('change', function() {
+                const rubroCodigo = this.value;
+                
+                if (!rubroCodigo) {
+                    tarifaSelect.innerHTML = '<option value="">Seleccione primero un rubro</option>';
+                    limpiarFormulario();
+                    return;
+                }
+                
+                // Verificar si ya existe una tarifa para este rubro
+                verificarTarifaExistente(rubroCodigo);
+                
+                // ====================================================================
+                // OBTENER DATOS DEL RUBRO (cuenta y cuentarez) - FUNCIONALIDAD NUEVA
+                // ====================================================================
+                fetch('{% url "tributario:obtener_datos_rubro" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `rubro=${rubroCodigo}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exito && data.datos) {
+                        const cuentaSelect = document.getElementById('id_cuenta');
+                        const cuentarezSelect = document.getElementById('id_cuentarez');
+                        
+                        // Cargar cuenta si existe
+                        if (data.datos.cuenta && cuentaSelect) {
+                            // Buscar si existe la opción en el select
+                            let opcionEncontrada = false;
+                            for (let i = 0; i < cuentaSelect.options.length; i++) {
+                                if (cuentaSelect.options[i].value === data.datos.cuenta) {
+                                    cuentaSelect.selectedIndex = i;
+                                    opcionEncontrada = true;
+                                    
+                                    // Actualizar Select2 inmediatamente
+                                    $(cuentaSelect).trigger('change.select2');
+                                    
+                                    console.log('✅ Cuenta cargada automáticamente:', data.datos.cuenta);
+                                    break;
+                                }
+                            }
+                            
+                            // Si no existe en el select, agregar la opción
+                            if (!opcionEncontrada && data.datos.cuenta) {
+                                const option = document.createElement('option');
+                                option.value = data.datos.cuenta;
+                                option.textContent = data.datos.cuenta;
+                                option.selected = true;
+                                cuentaSelect.appendChild(option);
+                                
+                                // Forzar actualización de Select2
+                                $(cuentaSelect).trigger('change.select2');
+                                
+                                console.log('➕ Cuenta agregada y seleccionada:', data.datos.cuenta);
+                            }
+                        }
+                        
+                        // Cargar cuentarez si existe
+                        if (data.datos.cuentarez && cuentarezSelect) {
+                            // Buscar si existe la opción en el select
+                            let opcionEncontrada = false;
+                            for (let i = 0; i < cuentarezSelect.options.length; i++) {
+                                if (cuentarezSelect.options[i].value === data.datos.cuentarez) {
+                                    cuentarezSelect.selectedIndex = i;
+                                    opcionEncontrada = true;
+                                    
+                                    // Actualizar Select2 inmediatamente
+                                    $(cuentarezSelect).trigger('change.select2');
+                                    
+                                    console.log('✅ Cuenta Rezago cargada automáticamente:', data.datos.cuentarez);
+                                    break;
+                                }
+                            }
+                            
+                            // Si no existe en el select, agregar la opción
+                            if (!opcionEncontrada && data.datos.cuentarez) {
+                                const option = document.createElement('option');
+                                option.value = data.datos.cuentarez;
+                                option.textContent = data.datos.cuentarez;
+                                option.selected = true;
+                                cuentarezSelect.appendChild(option);
+                                
+                                // Forzar actualización de Select2
+                                $(cuentarezSelect).trigger('change.select2');
+                                
+                                console.log('➕ Cuenta Rezago agregada y seleccionada:', data.datos.cuentarez);
+                            }
+                        }
+                        
+                        // Actualizar Select2 después de cargar los datos del rubro
+                        $('#id_cuenta, #id_cuentarez').trigger('change.select2');
+                        
+                        console.log('📋 Datos del rubro cargados:', data.datos);
+                    } else {
+                        console.log('ℹ️ No se encontraron datos de cuenta/cuentarez para el rubro');
+                    }
+                })
+                .catch(error => {
+                    console.error('⚠️ Error al obtener datos del rubro:', error);
+                });
+                // ====================================================================
+                
+                // Mostrar loading
+                tarifaSelect.innerHTML = '<option value="">Cargando tarifas...</option>';
+                
+                // Hacer petición AJAX
+                fetch('{% url "tributario:obtener_tarifas_rubro" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `rubro=${rubroCodigo}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exito) {
+                        tarifaSelect.innerHTML = '<option value="">Seleccione una tarifa</option>';
+                        data.tarifas.forEach(tarifa => {
+                            const option = document.createElement('option');
+                            option.value = tarifa.cod_tarifa;
+                            option.textContent = `${tarifa.cod_tarifa} - ${tarifa.descripcion} (${tarifa.valor})`;
+                            option.dataset.valor = tarifa.valor;
+                            tarifaSelect.appendChild(option);
+                        });
+                        console.log('Tarifas cargadas:', data.tarifas.length, 'tarifas disponibles');
+                    } else {
+                        tarifaSelect.innerHTML = '<option value="">Error al cargar tarifas</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    tarifaSelect.innerHTML = '<option value="">Error al cargar tarifas</option>';
+                });
+            });
+        }
+        
+        // Función para actualizar valor personalizado y código de tarifa cuando se selecciona una tarifa
+        function actualizarValorPersonalizado() {
+            const tarifaSelect = document.getElementById('id_tarifa_rubro');
+            const valorPersonalizado = document.getElementById('id_valor_personalizado');
+            const codTarifaInput = document.getElementById('id_cod_tarifa');
+            
+            if (!tarifaSelect || !valorPersonalizado) return;
+            
+            tarifaSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const selectedValue = this.value;
+                
+                if (selectedOption && selectedOption.dataset.valor) {
+                    // Guardar automáticamente el valor de la tarifa en el campo valor personalizado
+                    valorPersonalizado.value = selectedOption.dataset.valor;
+                    console.log('Valor de tarifa cargado automáticamente:', selectedOption.dataset.valor);
+                } else {
+                    valorPersonalizado.value = '';
+                }
+                
+                // Actualizar código de tarifa
+                if (codTarifaInput && selectedValue) {
+                    codTarifaInput.value = selectedValue;
+                    console.log('Código de tarifa actualizado:', selectedValue);
+                } else if (codTarifaInput) {
+                    codTarifaInput.value = '';
+                }
+            });
+        }
+        
+        // Función para editar valor
+        function editarValor(tarifaId) {
+            const valorSpan = document.querySelector(`.valor-actual[data-id="${tarifaId}"]`);
+            const valorInput = document.querySelector(`.valor-edit[data-id="${tarifaId}"]`);
+            const btnEditar = event.target.closest('button');
+            const btnGuardar = document.getElementById(`btn-guardar-${tarifaId}`);
+            
+            if (valorSpan && valorInput && btnEditar && btnGuardar) {
+                valorSpan.style.display = 'none';
+                valorInput.style.display = 'inline-block';
+                btnEditar.style.display = 'none';
+                btnGuardar.style.display = 'inline-block';
+                valorInput.focus();
+            }
+        }
+        
+        // Función para guardar valor
+        function guardarValor(tarifaId) {
+            const valorInput = document.querySelector(`.valor-edit[data-id="${tarifaId}"]`);
+            const nuevoValor = valorInput.value;
+            
+            if (!nuevoValor || nuevoValor <= 0) {
+                alert('Por favor ingrese un valor válido mayor a 0');
+                return;
+            }
+            
+            // Crear FormData
+            const formData = new FormData();
+            formData.append('accion', 'actualizar_valor');
+            formData.append('tarifa_id', tarifaId);
+            formData.append('valor', nuevoValor);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            // Enviar petición
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Recargar la página para mostrar los cambios
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar el valor');
+            });
+        }
+        
+        // Función para eliminar tarifa
+        function eliminarTarifa(tarifaId) {
+            if (!confirm('¿Está seguro de que desea eliminar esta tarifa?')) {
+                return;
+            }
+            
+            console.log('🗑️ Eliminando tarifa ID:', tarifaId);
+            
+            // Crear FormData
+            const formData = new FormData();
+            formData.append('accion', 'eliminar_tarifa');
+            formData.append('tarifa_id', tarifaId);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            // Enviar petición
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(formData)
+            })
+            .then(response => {
+                console.log('📥 Respuesta recibida:', response.status);
+                if (response.headers.get('content-type')?.includes('application/json')) {
+                    return response.json();
+                } else {
+                    return response.text();
+                }
+            })
+            .then(data => {
+                console.log('📥 Datos de respuesta:', data);
+                
+                if (typeof data === 'object' && data.exito !== undefined) {
+                    // Respuesta JSON
+                    if (data.exito) {
+                        mostrarMensaje(data.mensaje || 'Tarifa eliminada exitosamente', true);
+                        // Recargar la página para mostrar los cambios
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        mostrarMensaje(data.mensaje || 'Error al eliminar la tarifa', false);
+                    }
+                } else {
+                    // Respuesta HTML, recargar directamente
+                    console.log('📥 Respuesta HTML recibida, recargando página...');
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                mostrarMensaje('Error al eliminar la tarifa: ' + error.message, false);
+            });
+        }
+        
+        // Función para limpiar formulario
+        function limpiarFormulario() {
+            if (confirm('¿Está seguro de que desea limpiar el formulario?')) {
+                document.getElementById('formTarifaICS').reset();
+                const tarifaSelect = document.getElementById('id_tarifa_rubro');
+                const valorPersonalizado = document.getElementById('id_valor_personalizado');
+                if (tarifaSelect) {
+                    tarifaSelect.innerHTML = '<option value="">Seleccione primero un rubro</option>';
+                }
+                if (valorPersonalizado) {
+                    valorPersonalizado.value = '';
+                }
+                console.log('Formulario limpiado');
+            }
+        }
+        
+        // Función para manejar el cambio de tarifa y actualizar valor automáticamente
+        function manejarCambioTarifa() {
+            const tarifaSelect = document.getElementById('id_tarifa_rubro');
+            const valorPersonalizado = document.getElementById('id_valor_personalizado');
+            
+            if (!tarifaSelect || !valorPersonalizado) return;
+            
+            // Agregar evento adicional para asegurar que se actualice el valor
+            tarifaSelect.addEventListener('change', function() {
+                setTimeout(() => {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption && selectedOption.dataset.valor) {
+                        valorPersonalizado.value = selectedOption.dataset.valor;
+                        console.log('Valor actualizado automáticamente:', selectedOption.dataset.valor);
+                    }
+                }, 100);
+            });
+        }
+        
+        // Función para verificar si ya existe una tarifa para el rubro seleccionado
+        function verificarTarifaExistente(rubroCodigo) {
+            const empresa = '{{ negocio.empresa|default:"0301" }}';
+            const rtm = '{{ negocio.rtm }}';
+            const expe = '{{ negocio.expe }}';
+            
+            console.log('🔍 Verificando si existe tarifa para rubro:', rubroCodigo);
+            
+            // Buscar en la tabla de tarifas existentes
+            const tabla = document.querySelector('.table tbody');
+            if (!tabla) {
+                console.log('ℹ️ No hay tabla de tarifas');
+                ocultarMensajeEdicion();
+                return;
+            }
+            
+            const filas = tabla.querySelectorAll('tr[data-rubro]');
+            let tarifaEncontrada = null;
+            
+            filas.forEach(fila => {
+                const rubroData = fila.getAttribute('data-rubro');
+                if (rubroData && rubroData === rubroCodigo) {
+                    tarifaEncontrada = {
+                        id: fila.getAttribute('data-tarifa-id'),
+                        rubro: rubroData,
+                        codTarifa: fila.getAttribute('data-cod-tarifa'),
+                        valor: fila.getAttribute('data-valor'),
+                        cuenta: fila.getAttribute('data-cuenta') || '',
+                        cuentarez: fila.getAttribute('data-cuentarez') || ''
+                    };
+                }
+            });
+            
+            if (tarifaEncontrada) {
+                console.log('✅ Tarifa existente encontrada:', tarifaEncontrada);
+                mostrarMensajeEdicion(tarifaEncontrada);
+                cargarDatosExistentes(tarifaEncontrada);
+            } else {
+                console.log('ℹ️ No existe tarifa para este rubro, se creará una nueva');
+                ocultarMensajeEdicion();
+            }
+        }
+        
+        // Función para mostrar mensaje de que se está editando
+        function mostrarMensajeEdicion(tarifa) {
+            let mensajeDiv = document.getElementById('mensaje-edicion');
+            if (!mensajeDiv) {
+                mensajeDiv = document.createElement('div');
+                mensajeDiv.id = 'mensaje-edicion';
+                mensajeDiv.style.cssText = 'background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border: 2px solid #ffc107; border-radius: 8px; padding: 15px; margin: 15px 0; display: flex; align-items: center; gap: 10px;';
+                
+                const formulario = document.querySelector('form');
+                formulario.insertBefore(mensajeDiv, formulario.firstChild);
+            }
+            
+            mensajeDiv.innerHTML = `
+                <i class="fas fa-edit" style="font-size: 1.5rem; color: #856404;"></i>
+                <div style="flex: 1;">
+                    <strong style="color: #856404;">MODO EDICIÓN</strong>
+                    <p style="margin: 5px 0 0 0; color: #856404;">
+                        Ya existe una configuración para el rubro <strong>${tarifa.rubro}</strong>. 
+                        Los campos se han cargado con los datos actuales. Modifique lo necesario y presione "Agregar Tarifa" para actualizar.
+                    </p>
+                </div>
+            `;
+            mensajeDiv.style.display = 'flex';
+        }
+        
+        // Función para ocultar mensaje de edición
+        function ocultarMensajeEdicion() {
+            const mensajeDiv = document.getElementById('mensaje-edicion');
+            if (mensajeDiv) {
+                mensajeDiv.style.display = 'none';
+            }
+        }
+        
+        // Función para cargar datos existentes en el formulario
+        function cargarDatosExistentes(tarifa) {
+            // Esperar a que las tarifas del rubro se carguen primero
+            setTimeout(() => {
+                const tarifaSelect = document.getElementById('id_tarifa_rubro');
+                const valorPersonalizado = document.getElementById('id_valor_personalizado');
+                const codTarifaInput = document.getElementById('id_cod_tarifa');
+                const cuentaInput = document.getElementById('id_cuenta');
+                const cuentarezInput = document.getElementById('id_cuentarez');
+                const tarifaIdInput = document.getElementById('tarifa_id_edicion');
+                const btnTexto = document.getElementById('btn-texto');
+                const btnIcon = document.querySelector('#btn-guardar-tarifa i');
+                
+                // Cargar ID para actualización
+                if (tarifaIdInput) {
+                    tarifaIdInput.value = tarifa.id;
+                }
+                
+                // Cambiar texto del botón a "Actualizar"
+                if (btnTexto) {
+                    btnTexto.textContent = 'Actualizar Tarifa';
+                }
+                if (btnIcon) {
+                    btnIcon.className = 'fas fa-sync-alt';
+                }
+                
+                // Buscar y seleccionar la tarifa en el combo
+                if (tarifaSelect && tarifa.codTarifa) {
+                    for (let i = 0; i < tarifaSelect.options.length; i++) {
+                        const optionValue = tarifaSelect.options[i].value;
+                        if (optionValue === tarifa.codTarifa || optionValue.split(' ')[0] === tarifa.codTarifa) {
+                            tarifaSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                
+                // Cargar código de tarifa
+                if (codTarifaInput && tarifa.codTarifa) {
+                    codTarifaInput.value = tarifa.codTarifa;
+                }
+                
+                // Cargar valor
+                if (valorPersonalizado && tarifa.valor) {
+                    const valorLimpio = String(tarifa.valor).replace(/,/g, '');
+                    valorPersonalizado.value = parseFloat(valorLimpio);
+                }
+                
+                // Cargar cuentas (ahora son select, no input)
+                const cuentaSelect = document.getElementById('id_cuenta');
+                const cuentarezSelect = document.getElementById('id_cuentarez');
+                
+                if (cuentaSelect && tarifa.cuenta) {
+                    cuentaSelect.value = tarifa.cuenta;
+                }
+                if (cuentarezSelect && tarifa.cuentarez) {
+                    cuentarezSelect.value = tarifa.cuentarez;
+                }
+                
+                // Actualizar Select2 después de establecer los valores
+                $('#id_cuenta, #id_cuentarez').trigger('change.select2');
+                
+                console.log('📝 Datos cargados en el formulario para edición:', tarifa);
+            }, 500);
+        }
+        
+        // Función para limpiar el formulario completamente
+        function limpiarFormularioCompleto() {
+            const rubroSelect = document.getElementById('id_rubro');
+            const tarifaSelect = document.getElementById('id_tarifa_rubro');
+            const valorPersonalizado = document.getElementById('id_valor_personalizado');
+            const codTarifaInput = document.getElementById('id_cod_tarifa');
+            const cuentaSelect = document.getElementById('id_cuenta');
+            const cuentarezSelect = document.getElementById('id_cuentarez');
+            const tarifaIdInput = document.getElementById('tarifa_id_edicion');
+            const btnTexto = document.getElementById('btn-texto');
+            const btnIcon = document.querySelector('#btn-guardar-tarifa i');
+            
+            // Limpiar todos los campos
+            if (rubroSelect) rubroSelect.selectedIndex = 0;
+            if (tarifaSelect) {
+                tarifaSelect.innerHTML = '<option value="">Seleccione primero un rubro</option>';
+                tarifaSelect.selectedIndex = 0;
+            }
+            if (valorPersonalizado) valorPersonalizado.value = '';
+            if (codTarifaInput) codTarifaInput.value = '';
+            if (cuentaSelect) cuentaSelect.selectedIndex = 0;
+            if (cuentarezSelect) cuentarezSelect.selectedIndex = 0;
+            if (tarifaIdInput) tarifaIdInput.value = '';
+            
+            // Actualizar Select2 después de limpiar
+            $('#id_cuenta, #id_cuentarez').trigger('change.select2');
+            
+            // Restaurar texto del botón
+            if (btnTexto) {
+                btnTexto.textContent = 'Agregar Tarifa';
+            }
+            if (btnIcon) {
+                btnIcon.className = 'fas fa-plus';
+            }
+            
+            ocultarMensajeEdicion();
+            console.log('🧹 Formulario limpiado completamente');
+        }
+        
+        // Función para editar tarifa desde la tabla
+        function editarTarifa(id, rubro, codTarifa, valor, cuenta, cuentarez) {
+            console.log('✏️ Editando tarifa:', {id, rubro, codTarifa, valor, cuenta, cuentarez});
+            
+            // Seleccionar el rubro
+            const rubroSelect = document.getElementById('id_rubro');
+            if (rubroSelect) {
+                rubroSelect.value = rubro;
+                // Disparar evento change para cargar tarifas del rubro
+                rubroSelect.dispatchEvent(new Event('change'));
+            }
+            
+            // Crear objeto tarifa y cargar datos
+            const tarifaObj = {
+                id: id,
+                rubro: rubro,
+                codTarifa: codTarifa,
+                valor: valor,
+                cuenta: cuenta,
+                cuentarez: cuentarez
+            };
+            
+            mostrarMensajeEdicion(tarifaObj);
+            cargarDatosExistentes(tarifaObj);
+            
+            // Scroll al formulario
+            document.getElementById('formTarifaICS').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // Función para cargar actividades (cuentas)
+        function cargarActividades() {
+            const empresa = '{{ negocio.empresa|default:"0301" }}';
+            
+            fetch('/tributario/obtener-actividades-ajax/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `empresa=${empresa}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.exito) {
+                    const cuentaSelect = document.getElementById('id_cuenta');
+                    const cuentarezSelect = document.getElementById('id_cuentarez');
+                    
+                    // Limpiar opciones existentes
+                    cuentaSelect.innerHTML = '<option value="">Seleccione una cuenta</option>';
+                    cuentarezSelect.innerHTML = '<option value="">Seleccione cuenta rezago</option>';
+                    
+                    // Agregar opciones para cuenta (codigo)
+                    data.actividades.forEach(act => {
+                        const optionCuenta = document.createElement('option');
+                        optionCuenta.value = act.codigo;
+                        optionCuenta.textContent = `${act.codigo} - ${act.descripcion}`;
+                        optionCuenta.dataset.cuentarez = act.cuentarez || '';
+                        cuentaSelect.appendChild(optionCuenta);
+                        
+                        // Agregar TODAS las actividades al combobox de cuenta rezago
+                        const optionCuentarez = document.createElement('option');
+                        optionCuentarez.value = act.codigo;
+                        optionCuentarez.textContent = `${act.codigo} - ${act.descripcion}`;
+                        cuentarezSelect.appendChild(optionCuentarez);
+                    });
+                    
+                    // Actualizar Select2 después de agregar las opciones
+                    $('#id_cuenta, #id_cuentarez').trigger('change.select2');
+                    
+                    console.log('✅ Actividades cargadas:', data.actividades.length);
+                    
+                    // Vincular cambio de cuenta con cuenta rezago
+                    cuentaSelect.addEventListener('change', function() {
+                        const selectedOption = this.options[this.selectedIndex];
+                        if (selectedOption && selectedOption.dataset.cuentarez) {
+                            cuentarezSelect.value = selectedOption.dataset.cuentarez;
+                            console.log('🔗 Cuenta rezago vinculada:', selectedOption.dataset.cuentarez);
+                        }
+                    });
+                } else {
+                    console.error('Error al cargar actividades:', data.mensaje);
+                }
+            })
+            .catch(error => {
+                console.error('Error en la petición:', error);
+            });
+        }
+        
+        // Inicializar funciones cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarTarifasRubro();
+            actualizarValorPersonalizado();
+            manejarCambioTarifa();
+            cargarActividades();
+        });
+    </script>
+    
+    <!-- jQuery (requerido por Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Inicialización de Select2 para Cuenta y Cuenta Rezago -->
+    <script>
+        $(document).ready(function() {
+            // Inicializar Select2 en los combobox de cuenta y cuenta rezago
+            $('#id_cuenta, #id_cuentarez').select2({
+                placeholder: 'Seleccione una cuenta',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
+            });
+            
+            console.log('✅ Select2 inicializado en combobox de cuenta y cuenta rezago');
+        });
+    </script>
+</body>
+</html>

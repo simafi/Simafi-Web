@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tributario{% endblock %} | SIMAFI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --trib-primary:      #b45309;
+            --trib-primary-dark: #92400e;
+            --trib-secondary:    #f59e0b;
+            --trib-accent:       #fcd34d;
+            --trib-success:      #10b981;
+            --trib-warning:      #f59e0b;
+            --trib-danger:       #ef4444;
+            --trib-blue:         #3b82f6;
+            --trib-purple:       #8b5cf6;
+            --trib-indigo:       #6366f1;
+            --trib-teal:         #14b8a6;
+            --trib-bg:           #0f172a;
+            --trib-surface:      #1e293b;
+            --trib-surface2:     #27364b;
+            --trib-border:       rgba(148,163,184,0.15);
+            --trib-text:         #e2e8f0;
+            --trib-text-muted:   #94a3b8;
+            --sidebar-width:     265px;
+            --header-height:     64px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--trib-bg);
+            color: var(--trib-text);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Sidebar ── */
+        .trib-sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #0c1a2e 0%, #12233b 50%, #0c1a2e 100%);
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            border-right: 1px solid var(--trib-border);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-brand {
+            padding: 1.4rem 1.25rem;
+            border-bottom: 1px solid var(--trib-border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--trib-primary), var(--trib-secondary));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: white;
+            box-shadow: 0 4px 12px rgba(245,158,11,0.35);
+            flex-shrink: 0;
+        }
+
+        .brand-text { line-height: 1.2; }
+        .brand-name { font-size: 0.95rem; font-weight: 700; color: white; }
+        .brand-sub  { font-size: 0.72rem; color: var(--trib-text-muted); }
+
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 0.6rem 0; }
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+        .nav-section-label {
+            font-size: 0.63rem;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: var(--trib-text-muted);
+            padding: 0.7rem 1.25rem 0.2rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.55rem 1.25rem;
+            color: var(--trib-text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            color: white;
+            background: rgba(245,158,11,0.09);
+            border-left-color: var(--trib-secondary);
+        }
+
+        .sidebar-link i { width: 18px; text-align: center; font-size: 0.85rem; }
+
+        /* Submenu */
+        .sidebar-submenu {
+            display: none;
+            padding-left: 0;
+            background: rgba(0,0,0,0.15);
+        }
+        .sidebar-submenu.open { display: block; }
+
+        .sidebar-link.has-sub::after {
+            content: '\f107';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+        .sidebar-link.has-sub.open::after { transform: rotate(180deg); }
+
+        .submenu-link {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.45rem 1.25rem 0.45rem 2.75rem;
+            color: var(--trib-text-muted);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 400;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .submenu-link:hover,
+        .submenu-link.active {
+            color: var(--trib-accent);
+            background: rgba(245,158,11,0.06);
+            border-left-color: var(--trib-accent);
+        }
+        .submenu-link i { width: 14px; text-align: center; font-size: 0.78rem; }
+
+        .sidebar-bottom {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--trib-border);
+            flex-shrink: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .user-avatar {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--trib-primary), var(--trib-secondary));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.875rem; color: white; flex-shrink: 0;
+        }
+
+        .user-name    { font-size: 0.875rem; font-weight: 600; color: var(--trib-text); }
+        .user-empresa { font-size: 0.75rem; color: var(--trib-text-muted); }
+
+        /* ── Main layout ── */
+        .trib-main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Topbar ── */
+        .trib-topbar {
+            height: var(--header-height);
+            background: var(--trib-surface);
+            border-bottom: 1px solid var(--trib-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0; z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .topbar-breadcrumb { font-size: 0.875rem; color: var(--trib-text-muted); }
+        .topbar-breadcrumb span { color: var(--trib-text); font-weight: 600; }
+
+        .topbar-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+        .topbar-btn {
+            background: var(--trib-surface2);
+            border: 1px solid var(--trib-border);
+            border-radius: 8px;
+            padding: 0.4rem 0.85rem;
+            color: var(--trib-text);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            cursor: pointer;
+        }
+
+        .topbar-btn:hover {
+            background: rgba(245,158,11,0.1);
+            border-color: var(--trib-secondary);
+            color: var(--trib-secondary);
+        }
+
+        .topbar-badge {
+            background: var(--trib-primary);
+            color: white;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+        }
+
+        /* ── Content area ── */
+        .trib-content { flex: 1; padding: 1.75rem; }
+
+        /* ── Page header ── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+        }
+
+        .header-content { display: flex; align-items: center; gap: 1rem; }
+
+        .header-icon {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, var(--trib-primary), var(--trib-secondary));
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: white;
+            box-shadow: 0 4px 16px rgba(180,83,9,0.35);
+        }
+
+        .page-title    { font-size: 1.6rem; font-weight: 800; color: white; margin: 0; }
+        .page-subtitle { font-size: 0.875rem; color: var(--trib-text-muted); margin: 0; }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--trib-text); }
+
+        /* ── Stats grid ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .stat-card {
+            background: var(--trib-surface);
+            border: 1px solid var(--trib-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex; align-items: center; gap: 1rem;
+            transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: white; flex-shrink: 0;
+        }
+
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: white; line-height: 1; }
+        .stat-label { font-size: 0.8rem; color: var(--trib-text-muted); font-weight: 500; margin-top: 0.2rem; }
+        .stat-sub   { font-size: 0.72rem; color: var(--trib-text-muted); margin-top: 0.15rem; }
+
+        .stat-gold::before   { background: var(--trib-secondary); }
+        .stat-gold .stat-icon { background: rgba(245,158,11,0.2); color: var(--trib-secondary); }
+
+        .stat-red::before    { background: var(--trib-danger); }
+        .stat-red .stat-icon { background: rgba(239,68,68,0.2); color: var(--trib-danger); }
+
+        .stat-green::before  { background: var(--trib-success); }
+        .stat-green .stat-icon { background: rgba(16,185,129,0.2); color: var(--trib-success); }
+
+        .stat-blue::before   { background: var(--trib-blue); }
+        .stat-blue .stat-icon { background: rgba(59,130,246,0.2); color: var(--trib-blue); }
+
+        .stat-orange::before { background: var(--trib-primary); }
+        .stat-orange .stat-icon { background: rgba(180,83,9,0.2); color: var(--trib-secondary); }
+
+        /* ── Data cards ── */
+        .data-card {
+            background: var(--trib-surface);
+            border: 1px solid var(--trib-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+        }
+
+        .data-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--trib-border);
+        }
+
+        .data-card-header h4 { font-size: 1rem; font-weight: 700; color: var(--trib-text); margin: 0; }
+        .btn-link { color: var(--trib-secondary); text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+        .btn-link:hover { color: var(--trib-accent); }
+
+        /* ── Table styling ── */
+        .table { color: var(--trib-text); margin: 0; font-size: 0.85rem; }
+        .table thead th {
+            background: rgba(255,255,255,0.04);
+            color: var(--trib-text-muted);
+            font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em;
+            border-color: var(--trib-border); padding: 0.7rem 0.8rem;
+        }
+        .table tbody td { border-color: var(--trib-border); padding: 0.65rem 0.8rem; vertical-align: middle; }
+        .table tbody tr:hover td { background: rgba(255,255,255,0.03); }
+        .table a { color: var(--trib-secondary); text-decoration: none; font-weight: 600; }
+        .table a:hover { color: var(--trib-accent); }
+
+        /* ── Form controls ── */
+        .form-label { font-size: 0.82rem; font-weight: 600; color: var(--trib-text-muted); margin-bottom: 0.35rem; }
+        .form-control, .form-select {
+            background: var(--trib-surface2);
+            border: 1px solid var(--trib-border);
+            border-radius: 8px;
+            color: var(--trib-text);
+            font-size: 0.875rem;
+            padding: 0.55rem 0.85rem;
+        }
+        .form-control:focus, .form-select:focus {
+            background: var(--trib-surface2);
+            border-color: var(--trib-secondary);
+            color: var(--trib-text);
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+        }
+        .form-control::placeholder { color: #475569; }
+        .form-select option { background: #1e293b; color: var(--trib-text); }
+        .form-check-input {
+            background-color: var(--trib-surface2);
+            border-color: var(--trib-border);
+        }
+        .form-check-input:checked {
+            background-color: var(--trib-secondary);
+            border-color: var(--trib-secondary);
+        }
+
+        /* ── Buttons ── */
+        .btn-trib-primary {
+            background: linear-gradient(135deg, var(--trib-primary), var(--trib-secondary));
+            color: white; border: none; border-radius: 10px;
+            padding: 0.6rem 1.25rem; font-size: 0.875rem; font-weight: 600;
+            transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem;
+            cursor: pointer;
+        }
+        .btn-trib-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,158,11,0.35); color: white; }
+
+        .btn-trib-secondary {
+            background: var(--trib-surface2); color: var(--trib-text);
+            border: 1px solid var(--trib-border); border-radius: 10px;
+            padding: 0.6rem 1.25rem; font-size: 0.875rem; font-weight: 500;
+            transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem;
+            text-decoration: none; cursor: pointer;
+        }
+        .btn-trib-secondary:hover { border-color: var(--trib-secondary); color: var(--trib-secondary); }
+
+        .btn-trib-danger {
+            background: rgba(239,68,68,0.1); color: var(--trib-danger);
+            border: 1px solid rgba(239,68,68,0.3); border-radius: 10px;
+            padding: 0.6rem 1.25rem; font-size: 0.875rem; font-weight: 500;
+            transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem;
+            text-decoration: none; cursor: pointer;
+        }
+        .btn-trib-danger:hover { background: rgba(239,68,68,0.2); color: var(--trib-danger); }
+
+        .btn-trib-success {
+            background: rgba(16,185,129,0.1); color: var(--trib-success);
+            border: 1px solid rgba(16,185,129,0.3); border-radius: 10px;
+            padding: 0.6rem 1.25rem; font-size: 0.875rem; font-weight: 500;
+            transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem;
+            cursor: pointer;
+        }
+        .btn-trib-success:hover { background: rgba(16,185,129,0.2); color: var(--trib-success); }
+
+        /* ── Alert / Messages ── */
+        .alert { border-radius: 10px; border: none; font-size: 0.875rem; padding: 0.875rem 1.1rem; }
+        .alert-success { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
+        .alert-danger  { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+        .alert-warning { background: rgba(245,158,11,0.12); color: #fde68a; border: 1px solid rgba(245,158,11,0.25); }
+        .alert-info    { background: rgba(59,130,246,0.12); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+        .alert-gold    { background: rgba(245,158,11,0.12); color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+
+        /* ── Badge ── */
+        .badge { border-radius: 6px; font-size: 0.72rem; font-weight: 600; padding: 0.3em 0.6em; }
+        .badge-gold    { background: rgba(245,158,11,0.2); color: var(--trib-secondary); }
+        .badge-danger  { background: rgba(239,68,68,0.18); color: #fca5a5; }
+        .badge-success { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+        .badge-blue    { background: rgba(59,130,246,0.18); color: #93c5fd; }
+
+        /* ── Form panels ── */
+        .form-panel {
+            background: var(--trib-surface);
+            border: 1px solid var(--trib-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .form-panel-title {
+            font-size: 1rem; font-weight: 700; color: var(--trib-text);
+            margin-bottom: 1.25rem; padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--trib-border);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .form-panel-title i { color: var(--trib-secondary); }
+
+        /* ── Filter bar ── */
+        .filter-bar {
+            background: var(--trib-surface);
+            border: 1px solid var(--trib-border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* ── Module cards ── */
+        .module-card {
+            display: flex;
+            align-items: center;
+            background: var(--trib-surface);
+            border: 1px solid var(--trib-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            height: 100%; gap: 1rem;
+        }
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+            text-decoration: none;
+        }
+        .module-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: white; flex-shrink: 0;
+        }
+        .module-body { flex: 1; }
+        .module-body h3 { font-size: 0.95rem; font-weight: 700; color: white; margin: 0 0 0.3rem; }
+        .module-body p  { font-size: 0.78rem; color: var(--trib-text-muted); margin: 0; line-height: 1.4; }
+        .module-arrow   { color: var(--trib-text-muted); font-size: 0.8rem; flex-shrink: 0; }
+
+        .module-gold   .module-icon { background: linear-gradient(135deg, var(--trib-primary), var(--trib-secondary)); }
+        .module-green  .module-icon { background: linear-gradient(135deg, #059669, var(--trib-success)); }
+        .module-blue   .module-icon { background: linear-gradient(135deg, #1d4ed8, var(--trib-blue)); }
+        .module-purple .module-icon { background: linear-gradient(135deg, #7c3aed, var(--trib-purple)); }
+        .module-red    .module-icon { background: linear-gradient(135deg, #dc2626, var(--trib-danger)); }
+        .module-teal   .module-icon { background: linear-gradient(135deg, #0d9488, var(--trib-teal)); }
+
+        .module-gold:hover   { border-color: var(--trib-secondary); }
+        .module-green:hover  { border-color: var(--trib-success); }
+        .module-blue:hover   { border-color: var(--trib-blue); }
+        .module-purple:hover { border-color: var(--trib-purple); }
+        .module-red:hover    { border-color: var(--trib-danger); }
+        .module-teal:hover   { border-color: var(--trib-teal); }
+
+        /* ── Amnistia / Descuento indicators ── */
+        .amnistia-banner {
+            background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(180,83,9,0.1));
+            border: 1px solid rgba(245,158,11,0.4);
+            border-radius: 12px;
+            padding: 0.875rem 1.25rem;
+            margin-bottom: 1.25rem;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .amnistia-banner i { color: var(--trib-secondary); font-size: 1.25rem; flex-shrink: 0; }
+        .amnistia-banner .title { font-weight: 700; color: var(--trib-secondary); font-size: 0.9rem; }
+        .amnistia-banner .detail { font-size: 0.8rem; color: var(--trib-text-muted); }
+
+        .descuento-row { background: rgba(16,185,129,0.06) !important; }
+        .recargo-row   { background: rgba(239,68,68,0.06) !important; }
+        .mora-row      { background: rgba(245,158,11,0.06) !important; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .trib-sidebar { transform: translateX(-100%); }
+            .trib-sidebar.open { transform: translateX(0); }
+            .trib-main { margin-left: 0; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fadeInUp 0.4s ease-out forwards; }
+        .animate-in:nth-child(2) { animation-delay: 0.07s; }
+        .animate-in:nth-child(3) { animation-delay: 0.14s; }
+        .animate-in:nth-child(4) { animation-delay: 0.21s; }
+        .animate-in:nth-child(5) { animation-delay: 0.28s; }
+
+        input[type=file].form-control { padding: 0.4rem 0.6rem; }
+
+        /* Tooltip simple */
+        [data-trib-tip] { position: relative; cursor: help; }
+        [data-trib-tip]:hover::after {
+            content: attr(data-trib-tip);
+            position: absolute;
+            bottom: 110%; left: 50%; transform: translateX(-50%);
+            background: #0f172a; color: #e2e8f0;
+            font-size: 0.75rem; padding: 0.35rem 0.65rem;
+            border-radius: 6px; white-space: nowrap; z-index: 9999;
+            border: 1px solid var(--trib-border);
+            pointer-events: none;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- ══ SIDEBAR ══ -->
+    <nav class="trib-sidebar" id="tribSidebar">
+        <a href="{% url 'tributario:tributario_menu_principal' %}" class="sidebar-brand">
+            <div class="brand-icon"><i class="fas fa-landmark"></i></div>
+            <div class="brand-text">
+                <div class="brand-name">Módulo Tributario</div>
+                <div class="brand-sub">{{ empresa|default:"Municipio" }}</div>
+            </div>
+        </a>
+
+        <div class="sidebar-nav">
+            <!-- Principal -->
+            <div class="nav-section-label">Principal</div>
+            <a href="{% url 'tributario:tributario_menu_principal' %}"
+               class="sidebar-link {% block nav_inicio %}{% endblock %}">
+                <i class="fas fa-home"></i> Dashboard / Inicio
+            </a>
+
+            <!-- Configuración -->
+            <div class="nav-section-label mt-2">Configuración</div>
+            <a href="{% url 'tributario:rubros_crud' %}"
+               class="sidebar-link {% block nav_rubros %}{% endblock %}">
+                <i class="fas fa-tags"></i> Rubros
+            </a>
+            <a href="{% url 'tributario:actividad_crud' %}"
+               class="sidebar-link {% block nav_actividades %}{% endblock %}">
+                <i class="fas fa-industry"></i> Actividades Económicas
+            </a>
+            <a href="{% url 'tributario:oficina_crud' %}"
+               class="sidebar-link {% block nav_oficinas %}{% endblock %}">
+                <i class="fas fa-building"></i> Oficinas
+            </a>
+            <a href="{% url 'tributario:parametros_tributarios' %}"
+               class="sidebar-link {% block nav_parametros %}{% endblock %}">
+                <i class="fas fa-sliders-h"></i> Parámetros Tributarios
+            </a>
+
+            <!-- Padrón -->
+            <div class="nav-section-label mt-2">Padrón</div>
+            <a href="{% url 'tributario:maestro_negocios' %}"
+               class="sidebar-link {% block nav_maestro %}{% endblock %}">
+                <i class="fas fa-store"></i> Maestro de Negocios
+            </a>
+            <a href="{% url 'tributario:configurar_tasas_negocio' %}"
+               class="sidebar-link {% block nav_tasas %}{% endblock %}">
+                <i class="fas fa-cogs"></i> Configurar Tasas
+            </a>
+
+            <!-- Operaciones ICS -->
+            <div class="nav-section-label mt-2">Industria, Comercio y Servicios</div>
+            <a href="{% url 'tributario:declaracion_volumen' %}"
+               class="sidebar-link {% block nav_declaraciones %}{% endblock %}">
+                <i class="fas fa-file-alt"></i> Declaraciones
+            </a>
+            <a href="{% url 'tributario:estado_cuenta' %}"
+               class="sidebar-link {% block nav_estado_cuenta %}{% endblock %}">
+                <i class="fas fa-search-dollar"></i> Estado de Cuenta ICS
+            </a>
+            <a href="{% url 'tributario:recargos_moratorios' %}"
+               class="sidebar-link {% block nav_recargos %}{% endblock %}">
+                <i class="fas fa-percentage"></i> Recargos Moratorios
+            </a>
+            <a href="{% url 'tributario:miscelaneos' %}"
+               class="sidebar-link {% block nav_miscelaneos %}{% endblock %}">
+                <i class="fas fa-receipt"></i> Cobros / Misceláneos
+            </a>
+            <a href="{% url 'tributario:convenios_pagos' %}"
+               class="sidebar-link {% block nav_convenios %}{% endblock %}">
+                <i class="fas fa-handshake"></i> Convenios de Pago
+            </a>
+
+            <!-- Bienes Inmuebles -->
+            <div class="nav-section-label mt-2">Bienes Inmuebles</div>
+            <a href="{% url 'tributario:gestionar_mora_bienes' %}"
+               class="sidebar-link {% block nav_mora_bienes %}{% endblock %}">
+                <i class="fas fa-home"></i> Gestionar Mora
+            </a>
+
+            <!-- Reportes -->
+            <div class="nav-section-label mt-2">Reportes</div>
+            <a href="{% url 'tributario:informes' %}"
+               class="sidebar-link {% block nav_informes %}{% endblock %}">
+                <i class="fas fa-chart-bar"></i> Informes y Reportes
+            </a>
+            <a href="{% url 'tributario:cargo_anual' %}"
+               class="sidebar-link {% block nav_cargo_anual %}{% endblock %}">
+                <i class="fas fa-calendar-check"></i> Cargo Anual
+            </a>
+            <a href="{% url 'tributario:cierre_anual' %}"
+               class="sidebar-link {% block nav_cierre %}{% endblock %}">
+                <i class="fas fa-lock"></i> Cierre Anual
+            </a>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="user-info">
+                <div class="user-avatar">{{ usuario|default:"U"|first|upper }}</div>
+                <div>
+                    <div class="user-name">{{ usuario|default:"Usuario" }}</div>
+                    <div class="user-empresa">{{ empresa|default:"Municipio" }}</div>
+                </div>
+            </div>
+            <a href="/" class="topbar-btn w-100 justify-content-center mb-2" style="text-decoration:none">
+                <i class="fas fa-th-large"></i> Menú Principal
+            </a>
+            <form method="post" action="{% url 'tributario:tributario_logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="topbar-btn w-100 justify-content-center"
+                        style="border-color:rgba(239,68,68,0.4);color:#fca5a5;">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <!-- ══ MAIN ══ -->
+    <div class="trib-main">
+        <!-- Topbar -->
+        <div class="trib-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <!-- Mobile toggle -->
+                <button class="topbar-btn d-md-none" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="topbar-breadcrumb">
+                    Tributario <i class="fas fa-chevron-right mx-1" style="font-size:.7em"></i>
+                    <span>{% block breadcrumb %}Inicio{% endblock %}</span>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                {% block topbar_actions %}
+                <a href="{% url 'tributario:maestro_negocios' %}" class="topbar-btn">
+                    <i class="fas fa-search"></i> Buscar Negocio
+                </a>
+                <a href="{% url 'tributario:miscelaneos' %}" class="topbar-btn"
+                   style="border-color:rgba(245,158,11,0.4);color:var(--trib-secondary)">
+                    <i class="fas fa-cash-register"></i> Cobrar
+                </a>
+                {% endblock %}
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="trib-content">
+            {% if messages %}
+            <div class="mb-3">
+                {% for msg in messages %}
+                <div class="alert alert-{{ msg.tags }} alert-dismissible" role="alert">
+                    {{ msg }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                            style="filter:invert(1)"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Banner de amnistía tributaria activa -->
+            {% if amnistia_activa %}
+            <div class="amnistia-banner">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <div class="title">Amnistía Tributaria Activa</div>
+                    <div class="detail">
+                        {{ amnistia_activa.descripcion }} — Vigente hasta:
+                        <strong style="color:var(--trib-secondary)">
+                            {{ amnistia_activa.fecha_corte|date:"d/m/Y" }}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile sidebar toggle
+        document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+            document.getElementById('tribSidebar').classList.toggle('open');
+        });
+
+        // Submenu toggle
+        document.querySelectorAll('.sidebar-link.has-sub').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const submenu = link.nextElementSibling;
+                link.classList.toggle('open');
+                submenu?.classList.toggle('open');
+            });
+        });
+
+        // Format currency helper
+        window.formatLps = (val) => {
+            if (!val && val !== 0) return 'L. 0.00';
+            return 'L. ' + parseFloat(val).toLocaleString('es-HN', {
+                minimumFractionDigits: 2, maximumFractionDigits: 2
+            });
+        };
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

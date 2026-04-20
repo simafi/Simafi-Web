@@ -1,0 +1,192 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}Configuración inicial - Contabilidad{% endblock %}
+
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item active">Configuración inicial</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-road me-2"></i>Configuración inicial del módulo de Contabilidad</h4>
+    </div>
+
+    <p class="text-muted mb-4">
+        Siga estos pasos en orden para dejar el sistema listo para registrar asientos y generar reportes.
+        No se requiere experiencia previa en contabilidad.
+    </p>
+
+    <!-- Los 5 elementos contables -->
+    <div class="cont-card mb-4">
+        <div class="card-header">
+            <i class="fas fa-sitemap me-2"></i>Cómo se organizan las cuentas: Activo, Pasivo, Capital, Ingresos y Egresos
+        </div>
+        <div class="card-body">
+            <p class="mb-3">
+                Todas las cuentas pertenecen a uno de estos <strong>grupos</strong>. Al crear o cargar el plan de cuentas,
+                debe asignar cada cuenta al grupo correcto según el código siguiente:
+            </p>
+            <div class="table-responsive">
+                <table class="table cont-table">
+                    <thead>
+                        <tr>
+                            <th style="width:80px;">Código</th>
+                            <th>Nombre del grupo</th>
+                            <th>Qué representa</th>
+                            <th style="width:100px;">Naturaleza</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-primary">1</span></td>
+                            <td><strong>Activo</strong></td>
+                            <td>Recursos y derechos (caja, bancos, cuentas por cobrar, inventarios, activos fijos)</td>
+                            <td>Deudora</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-warning text-dark">2</span></td>
+                            <td><strong>Pasivo</strong></td>
+                            <td>Obligaciones con terceros (proveedores, préstamos, impuestos por pagar)</td>
+                            <td>Acreedora</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-info">3</span></td>
+                            <td><strong>Patrimonio (Capital)</strong></td>
+                            <td>Capital social, reservas, resultados acumulados (Activo − Pasivo)</td>
+                            <td>Acreedora</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-secondary">4</span></td>
+                            <td>Cuentas de Orden</td>
+                            <td>Avales, fianzas (control y revelación)</td>
+                            <td>Acreedora</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-success">5</span></td>
+                            <td><strong>Ingresos</strong></td>
+                            <td>Ventas, servicios, intereses ganados, otros ingresos</td>
+                            <td>Acreedora</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-danger">6</span></td>
+                            <td><strong>Gastos (Egresos)</strong></td>
+                            <td>Gastos operativos: sueldos, servicios, depreciación, etc.</td>
+                            <td>Deudora</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-dark">7</span></td>
+                            <td>Gastos administrativos y otros</td>
+                            <td>Gastos no operativos, administrativos, financieros</td>
+                            <td>Deudora</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="mb-0 small text-muted">
+                <i class="fas fa-lightbulb me-1"></i>
+                Al cargar un catálogo desde archivo, la columna <strong>codgrupo</strong> (1, 2, 3, 5, 6 o 7) define si la cuenta es Activo, Pasivo, Capital, Ingresos o Egresos.
+            </p>
+        </div>
+    </div>
+
+    <!-- Pasos -->
+    <div class="cont-card mb-4">
+        <div class="card-header">
+            <i class="fas fa-list-ol me-2"></i>Pasos para configurar el módulo
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="d-flex align-items-start p-3 rounded" style="background:#f0f9ff; border-left:4px solid #0ea5e9;">
+                        <span class="badge bg-primary me-3 mt-1" style="font-size:1rem;">1</span>
+                        <div>
+                            <h6 class="mb-1">Crear un ejercicio fiscal</h6>
+                            <p class="mb-2 small text-muted">
+                                Sin un año contable abierto no se pueden registrar asientos. Defina fecha de inicio y fin (ej. 01/01/2025 - 31/12/2025).
+                            </p>
+                            <a href="{% url 'contabilidad:ejercicios_fiscales' %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-calendar-alt me-1"></i> Ir a Ejercicios Fiscales
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex align-items-start p-3 rounded" style="background:#f0fdf4; border-left:4px solid #22c55e;">
+                        <span class="badge bg-success me-3 mt-1" style="font-size:1rem;">2</span>
+                        <div>
+                            <h6 class="mb-1">Configurar el Plan de Cuentas (Activo, Pasivo, Capital, Ingresos, Egresos)</h6>
+                            <p class="mb-2 small text-muted">
+                                Aquí se definen todas las cuentas y su grupo (1=Activo, 2=Pasivo, 3=Capital, 5=Ingresos, 6/7=Egresos).
+                                Puede cargar un catálogo desde archivo TSV con el comando <code>load_catalogo_contable</code> o crear cuentas manualmente.
+                            </p>
+                            <a href="{% url 'contabilidad:plan_cuentas' %}" class="btn btn-sm btn-success">
+                                <i class="fas fa-sitemap me-1"></i> Ir a Plan de Cuentas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex align-items-start p-3 rounded" style="background:#fefce8; border-left:4px solid #eab308;">
+                        <span class="badge bg-warning text-dark me-3 mt-1" style="font-size:1rem;">3</span>
+                        <div>
+                            <h6 class="mb-1">Opcional: Centros de costo</h6>
+                            <p class="mb-2 small text-muted">
+                                Si desea distribuir gastos o ingresos por área o proyecto, configure los centros de costo.
+                            </p>
+                            <a href="{% url 'contabilidad:centros_costo' %}" class="btn btn-sm btn-warning text-dark">
+                                <i class="fas fa-project-diagram me-1"></i> Ir a Centros de Costo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex align-items-start p-3 rounded" style="background:#faf5ff; border-left:4px solid #a855f7;">
+                        <span class="badge bg-secondary me-3 mt-1" style="font-size:1rem;">4</span>
+                        <div>
+                            <h6 class="mb-1">Registrar asientos contables</h6>
+                            <p class="mb-2 small text-muted">
+                                Con ejercicio abierto y plan de cuentas listo, puede cargar asientos (libro diario). Cada línea usa una cuenta del plan; el total Debe debe ser igual al total Haber.
+                            </p>
+                            <a href="{% url 'contabilidad:asientos_lista' %}" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-book-open me-1"></i> Ir a Asientos Contables
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen y documentación -->
+    <div class="cont-card">
+        <div class="card-header">
+            <i class="fas fa-book me-2"></i>Documentación completa
+        </div>
+        <div class="card-body">
+            <p>
+                La guía detallada en formato texto está en el archivo
+                <strong>GUIA_USUARIO_CONTABILIDAD.md</strong> dentro de la carpeta del módulo de contabilidad.
+                Incluye:
+            </p>
+            <ul>
+                <li>Explicación de los cinco elementos (Activo, Pasivo, Capital, Ingresos, Egresos) y códigos de grupo.</li>
+                <li>Uso del comando <code>load_catalogo_contable</code> para cargar el plan desde un archivo TSV.</li>
+                <li>Resumen de qué tipo de cuenta va en cada grupo.</li>
+                <li>Referencia de dónde encontrar cada función en el menú.</li>
+            </ul>
+            <p class="mb-0 text-muted small">
+                <i class="fas fa-folder me-1"></i>
+                Ruta típica: <code>venv\Scripts\contabilidad\GUIA_USUARIO_CONTABILIDAD.md</code>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

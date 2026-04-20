@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo de Caja {{ numero_recibo }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f3f4f6; }
+        .ticket {
+            max-width: 860px;
+            margin: 24px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,.08);
+            padding: 24px;
+        }
+        .small-muted { color: #6b7280; font-size: 0.9rem; }
+        @media print {
+            body { background: #fff; }
+            .no-print { display: none !important; }
+            .ticket { box-shadow: none; margin: 0; max-width: 100%; border-radius: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <h4 class="mb-1">Recibo de Caja</h4>
+                <div class="small-muted">Empresa: {{ empresa }}</div>
+                <div class="small-muted">Usuario: {{ usuario }}</div>
+            </div>
+            <div class="text-end">
+                <div><strong>No. Recibo:</strong> {{ numero_recibo }}</div>
+                <div><strong>Fecha:</strong> {{ fecha }}</div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <strong>Contribuyente(s):</strong> {{ nombres_resumen }}
+        </div>
+
+        {% if es_recibo_negocio %}
+        <div class="mb-3 p-2 border rounded bg-light">
+            <div><strong>RTM:</strong> {{ negocio_info.rtm|default:"-" }}</div>
+            <div><strong>Expediente:</strong> {{ negocio_info.expe|default:"-" }}</div>
+            <div><strong>Nombre del Negocio:</strong> {{ negocio_info.nombre_negocio|default:"-" }}</div>
+            <div><strong>Comerciante:</strong> {{ negocio_info.comerciante|default:"-" }}</div>
+            <div><strong>Dirección:</strong> {{ negocio_info.direccion|default:"-" }}</div>
+        </div>
+        {% endif %}
+
+        {% if es_recibo_bienes %}
+        <div class="mb-3 p-2 border rounded bg-light">
+            <div><strong>Clave Catastral:</strong> {{ bienes_info.clave_catastral|default:"-" }}</div>
+            <div><strong>Nombre del Propietario:</strong> {{ bienes_info.propietario|default:"-" }}</div>
+            <div><strong>Dirección:</strong> {{ bienes_info.direccion|default:"-" }}</div>
+        </div>
+        {% endif %}
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-8">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Rubro</th>
+                            <th>Código</th>
+                            <th>Descripción</th>
+                            <th class="text-end">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in detalle_items %}
+                            <tr>
+                                <td>{{ d.rubro }}</td>
+                                <td>{{ d.codigo }}</td>
+                                <td>{{ d.descripcion }}</td>
+                                <td class="text-end">L. {{ d.valor|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-4 text-center">
+                <img src="{{ qr_data_uri }}" alt="QR Recibo" class="img-fluid border p-2">
+                <div class="small-muted mt-1">Código QR de validación</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Formas de Pago</h6>
+                <ul class="mb-0">
+                    {% for m in metodos %}
+                        <li>{{ m.forma_pago }}: L. {{ m.monto|floatformat:2 }}{% if m.referencia %} ({{ m.referencia }}){% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-sm">
+                    <tr><th>Total:</th><td class="text-end">L. {{ total|floatformat:2 }}</td></tr>
+                    <tr><th>Efectivo recibido:</th><td class="text-end">L. {{ efectivo_recibido|floatformat:2 }}</td></tr>
+                    <tr><th>Vuelto:</th><td class="text-end">L. {{ vuelto|floatformat:2 }}</td></tr>
+                </table>
+            </div>
+        </div>
+
+        {% if warnings %}
+            <div class="alert alert-warning mt-3">
+                {% for w in warnings %}
+                    <div>{{ w }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="d-flex gap-2 mt-3 no-print">
+            <a href="{% url 'tesoreria:caja_cobros' %}" class="btn btn-outline-secondary">Volver a Caja</a>
+            <button class="btn btn-primary" onclick="window.print()">Imprimir Recibo</button>
+        </div>
+    </div>
+</body>
+</html>

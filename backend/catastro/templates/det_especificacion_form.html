@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+	<style>
+		.card-section {
+			margin-bottom: 1.5rem;
+		}
+		.card-section .card-header {
+			background-color: #f8f9fa;
+			border-bottom: 2px solid #dee2e6;
+		}
+	</style>
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% if volver_url and clave %}{% url volver_url clave %}{% if volver_params %}?{% for key, value in volver_params.items %}{% if key != 'clave' %}{{ key }}={{ value }}{% if not forloop.last %}&{% endif %}{% endif %}{% endfor %}{% endif %}{% else %}{% url 'catastro:det_especificacion_list' %}{% endif %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ request.session.catastro_usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+				<h5 class="mb-0">
+					<i class="fas fa-clipboard-list me-2"></i>{{ titulo }}
+				</h5>
+				{% if volver_url and clave %}
+				<a href="{% url volver_url clave %}{% if volver_params %}?{% for key, value in volver_params.items %}{% if key != 'clave' %}{{ key }}={{ value }}{% if not forloop.last %}&{% endif %}{% endif %}{% endfor %}{% endif %}" class="btn btn-light btn-sm">
+					<i class="fas fa-arrow-left me-1"></i> Volver
+				</a>
+				{% endif %}
+			</div>
+			<div class="card-body">
+				<!-- Mensajes -->
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<!-- Información del registro -->
+				{% if clave %}
+				<div class="alert alert-info mb-4">
+					<div class="row">
+						<div class="col-md-3">
+							<strong>Clave Catastral:</strong> {{ clave }}
+						</div>
+						<div class="col-md-3">
+							<strong>No. Edificación:</strong> {{ edifino }}
+						</div>
+						<div class="col-md-3">
+							<strong>Piso:</strong> {{ piso }}
+						</div>
+					</div>
+				</div>
+				{% endif %}
+
+				<!-- Formulario -->
+				<form method="post" id="form-det-especificacion">
+					{% csrf_token %}
+					
+					<!-- Campos Básicos -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información Básica</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.empresa.id_for_label }}">
+										<strong>{{ form.empresa.label }}</strong>
+									</label>
+									{{ form.empresa }}
+									{{ form.empresa.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.clave.id_for_label }}">
+										<strong>{{ form.clave.label }}</strong>
+									</label>
+									{{ form.clave }}
+									{{ form.clave.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.edifino.id_for_label }}">
+										<strong>{{ form.edifino.label }}</strong>
+									</label>
+									{{ form.edifino }}
+									{{ form.edifino.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.piso.id_for_label }}">
+										<strong>{{ form.piso.label }}</strong>
+									</label>
+									{{ form.piso }}
+									{{ form.piso.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Piso -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-square me-2"></i>Piso</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<!-- Subsección ESTRUCTURA -->
+								<div class="col-md-4">
+									<div class="card border-primary">
+										<div class="card-header bg-primary text-white">
+											<h6 class="mb-0"><i class="fas fa-cog me-2"></i>ESTRUCTURA</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.pisoestruc %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.pisoestruc.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección ACABADO -->
+								<div class="col-md-4">
+									<div class="card border-success">
+										<div class="card-header bg-success text-white">
+											<h6 class="mb-0"><i class="fas fa-paint-brush me-2"></i>ACABADO</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.pisoacabado %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.pisoacabado.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección CALIDAD -->
+								<div class="col-md-4">
+									<div class="card border-warning">
+										<div class="card-header bg-warning text-dark">
+											<h6 class="mb-0"><i class="fas fa-star me-2"></i>CALIDAD</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.pisocalidad %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.pisocalidad.errors }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Paredes Exteriores -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-building me-2"></i>Paredes Exteriores</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<!-- Subsección ESTRUCTURA -->
+								<div class="col-md-3">
+									<div class="card border-primary">
+										<div class="card-header bg-primary text-white">
+											<h6 class="mb-0"><i class="fas fa-cog me-2"></i>ESTRUCTURA</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.paredextestruc %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.paredextestruc.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección ACABADO -->
+								<div class="col-md-3">
+									<div class="card border-success">
+										<div class="card-header bg-success text-white">
+											<h6 class="mb-0"><i class="fas fa-paint-brush me-2"></i>ACABADO</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.paredextacabado %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.paredextacabado.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección PINTURA -->
+								<div class="col-md-3">
+									<div class="card border-info">
+										<div class="card-header bg-info text-white">
+											<h6 class="mb-0"><i class="fas fa-paint-roller me-2"></i>PINTURA</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.paredextpintura %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.paredextpintura.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección CALIDAD -->
+								<div class="col-md-3">
+									<div class="card border-warning">
+										<div class="card-header bg-warning text-dark">
+											<h6 class="mb-0"><i class="fas fa-star me-2"></i>CALIDAD</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.paredextcalidad %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.paredextcalidad.errors }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Techos -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-home me-2"></i>Techos</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<!-- Subsección TIPO -->
+								<div class="col-md-3">
+									<div class="card border-primary">
+										<div class="card-header bg-primary text-white">
+											<h6 class="mb-0"><i class="fas fa-shapes me-2"></i>TIPO</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.techotipo %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.techotipo.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección ARTESON -->
+								<div class="col-md-3">
+									<div class="card border-success">
+										<div class="card-header bg-success text-white">
+											<h6 class="mb-0"><i class="fas fa-hammer me-2"></i>ARTESON</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.techoarteson %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.techoarteson.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección ACABADO -->
+								<div class="col-md-3">
+									<div class="card border-info">
+										<div class="card-header bg-info text-white">
+											<h6 class="mb-0"><i class="fas fa-paint-brush me-2"></i>ACABADO</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.techoacabado %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.techoacabado.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección CALIDAD -->
+								<div class="col-md-3">
+									<div class="card border-warning">
+										<div class="card-header bg-warning text-dark">
+											<h6 class="mb-0"><i class="fas fa-star me-2"></i>CALIDAD</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.techocalidad %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.techocalidad.errors }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Paredes Interiores -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-door-open me-2"></i>PAREDES INTERIORES</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<!-- Subsección ESTRUCTURA -->
+								<div class="col-md-3">
+									<div class="card border-primary">
+										<div class="card-header bg-primary text-white">
+											<h6 class="mb-0"><i class="fas fa-cog me-2"></i>ESTRUCTURA</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.paredintestruc %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.paredintestruc.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección ACABADO -->
+								<div class="col-md-3">
+									<div class="card border-success">
+										<div class="card-header bg-success text-white">
+											<h6 class="mb-0"><i class="fas fa-paint-brush me-2"></i>ACABADO</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.paredintacabado %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.paredintacabado.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección PINTURA -->
+								<div class="col-md-3">
+									<div class="card border-info">
+										<div class="card-header bg-info text-white">
+											<h6 class="mb-0"><i class="fas fa-paint-roller me-2"></i>PINTURA</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.paredintpintura %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.paredintpintura.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección CALIDAD -->
+								<div class="col-md-3">
+									<div class="card border-warning">
+										<div class="card-header bg-warning text-dark">
+											<h6 class="mb-0"><i class="fas fa-star me-2"></i>CALIDAD</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.paredintacalidad %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.paredintacalidad.errors }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Cielo Raso -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-cloud me-2"></i>CIELO RASO</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<!-- Subsección ESTRUCTURA -->
+								<div class="col-md-4">
+									<div class="card border-primary">
+										<div class="card-header bg-primary text-white">
+											<h6 class="mb-0"><i class="fas fa-cog me-2"></i>ESTRUCTURA</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.cieloestruc %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.cieloestruc.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección ACABADO -->
+								<div class="col-md-4">
+									<div class="card border-success">
+										<div class="card-header bg-success text-white">
+											<h6 class="mb-0"><i class="fas fa-paint-brush me-2"></i>ACABADO</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.cieloacabado %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.cieloacabado.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección CALIDAD -->
+								<div class="col-md-4">
+									<div class="card border-warning">
+										<div class="card-header bg-warning text-dark">
+											<h6 class="mb-0"><i class="fas fa-star me-2"></i>CALIDAD</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.cielocalidad %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.cielocalidad.errors }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Electricidad -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>ELECTRICIDAD</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<!-- Subsección ALAMBRADO -->
+								<div class="col-md-4">
+									<div class="card border-primary">
+										<div class="card-header bg-primary text-white">
+											<h6 class="mb-0"><i class="fas fa-plug me-2"></i>ALAMBRADO</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.electrialumbrado %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.electrialumbrado.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección SALIDAS -->
+								<div class="col-md-4">
+									<div class="card border-success">
+										<div class="card-header bg-success text-white">
+											<h6 class="mb-0"><i class="fas fa-outlet me-2"></i>SALIDAS</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.electrisalida %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.electrisalida.errors }}
+										</div>
+									</div>
+								</div>
+								
+								<!-- Subsección CALIDAD -->
+								<div class="col-md-4">
+									<div class="card border-warning">
+										<div class="card-header bg-warning text-dark">
+											<h6 class="mb-0"><i class="fas fa-star me-2"></i>CALIDAD</h6>
+										</div>
+										<div class="card-body">
+											<div class="form-check-group">
+												{% for choice in form.electricalidad %}
+													<div class="form-check mb-2">
+														{{ choice.tag }}
+														<label class="form-check-label" for="{{ choice.id_for_label }}">
+															{{ choice.choice_label }}
+														</label>
+													</div>
+												{% endfor %}
+											</div>
+											{{ form.electricalidad.errors }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Plomería -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-faucet me-2"></i>Plomería</h6>
+						</div>
+						<div class="card-body">
+							<!-- Subsección INSTALACIONES SANITARIAS -->
+							<div class="card border-info mb-3">
+								<div class="card-header bg-info text-white">
+									<h6 class="mb-0"><i class="fas fa-toilet me-2"></i>INSTALACIONES SANITARIAS</h6>
+								</div>
+								<div class="card-body">
+									<div class="row g-3">
+										<!-- Subsección Inodoros -->
+										<div class="col-md-2">
+											<div class="card border-primary">
+												<div class="card-header bg-primary text-white">
+													<h6 class="mb-0">Inodoros</h6>
+												</div>
+												<div class="card-body">
+													<div class="form-check-group">
+														{% for choice in form.inodorocal %}
+															<div class="form-check mb-2">
+																{{ choice.tag }}
+																<label class="form-check-label" for="{{ choice.id_for_label }}">
+																	{{ choice.choice_label }}
+																</label>
+															</div>
+														{% endfor %}
+													</div>
+													{{ form.inodorocal.errors }}
+												</div>
+											</div>
+										</div>
+										
+										<!-- Subsección Lavamanos -->
+										<div class="col-md-2">
+											<div class="card border-primary">
+												<div class="card-header bg-primary text-white">
+													<h6 class="mb-0">Lavamanos</h6>
+												</div>
+												<div class="card-body">
+													<div class="form-check-group">
+														{% for choice in form.lavamanocal %}
+															<div class="form-check mb-2">
+																{{ choice.tag }}
+																<label class="form-check-label" for="{{ choice.id_for_label }}">
+																	{{ choice.choice_label }}
+																</label>
+															</div>
+														{% endfor %}
+													</div>
+													{{ form.lavamanocal.errors }}
+												</div>
+											</div>
+										</div>
+										
+										<!-- Subsección Duchas -->
+										<div class="col-md-2">
+											<div class="card border-primary">
+												<div class="card-header bg-primary text-white">
+													<h6 class="mb-0">Duchas</h6>
+												</div>
+												<div class="card-body">
+													<div class="form-check-group">
+														{% for choice in form.duchacal %}
+															<div class="form-check mb-2">
+																{{ choice.tag }}
+																<label class="form-check-label" for="{{ choice.id_for_label }}">
+																	{{ choice.choice_label }}
+																</label>
+															</div>
+														{% endfor %}
+													</div>
+													{{ form.duchacal.errors }}
+												</div>
+											</div>
+										</div>
+										
+										<!-- Subsección Lavatrastos -->
+										<div class="col-md-2">
+											<div class="card border-primary">
+												<div class="card-header bg-primary text-white">
+													<h6 class="mb-0">Lavatrastos</h6>
+												</div>
+												<div class="card-body">
+													<div class="form-check-group">
+														{% for choice in form.lavatrastocal %}
+															<div class="form-check mb-2">
+																{{ choice.tag }}
+																<label class="form-check-label" for="{{ choice.id_for_label }}">
+																	{{ choice.choice_label }}
+																</label>
+															</div>
+														{% endfor %}
+													</div>
+													{{ form.lavatrastocal.errors }}
+												</div>
+											</div>
+										</div>
+										
+										<!-- Subsección Lavanderos -->
+										<div class="col-md-2">
+											<div class="card border-primary">
+												<div class="card-header bg-primary text-white">
+													<h6 class="mb-0">Lavanderos</h6>
+												</div>
+												<div class="card-body">
+													<div class="form-check-group">
+														{% for choice in form.lavanderocal %}
+															<div class="form-check mb-2">
+																{{ choice.tag }}
+																<label class="form-check-label" for="{{ choice.id_for_label }}">
+																	{{ choice.choice_label }}
+																</label>
+															</div>
+														{% endfor %}
+													</div>
+													{{ form.lavanderocal.errors }}
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Puertas -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-door-open me-2"></i>Puertas</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.puerta1.id_for_label }}">
+										<strong>{{ form.puerta1.label }}</strong>
+									</label>
+									{{ form.puerta1 }}
+									{{ form.puerta1.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.puerta2.id_for_label }}">
+										<strong>{{ form.puerta2.label }}</strong>
+									</label>
+									{{ form.puerta2 }}
+									{{ form.puerta2.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.puerta3.id_for_label }}">
+										<strong>{{ form.puerta3.label }}</strong>
+									</label>
+									{{ form.puerta3 }}
+									{{ form.puerta3.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.puerta4.id_for_label }}">
+										<strong>{{ form.puerta4.label }}</strong>
+									</label>
+									{{ form.puerta4 }}
+									{{ form.puerta4.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Ventanas -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-window-maximize me-2"></i>Ventanas</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.ventana1.id_for_label }}">
+										<strong>{{ form.ventana1.label }}</strong>
+									</label>
+									{{ form.ventana1 }}
+									{{ form.ventana1.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.ventana2.id_for_label }}">
+										<strong>{{ form.ventana2.label }}</strong>
+									</label>
+									{{ form.ventana2 }}
+									{{ form.ventana2.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.ventana3.id_for_label }}">
+										<strong>{{ form.ventana3.label }}</strong>
+									</label>
+									{{ form.ventana3 }}
+									{{ form.ventana3.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.ventana4.id_for_label }}">
+										<strong>{{ form.ventana4.label }}</strong>
+									</label>
+									{{ form.ventana4 }}
+									{{ form.ventana4.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Closets -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-archive me-2"></i>Closets</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.closet1.id_for_label }}">
+										<strong>{{ form.closet1.label }}</strong>
+									</label>
+									{{ form.closet1 }}
+									{{ form.closet1.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.closet2.id_for_label }}">
+										<strong>{{ form.closet2.label }}</strong>
+									</label>
+									{{ form.closet2 }}
+									{{ form.closet2.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.closet3.id_for_label }}">
+										<strong>{{ form.closet3.label }}</strong>
+									</label>
+									{{ form.closet3 }}
+									{{ form.closet3.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.closet4.id_for_label }}">
+										<strong>{{ form.closet4.label }}</strong>
+									</label>
+									{{ form.closet4 }}
+									{{ form.closet4.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Gabinetes -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-utensils me-2"></i>Gabinetes</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.gabinete1.id_for_label }}">
+										<strong>{{ form.gabinete1.label }}</strong>
+									</label>
+									{{ form.gabinete1 }}
+									{{ form.gabinete1.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.gabinete2.id_for_label }}">
+										<strong>{{ form.gabinete2.label }}</strong>
+									</label>
+									{{ form.gabinete2 }}
+									{{ form.gabinete2.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.gabinete3.id_for_label }}">
+										<strong>{{ form.gabinete3.label }}</strong>
+									</label>
+									{{ form.gabinete3 }}
+									{{ form.gabinete3.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.gabinete4.id_for_label }}">
+										<strong>{{ form.gabinete4.label }}</strong>
+									</label>
+									{{ form.gabinete4 }}
+									{{ form.gabinete4.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Auditoría -->
+					<div class="card card-section">
+						<div class="card-header">
+							<h6 class="mb-0"><i class="fas fa-user-clock me-2"></i>Auditoría</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-6">
+									<label class="form-label" for="{{ form.usuario.id_for_label }}">
+										<strong>{{ form.usuario.label }}</strong>
+									</label>
+									{{ form.usuario }}
+									{{ form.usuario.errors }}
+								</div>
+								<div class="col-md-6">
+									<label class="form-label" for="{{ form.fechasys.id_for_label }}">
+										<strong>{{ form.fechasys.label }}</strong>
+									</label>
+									{{ form.fechasys }}
+									{{ form.fechasys.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Botones -->
+					<div class="mt-4 d-flex justify-content-between">
+						<a href="{% if volver_url and clave %}{% url volver_url clave %}{% if volver_params %}?{% for key, value in volver_params.items %}{% if key != 'clave' %}{{ key }}={{ value }}{% if not forloop.last %}&{% endif %}{% endif %}{% endfor %}{% endif %}{% else %}{% url 'catastro:det_especificacion_list' %}{% endif %}" class="btn btn-secondary">
+							<i class="fas fa-arrow-left me-1"></i> Volver
+						</a>
+						<button type="submit" class="btn btn-primary">
+							<i class="fas fa-save me-1"></i> Guardar
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// Actualizar fecha sistema antes de guardar con la fecha actual
+			const fechasysInput = document.getElementById('{{ form.fechasys.id_for_label }}');
+			const formElement = document.getElementById('form-det-especificacion');
+			
+			if (formElement) {
+				formElement.addEventListener('submit', function(e) {
+					// Siempre establecer la fecha actual al guardar
+					if (fechasysInput) {
+						const now = new Date();
+						// Formato: YYYY-MM-DDTHH:MM para datetime-local
+						const fechaStr = now.getFullYear() + '-' + 
+							String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+							String(now.getDate()).padStart(2, '0') + 'T' +
+							String(now.getHours()).padStart(2, '0') + ':' + 
+							String(now.getMinutes()).padStart(2, '0');
+						fechasysInput.value = fechaStr;
+					}
+				});
+			}
+		});
+	</script>
+</body>
+</html>
+

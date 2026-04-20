@@ -1,0 +1,76 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Cortes y Reconexiones{% endblock %}
+{% block breadcrumb %}Cortes y Reconexiones{% endblock %}
+{% block nav_cortes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#dc2626,#ef4444)"><i class="fas fa-times-circle"></i></div>
+        <div>
+            <h1 class="page-title">Cortes y Reconexiones</h1>
+            <p class="page-subtitle">Control de suspensiones de servicio por mora y rehabilitaciones</p>
+        </div>
+    </div>
+    <a href="{% url 'servicios_publicos:cortes_nuevo' %}" class="btn-sp-primary" style="background:linear-gradient(135deg,#dc2626,#ef4444)">
+        <i class="fas fa-plus"></i> Registrar Acción
+    </a>
+</div>
+
+<div class="data-card animate-in">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Abonado</th>
+                    <th>Tipo de Evento</th>
+                    <th>Monto en Mora</th>
+                    <th>Observación</th>
+                    <th>Usuario</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in cortes %}
+                <tr>
+                    <td>{{ c.fecha|date:"d/m/Y" }}</td>
+                    <td>
+                        <a href="{% url 'servicios_publicos:catastro_detalle' c.abonado.pk %}">{{ c.abonado.nombre }}</a>
+                        <br><small class="text-muted">{{ c.abonado.codigo_abonado }}</small>
+                    </td>
+                    <td>
+                        {% if c.tipo == 'C' %}<span class="badge bg-danger">CORTE POR MORA</span>
+                        {% elif c.tipo == 'CS' %}<span class="badge bg-warning text-dark">CORTE SOLICITADO</span>
+                        {% elif c.tipo == 'R' %}<span class="badge bg-success">RECONEXIÓN</span>
+                        {% else %}<span class="badge bg-info">{{ c.get_tipo_display }}</span>{% endif %}
+                    </td>
+                    <td><strong class="{% if c.monto_adeudado > 0 %}text-danger{% endif %}">L {{ c.monto_adeudado|floatformat:2 }}</strong></td>
+                    <td style="font-size:0.8rem; color:var(--sp-text-muted)">{{ c.observacion|default:"-"|truncatechars:50 }}</td>
+                    <td class="small">{{ c.usuario }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fas fa-history fa-3x mb-3 opacity-20 d-block"></i>
+                        No se han registrado eventos recientes de corte o reconexión.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-7">
+        <div class="form-panel animate-in" style="animation-delay:0.2s">
+            <div class="form-panel-title"><i class="fas fa-lightbulb"></i> Impacto en el Abonado</div>
+            <p class="small text-muted mb-0" style="line-height:1.6">
+                Al registrar un <strong>Corte</strong>, el estado del abonado cambia automáticamente a <span class="badge bg-warning text-dark">Suspendido</span>. <br>
+                Al registrar una <strong>Reconexión</strong>, el estado vuelve a <span class="badge bg-success">Activo</span>. <br>
+                Esto afecta directamente si el abonado aparece o no en las próximas hojas de lectura.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

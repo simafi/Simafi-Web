@@ -1,0 +1,277 @@
+{% extends "base_tributario.html" %}
+
+{% block title %}Dashboard Tributario{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+{% block nav_inicio %}active{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Dashboard en tema claro SIN afectar otras pantallas */
+    .dashboard-light {
+        background: radial-gradient(900px 420px at 20% 0%, rgba(59,130,246,0.12), rgba(0,0,0,0)) ,
+                    radial-gradient(700px 360px at 85% 10%, rgba(245,158,11,0.16), rgba(0,0,0,0)) ,
+                    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 18px;
+        padding: 1.25rem;
+        color: #0f172a;
+    }
+    .dashboard-light .page-title { color: #0f172a; }
+    .dashboard-light .page-subtitle { color: rgba(15,23,42,0.65); }
+    .dashboard-light .section-title { color: #0f172a; }
+
+    .dashboard-light .header-icon {
+        box-shadow: 0 10px 26px rgba(180,83,9,0.18);
+    }
+
+    .dashboard-light .stats-grid .stat-card {
+        background: white;
+        border: 1px solid rgba(15,23,42,0.10);
+        box-shadow: 0 10px 26px rgba(15,23,42,0.08);
+    }
+    .dashboard-light .stat-value { color: #0f172a; }
+    .dashboard-light .stat-label { color: rgba(15,23,42,0.62); }
+
+    .dashboard-light .module-card {
+        background: white;
+        border: 1px solid rgba(15,23,42,0.10);
+        box-shadow: 0 10px 26px rgba(15,23,42,0.08);
+    }
+    .dashboard-light .module-body h3 { color: #0f172a; letter-spacing: 0.2px; }
+    .dashboard-light .module-body p  { color: rgba(15,23,42,0.62); }
+    .dashboard-light .module-arrow   { color: rgba(15,23,42,0.55); }
+
+    .dashboard-light .btn-trib-primary {
+        box-shadow: 0 10px 22px rgba(245,158,11,0.22);
+    }
+
+    /* Submenús del dashboard */
+    .dash-module {
+        background: white;
+        border: 1px solid rgba(15,23,42,0.10);
+        border-radius: 16px;
+        box-shadow: 0 10px 26px rgba(15,23,42,0.08);
+        overflow: hidden;
+        height: 100%;
+    }
+    .dash-module-toggle {
+        width: 100%;
+        background: transparent;
+        border: 0;
+        padding: 1.1rem 1.15rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-align: left;
+        cursor: pointer;
+    }
+    .dash-module-toggle:hover { background: rgba(15,23,42,0.03); }
+    .dash-module-toggle:focus-visible { outline: 3px solid rgba(59,130,246,0.35); outline-offset: 2px; }
+    .dash-module-toggle .module-body h3 { margin: 0 0 0.25rem; }
+    .dash-module-toggle .module-arrow { margin-left: auto; }
+    .dash-module-toggle[aria-expanded="true"] .module-arrow { transform: rotate(180deg); }
+
+    .dash-submenu {
+        border-top: 1px solid rgba(15,23,42,0.08);
+        padding: 0.75rem 0.75rem 0.9rem;
+        display: none;
+    }
+    .dash-submenu.open { display: block; }
+    .dash-submenu a {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.6rem 0.7rem;
+        border-radius: 10px;
+        text-decoration: none;
+        color: rgba(15,23,42,0.82);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .dash-submenu a:hover { background: rgba(15,23,42,0.04); color: #0f172a; }
+    .dash-submenu a i { width: 18px; text-align: center; color: rgba(15,23,42,0.55); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-light">
+<!-- Page header -->
+<div class="page-header animate-in">
+    <div class="header-content">
+        <div class="header-icon"><i class="fas fa-landmark"></i></div>
+        <div>
+            <h1 class="page-title">Sistema Tributario</h1>
+            <p class="page-subtitle">Gestión integral de impuestos y tasas municipales — {{ empresa|default:"Municipio" }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2"></div>
+</div>
+
+<!-- Stats rápidas -->
+<div class="stats-grid animate-in">
+    <div class="stat-card stat-gold">
+        <div class="stat-icon"><i class="fas fa-store"></i></div>
+        <div>
+            <div class="stat-value">ICS</div>
+            <div class="stat-label">Industria, Comercio y Servicios</div>
+        </div>
+    </div>
+    <div class="stat-card stat-blue">
+        <div class="stat-icon"><i class="fas fa-home"></i></div>
+        <div>
+            <div class="stat-value">BI</div>
+            <div class="stat-label">Bienes Inmuebles</div>
+        </div>
+    </div>
+    <div class="stat-card stat-red">
+        <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+        <div>
+            <div class="stat-value">R*</div>
+            <div class="stat-label">Recargos Moratorios</div>
+        </div>
+    </div>
+    <div class="stat-card stat-green">
+        <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+        <div>
+            <div class="stat-value">AM</div>
+            <div class="stat-label">Amnistías y Descuentos</div>
+        </div>
+    </div>
+</div>
+
+<!-- Módulos principales -->
+<div class="row g-3 mb-4 animate-in">
+    <div class="col-12">
+        <div class="section-title mb-3">
+            <i class="fas fa-th-large me-2" style="color:var(--trib-secondary)"></i>
+            Módulos Principales
+        </div>
+    </div>
+
+    <!-- Bienes Inmuebles (submenu) -->
+    <div class="col-md-6">
+        <div class="dash-module">
+            <button type="button" class="dash-module-toggle" data-dash-toggle="bi" aria-expanded="false">
+                <div class="module-icon module-green"><i class="fas fa-home"></i></div>
+                <div class="module-body">
+                    <h3>Bienes Inmuebles</h3>
+                    <p>Gestión de mora, cobros de impuesto predial y tasas municipales por propiedad.</p>
+                </div>
+                <i class="fas fa-chevron-down module-arrow"></i>
+            </button>
+            <div class="dash-submenu" data-dash-menu="bi">
+                <a href="{% url 'tributario:gestionar_mora_bienes' %}"><i class="fas fa-home"></i> Bienes Inmuebles</a>
+                <a href="{% url 'tributario:informes' %}"><i class="fas fa-chart-bar"></i> Informes</a>
+                <a href="{% url 'tributario:recargos_moratorios' %}"><i class="fas fa-percentage"></i> Recargos Moratorios</a>
+                <a href="{% url 'tributario:cargo_anual' %}"><i class="fas fa-calendar-plus"></i> Cargo Anual</a>
+                <a href="{% url 'tributario:cierre_anual' %}"><i class="fas fa-calendar-check"></i> Cierre Anual</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Negocios (ICS) (submenu) -->
+    <div class="col-md-6">
+        <div class="dash-module">
+            <button type="button" class="dash-module-toggle" data-dash-toggle="ics" aria-expanded="false">
+                <div class="module-icon module-gold"><i class="fas fa-store"></i></div>
+                <div class="module-body">
+                    <h3>Negocios (ICS)</h3>
+                    <p>Maestro de negocios y contribuyentes del ICS.</p>
+                </div>
+                <i class="fas fa-chevron-down module-arrow"></i>
+            </button>
+            <div class="dash-submenu" data-dash-menu="ics">
+                <a href="{% url 'tributario:maestro_negocios' %}"><i class="fas fa-store"></i> Maestro de Negocios</a>
+                <a href="{% url 'tributario:informes' %}"><i class="fas fa-chart-bar"></i> Informes</a>
+                <a href="{% url 'tributario:recargos_moratorios' %}"><i class="fas fa-percentage"></i> Recargos Moratorios</a>
+                <a href="{% url 'tributario:cierre_anual' %}"><i class="fas fa-calendar-check"></i> Cierre Anual</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Facturación Misceláneos (módulo principal) -->
+    <div class="col-md-6">
+        <div class="dash-module">
+            <a class="dash-module-toggle" href="{% url 'tributario:miscelaneos' %}" style="text-decoration:none">
+                <div class="module-icon module-blue"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div class="module-body">
+                    <h3>Facturación Misceláneos</h3>
+                    <p>Emisión y gestión de facturas para cobros y conceptos misceláneos.</p>
+                </div>
+                <i class="fas fa-arrow-right module-arrow"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- (Oculto en dashboard) Declaraciones de Volumen / Estado de Cuenta ICS -->
+</div>
+
+<script>
+    (function () {
+        function closeAll(exceptKey) {
+            document.querySelectorAll('.dash-submenu').forEach(function (m) {
+                var key = m.getAttribute('data-dash-menu');
+                if (key !== exceptKey) m.classList.remove('open');
+            });
+            document.querySelectorAll('.dash-module-toggle').forEach(function (b) {
+                var key = b.getAttribute('data-dash-toggle');
+                if (key !== exceptKey) b.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-dash-toggle]');
+            if (!btn) return;
+            var key = btn.getAttribute('data-dash-toggle');
+            var menu = document.querySelector('[data-dash-menu="' + key + '"]');
+            if (!menu) return;
+            var willOpen = !menu.classList.contains('open');
+            closeAll(willOpen ? key : null);
+            menu.classList.toggle('open', willOpen);
+            btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+    })();
+</script>
+
+<!-- Configuración y Reportes -->
+<div class="row g-3 animate-in">
+    <div class="col-12">
+        <div class="section-title mb-3">
+            <i class="fas fa-cog me-2" style="color:var(--trib-secondary)"></i>
+            Configuración y Reportes
+        </div>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'tributario:rubros_crud' %}" class="module-card module-gold" style="min-height:100px">
+            <div class="module-icon" style="width:38px;height:38px;font-size:1rem"><i class="fas fa-tags"></i></div>
+            <div class="module-body">
+                <h3 style="font-size:0.88rem">Rubros</h3>
+                <p>Códigos contables e impuestos/tasas</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'tributario:parametros_tributarios' %}" class="module-card module-purple" style="min-height:100px">
+            <div class="module-icon" style="width:38px;height:38px;font-size:1rem"><i class="fas fa-sliders-h"></i></div>
+            <div class="module-body">
+                <h3 style="font-size:0.88rem">Parámetros</h3>
+                <p>Amnistías, descuentos, recargos</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'tributario:informes' %}" class="module-card module-teal" style="min-height:100px">
+            <div class="module-icon" style="width:38px;height:38px;font-size:1rem"><i class="fas fa-chart-bar"></i></div>
+            <div class="module-body">
+                <h3 style="font-size:0.88rem">Informes</h3>
+                <p>Reportes y estadísticas</p>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+</div>

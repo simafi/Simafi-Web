@@ -1,0 +1,1113 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Miscelaneos</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f8fa;
+            margin: 0;
+            padding: 0;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(90deg, #1e88e5 0%, #0d47a1 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        header:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #545b62 0%, #3d444a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        form {
+            background: #fff;
+            max-width: 900px;
+            margin: 30px auto 0 auto;
+            padding: 30px 40px 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(44,62,80,0.08);
+        }
+        fieldset {
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            padding: 18px 20px 10px 20px;
+            background: #fafbfc;
+        }
+        legend {
+            font-weight: bold;
+            color: #34495e;
+            padding: 0 8px;
+        }
+        label {
+            font-weight: 500;
+            color: #34495e;
+        }
+        .inline-fields {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="number"], input[type="date"] {
+            padding: 7px 10px;
+            border: 1px solid #d1d5da;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+            background: #fff;
+            transition: border 0.2s;
+        }
+        input[type="text"].short, input[type="number"].short {
+            width: 120px;
+            display: inline-block;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus {
+            border: 1.5px solid #007bff;
+            outline: none;
+        }
+        
+        /* Estilos para campos obligatorios */
+        input[required]:invalid, textarea[required]:invalid {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        
+        input[required]:valid, textarea[required]:valid {
+            border-color: #28a745;
+            background-color: #f8fff9;
+        }
+        
+        /* Clases para validación en tiempo real */
+        input.valid, textarea.valid {
+            border-color: #28a745 !important;
+            background-color: #f8fff9 !important;
+        }
+        
+        input.invalid, textarea.invalid {
+            border-color: #dc3545 !important;
+            background-color: #fff5f5 !important;
+        }
+        select.input-like, select {
+            padding: 7px 10px;
+            border: 1px solid #d1d5da;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+            background: #fff;
+            transition: border 0.2s;
+        }
+        select:focus {
+            border: 1.5px solid #007bff;
+            outline: none;
+        }
+        select.input-like:focus {
+            border: 1.5px solid #007bff;
+            outline: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            background: #fff;
+        }
+        th, td {
+            padding: 10px 8px;
+            text-align: left;
+        }
+        th {
+            background: #eaf1fb;
+            color: #2c3e50;
+            font-weight: 600;
+            border-bottom: 2px solid #d1d5da;
+        }
+        tr.concepto-form:nth-child(even) {
+            background: #f4f8fb;
+        }
+        tr.concepto-form:hover {
+            background: #e3f2fd;
+        }
+        button[type="button"] {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 6px 14px;
+            font-size: 0.98em;
+            cursor: pointer;
+            margin: 0 2px;
+            transition: background 0.2s;
+        }
+        button[type="button"]:hover {
+            background: #0056b3;
+        }
+        button[type="submit"] {
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 22px;
+            font-size: 1.05em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            float: right;
+            transition: background 0.2s;
+        }
+        button[type="submit"]:hover {
+            background: #218838;
+        }
+        small.manual-edit {
+            color: #888;
+            display: block;
+            margin-top: -6px;
+            margin-bottom: 10px;
+        }
+        /* Ajustes de ancho para los campos de la tabla de conceptos */
+        input[name$="descripcion"] {
+            width: 320px !important;
+            min-width: 200px;
+            background-color: #f8f9fa !important;
+            color: #6c757d !important;
+            cursor: not-allowed;
+        }
+        input[name$="cantidad"] {
+            width: 80px !important;
+            min-width: 60px;
+            text-align: center;
+        }
+        input[name$="vl_unit"], input[name$="valor"] {
+            width: 140px !important;
+            min-width: 120px;
+            text-align: right;
+        }
+        select.codigo-select {
+            width: 220px !important;
+            min-width: 180px;
+        }
+        /* Hace que la tabla sea desplazable horizontalmente en pantallas pequeñas */
+        @media (max-width: 1100px) {
+            .conceptos-table-wrapper {
+                overflow-x: auto;
+                width: 100%;
+            }
+            table {
+                min-width: 800px;
+            }
+        }
+
+        /* Ajusta el padding del formulario en pantallas pequeñas */
+        @media (max-width: 700px) {
+            form {
+                padding: 10px 2px;
+            }
+            .inline-fields {
+                flex-direction: column;
+                gap: 0;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            th, td {
+                padding: 8px 4px;
+            }
+            th {
+                border-bottom: none;
+            }
+        }
+        
+        /* Estilos para los botones de acción principales */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        /* Contenedor de botones de acción */
+        .action-buttons {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+    <script>
+    var actividadesPorEmpresa = [];
+    function buscarContribuyente() {
+        var dni = document.getElementById('dni').value;
+        
+        if (!dni || dni.trim() === '') {
+            alert('Por favor, ingrese un número de identidad para buscar.');
+            return;
+        }
+        
+        // Mostrar indicador de carga
+        var nombreInput = document.getElementById('id_nombre');
+        if (nombreInput) {
+            nombreInput.value = 'Buscando...';
+        }
+        
+        // Realizar petición AJAX
+        fetch('/tributario/buscar-identificacion/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                identidad: dni.trim()
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.exito) {
+                var nombreInput = document.getElementById('id_nombre');
+                if (nombreInput) {
+                    nombreInput.value = data.identificacion.nombre_completo;
+                }
+                console.log('✅ Contribuyente encontrado:', data.identificacion);
+            } else {
+                var nombreInput = document.getElementById('id_nombre');
+                if (nombreInput) {
+                    nombreInput.value = '';
+                }
+                alert('No se encontró el contribuyente: ' + data.mensaje);
+            }
+        })
+        .catch(error => {
+            console.error('Error en la búsqueda:', error);
+            var nombreInput = document.getElementById('id_nombre');
+            if (nombreInput) {
+                nombreInput.value = '';
+            }
+            alert('Error al buscar el contribuyente. Por favor, intente nuevamente.');
+        });
+    }
+    function buscarDescripcion(btn) {
+        var row = btn.closest('tr');
+        var codigo = row.querySelector('input[name$="codigo"]');
+        var empresa = document.getElementById('empresa');
+        fetch('/tributario/ajax/buscar-actividad/?empresa=' + encodeURIComponent(empresa.value) + '&codigo=' + encodeURIComponent(codigo.value))
+            .then(response => response.json())
+            .then(data => {
+                var descripcionInput = row.querySelector('input[name$="descripcion"]');
+                if (descripcionInput) {
+                    if (data.exito) {
+                        descripcionInput.value = data.descripcion;
+                    } else {
+                        descripcionInput.value = '';
+                        console.warn('No se encontró descripción para el código:', codigo.value);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error al buscar descripción:', error);
+                var descripcionInput = row.querySelector('input[name$="descripcion"]');
+                if (descripcionInput) {
+                    descripcionInput.value = '';
+                }
+            });
+    }
+    // Función para formatear con separador de miles (comas)
+    function formatNumber(num) {
+        if (num === '' || isNaN(num)) return '';
+        return Number(num).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function calcularTotal(input) {
+        var row = input.closest('tr');
+        var cantidad = parseFloat(row.querySelector('input[name$="cantidad"]').value.replace(/,/g, '')) || 0;
+        var vl_unit_input = row.querySelector('input[name$="vl_unit"]');
+        var vl_unit = vl_unit_input ? parseFloat(vl_unit_input.value.replace(/,/g, '')) : 0;
+        var total = cantidad * vl_unit;
+        var valor_input = row.querySelector('input[name$="valor"]');
+        if (valor_input) {
+            // No formatear con comas para el campo valor, solo mostrar con 2 decimales
+            var totalStr = (!isNaN(total) && isFinite(total)) ? total.toFixed(2) : "";
+            valor_input.setAttribute('value', totalStr);
+            valor_input.value = totalStr;
+        }
+    }
+    
+    function calcularTotalHandler(event) {
+        calcularTotal(event.target);
+    }
+    
+    function actualizarEventos() {
+        document.querySelectorAll('input[name$="cantidad"], input[name$="vl_unit"]').forEach(function(input) {
+            input.removeEventListener('input', calcularTotalHandler);
+            input.addEventListener('input', calcularTotalHandler);
+        });
+    }
+    
+    function eliminarFila(btn) {
+        var tbody = document.getElementById('conceptos-body');
+        var forms = tbody.querySelectorAll('.concepto-form');
+        if (forms.length <= 1) {
+            alert('No puede eliminar la última fila.');
+            return;
+        }
+        var row = btn.closest('tr');
+        row.remove();
+        actualizarTotalForms();
+    }
+    
+    function agregarFila() {
+        var tbody = document.getElementById('conceptos-body');
+        if (!tbody) {
+            alert('No se encontró la tabla de conceptos.');
+            return;
+        }
+        var forms = tbody.querySelectorAll('.concepto-form');
+        var lastForm = forms.length > 0 ? forms[forms.length - 1] : null;
+
+        // Si no hay filas, no hacer nada (o podrías crear una fila base si lo deseas)
+        if (!lastForm) {
+            alert('No hay ninguna fila para clonar.');
+            return;
+        }
+
+        // Validación básica de estructura
+        var cantidadInput = lastForm.querySelector('input[name$="cantidad"]');
+        var vlUnitInput = lastForm.querySelector('input[name$="vl_unit"]');
+        var valorInput = lastForm.querySelector('input[name$="valor"]');
+        var codigoSelect = lastForm.querySelector('select[name$="codigo"]');
+        
+        if (!cantidadInput || !vlUnitInput || !valorInput || !codigoSelect) {
+            alert('No se encontraron los campos cantidad, valor unitario, valor o código en la última fila.');
+            return;
+        }
+
+        // Validar que el código esté seleccionado
+        var codigo = codigoSelect.value;
+        if (!codigo || codigo.trim() === '') {
+            alert('Debe seleccionar un código antes de agregar una nueva línea.');
+            return;
+        }
+
+        // Validar que el campo valor (total) tenga un valor mayor a cero
+        var valor = parseFloat(valorInput.value.replace(/,/g, '')) || 0;
+        if (!valor || valor <= 0) {
+            alert('Debe completar el campo Total antes de agregar una nueva línea.');
+            return;
+        }
+
+        // Obtener el índice del formulario
+        var formIdx = forms.length;
+
+        var newForm = lastForm.cloneNode(true);
+        // Limpia los valores heredados de los inputs y selects
+        newForm.querySelectorAll('input, select').forEach(function(input) {
+            if (input.name && input.name.indexOf('form-') !== -1) {
+                var name = input.name.replace(/form-(\d+)-/, 'form-' + formIdx + '-');
+                var id = input.id ? input.id.replace(/form-(\d+)-/, 'form-' + formIdx + '-') : '';
+                input.name = name;
+                if (input.id) input.id = id;
+                if (input.tagName === 'SELECT') input.selectedIndex = 0;
+            }
+        });
+        // Limpieza explícita de los campos clave en la nueva fila
+        var cantidadInput = newForm.querySelector('input[name$="cantidad"]');
+        if (cantidadInput) { cantidadInput.value = ''; cantidadInput.removeAttribute('value'); }
+        var vlUnitInput = newForm.querySelector('input[name$="vl_unit"]');
+        if (vlUnitInput) { vlUnitInput.value = ''; vlUnitInput.removeAttribute('value'); }
+        var valorInput = newForm.querySelector('input[name$="valor"]');
+        if (valorInput) { valorInput.value = ''; valorInput.removeAttribute('value'); }
+        var descripcionInput = newForm.querySelector('input[name$="descripcion"]');
+        if (descripcionInput) { descripcionInput.value = ''; descripcionInput.removeAttribute('value'); }
+        tbody.appendChild(newForm);
+        
+        // Actualizar el total de formularios si existe
+        var totalForms = document.getElementById('id_form-TOTAL_FORMS');
+        if (totalForms) {
+            totalForms.value = formIdx + 1;
+        }
+        
+        actualizarEventos();
+        actualizarEventoCodigoSelect();
+    }
+    
+    function actualizarTotalForms() {
+        var tbody = document.getElementById('conceptos-body');
+        var totalForms = document.getElementById('id_form-TOTAL_FORMS');
+        var forms = tbody.querySelectorAll('.concepto-form');
+        if (totalForms) {
+            totalForms.value = forms.length;
+        }
+        forms.forEach(function(row, idx) {
+            // Reindexar inputs
+            row.querySelectorAll('input').forEach(function(input) {
+                if (input.name && input.name.indexOf('form-') !== -1) {
+                    input.name = input.name.replace(/form-(\d+)-/, 'form-' + idx + '-');
+                }
+                if (input.id && input.id.indexOf('form-') !== -1) {
+                    input.id = input.id.replace(/form-(\d+)-/, 'form-' + idx + '-');
+                }
+            });
+            // Reindexar selects
+            row.querySelectorAll('select').forEach(function(select) {
+                if (select.name && select.name.indexOf('form-') !== -1) {
+                    select.name = select.name.replace(/form-(\d+)-/, 'form-' + idx + '-');
+                }
+                if (select.id && select.id.indexOf('form-') !== -1) {
+                    select.id = select.id.replace(/form-(\d+)-/, 'form-' + idx + '-');
+                }
+            });
+        });
+        actualizarEventos();
+        actualizarEventoCodigoSelect();
+    }
+    
+    function cargarActividadesPorEmpresa() {
+        var empresa = document.getElementById('empresa').value;
+        if (!empresa || empresa.trim() === '') {
+            return; // No hacer la petición si empresa está vacía
+        }
+        fetch('/tributario/ajax/cargar-actividades/?empresa=' + encodeURIComponent(empresa))
+            .then(response => response.json())
+            .then(data => {
+                actividadesPorEmpresa = data.actividades || [];
+                document.querySelectorAll('.codigo-select').forEach(function(select) {
+                    var currentValue = select.value; // Guarda el valor seleccionado actual
+                    select.innerHTML = '';
+                    select.appendChild(new Option('Seleccione', ''));
+                    if (data.actividades && data.actividades.length > 0) {
+                        data.actividades.forEach(function(act) {
+                            var opt = new Option(act.codigo + ' - ' + act.descripcion, act.codigo);
+                            if (act.codigo === currentValue) opt.selected = true;
+                            select.appendChild(opt);
+                        });
+                    }
+                });
+                actualizarEventoCodigoSelect();
+            })
+            .catch(error => {
+                console.error('Error al cargar actividades:', error);
+                actividadesPorEmpresa = [];
+            });
+    }
+
+    function actualizarEventoCodigoSelect() {
+        document.querySelectorAll('.codigo-select').forEach(function(select) {
+            select.removeEventListener('change', autocompletarDescripcion);
+            select.addEventListener('change', autocompletarDescripcion);
+        });
+    }
+
+    function autocompletarDescripcion(event) {
+        var select = event.target;
+        var codigo = select.value;
+        var row = select.closest('tr');
+        var descripcionInput = row.querySelector('input[name$="descripcion"]');
+        if (descripcionInput) {
+            var actividad = actividadesPorEmpresa.find(function(act) { return act.codigo === codigo; });
+            descripcionInput.value = actividad ? actividad.descripcion : '';
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        var tbody = document.getElementById('conceptos-body');
+        var firstRow = tbody.querySelector('.concepto-form');
+        if (firstRow) {
+            firstRow.querySelectorAll('input').forEach(function(input) {
+                if (input.type === 'text' || input.type === 'number') input.value = '';
+            });
+        }
+        actualizarEventos();
+        
+        // Agregar evento para cargar actividades cuando cambie la empresa
+        var empresaInput = document.getElementById('empresa');
+        if (empresaInput) {
+            empresaInput.addEventListener('change', cargarActividadesPorEmpresa);
+            // Cargar actividades al inicio
+            cargarActividadesPorEmpresa();
+        }
+        actualizarEventoCodigoSelect();
+        // Eliminado: sincronización global de descripción para evitar sobrescribir otras filas
+
+        // Establecer la fecha actual por defecto si el campo está vacío
+        var fechaInput = document.getElementById('id_fecha');
+        if (fechaInput && !fechaInput.value) {
+            var hoy = new Date();
+            var yyyy = hoy.getFullYear();
+            var mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            var dd = String(hoy.getDate()).padStart(2, '0');
+            fechaInput.value = yyyy + '-' + mm + '-' + dd;
+        }
+        function unformatNumber(val) {
+            return val.replace(/,/g, '');
+        }
+        function addFormatListeners(input) {
+            input.addEventListener('focus', function() {
+                this.value = unformatNumber(this.value);
+            });
+            // Solo formatea el valor unitario al perder el foco, pero no lo asigna al input
+            if (input.name.endsWith('vl_unit')) {
+                input.addEventListener('blur', function() {
+                    // No formatees el input de tipo number, solo valida que sea un número
+                    var val = parseFloat(this.value);
+                    if (!isNaN(val)) {
+                        this.value = val.toFixed(2);
+                    }
+                });
+            } else if (input.name.endsWith('valor')) {
+                // Para el campo total, no formatees con comas
+                input.addEventListener('blur', function() {
+                    var val = parseFloat(this.value);
+                    if (!isNaN(val)) {
+                        this.value = val.toFixed(2);
+                    }
+                });
+            }
+        }
+        document.querySelectorAll('input[name$="vl_unit"], input[name$="valor"]').forEach(addFormatListeners);
+        
+        // Agregar evento para buscar al presionar Enter en el campo DNI
+        var dniInput = document.getElementById('dni');
+        if (dniInput) {
+            dniInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    buscarContribuyente();
+                }
+            });
+        }
+        
+        // Agregar validación en tiempo real para campos obligatorios
+        var nombreInput = document.getElementById('id_nombre');
+        var comentarioInput = document.getElementById('id_comentario');
+        
+        if (nombreInput) {
+            nombreInput.addEventListener('input', function() {
+                this.classList.toggle('valid', this.value.trim().length > 0);
+                this.classList.toggle('invalid', this.value.trim().length === 0);
+            });
+        }
+        
+        if (comentarioInput) {
+            comentarioInput.addEventListener('input', function() {
+                this.classList.toggle('valid', this.value.trim().length > 0);
+                this.classList.toggle('invalid', this.value.trim().length === 0);
+            });
+        }
+    });
+    
+    // Función para enviar a caja
+    function enviarACaja() {
+        // Validar campo nombre (obligatorio)
+        var nombreInput = document.getElementById('id_nombre');
+        var nombre = nombreInput ? nombreInput.value.trim() : '';
+        if (!nombre) {
+            alert('El campo Nombre es obligatorio. Por favor, complete este campo.');
+            if (nombreInput) nombreInput.focus();
+            return;
+        }
+        
+        // Validar campo comentario (obligatorio)
+        var comentarioInput = document.getElementById('id_comentario');
+        var comentario = comentarioInput ? comentarioInput.value.trim() : '';
+        if (!comentario) {
+            alert('El campo Comentario es obligatorio. Por favor, complete este campo.');
+            if (comentarioInput) comentarioInput.focus();
+            return;
+        }
+        
+        // Validar campo oficina (obligatorio)
+        var oficinaInput = document.getElementById('id_oficina');
+        var oficina = oficinaInput ? oficinaInput.value.trim() : '';
+        if (!oficina) {
+            alert('El campo Oficina es obligatorio. Por favor, seleccione una oficina.');
+            if (oficinaInput) oficinaInput.focus();
+            return;
+        }
+        
+        // Validar que haya al menos un concepto con valor
+        var conceptos = document.querySelectorAll('.concepto-form');
+        var tieneConceptos = false;
+        
+        conceptos.forEach(function(concepto) {
+            var valorInput = concepto.querySelector('input[name$="valor"]');
+            if (valorInput) {
+                var valor = parseFloat(valorInput.value.replace(/,/g, ''));
+                if (valor && valor > 0) {
+                    tieneConceptos = true;
+                }
+            }
+        });
+        
+        if (!tieneConceptos) {
+            alert('Debe agregar al menos un concepto con valor mayor a cero.');
+            return;
+        }
+        
+        // Confirmar envío
+        if (!confirm('¿Está seguro que desea enviar la transacción a caja?')) {
+            return;
+        }
+        
+        // Recopilar datos del formulario
+        var formData = new FormData();
+        formData.append('empresa', document.getElementById('empresa').value);
+        formData.append('fecha', document.getElementById('id_fecha').value);
+        formData.append('dni', document.getElementById('dni').value);
+        formData.append('nombre', document.getElementById('id_nombre').value);
+        formData.append('direccion', document.getElementById('id_direccion').value);
+        formData.append('comentario', document.getElementById('id_comentario').value);
+        formData.append('oficina', document.getElementById('id_oficina').value);
+        
+        // Recopilar conceptos
+        conceptos.forEach(function(concepto, index) {
+            var codigo = concepto.querySelector('select[name$="codigo"]').value;
+            var descripcion = concepto.querySelector('input[name$="descripcion"]').value;
+            var cantidad = concepto.querySelector('input[name$="cantidad"]').value;
+            var vl_unit = concepto.querySelector('input[name$="vl_unit"]').value;
+            var valorInput = concepto.querySelector('input[name$="valor"]');
+            var valor = valorInput ? valorInput.value.replace(/,/g, '') : '';
+            
+            if (codigo && valor && parseFloat(valor) > 0) {
+                formData.append(`form-${index}-codigo`, codigo);
+                formData.append(`form-${index}-descripcion`, descripcion);
+                formData.append(`form-${index}-cantidad`, cantidad);
+                formData.append(`form-${index}-vl_unit`, vl_unit);
+                formData.append(`form-${index}-valor`, valor);
+            }
+        });
+        
+        // Log para debug
+        console.log('Enviando datos a caja:', {
+            empresa: document.getElementById('empresa').value,
+            oficina: document.getElementById('id_oficina').value,
+            dni: document.getElementById('dni').value,
+            nombre: document.getElementById('id_nombre').value
+        });
+        
+        // Enviar datos
+        fetch('/ajax/enviar-a-caja/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.exito) {
+                alert(data.mensaje);
+                
+                // Generar soporte de transacción
+                generarSoporteTransaccion(data.numero_recibo);
+                
+                // Limpiar formulario o redirigir
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.mensaje);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al enviar a caja. Por favor, intente nuevamente.');
+        });
+    }
+    
+    // Función para generar soporte de transacción
+    function generarSoporteTransaccion(numeroRecibo) {
+        console.log('Generando soporte para recibo:', numeroRecibo);
+        
+        try {
+            // Recopilar datos del formulario
+            var formData = new FormData();
+            formData.append('numero_recibo', numeroRecibo);
+            
+            // Obtener valores de los campos con validación
+            var dni = document.getElementById('dni');
+            var nombre = document.getElementById('id_nombre');
+            var direccion = document.getElementById('id_direccion');
+            var comentario = document.getElementById('id_comentario');
+            
+            formData.append('dni', dni ? dni.value || '' : '');
+            formData.append('nombre', nombre ? nombre.value || '' : '');
+            formData.append('direccion', direccion ? direccion.value || '' : '');
+            formData.append('comentario', comentario ? comentario.value || '' : '');
+            
+            console.log('Datos del formulario:', {
+                dni: dni ? dni.value : 'no encontrado',
+                nombre: nombre ? nombre.value : 'no encontrado',
+                direccion: direccion ? direccion.value : 'no encontrado',
+                comentario: comentario ? comentario.value : 'no encontrado'
+            });
+            
+            // Recopilar conceptos
+            var conceptos = document.querySelectorAll('.concepto-form');
+            var conceptosEnviados = 0;
+            conceptos.forEach(function(concepto, index) {
+                try {
+                    var codigoSelect = concepto.querySelector('select[name$="codigo"]');
+                    var descripcionInput = concepto.querySelector('input[name$="descripcion"]');
+                    var valorInput = concepto.querySelector('input[name$="valor"]');
+                    
+                    if (codigoSelect && valorInput) {
+                        var codigo = codigoSelect.value;
+                        var descripcion = descripcionInput ? descripcionInput.value : '';
+                        var valor = valorInput.value.replace(/,/g, '');
+                        
+                        if (codigo && valor && parseFloat(valor) > 0) {
+                            formData.append('conceptos[]', codigo + '|' + descripcion + '|' + valor);
+                            conceptosEnviados++;
+                            console.log('Concepto agregado:', codigo, descripcion, valor);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error procesando concepto', index, ':', error);
+                }
+            });
+            
+            console.log('Total conceptos a enviar:', conceptosEnviados);
+            
+            // Verificar CSRF token
+            var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (!csrfToken) {
+                throw new Error('CSRF token no encontrado');
+            }
+            
+            // Enviar solicitud para generar soporte usando XMLHttpRequest directamente
+            var url = '/ajax/generar-soporte-transaccion/';
+            console.log('Enviando solicitud a:', url);
+            
+            // Crear un formulario temporal y enviarlo directamente
+            var tempForm = document.createElement('form');
+            tempForm.method = 'POST';
+            tempForm.action = url;
+            tempForm.target = '_blank';
+            tempForm.style.display = 'none';
+            
+            // Agregar CSRF token
+            var csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken.value;
+            tempForm.appendChild(csrfInput);
+            
+            // Agregar datos del formulario
+            for (var pair of formData.entries()) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = pair[0];
+                input.value = pair[1];
+                tempForm.appendChild(input);
+            }
+            
+            // Agregar el formulario al DOM y enviarlo
+            document.body.appendChild(tempForm);
+            tempForm.submit();
+            document.body.removeChild(tempForm);
+            
+            console.log('Solicitud enviada usando formulario directo');
+            return; // Salir de la función aquí
+            
+
+            
+        } catch (error) {
+            console.error('Error en generarSoporteTransaccion:', error);
+            alert('Error interno al generar soporte: ' + error.message);
+        }
+    }
+    
+    // Funciones para los botones de acción principales
+    function limpiarFormulario() {
+        // Limpiar campos principales
+        document.getElementById('dni').value = '';
+        document.getElementById('empresa').value = '';
+        document.getElementById('id_fecha').value = '';
+        document.getElementById('id_oficina').value = '';
+        document.getElementById('id_nombre').value = '';
+        document.getElementById('id_direccion').value = '';
+        document.getElementById('id_comentario').value = '';
+        
+        // Limpiar tabla de conceptos
+        const conceptosBody = document.getElementById('conceptos-body');
+        const filas = conceptosBody.querySelectorAll('.concepto-form');
+        
+        // Mantener solo la primera fila y limpiarla
+        for (let i = 1; i < filas.length; i++) {
+            filas[i].remove();
+        }
+        
+        // Limpiar la primera fila
+        if (filas.length > 0) {
+            const primeraFila = filas[0];
+            const inputs = primeraFila.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (input.type !== 'hidden') {
+                    input.value = '';
+                }
+            });
+        }
+        
+        // Posicionar cursor en el campo DNI
+        document.getElementById('dni').focus();
+        
+        alert('Formulario limpiado. Puede comenzar una nueva entrada.');
+    }
+    
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-money-bill-wave"></i> Emisión de Misceláneos</h1>
+            <p class="subtitle">Emita Recibos Misceláneos de manera eficiente</p>
+        </header>
+        <form method="post">
+        {% csrf_token %}
+        <input type="hidden" id="id_form-TOTAL_FORMS" name="form-TOTAL_FORMS" value="1">
+        <fieldset>
+            <legend>Búsqueda de Contribuyente</legend>
+            <div class="inline-fields">
+                <label for="dni">DNI:</label>
+                <input type="text" id="dni" name="dni" maxlength="18" class="short" style="width: 180px; display: inline-block;" placeholder="Ingrese DNI">
+                <button type="button" onclick="buscarContribuyente()" style="background: #007bff; color: white; border: none; border-radius: 5px; padding: 6px 14px; cursor: pointer;">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                <label for="empresa">Municipio:</label>
+                <input type="text" id="empresa" name="empresa" maxlength="4" class="short" 
+                       value="{{ municipio_codigo|default_if_none:'' }}" 
+                       style="width: 80px; display: inline-block; background-color: #f8f9fa; color: #6c757d;" readonly>
+                <label for="id_fecha">Fecha:</label>
+                <input type="date" name="fecha" id="id_fecha" class="short" style="width: 150px; display: inline-block;">
+            </div>
+            <small style="color: #6c757d; font-size: 0.85rem; display: block; margin-top: 5px;">
+                <i class="fas fa-info-circle"></i> Ingrese el DNI del contribuyente y presione "Buscar" para cargar automáticamente los datos
+            </small>
+        </fieldset>
+        <fieldset>
+            <legend>Datos del Contribuyente</legend>
+            <div style="margin-bottom: 12px;">
+                <label for="id_nombre">Nombre <span style="color: red;">*</span></label>
+                <input type="text" name="nombre" id="id_nombre" maxlength="150" required style="background-color: #f8fff9; border-color: #28a745;" />
+                <small class="manual-edit">
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i> 
+                    Se llena automáticamente al buscar el DNI. Puede editar manualmente si es necesario.
+                </small>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <label for="id_direccion">Dirección</label>
+                <input type="text" name="direccion" id="id_direccion" maxlength="100" />
+                <small class="manual-edit">Dirección del contribuyente.</small>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <label for="id_comentario">Comentario <span style="color: red;">*</span></label>
+                <textarea name="comentario" id="id_comentario" maxlength="500" rows="3" style="width: 100%; padding: 7px 10px; border: 1px solid #d1d5da; border-radius: 5px; font-size: 1em; box-sizing: border-box; font-family: inherit;" required></textarea>
+                <small class="manual-edit">Comentarios adicionales sobre la transacción.</small>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <label for="id_oficina">Oficina <span style="color: red;">*</span></label>
+                <select name="oficina" id="id_oficina" style="width: 100%; padding: 7px 10px; border: 1px solid #d1d5da; border-radius: 5px; font-size: 1em; box-sizing: border-box; background: #fff;" required>
+                    <option value="">Seleccione una oficina</option>
+                    {% for oficina in oficinas %}
+                        <option value="{{ oficina.codigo }}">{{ oficina.codigo }} - {{ oficina.descripcion }}</option>
+                    {% endfor %}
+                </select>
+                <small class="manual-edit">Seleccione la oficina donde se realizará el pago.</small>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Conceptos de Cobro</legend>
+            <div class="conceptos-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                            <th>Valor Unitario</th>
+                            <th>Total</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="conceptos-body">
+                        <tr class="concepto-form">
+                            <td>
+                                <select name="form-0-codigo" class="codigo-select input-like" style="width:220px;">
+                                    <option value="">Seleccione</option>
+                                </select>
+                            </td>
+                            <td><input type="text" name="form-0-descripcion" maxlength="200" style="width:320px;" readonly /></td>
+                            <td><input type="number" step="0.01" name="form-0-cantidad" style="width:80px;" /></td>
+                            <td><input type="number" step="0.01" name="form-0-vl_unit" style="width:140px;" /></td>
+                            <td><input type="text" name="form-0-valor" readonly style="width:140px; text-align:right;" /></td>
+                            <td>
+                                <button type="button" onclick="eliminarFila(this)">Eliminar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" onclick="agregarFila()">Agregar concepto</button>
+            <button type="button" onclick="enviarACaja()">Enviar a Caja</button>
+            <button type="button" class="btn btn-success" onclick="limpiarFormulario()">
+                <i class="fas fa-plus"></i> Nuevo
+            </button>
+        </fieldset>
+    </form>
+    
+    <!-- Botón Salir adicional al final de la página -->
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="{% url 'tributario:tributario_menu_principal' %}" class="btn btn-secondary" style="font-size: 1.1rem; padding: 12px 25px;">
+            <i class="fas fa-sign-out-alt"></i> Salir al Menú Principal
+        </a>
+    </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,30 @@
+{% extends "ciudadano/base_ciudadano.html" %}
+{% block title %}Identificación{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card cdd-card">
+            <div class="card-body p-4">
+                <h1 class="h5 mb-3">Identificación del contribuyente</h1>
+                <p class="small text-muted">
+                    Los datos consignados se utilizan para asociar sus solicitudes al RTN o identificación tributaria.
+                    El municipio tratará la información conforme a la Ley de Protección de Datos Personales y normativa aplicable.
+                </p>
+                {% if empresa %}<p class="small"><strong>Empresa / municipio en sesión:</strong> {{ empresa }}</p>{% endif %}
+                <form method="post" class="mt-3">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">Continuar</button>
+                    <a href="{% url 'ciudadano:portal_inicio' %}" class="btn btn-link">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

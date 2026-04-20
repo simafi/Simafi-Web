@@ -1,0 +1,107 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}Asientos Contables{% endblock %}
+
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item active">Asientos Contables</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-book-open me-2"></i>Asientos Contables (NIC 1 - Libro Diario)</h4>
+        <a href="{% url 'contabilidad:asiento_crear' %}" class="btn btn-cont-primary">
+            <i class="fas fa-plus me-1"></i> Nuevo Asiento
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="cont-card mb-3">
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label mb-0" style="font-size:0.8rem;">Estado</label>
+                    <select name="estado" class="form-control form-control-sm" onchange="this.form.submit()">
+                        <option value="">-- Todos --</option>
+                        <option value="BORRADOR" {% if estado_filtro == 'BORRADOR' %}selected{% endif %}>Borrador</option>
+                        <option value="APROBADO" {% if estado_filtro == 'APROBADO' %}selected{% endif %}>Aprobado</option>
+                        <option value="CONTABILIZADO" {% if estado_filtro == 'CONTABILIZADO' %}selected{% endif %}>Contabilizado</option>
+                        <option value="ANULADO" {% if estado_filtro == 'ANULADO' %}selected{% endif %}>Anulado</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-0" style="font-size:0.8rem;">Desde</label>
+                    <input type="date" name="fecha_desde" class="form-control form-control-sm" value="{{ fecha_desde }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-0" style="font-size:0.8rem;">Hasta</label>
+                    <input type="date" name="fecha_hasta" class="form-control form-control-sm" value="{{ fecha_hasta }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label mb-0" style="font-size:0.8rem;">Buscar</label>
+                    <input type="text" name="q" class="form-control form-control-sm" value="{{ busqueda }}" placeholder="Número o concepto...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-sm btn-cont-primary"><i class="fas fa-search"></i> Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de asientos -->
+    <div class="cont-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table cont-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Concepto</th>
+                            <th class="text-end">Debe</th>
+                            <th class="text-end">Haber</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asiento in asientos %}
+                        <tr>
+                            <td><code>{{ asiento.numero }}</code></td>
+                            <td>{{ asiento.fecha|date:"d/m/Y" }}</td>
+                            <td>{{ asiento.tipo.nombre }}</td>
+                            <td>{{ asiento.concepto|truncatechars:60 }}</td>
+                            <td class="text-end">{{ asiento.total_debe|floatformat:2 }}</td>
+                            <td class="text-end">{{ asiento.total_haber|floatformat:2 }}</td>
+                            <td>
+                                <span class="badge badge-{{ asiento.estado|lower }}">{{ asiento.get_estado_display }}</span>
+                            </td>
+                            <td>
+                                <a href="{% url 'contabilidad:asiento_ver' asiento.pk %}" class="btn btn-sm btn-outline-primary" title="Ver">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="fas fa-inbox" style="font-size:2rem;"></i>
+                                <p class="mt-2 mb-0">No hay asientos registrados. <a href="{% url 'contabilidad:asiento_crear' %}">Crear el primero</a></p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

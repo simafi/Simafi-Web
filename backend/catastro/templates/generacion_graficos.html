@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generación Gráficos - Módulo Catastro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        .main-container {
+            padding: 40px 20px;
+        }
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+        .form-title {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .form-select, .form-control {
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-select:focus, .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .campo-condicional {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .campo-condicional.show {
+            display: block;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+                <i class="fas fa-map-marked-alt"></i> Sistema Catastro
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user"></i> {{ usuario_nombre }}
+                </span>
+                <a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="container">
+            <div class="form-container">
+                <h2 class="form-title">
+                    <i class="fas fa-chart-pie me-2"></i>Generación de Gráficos
+                </h2>
+
+                <form id="formGeneracionGraficos" method="POST" action="{% url 'catastro:generar_graficos' %}">
+                    {% csrf_token %}
+                    
+                    <!-- Nivel del Gráfico -->
+                    <div class="form-group">
+                        <label class="form-label" for="nivel_grafico">
+                            <i class="fas fa-layer-group me-2"></i>Nivel del Gráfico <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="nivel_grafico" name="nivel_grafico" required>
+                            <option value="">-- Seleccione el nivel del gráfico --</option>
+                            <option value="predios">A Nivel de Predios</option>
+                            <option value="avaluo">A Nivel de Avalúo Catastral</option>
+                        </select>
+                        <small class="form-text text-muted">
+                            Seleccione si el gráfico mostrará datos a nivel de cantidad de predios o valores de avalúo catastral
+                        </small>
+                    </div>
+
+                    <!-- Tipo de Gráfico -->
+                    <div class="form-group">
+                        <label class="form-label" for="tipo_grafico">
+                            <i class="fas fa-chart-bar me-2"></i>Tipo de Gráfico <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="tipo_grafico" name="tipo_grafico" required>
+                            <option value="">-- Seleccione un tipo de gráfico --</option>
+                            <option value="por_uso">Gráfico de Avaluos por Uso</option>
+                            <option value="por_subuso">Gráfico de Avaluos por Sub Uso</option>
+                            <option value="por_barrio">Gráfico de Avaluos por Barrio</option>
+                            <option value="por_naturaleza_juridica">Gráfico por Naturaleza Juridica</option>
+                            <option value="por_clase_dominio">Gráfico por Clase de Dominio</option>
+                            <option value="por_tipo_documento">Gráfico por Tipo de Documento</option>
+                            <option value="por_sexo">Gráfico de Avaluos Catastrales por Sexo</option>
+                            <option value="por_identidad">Gráfico de Avaluos Catastrales por Numero de Identidad</option>
+                            <option value="usos_por_barrio">Gráfico de Avaluos Catastrales Usos por Barrio</option>
+                            <option value="naturaleza_jur_por_barrio">Gráfico de Avaluos Catastrales por Naturaleza Juridica por Barrio</option>
+                            <option value="clase_dom_por_barrio">Gráfico de Avaluos Catastrales Clase de Dominio por Barrio</option>
+                            <option value="tipo_docto_por_barrio">Gráfico de Avaluos Catastrales Tipo de Documento por Barrio</option>
+                            <option value="usos_por_perimetro">Gráfico de Avaluos Catastrales Usos por Perímetro</option>
+                            <option value="naturaleza_jur_por_perimetro">Gráfico de Avaluos Catastrales Naturaleza Juridica por Perímetro</option>
+                            <option value="clase_dom_por_perimetro">Gráfico de Avaluos Catastrales Clase de Dominio por Perímetro</option>
+                            <option value="tipo_docto_por_perimetro">Gráfico de Avaluos Catastrales Tipo de Documento por Perímetro</option>
+                            <option value="por_estatus_tributario">Gráfico por Estatus Tributario</option>
+                            <option value="por_zonificacion">Gráfico de Avaluos Catastrales por Zonificacion</option>
+                        </select>
+                    </div>
+
+                    <!-- Campos Condicionales: Barrio -->
+                    <div id="campos_barrio" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="codigo_barrio">
+                                <i class="fas fa-map-pin me-2"></i>Barrio <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="codigo_barrio" name="codigo_barrio">
+                                <option value="">-- Seleccione un barrio --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando barrios...</small>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Uso -->
+                    <div id="campos_uso" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="codigo_uso">
+                                <i class="fas fa-tag me-2"></i>Código de Uso <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="codigo_uso" name="codigo_uso">
+                                <option value="">-- Seleccione un código de uso --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando códigos de uso...</small>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Perímetro (Ficha) -->
+                    <div id="campos_perimetro" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="ficha">
+                                <i class="fas fa-file-alt me-2"></i>Ficha <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="ficha" name="ficha">
+                                <option value="">-- Seleccione el tipo de ficha --</option>
+                                <option value="1">Ficha Urbana (1)</option>
+                                <option value="2">Ficha Rural (2)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Sexo -->
+                    <div id="campos_sexo" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="sexo">
+                                <i class="fas fa-venus-mars me-2"></i>Sexo <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="sexo" name="sexo">
+                                <option value="">-- Seleccione el sexo --</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Número de Identidad -->
+                    <div id="campos_identidad" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="numero_identidad">
+                                <i class="fas fa-id-card me-2"></i>Número de Identidad <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="numero_identidad" name="numero_identidad" 
+                                   placeholder="Ingrese el número de identidad">
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Naturaleza Jurídica -->
+                    <div id="campos_naturaleza" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="codigo_naturaleza">
+                                <i class="fas fa-gavel me-2"></i>Naturaleza Jurídica <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="codigo_naturaleza" name="codigo_naturaleza">
+                                <option value="">-- Seleccione una naturaleza jurídica --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando naturalezas jurídicas...</small>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Clase de Dominio -->
+                    <div id="campos_dominio" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="codigo_dominio">
+                                <i class="fas fa-shield-alt me-2"></i>Clase de Dominio <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="codigo_dominio" name="codigo_dominio">
+                                <option value="">-- Seleccione una clase de dominio --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando clases de dominio...</small>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Tipo de Documento -->
+                    <div id="campos_tipo_documento" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="codigo_tipo_documento">
+                                <i class="fas fa-file-alt me-2"></i>Tipo de Documento <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="codigo_tipo_documento" name="codigo_tipo_documento">
+                                <option value="">-- Seleccione un tipo de documento --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando tipos de documento...</small>
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'catastro:catastro_menu_principal' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-chart-pie me-2"></i> Generar Gráfico
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Manejo global de errores para evitar problemas con mensajes asíncronos
+        window.addEventListener('error', function(e) {
+            if (e.error && e.error.message && e.error.message.includes('asynchronous response')) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            if (e.error && e.error.message && !e.error.message.includes('asynchronous response')) {
+                console.error('Error global capturado:', e.error);
+            }
+            return false;
+        }, true);
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            if (e.reason && (!e.reason.message || !e.reason.message.includes('asynchronous response'))) {
+                console.error('Promesa rechazada no capturada:', e.reason);
+            }
+        });
+        
+        // Mostrar/ocultar campos según el tipo de gráfico seleccionado
+        document.getElementById('tipo_grafico').addEventListener('change', function(e) {
+            try {
+                // Ocultar todos los campos condicionales
+                document.querySelectorAll('.campo-condicional').forEach(function(campo) {
+                    campo.classList.remove('show');
+                });
+
+                const tipoGrafico = this.value;
+                
+                // Mostrar campos según el tipo
+                switch(tipoGrafico) {
+                    case 'por_subuso':
+                        document.getElementById('campos_uso').classList.add('show');
+                        cargarUsos();
+                        break;
+                    case 'usos_por_barrio':
+                        document.getElementById('campos_barrio').classList.add('show');
+                        cargarBarrios();
+                        break;
+                    case 'usos_por_perimetro':
+                        document.getElementById('campos_perimetro').classList.add('show');
+                        break;
+                    case 'naturaleza_jur_por_barrio':
+                        document.getElementById('campos_barrio').classList.add('show');
+                        cargarBarrios();
+                        break;
+                    case 'naturaleza_jur_por_perimetro':
+                        document.getElementById('campos_perimetro').classList.add('show');
+                        break;
+                    case 'clase_dom_por_barrio':
+                        document.getElementById('campos_barrio').classList.add('show');
+                        cargarBarrios();
+                        break;
+                    case 'clase_dom_por_perimetro':
+                        document.getElementById('campos_perimetro').classList.add('show');
+                        break;
+                    case 'tipo_docto_por_barrio':
+                        document.getElementById('campos_barrio').classList.add('show');
+                        cargarBarrios();
+                        break;
+                    case 'tipo_docto_por_perimetro':
+                        document.getElementById('campos_perimetro').classList.add('show');
+                        break;
+                    // Los gráficos básicos no requieren seleccionar criterios
+                    case 'por_uso':
+                    case 'por_barrio':
+                    case 'por_naturaleza_juridica':
+                    case 'por_clase_dominio':
+                    case 'por_tipo_documento':
+                    case 'por_sexo':
+                    case 'por_identidad':
+                    case 'por_estatus_tributario':
+                    case 'por_zonificacion':
+                        break;
+                }
+            } catch (error) {
+                console.error('Error al cambiar tipo de gráfico:', error);
+            }
+        }, false);
+
+        // Funciones para cargar datos
+        function cargarBarrios() {
+            const select = document.getElementById('codigo_barrio');
+            if (!select || select.options.length > 1) return;
+            
+            fetch('/catastro/api/barrios/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Seleccione un barrio --</option>';
+                        if (data.barrios && data.barrios.length > 0) {
+                            data.barrios.forEach(barrio => {
+                                const option = document.createElement('option');
+                                option.value = barrio.codbarrio || barrio.id;
+                                option.textContent = barrio.display || `${barrio.codbarrio || barrio.id} - ${barrio.descripcion || ''}`;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar barrios:', error);
+                    if (select) {
+                        select.innerHTML = '<option value="">Error al cargar barrios</option>';
+                    }
+                });
+        }
+
+        function cargarUsos() {
+            const select = document.getElementById('codigo_uso');
+            if (!select || select.options.length > 1) return;
+            
+            fetch('/catastro/api/usos/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Seleccione un código de uso --</option>';
+                        if (data.usos && data.usos.length > 0) {
+                            data.usos.forEach(uso => {
+                                const option = document.createElement('option');
+                                let codigoUso = uso.uso || uso.coduso || uso.cod_uso || uso.id;
+                                if (codigoUso && !isNaN(codigoUso)) {
+                                    codigoUso = String(parseInt(codigoUso)).padStart(2, '0');
+                                }
+                                option.value = codigoUso;
+                                option.textContent = uso.display || `${codigoUso} - ${uso.desuso || uso.des_uso || uso.descripcion || ''}`;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar usos:', error);
+                    if (select) {
+                        select.innerHTML = '<option value="">Error al cargar códigos de uso</option>';
+                    }
+                });
+        }
+
+        function cargarNaturalezas() {
+            const select = document.getElementById('codigo_naturaleza');
+            if (!select || select.options.length > 1) return;
+            
+            fetch('/catastro/api/naturalezas/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Seleccione una naturaleza jurídica --</option>';
+                        if (data.naturalezas && data.naturalezas.length > 0) {
+                            data.naturalezas.forEach(nat => {
+                                const option = document.createElement('option');
+                                option.value = nat.codigo || nat.id;
+                                option.textContent = `${nat.codigo || nat.id} - ${nat.descripcion || ''}`;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar naturalezas jurídicas:', error);
+                    if (select) {
+                        select.innerHTML = '<option value="">Error al cargar naturalezas jurídicas</option>';
+                    }
+                });
+        }
+
+        function cargarDominios() {
+            const select = document.getElementById('codigo_dominio');
+            if (!select || select.options.length > 1) return;
+            
+            fetch('/catastro/api/dominios/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Seleccione una clase de dominio --</option>';
+                        if (data.dominios && data.dominios.length > 0) {
+                            data.dominios.forEach(dom => {
+                                const option = document.createElement('option');
+                                option.value = dom.codigo || dom.id;
+                                option.textContent = `${dom.codigo || dom.id} - ${dom.descripcion || ''}`;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar clases de dominio:', error);
+                    if (select) {
+                        select.innerHTML = '<option value="">Error al cargar clases de dominio</option>';
+                    }
+                });
+        }
+
+        function cargarTiposDocumento() {
+            const select = document.getElementById('codigo_tipo_documento');
+            if (!select || select.options.length > 1) return;
+            
+            fetch('/catastro/api/tipos-documento/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Seleccione un tipo de documento --</option>';
+                        if (data.tipos_documento && data.tipos_documento.length > 0) {
+                            data.tipos_documento.forEach(tipo => {
+                                const option = document.createElement('option');
+                                option.value = tipo.codigo || tipo.id;
+                                option.textContent = `${tipo.codigo || tipo.id} - ${tipo.descripcion || ''}`;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar tipos de documento:', error);
+                    if (select) {
+                        select.innerHTML = '<option value="">Error al cargar tipos de documento</option>';
+                    }
+                });
+        }
+
+        // Validar formulario antes de enviar
+        document.getElementById('formGeneracionGraficos').addEventListener('submit', function(e) {
+            try {
+                const nivelGrafico = document.getElementById('nivel_grafico').value;
+                const tipoGrafico = document.getElementById('tipo_grafico').value;
+                let valido = true;
+                
+                if (!nivelGrafico) {
+                    alert('Por favor seleccione el nivel del gráfico');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+                
+                if (!tipoGrafico) {
+                    alert('Por favor seleccione un tipo de gráfico');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+                
+                // Validar campos según el tipo de gráfico
+                switch(tipoGrafico) {
+                    case 'por_subuso':
+                        if (!document.getElementById('codigo_uso').value) {
+                            alert('Por favor seleccione un código de uso');
+                            valido = false;
+                        }
+                        break;
+                    case 'usos_por_barrio':
+                        if (!document.getElementById('codigo_barrio').value) {
+                            alert('Por favor seleccione un barrio');
+                            valido = false;
+                        }
+                        break;
+                    case 'usos_por_perimetro':
+                        if (!document.getElementById('ficha').value) {
+                            alert('Por favor seleccione el tipo de ficha');
+                            valido = false;
+                        }
+                        break;
+                    case 'naturaleza_jur_por_barrio':
+                        if (!document.getElementById('codigo_barrio').value) {
+                            alert('Por favor seleccione un barrio');
+                            valido = false;
+                        }
+                        break;
+                    case 'naturaleza_jur_por_perimetro':
+                        if (!document.getElementById('ficha').value) {
+                            alert('Por favor seleccione el tipo de ficha');
+                            valido = false;
+                        }
+                        break;
+                    case 'clase_dom_por_barrio':
+                        if (!document.getElementById('codigo_barrio').value) {
+                            alert('Por favor seleccione un barrio');
+                            valido = false;
+                        }
+                        break;
+                    case 'clase_dom_por_perimetro':
+                        if (!document.getElementById('ficha').value) {
+                            alert('Por favor seleccione el tipo de ficha');
+                            valido = false;
+                        }
+                        break;
+                    case 'tipo_docto_por_barrio':
+                        if (!document.getElementById('codigo_barrio').value) {
+                            alert('Por favor seleccione un barrio');
+                            valido = false;
+                        }
+                        break;
+                    case 'tipo_docto_por_perimetro':
+                        if (!document.getElementById('ficha').value) {
+                            alert('Por favor seleccione el tipo de ficha');
+                            valido = false;
+                        }
+                        break;
+                }
+                
+                if (!valido) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error en validación del formulario:', error);
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }, false);
+    </script>
+</body>
+</html>

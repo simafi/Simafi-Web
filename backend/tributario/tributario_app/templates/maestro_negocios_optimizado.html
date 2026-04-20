@@ -1,0 +1,387 @@
+{% extends "base_tributario.html" %}
+
+{% block title %}Maestro de Negocios{% endblock %}
+{% block breadcrumb %}Negocios / Maestro{% endblock %}
+{% block nav_negocios %}active{% endblock %}
+
+{% block content %}
+<div class="page-header animate-in">
+    <div class="header-content">
+        <div class="header-icon"><i class="fas fa-store"></i></div>
+        <div>
+            <h1 class="page-title">Maestro de Negocios</h1>
+            <p class="page-subtitle">Administración integral de expedientes comerciales y contribuyentes.</p>
+        </div>
+    </div>
+    <div class="header-actions">
+        <a href="/tributario/buscar-negocios/?empresa={{ empresa }}" class="btn-trib-secondary">
+            <i class="fas fa-search me-2"></i> Buscar Negocio
+        </a>
+        <button type="button" class="btn-trib-primary" onclick="window.location.href='?accion=nuevo'">
+            <i class="fas fa-plus me-2"></i> Nuevo Registro
+        </button>
+    </div>
+</div>
+
+<form method="post" id="form-maestro" class="animate-in">
+    {% csrf_token %}
+    
+    <div class="row g-4">
+        <!-- Bloque 1: Identificación del Negocio -->
+        <div class="col-xl-8">
+            <div class="card trib-card h-100">
+                <div class="card-header bg-soft-primary">
+                    <i class="fas fa-id-card me-2"></i> Datos de Identificación
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Municipio</label>
+                            <input type="text" name="empresa" id="id_empresa" class="form-control bg-light" value="{{ empresa }}" readonly>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-bold">RTM <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                <input type="text" name="rtm" id="id_rtm" class="form-control fw-bold" value="{{ negocio.rtm }}" required placeholder="00-00-0000">
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-bold">Expediente <span class="text-danger">*</span></label>
+                            <input type="text" name="expe" id="id_expe" class="form-control fw-bold" value="{{ negocio.expe }}" required placeholder="000000">
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold">Nombre del Negocio</label>
+                            <input type="text" name="nombrenego" id="id_nombrenego" class="form-control form-control-lg border-primary" value="{{ negocio.nombrenego }}" placeholder="Nombre comercial del establecimiento">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Actividad Económica <span class="text-danger">*</span></label>
+                            <div class="position-relative">
+                                <input type="text" id="id_actividad_display" class="form-control" placeholder="Buscar actividad..." autocomplete="off">
+                                <input type="hidden" name="actividad" id="id_actividad_codigo" value="{{ negocio.actividad }}">
+                                <div id="actividad_autocomplete" class="autocomplete-results shadow-sm"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Fecha Inicio</label>
+                            <input type="date" name="fecha_ini" id="id_fecha_ini" class="form-control" value="{{ negocio.fecha_ini }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Estatus</label>
+                            <select name="estatus" id="id_estatus" class="form-select fw-bold {% if negocio.estatus == 'A' %}text-success{% else %}text-danger{% endif %}">
+                                <option value="A" {% if negocio.estatus == 'A' %}selected{% endif %}>ACTIVO</option>
+                                <option value="I" {% if negocio.estatus == 'I' %}selected{% endif %}>INACTIVO</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bloque 2: Datos Personales / Descuentos -->
+        <div class="col-xl-4">
+            <div class="card trib-card h-100">
+                <div class="card-header bg-soft-gold">
+                    <i class="fas fa-user me-2"></i> Propietario y Beneficios
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">DNI / Identidad</label>
+                            <div class="input-group">
+                                <input type="text" name="identidad" id="id_identidad" class="form-control" value="{{ negocio.identidad }}" placeholder="0000-0000-00000">
+                                <button type="button" class="btn btn-outline-secondary" onclick="checkSeniorDiscount()"><i class="fas fa-sync"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Fecha de Nacimiento</label>
+                            <input type="date" name="fecha_nacimiento" id="id_fecha_nacimiento" class="form-control" value="{{ negocio.fecha_nacimiento }}">
+                        </div>
+
+                        <!-- Panel de Descuento por Edad -->
+                        <div id="senior-discount-panel" class="col-12 d-none">
+                            <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-0">
+                                <div class="fs-2 me-3"><i class="fas fa-user-clock"></i></div>
+                                <div>
+                                    <div class="fw-bold" id="senior-group-label">Tercera Edad</div>
+                                    <div class="small"><span id="senior-age-label">65</span> años — <span id="senior-discount-label">25%</span> de descuento de ley</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Comerciante / Dueño</label>
+                            <input type="text" name="comerciante" id="id_comerciante" class="form-control" value="{{ negocio.comerciante }}">
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">RTN Personal</label>
+                            <input type="text" name="rtnpersonal" id="id_rtnpersonal" class="form-control" value="{{ negocio.rtnpersonal }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bloque 3: Ubicación y Contacto -->
+        <div class="col-xl-6">
+            <div class="card trib-card">
+                <div class="card-header bg-light">
+                    <i class="fas fa-map-marked-alt me-2"></i> Ubicación Colectiva
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Clave Catastral</label>
+                            <input type="text" name="catastral" id="id_catastral" class="form-control" value="{{ negocio.catastral }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Coord. X</label>
+                            <input type="text" name="cx" id="id_cx" class="form-control font-monospace text-center" value="{{ negocio.cx }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Coord. Y</label>
+                            <input type="text" name="cy" id="id_cy" class="form-control font-monospace text-center" value="{{ negocio.cy }}">
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Dirección Exacta</label>
+                            <textarea name="direccion" id="id_direccion" class="form-control" rows="2">{{ negocio.direccion }}</textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Teléfono Fijo</label>
+                            <input type="text" name="telefono" id="id_telefono" class="form-control" value="{{ negocio.telefono }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Celular</label>
+                            <input type="text" name="celular" id="id_celular" class="form-control" value="{{ negocio.celular }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bloque 4: Otros Datos -->
+        <div class="col-xl-6">
+            <div class="card trib-card">
+                <div class="card-header bg-light">
+                    <i class="fas fa-ellipsis-h me-2"></i> Información Adicional
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Representante Legal</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
+                                <input type="text" name="representante" id="id_representante" class="form-control" value="{{ negocio.representante }}">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Correo Electrónico</label>
+                            <input type="email" name="correo" id="id_correo" class="form-control" value="{{ negocio.correo }}" placeholder="ejemplo@dominio.com">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Socios / Accionistas</label>
+                            <input type="text" name="socios" id="id_socios" class="form-control" value="{{ negocio.socios }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bloque Mapa -->
+        <div class="col-12">
+            <div class="card trib-card shadow-lg p-0">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-satellite me-2"></i> Geolocalización del Establecimiento</span>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-light" onclick="centerMap()"><i class="fas fa-crosshairs"></i></button>
+                        <button type="button" class="btn btn-outline-light" onclick="getCurrentLocation()"><i class="fas fa-map-marker-alt"></i></button>
+                    </div>
+                </div>
+                <div id="map" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones Flotantes / Inferiores -->
+    <div class="trib-actions-bar mt-5 mb-5 p-3 rounded-3 shadow-sm bg-white border d-flex justify-content-center flex-wrap gap-2">
+        <button type="submit" name="accion" value="salvar" class="btn btn-gold btn-lg px-5">
+            <i class="fas fa-save me-2"></i> GUARDAR DATOS
+        </button>
+        <div class="vr mx-2 d-none d-md-block"></div>
+        <button type="button" onclick="window.location.href='/tributario/configurar-tasas-negocio/?rtm={{ negocio.rtm }}&expe={{ negocio.expe }}'" class="btn btn-outline-primary">
+            <i class="fas fa-cog me-2"></i> Config. Tasas
+        </button>
+        <button type="button" onclick="window.location.href='/tributario/declaraciones/?rtm={{ negocio.rtm }}&expe={{ negocio.expe }}'" class="btn btn-outline-primary">
+            <i class="fas fa-chart-line me-2"></i> Declaración
+        </button>
+        <button type="button" onclick="window.location.href='/tributario/estado-cuenta/?rtm={{ negocio.rtm }}&expe={{ negocio.expe }}'" class="btn btn-outline-success">
+            <i class="fas fa-file-invoice-dollar me-2"></i> Estado de Cuenta
+        </button>
+        <button type="submit" name="accion" value="eliminar" class="btn btn-outline-danger" onclick="return confirm('¿Está seguro de eliminar este registro?')">
+            <i class="fas fa-trash-alt me-2"></i> Eliminar
+        </button>
+    </div>
+</form>
+
+<style>
+    .bg-soft-gold { background-color: rgba(184, 134, 11, 0.1); }
+    .autocomplete-results {
+        position: absolute;
+        width: 100%;
+        max-height: 250px;
+        overflow-y: auto;
+        background: white;
+        z-index: 1050;
+        border: 1px solid #ddd;
+        border-radius: 0 0 8px 8px;
+    }
+    .autocomplete-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+    }
+    .autocomplete-item:hover { background-color: #f8f9fa; color: var(--gold-primary); }
+    .trib-actions-bar { position: sticky; bottom: 20px; z-index: 1000; }
+</style>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/proj4@2.9.0/dist/proj4.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Configuración UTM (Mantenida del anterior para compatibilidad)
+    const UTM_ZONE = 16;
+    const utmProjection = `+proj=utm +zone=${UTM_ZONE} +north +ellps=WGS84 +datum=WGS84 +units=m +no_defs`;
+    const wgs84Projection = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs';
+
+    let map, marker;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        initMap();
+        initAutocomplete();
+        // Cargar edad inicial si hay identidad
+        if(document.getElementById('id_identidad').value) checkSeniorDiscount();
+    });
+
+    function initMap() {
+        map = L.map('map').setView([15.199, -86.241], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        const cx = parseFloat(document.getElementById('id_cx').value) || 0;
+        const cy = parseFloat(document.getElementById('id_cy').value) || 0;
+        
+        if (cx > 0 && cy > 0) {
+            updateMarkerFromUTM(cx, cy);
+        }
+
+        map.on('click', function(e) {
+            const utm = proj4(wgs84Projection, utmProjection, [e.latlng.lng, e.latlng.lat]);
+            document.getElementById('id_cx').value = utm[0].toFixed(2);
+            document.getElementById('id_cy').value = utm[1].toFixed(2);
+            if (marker) marker.setLatLng(e.latlng);
+            else marker = L.marker(e.latlng).addTo(map);
+        });
+    }
+
+    function updateMarkerFromUTM(x, y) {
+        try {
+            const ll = proj4(utmProjection, wgs84Projection, [x, y]);
+            const latlng = [ll[1], ll[0]];
+            if (marker) marker.setLatLng(latlng);
+            else marker = L.marker(latlng).addTo(map);
+            map.setView(latlng, 15);
+        } catch(e) {}
+    }
+
+    // Lógica de Descuento por Edad (Consumiendo lógica de utils_cedula via AJAX o calc local)
+    function checkSeniorDiscount() {
+        const id = document.getElementById('id_identidad').value.replace(/-/g, '');
+        const nacManual = document.getElementById('id_fecha_nacimiento').value;
+        const panel = document.getElementById('senior-discount-panel');
+        
+        if (id.length < 8 && !nacManual) {
+            panel.classList.add('d-none');
+            return;
+        }
+
+        // Simular lógica de utils_cedula.py en JS para feedback inmediato
+        let year, month, day;
+        if (nacManual) {
+            const d = new Date(nacManual);
+            year = d.getFullYear();
+        } else if (id.length >= 8) {
+            // Formato XXXX-YYMM...
+            let yy = parseInt(id.substring(4,6));
+            year = yy < 30 ? 2000 + yy : 1900 + yy;
+        }
+
+        if (year) {
+            const age = new Date().getFullYear() - year;
+            if (age >= 60) {
+                panel.classList.remove('d-none');
+                document.getElementById('senior-age-label').textContent = age;
+                if (age >= 80) {
+                    document.getElementById('senior-group-label').textContent = 'Cuarta Edad';
+                    document.getElementById('senior-discount-label').textContent = '35%';
+                } else {
+                    document.getElementById('senior-group-label').textContent = 'Tercera Edad';
+                    document.getElementById('senior-discount-label').textContent = '25%';
+                }
+            } else {
+                panel.classList.add('d-none');
+            }
+        }
+    }
+
+    // Autocomplete simplificado
+    function initAutocomplete() {
+        const input = document.getElementById('id_actividad_display');
+        const hidden = document.getElementById('id_actividad_codigo');
+        const results = document.getElementById('actividad_autocomplete');
+        
+        // Cargar actividades desde el contexto de Django de forma segura
+        var rawActividades = {{ actividades|safe }};
+        var actividadesList = Array.isArray(rawActividades) ? rawActividades : [];
+
+        input.addEventListener('input', function() {
+            const val = this.value.toLowerCase();
+            results.innerHTML = '';
+            if (!val) { results.style.display = 'none'; return; }
+            
+            const val = this.value.toLowerCase();
+            results.innerHTML = '';
+            if (!val) { results.style.display = 'none'; return; }
+            
+            const filtered = actividadesList.filter(function(a) {
+                return a.codigo.toLowerCase().includes(val) || 
+                       a.descripcion.toLowerCase().includes(val);
+            }).slice(0, 10);
+
+            filtered.forEach(function(a) {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.innerHTML = `<strong>${a.codigo}</strong> - ${a.descripcion}`;
+                div.onclick = function() {
+                    input.value = `${a.codigo} - ${a.descripcion}`;
+                    hidden.value = a.codigo;
+                    results.style.display = 'none';
+                };
+                results.appendChild(div);
+            });
+            results.style.display = filtered.length ? 'block' : 'none';
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target !== input) results.style.display = 'none';
+        });
+    }
+</script>
+{% endblock %}

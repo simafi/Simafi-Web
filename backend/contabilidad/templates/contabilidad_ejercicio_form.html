@@ -1,0 +1,40 @@
+{% extends "contabilidad_base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}
+<div class="cont-breadcrumb"><nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:ejercicios_fiscales' %}">Ejercicios Fiscales</a></li>
+    <li class="breadcrumb-item active">{{ titulo }}</li>
+</ol></nav></div>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="cont-card">
+                <div class="card-header"><i class="fas fa-calendar-alt me-2"></i>{{ titulo }}</div>
+                <div class="card-body cont-form">
+                    <form method="post">{% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label">Año Fiscal</label>{{ form.anio }}</div>
+                            <div class="col-md-8"><label class="form-label">Descripción</label>{{ form.descripcion }}</div>
+                            <div class="col-md-6"><label class="form-label">Fecha Inicio</label>{{ form.fecha_inicio }}</div>
+                            <div class="col-md-6"><label class="form-label">Fecha Fin</label>{{ form.fecha_fin }}</div>
+                            <div class="col-md-6"><label class="form-label">Estado</label>{{ form.estado }}</div>
+                        </div>
+                        {{ form.empresa }}
+                        <div class="alert alert-info mt-3" style="font-size:0.85rem;">
+                            <i class="fas fa-info-circle me-1"></i> Al crear el ejercicio se generarán automáticamente 12 períodos mensuales.
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'contabilidad:ejercicios_fiscales' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Cancelar</a>
+                            <button type="submit" class="btn btn-cont-primary"><i class="fas fa-save me-1"></i> Crear Ejercicio</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

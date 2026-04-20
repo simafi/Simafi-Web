@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_configuracion' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ request.session.catastro_usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header bg-danger text-white">
+				<h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>{{ titulo }}</h5>
+			</div>
+			<div class="card-body">
+				<div class="card border-primary mb-4">
+					<div class="card-header bg-light"><strong>Uso (tabla usos)</strong></div>
+					<div class="card-body">
+						<p class="mb-1"><strong>Código:</strong> <code>{{ uso_obj.uso }}</code></p>
+						<p class="mb-0"><strong>Descripción:</strong> {{ uso_obj.desuso }}</p>
+					</div>
+				</div>
+
+				{% if bloqueado %}
+				<div class="alert alert-warning">
+					<strong>No se puede eliminar este uso.</strong>
+					<ul class="mb-0 mt-2">
+						{% if sub_count %}<li>Sub usos asociados: {{ sub_count }}</li>{% endif %}
+						{% if pred_count %}<li>Predios (fichas) con este uso: {{ pred_count }}</li>{% endif %}
+					</ul>
+				</div>
+				<a href="{% url 'catastro:usos_predio_list' %}" class="btn btn-secondary">
+					<i class="fas fa-arrow-left me-1"></i> Volver al listado
+				</a>
+				{% else %}
+				<div class="alert alert-warning">
+					<i class="fas fa-exclamation-triangle me-2"></i>
+					¿Confirma eliminar este uso del catálogo?
+				</div>
+				<form method="post">
+					{% csrf_token %}
+					<div class="d-flex justify-content-between flex-wrap gap-2">
+						<a href="{% url 'catastro:usos_predio_list' %}" class="btn btn-secondary">Cancelar</a>
+						<button type="submit" class="btn btn-danger">
+							<i class="fas fa-trash me-1"></i> Sí, eliminar
+						</button>
+					</div>
+				</form>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

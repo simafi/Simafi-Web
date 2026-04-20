@@ -1,0 +1,180 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Configuración de Tramos - {{ tarifa.rubro }}{% endblock %}
+{% block breadcrumb %}Tramos de Tarifa{% endblock %}
+{% block nav_rubros %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)"><i class="fas fa-layer-group"></i></div>
+        <div>
+            <h1 class="page-title">Configuración de Tramos</h1>
+            <p class="page-subtitle">Tarifa: {{ tarifa.rubro }} - {{ tarifa.descripcion|default:tarifa.ano }}</p>
+        </div>
+    </div>
+    <a href="{% url 'servicios_publicos:tarifas_lista' %}" class="btn-sp-secondary">
+        <i class="fas fa-check"></i> Finalizar
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="form-panel">
+            <div class="form-panel-title"><i class="fas fa-plus-circle"></i> Agregar Nuevo Tramo</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Desde (m³)</label>
+                    <input type="number" id="desde_m3" class="form-control" value="0.00" step="0.01" min="0">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Hasta (m³)</label>
+                    <input type="number" id="hasta_m3" class="form-control" placeholder="Infinito" step="0.01" min="0">
+                    <small class="text-muted">Deje vacío si es el último tramo</small>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Precio por m³ en este tramo (L)</label>
+                    <input type="number" id="precio_m3" class="form-control" value="0.00" step="0.0001" min="0">
+                </div>
+                <div class="col-12 mt-4">
+                    <button type="button" onclick="agregarTramo()" class="btn-sp-primary w-100">
+                        <i class="fas fa-plus"></i> Agregar Tramo
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-card mt-4">
+            <div class="data-card-header"><h4><i class="fas fa-info-circle me-2"></i>Resumen General</h4></div>
+            <div class="p-2">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Rubro:</span>
+                    <span class="fw-bold">{{ tarifa.rubro }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Cargo Fijo:</span>
+                    <span class="fw-bold">L {{ tarifa.cargo_fijo|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Estado Tramos:</span>
+                    <span class="badge {% if tarifa.usa_tramos %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if tarifa.usa_tramos %}Activo{% else %}Inactivo{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h4><i class="fas fa-th-list me-2"></i>Tramos Configurados</h4>
+            </div>
+            <div class="table-responsive">
+                <table class="table" id="tablaTramos">
+                    <thead>
+                        <tr>
+                            <th>Orden</th>
+                            <th>Desde (m³)</th>
+                            <th>Hasta (m³)</th>
+                            <th>Precio (L/m³)</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tramo in tramos %}
+                        <tr id="tramo-{{ tramo.pk }}">
+                            <td>{{ tramo.orden }}</td>
+                            <td>{{ tramo.desde_m3|floatformat:2 }}</td>
+                            <td>{% if tramo.hasta_m3 %}{{ tramo.hasta_m3|floatformat:2 }}{% else %}<span class="text-muted">∞</span>{% endif %}</td>
+                            <td class="fw-bold">L {{ tramo.precio_m3|floatformat:4 }}</td>
+                            <td>
+                                <button onclick="eliminarTramo('{{ tramo.pk }}')" class="btn btn-sm btn-outline-danger" style="border-radius:6px">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr id="no-tramos">
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                No se han configurado tramos para esta tarifa.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="mt-3 p-3 animate-in" style="background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); border-radius:12px">
+            <p class="mb-0" style="font-size:0.875rem; color:var(--sp-text-muted)">
+                <i class="fas fa-lightbulb me-2" style="color:#c4b5fd"></i>
+                <strong>¿Cómo funciona?</strong> El sistema calcula el consumo por capas. Por ejemplo, si un usuario consume 15m³, y tiene tramos de 0-10m³ a L5 y 10-20m³ a L8, el cobro será: (10 * 5) + (5 * 8).
+            </p>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+async function agregarTramo() {
+    const data = {
+        tarifa_id: "{{ tarifa.pk }}",
+        desde_m3: document.getElementById('desde_m3').value,
+        hasta_m3: document.getElementById('hasta_m3').value,
+        precio_m3: document.getElementById('precio_m3').value
+    };
+
+    if (!data.precio_m3) {
+        alert("El precio es obligatorio");
+        return;
+    }
+
+    try {
+        const response = await fetch("{% url 'servicios_publicos:ajax_guardar_tramo' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.ok) {
+            location.reload();
+        } else {
+            alert("Error: " + result.error);
+        }
+    } catch (error) {
+        console.error("Error al guardar tramo:", error);
+        alert("Ocurrió un error al procesar la solicitud");
+    }
+}
+
+async function eliminarTramo(id) {
+    if (!confirm("¿Seguro que desea eliminar este tramo?")) return;
+
+    try {
+        const response = await fetch(`/servicios-publicos/ajax/eliminar-tramo/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+
+        const result = await response.json();
+        if (result.ok) {
+            document.getElementById(`tramo-${id}`).remove();
+            if (document.querySelectorAll('#tablaTramos tbody tr').length === 0) {
+                location.reload();
+            }
+        } else {
+            alert("Error: " + result.error);
+        }
+    } catch (error) {
+        console.error("Error al eliminar tramo:", error);
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "presupuestos/menu_principal.html" %}
+{% block content %}
+<div class="container mt-4 pb-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="{% url 'presupuestos:presupuestos_menu_principal' %}">Presupuestos</a></li>
+                    <li class="breadcrumb-item active">Rendición / IAIP</li>
+                </ol>
+            </nav>
+            <h4 class="mb-1"><i class="fas fa-file-signature me-2 text-info"></i>{{ titulo }}</h4>
+            <p class="text-muted small mb-0">Empresa: <strong>{{ empresa_label|default:empresa }}</strong></p>
+        </div>
+        <form method="get" class="d-flex align-items-center gap-2">
+            <label class="small text-muted mb-0">Ejercicio fiscal</label>
+            <select name="ejercicio" class="form-select form-select-sm" style="min-width: 12rem;" onchange="this.form.submit()">
+                {% for e in ejercicios %}
+                <option value="{{ e.id }}" {% if ejercicio_id == e.id|stringformat:"s" %}selected{% endif %}>{{ e.anio }}</option>
+                {% empty %}
+                <option value="">— Sin ejercicios —</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <div class="alert alert-light border small mb-4">
+        <i class="fas fa-balance-scale me-2 text-secondary"></i>{{ nota_normativa }}
+    </div>
+
+    {% if not ejercicio_id %}
+    <div class="alert alert-warning">No hay ejercicio fiscal seleccionado o no existen ejercicios en el sistema.</div>
+    {% endif %}
+
+    <h5 class="mb-3 pb-2 border-bottom"><i class="fas fa-landmark me-2 text-secondary"></i>Rendición de cuentas presupuestaria (TSC / referencia clásica)</h5>
+    <p class="small text-muted mb-3">Catorce formas F-01 … F-14 alineadas al plan presupuestario y movimientos del sistema.</p>
+    <div class="row g-3 mb-5">
+        {% for f in formas %}
+        <div class="col-md-6 col-lg-4">
+            <div class="presu-card p-3 h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-secondary">{{ f.codigo }}</span>
+                    <span class="small text-muted">{{ f.categoria }}</span>
+                </div>
+                <h6 class="small fw-bold">{{ f.titulo }}</h6>
+                <p class="small text-muted flex-grow-1 mb-2">{{ f.normativa }}</p>
+                {% if ejercicio_id %}
+                <a href="{% url 'presupuestos:rendicion_forma' forloop.counter %}?ejercicio={{ ejercicio_id }}" class="btn btn-sm btn-outline-primary mt-auto">
+                    <i class="fas fa-eye me-1"></i>Ver forma
+                </a>
+                {% else %}
+                <button class="btn btn-sm btn-outline-secondary mt-auto" disabled>Seleccione ejercicio</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <h5 class="mb-3 pb-2 border-bottom"><i class="fas fa-globe-americas me-2 text-success"></i>Transparencia — IAIP (publicación proactiva)</h5>
+    <p class="small text-muted mb-3">
+        Formatos de referencia para cumplimiento de transparencia y acceso a la información pública (Ley IAIP, Honduras).
+        Ajuste a lineamientos oficiales del Instituto de Acceso a la Información Pública.
+    </p>
+    <div class="row g-3 mb-5">
+        {% for f in formas_iaip %}
+        <div class="col-md-6 col-lg-4">
+            <div class="presu-card p-3 h-100 d-flex flex-column border-success border-opacity-25">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-success">{{ f.codigo }}</span>
+                    <span class="small text-muted">{{ f.categoria }}</span>
+                </div>
+                <h6 class="small fw-bold">{{ f.titulo }}</h6>
+                <p class="small text-muted flex-grow-1 mb-2">{{ f.normativa }}</p>
+                {% if ejercicio_id %}
+                <a href="{% url 'presupuestos:rendicion_iaip_forma' forloop.counter %}?ejercicio={{ ejercicio_id }}" class="btn btn-sm btn-outline-success mt-auto">
+                    <i class="fas fa-eye me-1"></i>Ver formato
+                </a>
+                {% else %}
+                <button class="btn btn-sm btn-outline-secondary mt-auto" disabled>Seleccione ejercicio</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="alert alert-info border-0 small mb-0">
+        <i class="fas fa-shield-alt me-2"></i>
+        <strong>Informes CGR (Contraloría General de la República):</strong> se gestionan en el
+        <a href="{% url 'contabilidad:cgr_informes_hub' %}" class="alert-link fw-semibold">módulo Contabilidad</a>
+        (menú Contabilidad → Informes CGR).
+    </div>
+</div>
+{% endblock %}

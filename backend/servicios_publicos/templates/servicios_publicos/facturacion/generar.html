@@ -1,0 +1,124 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Generar Facturas{% endblock %}
+{% block breadcrumb %}Generar Facturas por Ciclo{% endblock %}
+{% block nav_generar %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#059669,#10b981)"><i class="fas fa-bolt"></i></div>
+        <div>
+            <h1 class="page-title">Generar Facturas</h1>
+            <p class="page-subtitle">Facturación masiva por ciclo y período</p>
+        </div>
+    </div>
+    <a href="{% url 'servicios_publicos:facturacion_lista' %}" class="btn-sp-secondary">
+        <i class="fas fa-list"></i> Ver Facturas
+    </a>
+</div>
+
+<div class="row g-4 justify-content-center">
+    <div class="col-lg-7">
+        <div class="form-panel">
+            <div class="form-panel-title"><i class="fas fa-cog"></i> Configuración de Facturación</div>
+            <form method="post" novalidate id="formGenerar">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Año *</label>
+                        <input type="number" name="ano" class="form-control" value="{{ ano_actual }}" min="2000" max="2100" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Mes *</label>
+                        <select name="mes" class="form-select" required>
+                            <option value="1" {% if mes_actual == 1 %}selected{% endif %}>Enero</option>
+                            <option value="2" {% if mes_actual == 2 %}selected{% endif %}>Febrero</option>
+                            <option value="3" {% if mes_actual == 3 %}selected{% endif %}>Marzo</option>
+                            <option value="4" {% if mes_actual == 4 %}selected{% endif %}>Abril</option>
+                            <option value="5" {% if mes_actual == 5 %}selected{% endif %}>Mayo</option>
+                            <option value="6" {% if mes_actual == 6 %}selected{% endif %}>Junio</option>
+                            <option value="7" {% if mes_actual == 7 %}selected{% endif %}>Julio</option>
+                            <option value="8" {% if mes_actual == 8 %}selected{% endif %}>Agosto</option>
+                            <option value="9" {% if mes_actual == 9 %}selected{% endif %}>Septiembre</option>
+                            <option value="10" {% if mes_actual == 10 %}selected{% endif %}>Octubre</option>
+                            <option value="11" {% if mes_actual == 11 %}selected{% endif %}>Noviembre</option>
+                            <option value="12" {% if mes_actual == 12 %}selected{% endif %}>Diciembre</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Rubro (Tasa) *</label>
+                        <select name="rubro" class="form-select" required>
+                            <option value="">-- Seleccione rubro --</option>
+                            {% for r in rubros %}
+                            <option value="{{ r.codigo }}">{{ r.codigo }} - {{ r.descripcion }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">T0001 = Agua Potable</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ciclo (opcional)</label>
+                        <select name="ciclo" class="form-select">
+                            <option value="">Todos los ciclos</option>
+                            {% for c in ciclos %}
+                            <option value="{{ c }}">Ciclo {{ c }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Vacío = facturar todos los abonados activos</small>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3" style="background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.2);border-radius:10px">
+                    <p style="font-size:0.875rem;color:var(--sp-text);margin:0">
+                        <i class="fas fa-info-circle me-2" style="color:var(--sp-secondary)"></i>
+                        <strong>El proceso generará facturas para todos los abonados activos del ciclo seleccionado.</strong>
+                        Si ya existe factura para el mismo abonado/período, se omitirá automáticamente.
+                        Las lecturas del período se marcarán como "Facturadas".
+                    </p>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-end mt-4">
+                    <a href="{% url 'servicios_publicos:facturacion_lista' %}" class="btn-sp-secondary">Cancelar</a>
+                    <button type="submit" class="btn-sp-primary" id="btnGenerar">
+                        <i class="fas fa-bolt"></i> Generar Facturas
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="form-panel">
+            <div class="form-panel-title"><i class="fas fa-info-circle"></i> Instrucciones</div>
+            <div style="font-size:0.875rem;color:var(--sp-text-muted);line-height:1.7">
+                <p><strong style="color:var(--sp-text)">Antes de facturar:</strong></p>
+                <ol style="padding-left:1.2rem">
+                    <li>Verifique que el ciclo de lectura esté cerrado</li>
+                    <li>Confirme que las lecturas están validadas</li>
+                    <li>Verifique que la tarifa vigente para el año/rubro está configurada</li>
+                </ol>
+                <hr style="border-color:var(--sp-border)">
+                <p><strong style="color:var(--sp-text)">Rubros disponibles:</strong></p>
+                {% for r in rubros %}
+                <div class="d-flex justify-content-between mb-1">
+                    <span style="color:var(--sp-secondary)">{{ r.codigo }}</span>
+                    <span>{{ r.descripcion }}</span>
+                    <small class="text-muted">{{ r.get_tipo_cobro_display }}</small>
+                </div>
+                {% empty %}
+                <p><a href="{% url 'servicios_publicos:rubro_nuevo' %}" class="btn-link">Crear primer rubro</a></p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('formGenerar').addEventListener('submit', function() {
+    const btn = document.getElementById('btnGenerar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generando...';
+});
+</script>
+{% endblock %}
+{% endblock %}

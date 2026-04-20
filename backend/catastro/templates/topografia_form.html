@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_configuracion' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ request.session.catastro_usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header bg-primary text-white">
+				<h5 class="mb-0">
+					<i class="fas fa-edit me-2"></i>{{ titulo }}
+				</h5>
+			</div>
+			<div class="card-body">
+				<!-- Mensajes -->
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<!-- Formulario -->
+				<form method="post" id="form-topografia" action="">
+					{% csrf_token %}
+					<div class="row g-3">
+						<!-- Empresa -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.empresa.id_for_label }}">
+								<strong>{{ form.empresa.label }}</strong>
+							</label>
+							{{ form.empresa }}
+							{{ form.empresa.errors }}
+							<small class="form-text text-muted">Se asigna automáticamente</small>
+						</div>
+
+						<!-- Código Topografía -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.cotopo.id_for_label }}">
+								<strong>{{ form.cotopo.label }}</strong>
+							</label>
+							{{ form.cotopo }}
+							{{ form.cotopo.errors }}
+							<small class="form-text text-muted">Máximo 2 caracteres (único)</small>
+						</div>
+
+						<!-- Factor Topografía -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.factopo.id_for_label }}">
+								<strong>{{ form.factopo.label }}</strong>
+							</label>
+							{{ form.factopo }}
+							{{ form.factopo.errors }}
+							<small class="form-text text-muted">Valor decimal (ej: 1.25)</small>
+						</div>
+
+					<!-- Descripción -->
+					<div class="col-md-12">
+						<label class="form-label" for="{{ form.descritopo.id_for_label }}">
+							<strong>{{ form.descritopo.label }}</strong>
+						</label>
+						{{ form.descritopo }}
+						{{ form.descritopo.errors }}
+						<small class="form-text text-muted">Máximo 40 caracteres</small>
+					</div>
+				</div>
+
+				<!-- Panel de resultados de búsqueda -->
+				<div id="resultados-busqueda" class="alert alert-info mt-3" style="display: none;">
+					<i class="fas fa-info-circle me-2"></i>
+					<strong>Registro encontrado:</strong> Se han cargado automáticamente los datos existentes.
+					<ul class="mb-0 mt-2">
+						<li><strong>Descripción:</strong> <span id="resultado-descritopo"></span></li>
+						<li><strong>Factor Topografía:</strong> <span id="resultado-factopo"></span></li>
+					</ul>
+				</div>
+
+				<!-- Botones -->
+					<div class="mt-4 d-flex justify-content-between">
+						<a href="{% url 'catastro:topografia_list' %}" class="btn btn-secondary">
+							<i class="fas fa-arrow-left me-1"></i> Volver
+						</a>
+						<button type="submit" class="btn btn-primary">
+							<i class="fas fa-save me-1"></i> Guardar
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// Obtener empresa de la sesión (se pasa desde el contexto)
+			const empresa = '{{ empresa_codigo|default:"" }}';
+			
+			// Obtener referencias a los campos del formulario
+			const cotopoInput = document.getElementById('{{ form.cotopo.id_for_label }}');
+			const descritopoInput = document.getElementById('{{ form.descritopo.id_for_label }}');
+			const factopoInput = document.getElementById('{{ form.factopo.id_for_label }}');
+			
+			// Variable para almacenar datos encontrados
+			let datosEncontrados = null;
+			
+			// Función para buscar topografía automáticamente
+			function buscarTopografia() {
+				const cotopo = cotopoInput ? cotopoInput.value.trim() : '';
+				
+				// Ocultar resultados anteriores
+				document.getElementById('resultados-busqueda').style.display = 'none';
+				datosEncontrados = null;
+				
+				// Solo buscar si empresa y código tienen valor
+				if (!empresa || !cotopo) {
+					return;
+				}
+				
+				// Construir URL de búsqueda
+				const url = '{% url "catastro:api_buscar_topografia" %}?empresa=' + encodeURIComponent(empresa) +
+					'&cotopo=' + encodeURIComponent(cotopo);
+				
+				// Realizar búsqueda
+				fetch(url)
+					.then(response => response.json())
+					.then(data => {
+						if (data.encontrado && data.descritopo !== undefined) {
+							// Guardar datos encontrados
+							datosEncontrados = data;
+							
+							// Cargar automáticamente los valores en los campos del formulario
+							if (descritopoInput) {
+								descritopoInput.value = data.descritopo || '';
+							}
+							if (factopoInput) {
+								const factopo = parseFloat(data.factopo) || 0.00;
+								factopoInput.value = factopo.toFixed(2);
+							}
+							
+							// Mostrar panel informativo indicando que se encontró un registro existente
+							document.getElementById('resultado-descritopo').textContent = data.descritopo || '-';
+							document.getElementById('resultado-factopo').textContent = parseFloat(data.factopo || '0').toFixed(2);
+							document.getElementById('resultados-busqueda').style.display = 'block';
+							document.getElementById('resultados-busqueda').className = 'alert alert-info mt-3';
+							
+							console.log('Valores cargados automáticamente:', {
+								descritopo: data.descritopo,
+								factopo: data.factopo
+							});
+						} else {
+							// No se encontró registro - ocultar panel
+							document.getElementById('resultados-busqueda').style.display = 'none';
+						}
+					})
+					.catch(error => {
+						console.error('Error al buscar topografía:', error);
+						document.getElementById('resultados-busqueda').style.display = 'none';
+					});
+			}
+			
+			// Agregar evento para buscar cuando se ingrese el código y se salga del campo
+			if (cotopoInput) {
+				cotopoInput.addEventListener('blur', function(e) {
+					// Esperar un poco para que el usuario termine de escribir
+					setTimeout(function() {
+						buscarTopografia();
+					}, 300);
+				});
+				
+				// También buscar cuando se presione Enter
+				cotopoInput.addEventListener('keypress', function(e) {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+						buscarTopografia();
+					}
+				});
+			}
+			
+			// Formatear el campo factopo con 2 decimales
+			if (factopoInput) {
+				factopoInput.addEventListener('blur', function(e) {
+					const value = parseFloat(this.value);
+					if (!isNaN(value) && value >= 0) {
+						this.value = value.toFixed(2);
+					}
+				});
+			}
+		});
+	</script>
+</body>
+</html>
+

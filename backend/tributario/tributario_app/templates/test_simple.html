@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Simple - Sin Caché</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <h1>✅ PÁGINA DE PRUEBA SIN CACHÉ</h1>
+    <p>Si ves esta página, significa que el servidor está funcionando correctamente.</p>
+    
+    <h2>Test de AJAX:</h2>
+    <button onclick="testBusqueda()">Buscar Negocio 0301-114-03-23-1151</button>
+    <div id="resultado"></div>
+    
+    <script>
+    function testBusqueda() {
+        const url = '/tributario/buscar-negocio-ajax/?empresa=0301&rtm=114-03-23&expe=1151';
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('resultado').innerHTML = 
+                    '<h3>✅ ÉXITO</h3>' +
+                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                document.getElementById('resultado').innerHTML = 
+                    '<h3>❌ ERROR</h3>' +
+                    '<p>' + error.message + '</p>';
+            });
+    }
+    </script>
+    
+    <hr>
+    <a href="/tributario/maestro-negocios/">Ir al formulario maestro de negocios</a>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

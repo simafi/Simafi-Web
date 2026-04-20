@@ -1,0 +1,94 @@
+{% extends "compras/base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}Recepción de Materiales{% endblock %}
+{% block active_oc %}active{% endblock %}
+
+{% block content %}
+<div class="animate-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0">Recepción de Mercancía</h3>
+            <p class="text-muted">Orden de Compra: <span class="text-success fw-bold">{{ orden.numero }}</span> | Proveedor: {{ orden.proveedor.razon_social }}</p>
+        </div>
+        <a href="{% url 'compras:orden_compra_edit' orden.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver a la Orden
+        </a>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="premium-card p-4 mb-4">
+            <div class="row align-items-end g-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold">Referencia de Recepción (No. Factura / Guía)</label>
+                    <input type="text" name="referencia" class="form-control" placeholder="Ej: Factura 123-456" required>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-success w-100 py-2">
+                        <i class="fas fa-box-open me-2"></i>Confirmar Ingreso a Bodega
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="premium-card overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Item / Descripción</th>
+                            <th class="text-center">Cant. Solicitada</th>
+                            <th class="text-center">Ya Recibido</th>
+                            <th class="text-center">Pendiente</th>
+                            <th class="pe-4" style="width: 200px;">Cantidad a Recibir HOY</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in detalles %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold">{{ item.det.descripcion }}</div>
+                                <div class="small text-muted">
+                                    {% if item.det.inventario %}
+                                        <i class="fas fa-barcode me-1"></i>{{ item.det.inventario.codigo }}
+                                    {% else %}
+                                        <span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Sin vínculo a inventario</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border">{{ item.det.cantidad|floatformat:2 }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-info">{{ item.recibido|floatformat:2 }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="fw-bold {% if item.pendiente > 0 %}text-warning{% else %}text-success{% endif %}">
+                                    {{ item.pendiente|floatformat:2 }}
+                                </span>
+                            </td>
+                            <td class="pe-4">
+                                <input type="hidden" name="detalle_id" value="{{ item.det.pk }}">
+                                <div class="input-group">
+                                    <input type="number" name="cantidad_recibida" class="form-control form-control-lg text-center fw-bold text-success border-success" 
+                                           step="0.0001" min="0" max="{{ item.pendiente }}" value="{{ item.pendiente|floatformat:2 }}">
+                                    <span class="input-group-text bg-success-soft text-success border-success">
+                                        {{ item.det.unidad|default:"UND" }}
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+    .form-control-lg { font-size: 1.2rem; }
+</style>
+{% endblock %}

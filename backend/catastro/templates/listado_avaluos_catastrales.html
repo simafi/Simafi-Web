@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Avalúos Catastrales - Módulo Catastro</title>
+    <!-- Bootstrap CSS local fallback - estilos básicos embebidos -->
+    <style>
+        /* Reset básico y estilos Bootstrap-like */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+        }
+        .container {
+            width: 100%;
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+        @media (min-width: 576px) {
+            .container { max-width: 540px; }
+        }
+        @media (min-width: 768px) {
+            .container { max-width: 720px; }
+        }
+        @media (min-width: 992px) {
+            .container { max-width: 960px; }
+        }
+        @media (min-width: 1200px) {
+            .container { max-width: 1140px; }
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+        .d-flex {
+            display: flex !important;
+        }
+        .justify-content-between {
+            justify-content: space-between !important;
+        }
+        .align-items-center {
+            align-items: center !important;
+        }
+        .text-center {
+            text-align: center !important;
+        }
+        .text-danger {
+            color: #dc3545 !important;
+        }
+        .text-muted {
+            color: #6c757d !important;
+        }
+        .mb-0 { margin-bottom: 0 !important; }
+        .mb-2 { margin-bottom: 0.5rem !important; }
+        .mb-3 { margin-bottom: 1rem !important; }
+        .mb-4 { margin-bottom: 1.5rem !important; }
+        .mt-3 { margin-top: 1rem !important; }
+        .mt-4 { margin-top: 1.5rem !important; }
+        .me-1 { margin-right: 0.25rem !important; }
+        .me-2 { margin-right: 0.5rem !important; }
+        .me-3 { margin-right: 1rem !important; }
+        .ms-auto {
+            margin-left: auto !important;
+        }
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid transparent;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.25rem;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .btn-primary {
+            color: #fff;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .btn-primary:hover {
+            color: #fff;
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
+        .btn-secondary {
+            color: #fff;
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            color: #fff;
+            background-color: #5c636a;
+            border-color: #565e64;
+        }
+        .btn-outline-danger {
+            color: #dc3545;
+            border-color: #dc3545;
+            background-color: transparent;
+        }
+        .btn-outline-danger:hover {
+            color: #fff;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-light {
+            color: #000;
+            background-color: #f8f9fa;
+            border-color: #f8f9fa;
+        }
+        .btn-light:hover {
+            color: #000;
+            background-color: #f9fafb;
+            border-color: #f9fafb;
+        }
+        .form-control, .form-select {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-control:focus, .form-select:focus {
+            color: #212529;
+            background-color: #fff;
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .form-text {
+            margin-top: 0.25rem;
+            font-size: 0.875em;
+        }
+        .small {
+            font-size: 0.875em;
+        }
+        /* Iconos simples usando Unicode */
+        .fas, .fa {
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            display: inline-block;
+        }
+        .fa-map-marked-alt::before { content: "📍"; }
+        .fa-user::before { content: "👤"; }
+        .fa-sign-out-alt::before { content: "🚪"; }
+        .fa-list-alt::before { content: "📋"; }
+        .fa-file-alt::before { content: "📄"; }
+        .fa-arrow-left::before { content: "←"; }
+        .fa-info-circle::before { content: "ℹ️"; }
+        .fa-key::before { content: "🔑"; }
+        .fa-file-alt::before { content: "📄"; }
+        .fa-hashtag::before { content: "#"; }
+        .fa-id-card::before { content: "🆔"; }
+        .fa-venus-mars::before { content: "⚧"; }
+        .fa-tag::before { content: "🏷️"; }
+        .fa-tags::before { content: "🏷️"; }
+        .fa-map-marker-alt::before { content: "📍"; }
+        .fa-home::before { content: "🏠"; }
+        .fa-dollar-sign::before { content: "$"; }
+        .fa-arrow-down::before { content: "↓"; }
+        .fa-arrow-up::before { content: "↑"; }
+        .fa-gavel::before { content: "⚖️"; }
+        .fa-shield-alt::before { content: "🛡️"; }
+        .fa-building::before { content: "🏢"; }
+        .fa-calculator::before { content: "🧮"; }
+        .fa-chart-line::before { content: "📈"; }
+        .fa-list::before { content: "📋"; }
+        
+        /* Estilos específicos del template */
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        .main-container {
+            padding: 40px 20px;
+        }
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .campo-condicional {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .campo-condicional.show {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .header-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .module-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+                <i class="fas fa-map-marked-alt"></i> Sistema Catastro
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user"></i> {{ usuario_nombre }}
+                </span>
+                <a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="container">
+            <!-- Header Info -->
+            <div class="header-info text-center">
+                <div class="module-badge mb-2">{{ modulo }}</div>
+                <h2 class="mb-2">Listado de Avalúos Catastrales</h2>
+                <p class="mb-0">
+                    <i class="fas fa-building"></i> {{ municipio_descripcion }}
+                </p>
+            </div>
+
+            <!-- Form Card -->
+            <div class="form-card">
+                <div class="info-box">
+                    <i class="fas fa-info-circle text-primary me-2"></i>
+                    <strong>Seleccione el tipo de informe</strong> y complete los campos requeridos según el tipo seleccionado.
+                </div>
+
+                <form id="formListadoAvaluos" method="post" action="{% url 'catastro:generar_informe_avaluos' %}">
+                    {% csrf_token %}
+                    
+                    <!-- Tipo de Informe -->
+                    <div class="form-group">
+                        <label class="form-label" for="tipo_informe">
+                            <i class="fas fa-list-alt me-2"></i>Tipo de Informe <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="tipo_informe" name="tipo_informe" required>
+                            <option value="">-- Seleccione un tipo de informe --</option>
+                            <option value="listado_completo">Listado de Avaluos Catastrales</option>
+                            <option value="clave_catastral">Listado de Avaluos por Clave Catastral</option>
+                            <option value="propietario">Listado de Avaluos por Propietario</option>
+                            <option value="dni">Listado de Avaluos por DNI</option>
+                            <option value="sexo">Listado de Avaluos por Sexo</option>
+                            <option value="uso">Listado de Avaluos por Uso</option>
+                            <option value="subuso">Listado de Avaluos por Sub Uso</option>
+                            <option value="barrio_uso">Listado de Avaluos por Barrio y Uso</option>
+                            <option value="codigo_habitacion">Listado de Avaluos por Código Habitación</option>
+                            <option value="rango_avaluo">Listado de Avaluos por Rango de Avalúo Catastral</option>
+                            <option value="naturaleza_juridica_perimetro">Listado de Avaluos por Naturaleza Jurídica / Perímetro</option>
+                            <option value="clase_dominio_perimetro">Listado de Avaluos por Clase de Dominio / Perímetro</option>
+                            <option value="tipo_documento_perimetro">Listado de Avaluos por Tipo de Documento / Perímetro</option>
+                        </select>
+                    </div>
+
+                    <!-- Campos Condicionales: Clave Catastral -->
+                    <div id="campos_clave_catastral" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="clave_catastral">
+                                <i class="fas fa-key me-2"></i>Clave Catastral <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="clave_catastral" name="clave_catastral" 
+                                   placeholder="Ingrese la clave catastral">
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Propietario -->
+                    <div id="campos_propietario" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="nombre_propietario">
+                                <i class="fas fa-user me-2"></i>Nombre del Propietario <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="nombre_propietario" name="nombre_propietario" 
+                                   placeholder="Ingrese el nombre del propietario">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="apellido_propietario">
+                                <i class="fas fa-user me-2"></i>Apellido del Propietario (Opcional)
+                            </label>
+                            <input type="text" class="form-control" id="apellido_propietario" name="apellido_propietario" 
+                                   placeholder="Ingrese el apellido del propietario">
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: DNI -->
+                    <div id="campos_dni" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="dni">
+                                <i class="fas fa-id-card me-2"></i>Número de Identidad (DNI) <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="dni" name="dni" 
+                                   placeholder="Ingrese el número de identidad">
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Sexo -->
+                    <div id="campos_sexo" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="sexo">
+                                <i class="fas fa-venus-mars me-2"></i>Sexo <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="sexo" name="sexo">
+                                <option value="">-- Seleccione el sexo --</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Uso -->
+                    <div id="campos_uso" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="codigo_uso">
+                                <i class="fas fa-tag me-2"></i>Código de Uso <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="codigo_uso" name="codigo_uso">
+                                <option value="">-- Seleccione un código de uso --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando códigos de uso...</small>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Sub Uso -->
+                    <div id="campos_subuso" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="codigo_uso_subuso">
+                                <i class="fas fa-tag me-2"></i>Código de Uso <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="codigo_uso_subuso" name="codigo_uso_subuso">
+                                <option value="">-- Seleccione un código de uso --</option>
+                            </select>
+                            <small class="form-text text-muted">Primero seleccione el uso para cargar los sub usos</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="codigo_subuso">
+                                <i class="fas fa-tags me-2"></i>Código de Sub Uso <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="codigo_subuso" name="codigo_subuso" disabled>
+                                <option value="">-- Primero seleccione un código de uso --</option>
+                            </select>
+                            <small class="form-text text-muted">Los sub usos se cargarán después de seleccionar el uso</small>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Barrio y Uso -->
+                    <div id="campos_barrio_uso" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="barrio_barrio_uso">
+                                <i class="fas fa-map-marker-alt me-2"></i>Barrio <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="barrio_barrio_uso" name="barrio_barrio_uso">
+                                <option value="">-- Seleccione un barrio --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando barrios...</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="codigo_uso_barrio_uso">
+                                <i class="fas fa-tag me-2"></i>Código de Uso <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="codigo_uso_barrio_uso" name="codigo_uso_barrio_uso">
+                                <option value="">-- Seleccione un código de uso --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando códigos de uso...</small>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Código Habitación -->
+                    <div id="campos_codigo_habitacion" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="codigo_habitacion">
+                                <i class="fas fa-home me-2"></i>Código de Habitación <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="codigo_habitacion" name="codigo_habitacion">
+                                <option value="">-- Seleccione un código de habitación --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando códigos de habitación...</small>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Rango de Avalúo Catastral -->
+                    <div id="campos_rango_avaluo" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="tipo_valor_rango">
+                                <i class="fas fa-dollar-sign me-2"></i>Tipo de Valor <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="tipo_valor_rango" name="tipo_valor_rango">
+                                <option value="">-- Seleccione el tipo de valor --</option>
+                                <option value="total">Valor Total (Terreno + Edificación + Detalles + Cultivos)</option>
+                                <option value="grabable">Valor Grabable</option>
+                                <option value="impuesto">Impuesto</option>
+                                <option value="terreno">Avalúo Terreno</option>
+                                <option value="edificacion">Avalúo Edificación</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="valor_minimo">
+                                        <i class="fas fa-arrow-down me-2"></i>Valor Mínimo (L.) <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="valor_minimo" name="valor_minimo" 
+                                           step="0.01" min="0" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="valor_maximo">
+                                        <i class="fas fa-arrow-up me-2"></i>Valor Máximo (L.) <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="valor_maximo" name="valor_maximo" 
+                                           step="0.01" min="0" placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-box">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            <small>Ingrese el rango de valores en Lempiras. El informe incluirá todos los avalúos cuyo valor esté dentro del rango especificado.</small>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Naturaleza Jurídica por Perímetro -->
+                    <div id="campos_naturaleza_juridica_perimetro" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="naturaleza_juridica_perimetro">
+                                <i class="fas fa-gavel me-2"></i>Naturaleza Jurídica <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="naturaleza_juridica_perimetro" name="naturaleza_juridica_perimetro">
+                                <option value="">-- Seleccione una naturaleza jurídica --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando naturalezas jurídicas...</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="ficha_naturaleza">
+                                <i class="fas fa-file-alt me-2"></i>Ficha <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="ficha_naturaleza" name="ficha_naturaleza">
+                                <option value="">-- Seleccione el tipo de ficha --</option>
+                                <option value="1">Ficha Urbana (1)</option>
+                                <option value="2">Ficha Rural (2)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Clase de Dominio por Perímetro -->
+                    <div id="campos_clase_dominio_perimetro" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="clase_dominio_perimetro">
+                                <i class="fas fa-shield-alt me-2"></i>Clase de Dominio <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="clase_dominio_perimetro" name="clase_dominio_perimetro">
+                                <option value="">-- Seleccione una clase de dominio --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando clases de dominio...</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="ficha_dominio">
+                                <i class="fas fa-file-alt me-2"></i>Ficha <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="ficha_dominio" name="ficha_dominio">
+                                <option value="">-- Seleccione el tipo de ficha --</option>
+                                <option value="1">Ficha Urbana (1)</option>
+                                <option value="2">Ficha Rural (2)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionales: Tipo de Documento por Perímetro -->
+                    <div id="campos_tipo_documento_perimetro" class="campo-condicional">
+                        <div class="form-group">
+                            <label class="form-label" for="tipo_documento_perimetro">
+                                <i class="fas fa-file-alt me-2"></i>Tipo de Documento <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="tipo_documento_perimetro" name="tipo_documento_perimetro">
+                                <option value="">-- Seleccione un tipo de documento --</option>
+                            </select>
+                            <small class="form-text text-muted">Cargando tipos de documento...</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="ficha_documento">
+                                <i class="fas fa-file-alt me-2"></i>Ficha <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="ficha_documento" name="ficha_documento">
+                                <option value="">-- Seleccione el tipo de ficha --</option>
+                                <option value="1">Ficha Urbana (1)</option>
+                                <option value="2">Ficha Rural (2)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'catastro:catastro_menu_reportes' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Volver
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-file-pdf me-2"></i> Generar Informe
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS removido - no es necesario para el funcionamiento del formulario -->
+    <script>
+        // Función para mostrar/ocultar campos según el tipo de informe
+        function toggleCampos() {
+            const tipoInforme = document.getElementById('tipo_informe').value;
+            
+            // Ocultar todos los campos condicionales
+            const todosLosCampos = document.querySelectorAll('.campo-condicional');
+            todosLosCampos.forEach(campo => {
+                campo.classList.remove('show');
+            });
+            
+            // Mostrar campos según el tipo seleccionado
+            switch(tipoInforme) {
+                case 'listado_completo':
+                    // No mostrar campos adicionales, es un listado completo
+                    break;
+                case 'clave_catastral':
+                    document.getElementById('campos_clave_catastral').classList.add('show');
+                    break;
+                case 'propietario':
+                    document.getElementById('campos_propietario').classList.add('show');
+                    break;
+                case 'dni':
+                    document.getElementById('campos_dni').classList.add('show');
+                    break;
+                case 'sexo':
+                    document.getElementById('campos_sexo').classList.add('show');
+                    break;
+                case 'uso':
+                    document.getElementById('campos_uso').classList.add('show');
+                    cargarUsos();
+                    break;
+                case 'barrio_uso':
+                    document.getElementById('campos_barrio_uso').classList.add('show');
+                    cargarBarriosParaBarrioUso();
+                    cargarUsosParaBarrioUso();
+                    break;
+                case 'subuso':
+                    document.getElementById('campos_subuso').classList.add('show');
+                    cargarUsosParaSubuso();
+                    break;
+                case 'codigo_habitacion':
+                    document.getElementById('campos_codigo_habitacion').classList.add('show');
+                    cargarCodigosHabitacion();
+                    break;
+                case 'rango_avaluo':
+                    document.getElementById('campos_rango_avaluo').classList.add('show');
+                    break;
+                case 'naturaleza_juridica_perimetro':
+                    document.getElementById('campos_naturaleza_juridica_perimetro').classList.add('show');
+                    cargarNaturalezasJuridicasParaPerimetro();
+                    break;
+                case 'clase_dominio_perimetro':
+                    document.getElementById('campos_clase_dominio_perimetro').classList.add('show');
+                    cargarClasesDominioParaPerimetro();
+                    break;
+                case 'tipo_documento_perimetro':
+                    document.getElementById('campos_tipo_documento_perimetro').classList.add('show');
+                    cargarTiposDocumento();
+                    break;
+            }
+        }
+
+        // Cargar códigos de uso desde la API
+        function cargarUsos() {
+            const selectUso = document.getElementById('codigo_uso');
+            if (selectUso.options.length > 1) return; // Ya cargado
+            
+            fetch('/catastro/api/usos/')
+                .then(response => response.json())
+                .then(data => {
+                    selectUso.innerHTML = '<option value="">-- Seleccione un código de uso --</option>';
+                    if (data.usos && data.usos.length > 0) {
+                        data.usos.forEach(uso => {
+                            const option = document.createElement('option');
+                            option.value = uso.coduso || uso.cod_uso || uso.id;
+                            option.textContent = uso.display || `${uso.coduso || uso.cod_uso || uso.id} - ${uso.des_uso || uso.descripcion || ''}`;
+                            selectUso.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar usos:', error);
+                    selectUso.innerHTML = '<option value="">Error al cargar códigos de uso</option>';
+                });
+        }
+
+        // Cargar códigos de uso para el formulario de sub uso
+        function cargarUsosParaSubuso() {
+            const selectUso = document.getElementById('codigo_uso_subuso');
+            if (selectUso.options.length > 1) return; // Ya cargado
+            
+            fetch('/catastro/api/usos/')
+                .then(response => response.json())
+                .then(data => {
+                    selectUso.innerHTML = '<option value="">-- Seleccione un código de uso --</option>';
+                    if (data.usos && data.usos.length > 0) {
+                        data.usos.forEach(uso => {
+                            const option = document.createElement('option');
+                            option.value = uso.coduso || uso.cod_uso || uso.id;
+                            option.textContent = uso.display || `${uso.coduso || uso.cod_uso || uso.id} - ${uso.des_uso || uso.descripcion || ''}`;
+                            selectUso.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar usos:', error);
+                    selectUso.innerHTML = '<option value="">Error al cargar códigos de uso</option>';
+                });
+        }
+
+        // Cargar sub usos cuando se seleccione un uso
+        function cargarSubusos(usoCodigo) {
+            const selectSubuso = document.getElementById('codigo_subuso');
+            if (!usoCodigo) {
+                selectSubuso.innerHTML = '<option value="">-- Primero seleccione un código de uso --</option>';
+                selectSubuso.disabled = true;
+                return;
+            }
+            
+            selectSubuso.disabled = true;
+            selectSubuso.innerHTML = '<option value="">Cargando sub usos...</option>';
+            
+            fetch(`/catastro/api/subusos/?uso=${encodeURIComponent(usoCodigo)}`)
+                .then(response => response.json())
+                .then(data => {
+                    selectSubuso.innerHTML = '<option value="">-- Seleccione un código de sub uso --</option>';
+                    if (data.subusos && data.subusos.length > 0) {
+                        data.subusos.forEach(subuso => {
+                            const option = document.createElement('option');
+                            option.value = subuso.codsubuso || subuso.id;
+                            option.textContent = subuso.display || `${subuso.codsubuso || subuso.id} - ${subuso.des_subuso || ''}`;
+                            selectSubuso.appendChild(option);
+                        });
+                        selectSubuso.disabled = false;
+                    } else {
+                        selectSubuso.innerHTML = '<option value="">No hay sub usos disponibles para este uso</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar sub usos:', error);
+                    selectSubuso.innerHTML = '<option value="">Error al cargar códigos de sub uso</option>';
+                });
+        }
+
+        // Event listener para el cambio de uso en el formulario de sub uso
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectUsoSubuso = document.getElementById('codigo_uso_subuso');
+            if (selectUsoSubuso) {
+                selectUsoSubuso.addEventListener('change', function() {
+                    cargarSubusos(this.value);
+                });
+            }
+        });
+
+        // Cargar naturalezas jurídicas para perímetro
+        function cargarNaturalezasJuridicasParaPerimetro() {
+            const select = document.getElementById('naturaleza_juridica_perimetro');
+            if (select.options.length > 1) return;
+            
+            fetch('/catastro/api/naturalezas/')
+                .then(response => response.json())
+                .then(data => {
+                    select.innerHTML = '<option value="">-- Seleccione una naturaleza jurídica --</option>';
+                    if (data.naturalezas && data.naturalezas.length > 0) {
+                        data.naturalezas.forEach(nat => {
+                            const option = document.createElement('option');
+                            option.value = nat.codigo || nat.id;
+                            option.textContent = `${nat.codigo || nat.id} - ${nat.descripcion || ''}`;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar naturalezas jurídicas:', error);
+                    select.innerHTML = '<option value="">Error al cargar naturalezas jurídicas</option>';
+                });
+        }
+
+        // Cargar clases de dominio
+        function cargarClasesDominio() {
+            const select = document.getElementById('clase_dominio');
+            if (select.options.length > 1) return;
+            
+            fetch('/catastro/api/dominios/')
+                .then(response => response.json())
+                .then(data => {
+                    select.innerHTML = '<option value="">-- Seleccione una clase de dominio --</option>';
+                    if (data.dominios && data.dominios.length > 0) {
+                        data.dominios.forEach(dom => {
+                            const option = document.createElement('option');
+                            option.value = dom.codigo || dom.id;
+                            option.textContent = `${dom.codigo || dom.id} - ${dom.descripcion || ''}`;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar clases de dominio:', error);
+                    select.innerHTML = '<option value="">Error al cargar clases de dominio</option>';
+                });
+        }
+
+        function cargarClasesDominioParaPerimetro() {
+            const select = document.getElementById('clase_dominio_perimetro');
+            if (select.options.length > 1) return;
+            cargarClasesDominio(); // Reutilizar la misma función
+            // Copiar opciones al select de perímetro
+            setTimeout(() => {
+                const selectOriginal = document.getElementById('clase_dominio');
+                if (selectOriginal) {
+                    select.innerHTML = selectOriginal.innerHTML;
+                }
+            }, 100);
+        }
+
+        // Cargar tipos de documento
+        function cargarTiposDocumento() {
+            const select = document.getElementById('tipo_documento_perimetro');
+            if (select.options.length > 1) return;
+            
+            fetch('/catastro/api/tipos-documento/')
+                .then(response => response.json())
+                .then(data => {
+                    select.innerHTML = '<option value="">-- Seleccione un tipo de documento --</option>';
+                    if (data.tipos_documento && data.tipos_documento.length > 0) {
+                        data.tipos_documento.forEach(tipo => {
+                            const option = document.createElement('option');
+                            option.value = tipo.codigo || tipo.id;
+                            option.textContent = `${tipo.codigo || tipo.id} - ${tipo.descripcion || ''}`;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar tipos de documento:', error);
+                    select.innerHTML = '<option value="">Error al cargar tipos de documento</option>';
+                });
+        }
+
+        // Cargar barrios para el formulario de barrio y uso
+        function cargarBarriosParaBarrioUso() {
+            const select = document.getElementById('barrio_barrio_uso');
+            if (select && select.options.length > 1) return;
+            
+            fetch('/catastro/api/barrios/')
+                .then(response => response.json())
+                .then(data => {
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Seleccione un barrio --</option>';
+                        if (data.barrios && data.barrios.length > 0) {
+                            data.barrios.forEach(barrio => {
+                                const option = document.createElement('option');
+                                option.value = barrio.codbarrio || barrio.id;
+                                option.textContent = barrio.display || `${barrio.codbarrio || barrio.id} - ${barrio.descripcion || ''}`;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar barrios:', error);
+                    if (select) {
+                        select.innerHTML = '<option value="">Error al cargar barrios</option>';
+                    }
+                });
+        }
+
+        // Cargar usos para el formulario de barrio y uso
+        function cargarUsosParaBarrioUso() {
+            const select = document.getElementById('codigo_uso_barrio_uso');
+            if (select && select.options.length > 1) return;
+            
+            fetch('/catastro/api/usos/')
+                .then(response => response.json())
+                .then(data => {
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Seleccione un código de uso --</option>';
+                        if (data.usos && data.usos.length > 0) {
+                            data.usos.forEach(uso => {
+                                const option = document.createElement('option');
+                                option.value = uso.coduso || uso.cod_uso || uso.id;
+                                option.textContent = uso.display || `${uso.coduso || uso.cod_uso || uso.id} - ${uso.des_uso || uso.descripcion || ''}`;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar usos:', error);
+                    if (select) {
+                        select.innerHTML = '<option value="">Error al cargar códigos de uso</option>';
+                    }
+                });
+        }
+
+        // Cargar códigos de habitación desde la API
+        function cargarCodigosHabitacion() {
+            const selectHabitacion = document.getElementById('codigo_habitacion');
+            if (selectHabitacion.options.length > 1) return; // Ya cargado
+            
+            fetch('/catastro/api/habitacional/')
+                .then(response => response.json())
+                .then(data => {
+                    selectHabitacion.innerHTML = '<option value="">-- Seleccione un código de habitación --</option>';
+                    if (data.habitacionales && data.habitacionales.length > 0) {
+                        data.habitacionales.forEach(hab => {
+                            const option = document.createElement('option');
+                            option.value = hab.cohabit || hab.id;
+                            option.textContent = hab.display || `${hab.cohabit || hab.id} - ${hab.bdeshabit || ''}`;
+                            selectHabitacion.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar códigos de habitación:', error);
+                    selectHabitacion.innerHTML = '<option value="">Error al cargar códigos de habitación</option>';
+                });
+        }
+
+        // Validar formulario antes de enviar
+        document.getElementById('formListadoAvaluos').addEventListener('submit', function(e) {
+            const tipoInforme = document.getElementById('tipo_informe').value;
+            let valido = true;
+            
+            if (!tipoInforme) {
+                alert('Por favor seleccione un tipo de informe');
+                e.preventDefault();
+                return false;
+            }
+            
+            // Validar campos según el tipo de informe
+            switch(tipoInforme) {
+                case 'listado_completo':
+                    // No requiere campos adicionales, es un listado completo
+                    break;
+                case 'clave_catastral':
+                    if (!document.getElementById('clave_catastral').value.trim()) {
+                        alert('Por favor ingrese la clave catastral');
+                        valido = false;
+                    }
+                    break;
+                case 'propietario':
+                    if (!document.getElementById('nombre_propietario').value.trim()) {
+                        alert('Por favor ingrese el nombre del propietario');
+                        valido = false;
+                    }
+                    break;
+                case 'dni':
+                    if (!document.getElementById('dni').value.trim()) {
+                        alert('Por favor ingrese el número de identidad');
+                        valido = false;
+                    }
+                    break;
+                case 'uso':
+                    if (!document.getElementById('codigo_uso').value) {
+                        alert('Por favor seleccione un código de uso');
+                        valido = false;
+                    }
+                    break;
+                case 'subuso':
+                    if (!document.getElementById('codigo_uso_subuso').value) {
+                        alert('Por favor seleccione un código de uso');
+                        valido = false;
+                    } else if (!document.getElementById('codigo_subuso').value) {
+                        alert('Por favor seleccione un código de sub uso');
+                        valido = false;
+                    }
+                    break;
+                case 'codigo_habitacion':
+                    if (!document.getElementById('codigo_habitacion').value) {
+                        alert('Por favor seleccione un código de habitación');
+                        valido = false;
+                    }
+                    break;
+                case 'rango_avaluo':
+                    if (!document.getElementById('tipo_valor_rango').value) {
+                        alert('Por favor seleccione el tipo de valor');
+                        valido = false;
+                    } else {
+                        const valorMin = parseFloat(document.getElementById('valor_minimo').value) || 0;
+                        const valorMax = parseFloat(document.getElementById('valor_maximo').value) || 0;
+                        if (valorMin < 0 || valorMax < 0) {
+                            alert('Los valores no pueden ser negativos');
+                            valido = false;
+                        } else if (valorMin > valorMax) {
+                            alert('El valor mínimo no puede ser mayor que el valor máximo');
+                            valido = false;
+                        } else if (valorMin === 0 && valorMax === 0) {
+                            alert('Por favor ingrese al menos un valor (mínimo o máximo)');
+                            valido = false;
+                        }
+                    }
+                    break;
+                case 'sexo':
+                    if (!document.getElementById('sexo').value) {
+                        alert('Por favor seleccione el sexo');
+                        valido = false;
+                    }
+                    break;
+                case 'barrio_uso':
+                    if (!document.getElementById('barrio_barrio_uso').value) {
+                        alert('Por favor seleccione un barrio');
+                        valido = false;
+                    } else if (!document.getElementById('codigo_uso_barrio_uso').value) {
+                        alert('Por favor seleccione un código de uso');
+                        valido = false;
+                    }
+                    break;
+                case 'naturaleza_juridica':
+                    if (!document.getElementById('naturaleza_juridica').value) {
+                        alert('Por favor seleccione una naturaleza jurídica');
+                        valido = false;
+                    }
+                    break;
+                case 'naturaleza_juridica_perimetro':
+                    if (!document.getElementById('naturaleza_juridica_perimetro').value) {
+                        alert('Por favor seleccione una naturaleza jurídica');
+                        valido = false;
+                    } else if (!document.getElementById('ficha_naturaleza').value) {
+                        alert('Por favor seleccione el tipo de ficha');
+                        valido = false;
+                    }
+                    break;
+                case 'clase_dominio':
+                    if (!document.getElementById('clase_dominio').value) {
+                        alert('Por favor seleccione una clase de dominio');
+                        valido = false;
+                    }
+                    break;
+                case 'clase_dominio_perimetro':
+                    if (!document.getElementById('clase_dominio_perimetro').value) {
+                        alert('Por favor seleccione una clase de dominio');
+                        valido = false;
+                    } else if (!document.getElementById('ficha_dominio').value) {
+                        alert('Por favor seleccione el tipo de ficha');
+                        valido = false;
+                    }
+                    break;
+                case 'tipo_documento_perimetro':
+                    if (!document.getElementById('tipo_documento_perimetro').value) {
+                        alert('Por favor seleccione un tipo de documento');
+                        valido = false;
+                    } else if (!document.getElementById('ficha_documento').value) {
+                        alert('Por favor seleccione el tipo de ficha');
+                        valido = false;
+                    }
+                    break;
+            }
+            
+            if (!valido) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Event listener para el cambio de tipo de informe
+        document.getElementById('tipo_informe').addEventListener('change', toggleCampos);
+
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleCampos();
+        });
+    </script>
+</body>
+</html>
+

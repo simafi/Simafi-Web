@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - Módulo Catastro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        .main-container {
+            padding: 40px 20px;
+        }
+        .menu-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: none;
+            overflow: hidden;
+        }
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        .menu-card .card-body {
+            padding: 30px;
+            text-align: center;
+        }
+        .menu-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .menu-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .menu-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .btn-menu {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-menu:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        .header-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .module-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+                <i class="fas fa-map-marked-alt"></i> Sistema Catastro
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user"></i> {{ usuario_nombre }}
+                </span>
+                <a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="container">
+            <!-- Header Info -->
+            <div class="header-info text-center">
+                <div class="module-badge mb-2">{{ modulo }}</div>
+                <h2 class="mb-2">Configuración del Sistema</h2>
+                <p class="mb-0">
+                    <i class="fas fa-building"></i> {{ municipio_descripcion }}
+                </p>
+            </div>
+
+            <!-- Menu Grid -->
+            <div class="row g-4">
+                <!-- 1. Barrio / Aldeas -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card menu-card h-100">
+                        <div class="card-body">
+                            <div class="menu-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="menu-title">Barrio / Aldeas</div>
+                            <div class="menu-description">
+                                Gestión de barrios y aldeas del municipio
+                            </div>
+                            <a href="{% url 'catastro:barrios_list' %}" class="btn btn-menu">
+                                <i class="fas fa-arrow-right"></i> Acceder
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Costos Básicos Unitarios -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card menu-card h-100">
+                        <div class="card-body">
+                            <div class="menu-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="menu-title">Costos Básicos Unitarios</div>
+                            <div class="menu-description">
+                                Configuración de costos básicos unitarios
+                            </div>
+                            <a href="{% url 'catastro:costos_list' %}" class="btn btn-menu">
+                                <i class="fas fa-arrow-right"></i> Acceder
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Detalles Adicionales -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card menu-card h-100">
+                        <div class="card-body">
+                            <div class="menu-icon">
+                                <i class="fas fa-list-alt"></i>
+                            </div>
+                            <div class="menu-title">Costos Unitarios Detalles Adicionales</div>
+                            <div class="menu-description">
+                                Gestión de costos unitarios para detalles adicionales
+                            </div>
+                            <a href="{% url 'catastro:tipos_detalle_list' %}" class="btn btn-menu">
+                                <i class="fas fa-arrow-right"></i> Acceder
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Valores de Tierra Rural -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card menu-card h-100">
+                        <div class="card-body">
+                            <div class="menu-icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <div class="menu-title">Valores de Tierra Rural</div>
+                            <div class="menu-description">
+                                Configuración de valores de tierra rural
+                            </div>
+                            <a href="{% url 'catastro:tierra_rural_list' %}" class="btn btn-menu">
+                                <i class="fas fa-arrow-right"></i> Acceder
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Clase y Variedad de Cultivo -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card menu-card h-100">
+                        <div class="card-body">
+                            <div class="menu-icon">
+                                <i class="fas fa-wheat-awn"></i>
+                            </div>
+                            <div class="menu-title">Clase y Variedad de Cultivo</div>
+                            <div class="menu-description">
+                                Gestión de clases y variedades de cultivo
+                            </div>
+                            <a href="{% url 'catastro:valor_arbol_list' %}" class="btn btn-menu">
+                                <i class="fas fa-arrow-right"></i> Acceder
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Usos del predio (sub usos por uso) -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card menu-card h-100">
+                        <div class="card-body">
+                            <div class="menu-icon">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <div class="menu-title">Usos del predio</div>
+                            <div class="menu-description">
+                                Tabla usos: alta y edición de códigos; desde cada fila, sub usos en Configuración general
+                            </div>
+                            <a href="{% url 'catastro:usos_predio_list' %}" class="btn btn-menu">
+                                <i class="fas fa-arrow-right"></i> Acceder
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. Topografía del Predio -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card menu-card h-100">
+                        <div class="card-body">
+                            <div class="menu-icon">
+                                <i class="fas fa-mountain"></i>
+                            </div>
+                            <div class="menu-title">Topografía del Predio</div>
+                            <div class="menu-description">
+                                Configuración de tipos de topografía
+                            </div>
+                            <a href="{% url 'catastro:topografia_list' %}" class="btn btn-menu">
+                                <i class="fas fa-arrow-right"></i> Acceder
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. Misceláneos -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card menu-card h-100">
+                        <div class="card-body">
+                            <div class="menu-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="menu-title">Misceláneos</div>
+                            <div class="menu-description">
+                                Emisión de recibos misceláneos
+                            </div>
+                            <a href="{% url 'catastro:catastro_miscelaneos' %}" class="btn btn-menu">
+                                <i class="fas fa-arrow-right"></i> Acceder
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Volver -->
+            <div class="text-center mt-4">
+                <a href="{% url 'catastro:catastro_menu_principal' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i> Volver al Menú Principal
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

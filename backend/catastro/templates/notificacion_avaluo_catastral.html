@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificación de Avalúo Catastral</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+        }
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .toolbar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .btn {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            background: #f8f9fa;
+        }
+
+        .search-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .search-container input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        /* FORMATO MEDIA PÁGINA (TICKET/REPORTE VFP) */
+        .report-page {
+            background: white;
+            width: 215.9mm; /* Carta width */
+            height: 139.7mm; /* Carta media height */
+            box-sizing: border-box;
+            padding: 15mm 20mm;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            margin: 60px auto 0;
+            position: relative;
+            font-size: 11pt;
+            color: #000;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 14pt;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+        }
+
+        .header h2 {
+            font-size: 12pt;
+            margin: 0;
+            font-weight: normal;
+        }
+
+        .doc-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 13pt;
+            margin: 15px 0;
+            text-decoration: underline;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr 100px 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+        }
+        
+        .info-value {
+            border-bottom: 1px dashed #999;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .info-row .label { font-weight: bold; width: 120px; }
+        .info-row .value { flex-grow: 1; border-bottom: 1px dashed #999; padding-left: 5px; }
+
+        .appraisal-section {
+            border: 1px solid #000;
+            padding: 10px;
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .val-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .val-row .val-label { font-weight: bold; }
+        .val-row .val-amount { text-align: right; border-bottom: 1px solid #ccc; width: 120px; }
+        
+        .val-total {
+            font-weight: bold;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+
+        .footer-signatures {
+            margin-top: 30mm;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .signature {
+            text-align: center;
+            width: 200px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+
+        .date-box {
+            position: absolute;
+            top: 15mm;
+            right: 20mm;
+            font-size: 10pt;
+        }
+
+        .error-msg {
+            color: red;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+                display: block;
+            }
+            .toolbar, .search-container {
+                display: none;
+            }
+            .report-page {
+                margin: 0;
+                box-shadow: none;
+                height: 139.7mm;
+                page-break-after: always;
+                padding: 10mm 15mm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="search-container">
+        <label for="clave_search"><strong>Clave:</strong></label>
+        <input type="text" id="clave_search" placeholder="Ej: CL12-1V-26-16" value="{{ cocata1 }}" onkeypress="if(event.key === 'Enter') buscarClave();">
+        <button class="btn" onclick="buscarClave()"><i class="fas fa-search"></i> Buscar</button>
+    </div>
+
+    <div class="toolbar">
+        <a href="{% url 'catastro:emision_documentos' %}" class="btn"><i class="fas fa-arrow-left"></i> Volver</a>
+        <button class="btn" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+    </div>
+
+    {% if cocata1 and not datos_bien %}
+        <div class="error-msg">No se encontró el predio con clave catastral: {{ cocata1 }}</div>
+    {% endif %}
+
+    <div class="report-page">
+        <div class="date-box">
+            Fecha: {{ dia|stringformat:"02d" }}/{{ mes|stringformat:"02d" }}/{{ ano }}
+        </div>
+
+        <div class="header">
+            <h1>MUNICIPALIDAD DE PUERTO CORTES</h1>
+            <h2>DEPARTAMENTO DE ORDENAMIENTO TERRITORIAL<br>CATASTRO MUNICIPAL</h2>
+        </div>
+
+        <div class="doc-title">NOTIFICACION DE AVALUO CATASTRAL</div>
+
+        {% if datos_bien %}
+        <!-- Fila rápida 1: Clave y Dominio -->
+        <div class="info-grid">
+            <div class="info-label">Clave Catastral:</div>
+            <div class="info-value">{{ datos_bien.cocata1|default:"-----------------" }}</div>
+            <div class="info-label">Clase:</div>
+            <div class="info-value">{% if datos_bien %}{% if datos_bien.ficha == 1 %}Urbano{% else %}Rural{% endif %}{% else %}----------{% endif %}</div>
+        </div>
+
+        <div class="info-row">
+            <div class="label">Propietario:</div>
+            <div class="value">
+                {% if datos_bien %}
+                    {{ datos_bien.apellidos|upper }} / {{ datos_bien.nombres|upper }}
+                {% else %}
+                    --------------------------------------------------
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="label">Identidad/RTN:</div>
+            <div class="value">
+                {% if datos_bien %}
+                    {{ datos_bien.identidad|default:datos_bien.rtn|default:"-----------------" }}
+                {% else %}
+                    -----------------
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="label">Ubicación:</div>
+            <div class="value">{{ datos_bien.ubicacion|default:"--------------------------------------------------" }}</div>
+        </div>
+
+        <!-- Área y Datos técnicos -->
+        <div class="info-grid" style="margin-top: 15px;">
+            <div class="info-label">Área Terreno:</div>
+            <div class="info-value">{{ area_terreno|floatformat:2|default:"0.00" }} M²</div>
+            <div class="info-label">No. Edif (Cedif):</div>
+            <div class="info-value">{{ datos_bien.cedif|default:"0" }}</div>
+        </div>
+
+        <div class="appraisal-section">
+            <div class="col-left">
+                <div class="val-row">
+                    <span class="val-label">Valor Terreno:</span>
+                    <span class="val-amount">L. {{ datos_bien.bvl2tie|floatformat:2|default:"0.00" }}</span>
+                </div>
+                <div class="val-row">
+                    <span class="val-label">Mejoras + Det:</span>
+                    <span class="val-amount">L. {{ mejoras_detalles|floatformat:2|default:"0.00" }}</span>
+                </div>
+                <div class="val-row">
+                    <span class="val-label">Cultivo Perm.:</span>
+                    <span class="val-amount">L. {{ datos_bien.cultivo|floatformat:2|default:"0.00" }}</span>
+                </div>
+                <div class="val-row">
+                    <span class="val-label">Maquinaria:</span>
+                    <span class="val-amount">L. {{ datos_bien.maquinaria|floatformat:2|default:"0.00" }}</span>
+                </div>
+            </div>
+            <div class="col-right">
+                <div class="val-row">
+                    <span class="val-label">Avalúo Bruto:</span>
+                    <span class="val-amount">L. {{ datos_bien.bvl2tie|add:mejoras_detalles|add:datos_bien.cultivo|floatformat:2|default:"0.00" }}</span>
+                </div>
+                <div class="val-row">
+                    <span class="val-label">Exenciones:</span>
+                    <span class="val-amount">L. {{ datos_bien.exencion|floatformat:2|default:"0.00" }}</span>
+                </div>
+                <div class="val-row val-total">
+                    <span class="val-label">Valor Neto Grabable:</span>
+                    <span class="val-amount">L. {{ datos_bien.grabable|floatformat:2|default:"0.00" }}</span>
+                </div>
+                <div class="val-row val-total" style="color: #c0392b;">
+                    <span class="val-label">Impuesto Estimado:</span>
+                    <span class="val-amount">L. {{ datos_bien.impuesto|floatformat:2|default:"0.00" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-signatures">
+            <div class="signature">FIRMA DEL CONTRIBUYENTE</div>
+            <div class="signature">JEFATURA DE CATASTRO</div>
+        </div>
+        {% else %}
+        <p class="error-msg" style="margin-top: 2em;">Ingrese la clave catastral y pulse Buscar para cargar la notificación. Si la clave no existe, verifique el dato e intente de nuevo.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function buscarClave() {
+            var clave = document.getElementById('clave_search').value.trim();
+            if(clave) {
+                window.location.href = '?cocata1=' + encodeURIComponent(clave);
+            }
+        }
+    </script>
+</body>
+</html>

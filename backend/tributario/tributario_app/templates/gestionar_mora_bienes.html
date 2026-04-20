@@ -1,0 +1,1151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gestión de Mora - Bienes Inmuebles</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+            animation: backgroundShift 15s ease infinite;
+        }
+        
+        @keyframes backgroundShift {
+            0% { background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%); }
+            25% { background: linear-gradient(135deg, #f093fb 0%, #f5576c 20%, #4facfe 40%, #00d4ff 60%, #667eea 80%, #764ba2 100%); }
+            50% { background: linear-gradient(135deg, #4facfe 0%, #00d4ff 20%, #667eea 40%, #764ba2 60%, #f093fb 80%, #f5576c 100%); }
+            75% { background: linear-gradient(135deg, #764ba2 0%, #f093fb 20%, #f5576c 40%, #4facfe 60%, #00d4ff 80%, #667eea 100%); }
+            100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%); }
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            margin-bottom: 45px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.25);
+            background: rgba(255, 255, 255, 0.98);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%) !important;
+            border: none;
+            padding: 1.5rem;
+            animation: headerGradient 10s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @keyframes headerGradient {
+            0% { background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%) !important; }
+            25% { background: linear-gradient(135deg, #f093fb 0%, #f5576c 20%, #4facfe 40%, #00d4ff 60%, #667eea 80%, #764ba2 100%) !important; }
+            50% { background: linear-gradient(135deg, #4facfe 0%, #00d4ff 20%, #667eea 40%, #764ba2 60%, #f093fb 80%, #f5576c 100%) !important; }
+            75% { background: linear-gradient(135deg, #764ba2 0%, #f093fb 20%, #f5576c 40%, #4facfe 60%, #00d4ff 80%, #667eea 100%) !important; }
+            100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 20%, #f093fb 40%, #f5576c 60%, #4facfe 80%, #00d4ff 100%) !important; }
+        }
+        
+        .card-header h5 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .info-card {
+            border-radius: 18px;
+            border: none;
+            transition: all 0.4s ease;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+        }
+        
+        .info-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        }
+        
+        .info-card-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .info-card-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .info-card-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .info-card-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        
+        /* Sticky Selection Bar */
+        .selection-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            padding: 15px 0;
+            z-index: 1030;
+            display: none;
+            border-top: 2px solid #28a745;
+        }
+        
+        .selection-bar.active {
+            display: block;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .info-card .small {
+            opacity: 0.9;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .info-card .fw-semibold {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+        
+        .btn {
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        /* Estilos mejorados para tablas - IDÉNTICOS A declaracion_volumen */
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 15px 12px;
+            border: none;
+            position: relative;
+        }
+        
+        .table thead th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+            transform: scale(1.01);
+        }
+        
+        .table tbody td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .saldo-positivo {
+            color: #28a745;
+            font-weight: 700;
+        }
+        
+        .saldo-negativo {
+            color: #dc3545;
+            font-weight: 700;
+        }
+        
+        .saldo-cero {
+            color: #6c757d;
+        }
+        
+        .text-danger {
+            color: #e74c3c !important;
+            font-weight: 700;
+        }
+        
+        .table tfoot th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            padding: 15px 12px;
+            border: none;
+        }
+        
+        /* Animaciones para elementos */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-control {
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-1px);
+            outline: none;
+        }
+        
+        .form-control:hover {
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .alert {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+        }
+        
+        .btn-light {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-light:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            color: white;
+            transform: translateX(-3px);
+        }
+        
+        .badge-operacion {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .operacion-F {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        
+        .operacion-D {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            opacity: 0.3;
+            margin-bottom: 1rem;
+        }
+        .selection-bar {
+            position: fixed;
+            bottom: -100px;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.2);
+            padding: 20px 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .selection-bar.active {
+            bottom: 0;
+        }
+
+        .selection-bar .container {
+            max-width: 1200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div class="card shadow-lg border-0">
+            <div class="card-header d-flex justify-content-between align-items-center text-white">
+                <h5 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Gestión de Mora - Bienes Inmuebles</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {% for message in messages %}
+                            <div>{{ message }}</div>
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+                
+                {% if error_mensaje %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ error_mensaje }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+                
+                <div class="mb-4 p-4" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.2);">
+                    <form method="get" id="formEstadoCuenta" class="row g-3">
+                        <input type="hidden" name="empresa" id="inputEmpresa" value="{{ empresa|default:municipio_codigo }}" />
+                        <div class="col-md-4">
+                            <label class="form-label"><i class="fas fa-key text-primary"></i> Clave Catastral</label>
+                            <input type="text" name="cocata1" id="inputClaveCatastral" class="form-control" value="{{ cocata1 }}" placeholder="Ingrese la clave catastral" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label"><i class="fas fa-calendar-alt text-primary"></i> Año desde</label>
+                            <input type="number" name="ano_desde" class="form-control" min="1990" max="2100" value="{{ request.GET.ano_desde }}" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label"><i class="fas fa-calendar text-primary"></i> Mes desde</label>
+                            <input type="number" name="mes_desde" class="form-control" min="1" max="12" placeholder="1-12" value="{{ request.GET.mes_desde }}" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label"><i class="fas fa-calendar-alt text-primary"></i> Año hasta</label>
+                            <input type="number" name="ano_hasta" class="form-control" min="1990" max="2100" value="{{ request.GET.ano_hasta }}" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label"><i class="fas fa-calendar text-primary"></i> Mes hasta</label>
+                            <input type="number" name="mes_hasta" class="form-control" min="1" max="12" placeholder="1-12" value="{{ request.GET.mes_hasta }}" />
+                        </div>
+                        <div class="col-md-2 align-self-end">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Consultar
+                            </button>
+                        </div>
+                        {% if propiedad %}
+                        <div class="col-md-2 align-self-end">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#modalGenerarMora">
+                                <i class="fas fa-cogs"></i> Generar Mora
+                            </button>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+
+                {% if propiedad %}
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="p-3 info-card info-card-1">
+                            <div class="small"><i class="fas fa-key"></i> Clave Catastral</div>
+                            <div class="fw-semibold">{{ cocata1 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 info-card info-card-2">
+                            <div class="small"><i class="fas fa-user-tie"></i> Propietario</div>
+                            <div class="fw-semibold">{{ propiedad.nombres }} {{ propiedad.apellidos }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 info-card info-card-3">
+                            <div class="small"><i class="fas fa-map-marker-alt"></i> Ubicación</div>
+                            <div class="fw-semibold">{{ propiedad.ubicacion|default:"-"|truncatewords:5 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 info-card info-card-4">
+                            <div class="small"><i class="fas fa-id-card"></i> Identidad</div>
+                            <div class="fw-semibold">{{ propiedad.identidad|default:"-" }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% elif cocata1 and not error_mensaje %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> No se encontró la propiedad con la Clave Catastral proporcionada. Verifique que sea correcta.
+                </div>
+                {% endif %}
+
+                {% if propiedad and transacciones %}
+                <div class="mb-4 d-flex justify-content-center align-items-center gap-3">
+                    <a href="{% url 'tributario:tributario_menu_principal' %}" class="btn btn-secondary btn-lg" style="min-width: 150px;">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                    <!-- <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#modalGenerarPago" id="btnGenerarPago" style="min-width: 250px;">
+                        <i class="fas fa-money-bill-wave"></i> Generar Transacción de Pago
+                    </button> -->
+                </div>
+                {% else %}
+                <div class="mb-4 d-flex justify-content-center">
+                    <a href="{% url 'tributario:tributario_menu_principal' %}" class="btn btn-secondary btn-lg" style="min-width: 150px;">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;">
+                                    <input type="checkbox" id="selectAll" class="form-check-input">
+                                </th>
+                                <th><i class="fas fa-calendar-day"></i> Fecha</th>
+                                <th><i class="fas fa-calendar-alt"></i> Año</th>
+                                <th><i class="fas fa-calendar"></i> Mes</th>
+                                <th><i class="fas fa-exchange-alt"></i> Operación</th>
+                                <th><i class="fas fa-code"></i> Rubro</th>
+                                <th><i class="fas fa-info-circle"></i> Descripción</th>
+                                <th class="text-end"><i class="fas fa-dollar-sign"></i> Monto Orig.</th>
+                                <th class="text-end" style="width: 150px;"><i class="fas fa-edit"></i> A Pagar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in transacciones %}
+                            <tr data-id="{{ t.id }}" data-monto="{{ t.monto }}" class="transaccion-row">
+                                <td style="text-align: center;">
+                                    {% if t.operacion == 'F' or t.operacion == 'D' %}
+                                        {% if t.estado == 'A' %}
+                                            <input type="checkbox" class="form-check-input select-item" data-id="{{ t.id }}" data-monto="{{ t.monto }}">
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>{{ t.fecha|date:'Y-m-d' }}</td>
+                                <td>{{ t.ano|default_if_none:''|floatformat:0 }}</td>
+                                <td>{{ t.mes|floatformat:0 }}</td>
+                                <td>
+                                    {% if t.operacion == 'F' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 5px 10px; border-radius: 6px;">Facturación</span>
+                                    {% elif t.operacion == 'D' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #f5576c 0%, #c82333 100%); color: white; padding: 5px 10px; border-radius: 6px;">Débitos</span>
+                                    {% elif t.operacion == 'C' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #4facfe 0%, #00d4ff 100%); color: white; padding: 5px 10px; border-radius: 6px;">Créditos</span>
+                                    {% elif t.operacion == 'P' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; padding: 5px 10px; border-radius: 6px;">Pagos</span>
+                                    {% else %}
+                                        <span class="badge" style="background: #6c757d; color: white; padding: 5px 10px; border-radius: 6px;">{{ t.operacion|default:"-" }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ t.rubro|default:"-" }}</td>
+                                <td>{{ t.rubro_descripcion|default:"-" }}</td>
+                                <td class="text-end {% if t.monto < 0 %}amount-negative{% else %}amount-positive{% endif %}">{{ t.monto|floatformat:2 }}</td>
+                                <td class="text-end">
+                                    {% if t.operacion == 'F' or t.operacion == 'D' %}
+                                        {% if t.estado == 'A' %}
+                                            <input type="number" class="form-control form-control-sm text-end input-monto-pagar" 
+                                                   step="0.01" min="0.01" max="{{ t.monto }}" value="{{ t.monto|floatformat:2 }}" 
+                                                   data-id="{{ t.id }}" style="font-weight: bold; color: #28a745; border-color: #28a745;" disabled>
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <p class="mb-0">Sin transacciones para los filtros aplicados</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="8" class="text-end" style="font-size: 1.1rem; font-weight: 700; padding: 15px 10px; color: #212529; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-top: 3px solid #667eea; border-radius: 8px 0 0 8px;">Saldo Final (suma de montos)</th>
+                                <th class="text-end {% if totales.saldo_final < 0 %}footer-amount-negative{% else %}footer-amount-positive{% endif %}" style="font-size: 1.3rem; font-weight: 900; padding: 15px 10px; border-radius: 0 8px 8px 0;">{{ totales.saldo_final|floatformat:2 }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Generar Mora -->
+    <div class="modal fade" id="modalGenerarMora" tabindex="-1" aria-labelledby="modalGenerarMoraLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="generar_mora">
+                    <input type="hidden" name="cocata1" value="{{ cocata1 }}">
+                    <input type="hidden" name="empresa" value="{{ empresa }}">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #f5a623 0%, #f76b1c 100%); color: white;">
+                        <h5 class="modal-title" id="modalGenerarMoraLabel">
+                            <i class="fas fa-cogs"></i> Generar Mora - {{ cocata1 }}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="padding: 25px;">
+                        {% if propiedad %}
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-user"></i> <strong>Propietario:</strong> {{ propiedad.nombres }} {{ propiedad.apellidos }}
+                        </div>
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold">Desde Año:</label>
+                                <input type="number" class="form-control" name="gen_ano_desde" value="{{ current_year }}" required>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold">Desde Mes:</label>
+                                <input type="number" class="form-control" name="gen_mes_desde" value="1" min="1" max="12" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold">Hasta Año:</label>
+                                <input type="number" class="form-control" name="gen_ano_hasta" value="{{ current_year }}" required>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold">Hasta Mes:</label>
+                                <input type="number" class="form-control" name="gen_mes_hasta" value="12" min="1" max="12" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Seleccione Rubros a Generar:</label>
+                            {% for r in rubros_disponibles %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="rubros_generar" value="{{ r.codigo }}" id="gen_rubro_{{ r.codigo }}" checked>
+                                    <label class="form-check-label" for="gen_rubro_{{ r.codigo }}">
+                                        {{ r.descripcion }} ({{ r.codigo }}) - {% if r.tipo == 'A' %}Anual{% else %}Mensual{% endif %}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                            {% if not rubros_disponibles %}
+                                <p class="text-muted small"><i class="fas fa-info-circle"></i> No hay rubros/tasas configuradas para esta propiedad.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Cerrar
+                        </button>
+                        <button type="submit" class="btn btn-warning" {% if not rubros_disponibles %}disabled{% endif %}>
+                            <i class="fas fa-cogs"></i> Generar Mora
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Barra de Selección de Pago (Sticky) -->
+    <div id="selectionBar" class="selection-bar">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="me-4">
+                        <span class="text-muted small d-block">Seleccionados</span>
+                        <span id="selectedCount" class="fw-bold fs-5">0</span> items
+                    </div>
+                    <div>
+                        <span class="text-muted small d-block">Total a Pagar</span>
+                        <span class="text-success fw-bold fs-4">L. <span id="selectedTotal">0.00</span></span>
+                    </div>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-outline-secondary me-2" id="btnClearSelection">
+                        <i class="fas fa-times"></i> Limpiar
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg px-5 shadow" id="btnPreparePayment" data-bs-toggle="modal" data-bs-target="#modalConfirmarPagoBienes">
+                        <i class="fas fa-money-bill-wave"></i> Pagar Seleccionados
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .amount-positive { color: #28a745; font-weight: bold; }
+        .amount-negative { color: #dc3545; font-weight: bold; }
+        .footer-amount-positive { color: #ffffff !important; background: linear-gradient(135deg, #28a745 0%, #218838 100%) !important; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); border-top: 3px solid #28a745 !important; }
+        .footer-amount-negative { color: #ffffff !important; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); border-top: 3px solid #dc3545 !important; }
+    </style>
+
+    <!-- Modal Confirmar Pago Bienes -->
+    <div class="modal fade" id="modalConfirmarPagoBienes" tabindex="-1" aria-labelledby="modalConfirmarPagoBienesLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                    <h5 class="modal-title" id="modalConfirmarPagoBienesLabel">
+                        <i class="fas fa-check-circle"></i> Confirmar Envío a Caja
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 25px;">
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-receipt"></i> Se generará un recibo por un total de: <strong>L. <span id="modalTotalPagar">0.00</span></strong>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Identidad del Pagador:</label>
+                        <input type="text" id="pagoIdentidad" class="form-control" value="{{ propiedad.identidad|default:'' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre del Pagador:</label>
+                        <input type="text" id="pagoNombre" class="form-control" value="{{ propiedad.nombres }} {{ propiedad.apellidos }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Comentario/Nota:</label>
+                        <textarea id="pagoComentario" class="form-control" rows="2" placeholder="Opcional..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background: #f8f9fa;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btnFinalizarEnvioCaja">
+                        <i class="fas fa-paper-plane"></i> Confirmar y Enviar a Caja
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Soporte de Transacción -->
+    <div class="modal fade" id="modalSoportePago" tabindex="-1" aria-labelledby="modalSoportePagoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="border-radius: 15px;">
+                <div class="modal-header bg-primary text-white d-print-none">
+                    <h5 class="modal-title" id="modalSoportePagoLabel">
+                        <i class="fas fa-file-invoice"></i> Soporte de Transacción
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="printableSoporte">
+                    <div class="text-center mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <img src="{% static 'img/logo_municipal.png' %}" alt="Logo" style="height: 60px; filter: grayscale(100%);" onerror="this.style.display='none'">
+                            <div class="text-center flex-grow-1">
+                                <h4 class="mb-0 fw-bold">MUNICIPALIDAD - SIMAFI</h4>
+                                <p class="text-muted mb-0">Soporte de Transacción para Pago en Banco</p>
+                            </div>
+                            <div style="width: 60px; height: 60px; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999;">
+                                QR CODE<br>GEN
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Recibo No:</strong> <span id="soporteReciboNo"></span></p>
+                            <p class="mb-1"><strong>Fecha:</strong> <span id="soporteFecha"></span></p>
+                            <p class="mb-1"><strong>Clave Catastral:</strong> <span id="soportePropiedad"></span></p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p class="mb-1"><strong>Contribuyente:</strong> <span id="soporteContribuyente"></span></p>
+                            <p class="mb-1"><strong>Identidad:</strong> <span id="soporteIdentidad"></span></p>
+                        </div>
+                    </div>
+                    
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Código Presupuestario</th>
+                                <th>Rubro</th>
+                                <th>Descripción</th>
+                                <th class="text-center">Periodo</th>
+                                <th class="text-end">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodySoporteDetalle">
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="4" class="text-end">TOTAL A PAGAR:</th>
+                                <th class="text-end">L. <span id="soporteTotal"></span></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Desglose mora/base por año (se muestra si viene del backend) -->
+                    <div id="boxDesgloseMora" class="mt-3" style="display:none;">
+                        <div class="p-2 border rounded bg-light">
+                            <div class="fw-bold mb-2">Desglose (año referencia <span id="desgloseAnioRef"></span>)</div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Base año actual</span>
+                                        <span>L. <span id="desgloseBaseActual">0.00</span></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Mora año actual</span>
+                                        <span>L. <span id="desgloseMoraActual">0.00</span></span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Base años anteriores</span>
+                                        <span>L. <span id="desgloseBaseAnt">0.00</span></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Mora años anteriores</span>
+                                        <span>L. <span id="desgloseMoraAnt">0.00</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 small text-muted border-top pt-2">
+                        <p class="mb-0"><i class="fas fa-info-circle"></i> Este documento es un soporte para realizar el pago en ventanilla bancaria o caja municipal.</p>
+                        <p>Validez sujeta a presentación en los puntos de recaudo autorizados.</p>
+                    </div>
+                </div>
+                <div class="modal-footer d-print-none">
+                    <button type="button" class="btn btn-success" id="btnWhatsAppSoporte">
+                        <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="imprimirSoporte()">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function imprimirSoporte() {
+            const printableContent = document.getElementById('printableSoporte').innerHTML;
+            const printWindow = window.open('', '_blank', 'width=900,height=700');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Soporte de Transacción</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <style>
+                        body { padding: 30px; font-family: Arial, sans-serif; background: #fff; color: #000; }
+                        .table { width: 100%; margin-bottom: 1rem; color: #000; border-collapse: collapse; }
+                        .table-bordered th, .table-bordered td { border: 1px solid #dee2e6; padding: 0.3rem; }
+                        .table-light th { background-color: #f8f9fa; }
+                        @media print {
+                            .d-print-none { display: none !important; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${printableContent}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 600);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAll = document.getElementById('selectAll');
+            const selectItems = Array.from(document.querySelectorAll('.select-item'));
+            const selectionBar = document.getElementById('selectionBar');
+            const selectedCount = document.getElementById('selectedCount');
+            const selectedTotal = document.getElementById('selectedTotal');
+            const modalTotalPagar = document.getElementById('modalTotalPagar');
+            const btnClearSelection = document.getElementById('btnClearSelection');
+            const btnFinalizarEnvioCaja = document.getElementById('btnFinalizarEnvioCaja');
+
+            // Mapeo selectItems para acceso por ID y facilidad de FIFO
+            const itemMap = {};
+            selectItems.forEach((item, index) => {
+                const id = item.dataset.id;
+                const row = item.closest('tr');
+                const inputMonto = row.querySelector('.input-monto-pagar');
+                itemMap[id] = { checkbox: item, input: inputMonto, index: index };
+            });
+
+            function updateSelection(event) {
+                // Lógica FIFO (El orden ahora es de antiguo a reciente, index 0 es el más antiguo)
+                if (event && event.target && event.target.classList.contains('select-item')) {
+                    const changedId = event.target.dataset.id;
+                    const changedIndex = parseInt(itemMap[changedId].index);
+                    const isChecked = event.target.checked;
+
+                    if (isChecked) {
+                        // Si se marca uno, se deben marcar todos los ANTERIORES (más antiguos)
+                        for (let i = 0; i < changedIndex; i++) {
+                            selectItems[i].checked = true;
+                        }
+                    } else {
+                        // Si se desmarca uno, se deben desmarcar todos los POSTERIORES (más recientes)
+                        for (let i = changedIndex + 1; i < selectItems.length; i++) {
+                            selectItems[i].checked = false;
+                        }
+                    }
+                }
+
+                let count = 0;
+                let total = 0;
+                let payloadItems = [];
+
+                selectItems.forEach(item => {
+                    const id = item.dataset.id;
+                    const data = itemMap[id];
+                    if (item.checked) {
+                        count++;
+                        data.input.disabled = false;
+                        
+                        // Asegurar que tenga valor si está seleccionado
+                        if (!data.input.value || parseFloat(data.input.value) === 0) {
+                            data.input.value = parseFloat(item.dataset.monto).toFixed(2);
+                        }
+                        
+                        let monto = parseFloat(data.input.value) || 0;
+                        total += monto;
+                        payloadItems.push({ id: id, monto_pagar: monto });
+                    } else {
+                        data.input.disabled = true;
+                        // Opcional: sombrear o atenuar el valor si no está seleccionado
+                        data.input.style.opacity = "0.5";
+                    }
+                });
+
+                // Reset opacity for selected ones
+                selectItems.forEach(item => {
+                   if(item.checked) itemMap[item.dataset.id].input.style.opacity = "1";
+                });
+
+                selectedCount.textContent = count;
+                const totalFormateado = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                selectedTotal.textContent = totalFormateado;
+                modalTotalPagar.textContent = totalFormateado;
+
+                if (count > 0) {
+                    selectionBar.classList.add('active');
+                } else {
+                    selectionBar.classList.remove('active');
+                    if (selectAll) selectAll.checked = false;
+                }
+                
+                return payloadItems;
+            }
+
+            if (selectAll) {
+                selectAll.addEventListener('change', function() {
+                    const isChecked = selectAll.checked;
+                    selectItems.forEach(item => {
+                        item.checked = isChecked;
+                    });
+                    updateSelection();
+                });
+            }
+
+            selectItems.forEach(item => {
+                item.addEventListener('change', updateSelection);
+            });
+
+            // Escuchar cambios en los montos a pagar (Manual)
+            document.querySelectorAll('.input-monto-pagar').forEach(input => {
+                input.addEventListener('input', function() {
+                    let max = parseFloat(this.getAttribute('max'));
+                    let val = parseFloat(this.value);
+                    if (val > max) this.value = max.toFixed(2);
+                    if (val < 0) this.value = 0;
+                    updateSelection(); // Recalcular total inmediatamente
+                });
+            });
+
+            if (btnClearSelection) {
+                btnClearSelection.addEventListener('click', function() {
+                    if (selectAll) selectAll.checked = false;
+                    selectItems.forEach(item => item.checked = false);
+                    updateSelection();
+                });
+            }
+
+            if (btnFinalizarEnvioCaja) {
+                btnFinalizarEnvioCaja.addEventListener('click', function() {
+                    const items = updateSelection();
+                    const identidad = document.getElementById('pagoIdentidad').value;
+                    const nombre = document.getElementById('pagoNombre').value;
+                    const comentario = document.getElementById('pagoComentario').value;
+
+                    if (items.length === 0) {
+                        alert('Por favor seleccione al menos una transacción.');
+                        return;
+                    }
+
+                    btnFinalizarEnvioCaja.disabled = true;
+                    btnFinalizarEnvioCaja.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+                    fetch('/tributario/enviar-a-caja-bienes/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            cocata1: '{{ cocata1 }}',
+                            empresa: '{{ municipio_codigo }}',
+                            pago_items: items,
+                            identidad_pago: identidad,
+                            nombre_pago: nombre,
+                            comentario: comentario
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exito) {
+                            // Llenar datos del soporte
+                            document.getElementById('soporteReciboNo').textContent = data.numero_recibo;
+                            document.getElementById('soporteFecha').textContent = data.fecha;
+                            document.getElementById('soporteContribuyente').textContent = data.contribuyente;
+                            document.getElementById('soporteIdentidad').textContent = data.identidad;
+                            document.getElementById('soportePropiedad').textContent = data.propiedad_clave;
+                            document.getElementById('soporteTotal').textContent = data.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                            // Mostrar desglose mora/base (año actual vs anteriores) si viene del backend
+                            const desglose = data.desglose_mora || null;
+                            const boxDesglose = document.getElementById('boxDesgloseMora');
+                            if (boxDesglose && desglose) {
+                                const fmt = (n) => (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                document.getElementById('desgloseAnioRef').textContent = String(desglose.anio_referencia || '');
+                                document.getElementById('desgloseBaseActual').textContent = fmt(desglose.base_actual);
+                                document.getElementById('desgloseBaseAnt').textContent = fmt(desglose.base_anteriores);
+                                document.getElementById('desgloseMoraActual').textContent = fmt(desglose.mora_actual);
+                                document.getElementById('desgloseMoraAnt').textContent = fmt(desglose.mora_anteriores);
+                                boxDesglose.style.display = 'block';
+                            } else if (boxDesglose) {
+                                boxDesglose.style.display = 'none';
+                            }
+
+                            const tbodySoporte = document.getElementById('tbodySoporteDetalle');
+                            tbodySoporte.innerHTML = '';
+                            const detalleMostrar = (data.detalle_visual && Array.isArray(data.detalle_visual)) ? data.detalle_visual : data.detalle;
+                            detalleMostrar.forEach(item => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `
+                                    <td>${item.codigo_presupuestario}</td>
+                                    <td>${item.rubro}</td>
+                                    <td>${item.descripcion}</td>
+                                    <td class="text-center">${item.periodo}</td>
+                                    <td class="text-end">L. ${item.monto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                `;
+                                tbodySoporte.appendChild(tr);
+                            });
+
+                            // Configurar botón WhatsApp
+                            const btnWhatsApp = document.getElementById('btnWhatsAppSoporte');
+                            btnWhatsApp.onclick = function() {
+                                let mensaje = `*SIMAFI - Soporte de Transacción*\n`;
+                                mensaje += `*Recibo:* ${data.numero_recibo}\n`;
+                                mensaje += `*Fecha:* ${data.fecha}\n`;
+                                mensaje += `*Contribuyente:* ${data.contribuyente}\n`;
+                                mensaje += `*Propiedad:* ${data.propiedad_clave}\n`;
+                                mensaje += `*Total:* L. ${data.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n`;
+                                if (data.desglose_mora) {
+                                    const d = data.desglose_mora;
+                                    const fmt = (n) => (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                    mensaje += `*Desglose (año ref ${d.anio_referencia}):*\n`;
+                                    mensaje += `- Base ${d.anio_referencia}: L. ${fmt(d.base_actual)}\n`;
+                                    mensaje += `- Base anteriores: L. ${fmt(d.base_anteriores)}\n`;
+                                    mensaje += `- Mora ${d.anio_referencia}: L. ${fmt(d.mora_actual)}\n`;
+                                    mensaje += `- Mora anteriores: L. ${fmt(d.mora_anteriores)}\n`;
+                                }
+                                mensaje += `\n`;
+                                mensaje += `*Detalle:* \n`;
+                                const detalleMsg = (data.detalle_visual && Array.isArray(data.detalle_visual)) ? data.detalle_visual : data.detalle;
+                                detalleMsg.forEach(item => {
+                                    mensaje += `- [${item.codigo_presupuestario}] ${item.descripcion} (${item.periodo}): L. ${item.monto.toFixed(2)}\n`;
+                                });
+                                
+                                const urlWA = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+                                window.open(urlWA, '_blank');
+                            };
+
+                            // Función para procesar la muestra del soporte sin impresión automática
+                            const showSoporte = () => {
+                                const modalElement = document.getElementById('modalSoportePago');
+                                const modalSoporte = new bootstrap.Modal(modalElement);
+                                
+                                modalSoporte.show();
+                                
+                                // Al cerrar el modal de soporte, recargar la página
+                                modalElement.addEventListener('hidden.bs.modal', function() {
+                                    location.reload();
+                                }, { once: true });
+                            };
+
+                            // Manejar transición de modales secuencialmente
+                            const modalConfirmEl = document.getElementById('modalConfirmarPagoBienes');
+                            const modalConfirm = bootstrap.Modal.getInstance(modalConfirmEl);
+                            
+                            if (modalConfirm) {
+                                modalConfirmEl.addEventListener('hidden.bs.modal', function() {
+                                    showSoporte();
+                                }, { once: true });
+                                modalConfirm.hide();
+                            } else {
+                                showSoporte();
+                            }
+
+                        } else {
+                            alert('Error: ' + data.mensaje);
+                            btnFinalizarEnvioCaja.disabled = false;
+                            btnFinalizarEnvioCaja.innerHTML = '<i class="fas fa-paper-plane"></i> Confirmar y Enviar a Caja';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al procesar la solicitud.');
+                        btnFinalizarEnvioCaja.disabled = false;
+                        btnFinalizarEnvioCaja.innerHTML = '<i class="fas fa-paper-plane"></i> Confirmar y Enviar a Caja';
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

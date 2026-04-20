@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios del sistema</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <span class="navbar-brand"><i class="fas fa-users-cog me-2"></i>Usuarios del sistema</span>
+            <div>
+                <a class="btn btn-outline-light btn-sm me-1" href="{% url 'modules_core:roles_list' %}">Roles y permisos</a>
+                <a class="btn btn-outline-light btn-sm" href="{% url 'modules_core:menu_principal' %}">Menú modular</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        {% if configuracion_inicial %}
+        <div class="alert alert-warning border-warning mb-3">
+            <strong>Configuración inicial:</strong> no hay ningún superusuario en la base de datos.
+            Edite un usuario (por ejemplo el suyo) y marque <strong>Superusuario</strong>, o cree uno nuevo con esa opción.
+            Después de eso, solo los superusuarios podrán administrar usuarios.
+        </div>
+        {% endif %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="h4 mb-0">Listado</h1>
+            <a href="{% url 'modules_core:usuarios_sistema_create' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i>Nuevo usuario
+            </a>
+        </div>
+        <div class="table-responsive card shadow-sm">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Nombre</th>
+                        <th>Empresa</th>
+                        <th>Superusuario</th>
+                        <th>Roles</th>
+                        <th>Activo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in object_list %}
+                    <tr>
+                        <td>{{ u.usuario }}</td>
+                        <td>{{ u.nombre|default:"—" }}</td>
+                        <td>{{ u.empresa }}</td>
+                        <td>{% if u.es_superusuario %}<span class="badge bg-warning text-dark">Sí</span>{% else %}—{% endif %}</td>
+                        <td>
+                            {% for ur in u.roles_asignados.all %}
+                                <span class="badge bg-info text-dark me-1">{{ ur.rol.nombre }}</span>
+                            {% empty %}
+                                <span class="text-muted">—</span>
+                            {% endfor %}
+                        </td>
+                        <td>{% if u.is_active %}<span class="badge bg-success">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+                        <td><a href="{% url 'modules_core:usuarios_sistema_update' u.pk %}" class="btn btn-sm btn-outline-primary">Editar</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">No hay usuarios registrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

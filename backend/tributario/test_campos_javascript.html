@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test de Campos JavaScript</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2 px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 Test de Validación de Campos</h1>
+        <p class="info test-result">
+            <strong>Instrucciones:</strong> Abre esta página en el mismo navegador donde tienes abierto el formulario de declaración.
+            Luego presiona el botón "Ejecutar Test" para verificar que todos los campos existan.
+        </p>
+        
+        <button onclick="ejecutarTest()">▶️ Ejecutar Test</button>
+        
+        <div id="resultados" style="margin-top: 20px;"></div>
+    </div>
+    
+    <script>
+        function ejecutarTest() {
+            const resultados = document.getElementById('resultados');
+            resultados.innerHTML = '<h2>📊 Resultados del Test:</h2>';
+            
+            // Lista de campos a verificar
+            const campos = [
+                { id: 'empresa_field', nombre: 'Empresa' },
+                { id: 'rtm_field', nombre: 'RTM' },
+                { id: 'expe_field', nombre: 'Expediente' },
+                { id: 'id_ano', nombre: 'Año' },
+                { id: 'id_mes', nombre: 'Mes' },
+                { id: 'id_tipo', nombre: 'Tipo' },
+                { id: 'id_ventai', nombre: 'Ventas Internas' },
+                { id: 'id_ventac', nombre: 'Ventas a Contribuyentes' },
+                { id: 'id_ventas', nombre: 'Ventas sin Factura' },
+                { id: 'id_valorexcento', nombre: 'Valor Excento' },
+                { id: 'id_controlado', nombre: 'Productos Controlados' },
+                { id: 'id_impuesto', nombre: 'Impuesto Calculado' }
+            ];
+            
+            let exitosos = 0;
+            let fallidos = 0;
+            
+            campos.forEach(campo => {
+                const elemento = document.getElementById(campo.id);
+                const div = document.createElement('div');
+                div.className = 'test-result';
+                
+                if (elemento) {
+                    div.className += ' success';
+                    div.innerHTML = `✅ <strong>${campo.nombre}</strong> (${campo.id}): Campo encontrado`;
+                    if (elemento.value) {
+                        div.innerHTML += ` | Valor: "${elemento.value}"`;
+                    }
+                    exitosos++;
+                } else {
+                    div.className += ' error';
+                    div.innerHTML = `❌ <strong>${campo.nombre}</strong> (${campo.id}): <strong>NO ENCONTRADO</strong>`;
+                    fallidos++;
+                }
+                
+                resultados.appendChild(div);
+            });
+            
+            // Resumen
+            const resumen = document.createElement('div');
+            resumen.className = 'test-result ' + (fallidos === 0 ? 'success' : 'error');
+            resumen.innerHTML = `
+                <h3>📈 Resumen:</h3>
+                <p>✅ Exitosos: ${exitosos} | ❌ Fallidos: ${fallidos}</p>
+                ${fallidos === 0 ? '<p><strong>¡Todos los campos existen! El formulario debería funcionar.</strong></p>' : '<p><strong>ATENCIÓN: Hay campos faltantes. El formulario NO funcionará correctamente.</strong></p>'}
+            `;
+            resultados.appendChild(resumen);
+        }
+        
+        // Mostrar instrucción especial
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('='.repeat(80));
+            console.log('INSTRUCCIONES:');
+            console.log('1. Abre el formulario de declaración en otra pestaña');
+            console.log('2. Abre la consola del navegador (F12)');
+            console.log('3. Ejecuta este código manualmente para verificar los campos:');
+            console.log('');
+            console.log('const campos = ["empresa_field", "rtm_field", "expe_field", "id_ano", "id_mes"];');
+            console.log('campos.forEach(id => {');
+            console.log('    const el = document.getElementById(id);');
+            console.log('    console.log(id + ":", el ? "✅ EXISTE" : "❌ NO EXISTE");');
+            console.log('});');
+            console.log('='.repeat(80));
+        });
+    </script>
+</body>
+</html>
+
+

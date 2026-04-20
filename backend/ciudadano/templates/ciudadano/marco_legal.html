@@ -1,0 +1,43 @@
+{% extends "ciudadano/base_ciudadano.html" %}
+{% block title %}Marco legal{% endblock %}
+{% block content %}
+<div class="card cdd-card">
+    <div class="card-body p-4 p-md-5">
+        <h1 class="h4 mb-4">Marco legal — referencia para el contribuyente municipal (Honduras)</h1>
+        <p class="text-muted small">
+            El siguiente resumen es orientativo y no sustituye la asesoría legal formal. Las leyes y reglamentos
+            aplicables son los vigentes publicados en el diario oficial.
+        </p>
+        <h2 class="h6 mt-4">Ley de Municipalidades</h2>
+        <p class="small">
+            Marco de autonomía municipal, facultades del concejo municipal y alcaldía, y relación con los
+            habitantes en materia de prestación de servicios, participación y transparencia.
+        </p>
+        <h2 class="h6 mt-4">Tributación municipal</h2>
+        <p class="small">
+            Los tributos y tasas municipales se constituyen y liquidan conforme a ordenanzas municipales aprobadas
+            por el concejo, sin contravenir el marco constitucional ni las leyes nacionales que resulten aplicables.
+        </p>
+        <h2 class="h6 mt-4">Derechos del contribuyente</h2>
+        <ul class="small">
+            <li>Trato digno y no discriminatorio en la administración tributaria municipal.</li>
+            <li>Información clara sobre obligaciones, plazos y procedimientos.</li>
+            <li>Presentación de declaraciones y solicitudes por medios presenciales o electrónicos cuando el municipio los habilite.</li>
+            <li>Recursos y defensa en los términos que establezca la ley y las ordenanzas locales.</li>
+        </ul>
+        <h2 class="h6 mt-4">Protección de datos</h2>
+        <p class="small">
+            Los datos personales suministrados en este portal deben tratarse con fines administrativos legítimos,
+            respetando la normativa hondureña en materia de protección de información personal.
+        </p>
+        <h2 class="h6 mt-4">Trámites en línea y respuesta municipal</h2>
+        <p class="small">
+            El municipio puede dar respuesta a través del portal: una vez registrada la respuesta oficial por personal
+            autorizado, el contribuyente la consulta en el detalle de su solicitud. Las notas internas de gestión
+            no son de acceso público. El estado de la solicitud (recibida, en revisión, respondida, cerrada)
+            refleja el avance del procedimiento administrativo correspondiente.
+        </p>
+        <p class="mt-4 mb-0"><a href="{% url 'ciudadano:menu_ciudadano' %}">← Volver al menú de trámites</a></p>
+    </div>
+</div>
+{% endblock %}

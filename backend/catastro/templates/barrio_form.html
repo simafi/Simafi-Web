@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_configuracion' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ request.session.catastro_usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header bg-primary text-white">
+				<h5 class="mb-0">
+					<i class="fas fa-edit me-2"></i>{{ titulo }}
+				</h5>
+			</div>
+			<div class="card-body">
+				<!-- Mensajes -->
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<!-- Formulario -->
+				<form method="post" id="form-barrio" action="">
+					{% csrf_token %}
+					<input type="hidden" id="barrio_id" name="barrio_id" value="{% if barrio %}{{ barrio.id }}{% endif %}">
+					<div class="row g-3">
+						<!-- Empresa -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.empresa.id_for_label }}">
+								<strong>{{ form.empresa.label }}</strong>
+							</label>
+							{{ form.empresa }}
+							{{ form.empresa.errors }}
+							<small class="form-text text-muted">Se asigna automáticamente. Departamento y Municipio se calculan desde este campo.</small>
+						</div>
+
+						<!-- Código Barrio -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.codbarrio.id_for_label }}">
+								<strong>{{ form.codbarrio.label }} *</strong>
+							</label>
+							{{ form.codbarrio }}
+							{{ form.codbarrio.errors }}
+							<small class="form-text text-muted">Máximo 8 caracteres</small>
+						</div>
+
+						<!-- Tipología -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.tipica.id_for_label }}">
+								<strong>{{ form.tipica.label }}</strong>
+							</label>
+							{{ form.tipica }}
+							{{ form.tipica.errors }}
+						</div>
+
+						<!-- Descripción -->
+						<div class="col-md-12">
+							<label class="form-label" for="{{ form.descripcion.id_for_label }}">
+								<strong>{{ form.descripcion.label }}</strong>
+							</label>
+							{{ form.descripcion }}
+							{{ form.descripcion.errors }}
+							<small class="form-text text-muted">Máximo 29 caracteres</small>
+						</div>
+					</div>
+
+					<!-- Botones -->
+					<div class="mt-4 d-flex justify-content-between">
+						<a href="{% url 'catastro:barrios_list' %}" class="btn btn-secondary">
+							<i class="fas fa-arrow-left me-1"></i> Volver
+						</a>
+						<button type="submit" class="btn btn-primary">
+							<i class="fas fa-save me-1"></i> Guardar
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const empresaInput = document.getElementById('{{ form.empresa.id_for_label }}');
+			const codbarrioInput = document.getElementById('{{ form.codbarrio.id_for_label }}');
+			const descripcionInput = document.getElementById('{{ form.descripcion.id_for_label }}');
+			const tipicaInput = document.getElementById('{{ form.tipica.id_for_label }}');
+			
+			let buscandoBarrio = false;
+			let timeoutBusqueda = null;
+			
+			// Función para buscar barrio automáticamente
+			function buscarBarrio() {
+				// Evitar búsquedas múltiples simultáneas
+				if (buscandoBarrio) {
+					return;
+				}
+				
+				const empresa = empresaInput ? empresaInput.value.trim() : '';
+				const codbarrio = codbarrioInput ? codbarrioInput.value.trim() : '';
+				
+				// Solo buscar si hay empresa y código de barrio
+				if (empresa && codbarrio && codbarrio.length >= 1) {
+					// Cancelar búsqueda anterior si existe
+					if (timeoutBusqueda) {
+						clearTimeout(timeoutBusqueda);
+					}
+					
+					// Esperar un poco antes de buscar (debounce)
+					timeoutBusqueda = setTimeout(() => {
+						buscandoBarrio = true;
+						
+						const url = '{% url "catastro:api_buscar_barrio" %}?empresa=' + encodeURIComponent(empresa) + 
+							'&codbarrio=' + encodeURIComponent(codbarrio);
+						
+						fetch(url, {
+							credentials: 'include',
+							headers: {
+								'Accept': 'application/json',
+								'X-Requested-With': 'XMLHttpRequest'
+							}
+						})
+						.then(async response => {
+							const contentType = response.headers.get('content-type');
+							if (!contentType || !contentType.includes('application/json')) {
+								const text = await response.text();
+								console.error('Respuesta no es JSON:', text.substring(0, 200));
+								throw new Error('El servidor devolvió una respuesta no JSON');
+							}
+							return response.json();
+						})
+						.then(data => {
+							buscandoBarrio = false;
+							
+							if (data.encontrado && data.data) {
+								const barrio = data.data;
+								
+								// Si existe un ID, cambiar el formulario a modo edición
+								if (barrio.id) {
+									const form = document.getElementById('form-barrio');
+									const barrioIdInput = document.getElementById('barrio_id');
+									
+									// Actualizar el ID oculto
+									if (barrioIdInput) {
+										barrioIdInput.value = barrio.id;
+									} else {
+										// Crear input oculto si no existe
+										const hiddenInput = document.createElement('input');
+										hiddenInput.type = 'hidden';
+										hiddenInput.id = 'barrio_id';
+										hiddenInput.name = 'barrio_id';
+										hiddenInput.value = barrio.id;
+										form.appendChild(hiddenInput);
+									}
+									
+									// Cambiar la acción del formulario a edición
+									const editUrl = '{% url "catastro:barrio_update" pk=0 %}'.replace('0', barrio.id);
+									form.action = editUrl;
+									
+									// Cambiar el título del formulario si es posible
+									const titulo = document.querySelector('.card-header h5');
+									if (titulo) {
+										titulo.innerHTML = '<i class="fas fa-edit me-2"></i>Editar Barrio / Aldea - Catastro';
+									}
+									
+									// Cambiar el texto del botón de guardar
+									const submitBtn = form.querySelector('button[type="submit"]');
+									if (submitBtn) {
+										submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> Actualizar';
+									}
+								}
+								
+								// Cargar los datos en el formulario
+								if (descripcionInput) {
+									descripcionInput.value = barrio.descripcion || '';
+								}
+								if (tipicaInput) {
+									tipicaInput.value = parseFloat(barrio.tipica || 0).toFixed(2);
+								}
+								
+								// Mostrar mensaje informativo
+								console.log('Barrio encontrado y datos cargados. Modo: Actualización');
+							} else {
+								// Barrio no encontrado, limpiar todos los datos y asegurar modo creación
+								const form = document.getElementById('form-barrio');
+								const barrioIdInput = document.getElementById('barrio_id');
+								
+								// Limpiar el ID si existe
+								if (barrioIdInput && barrioIdInput.value) {
+									barrioIdInput.value = '';
+								}
+								
+								// Asegurar que la acción sea creación
+								const createUrl = '{% url "catastro:barrio_create" %}';
+								form.action = createUrl;
+								
+								// Cambiar el título del formulario a modo creación
+								const titulo = document.querySelector('.card-header h5');
+								if (titulo) {
+									titulo.innerHTML = '<i class="fas fa-edit me-2"></i>Nuevo Barrio / Aldea - Catastro';
+								}
+								
+								// Cambiar el texto del botón de guardar
+								const submitBtn = form.querySelector('button[type="submit"]');
+								if (submitBtn) {
+									submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> Guardar';
+								}
+								
+								// Limpiar todos los campos de datos (excepto empresa y codbarrio que son los de búsqueda)
+								if (descripcionInput) {
+									descripcionInput.value = '';
+								}
+								if (tipicaInput) {
+									tipicaInput.value = '0.00';
+								}
+								
+								console.log('Barrio no encontrado. Formulario limpiado y en modo creación.');
+							}
+						})
+						.catch(error => {
+							buscandoBarrio = false;
+							console.error('Error al buscar barrio:', error);
+						});
+					}, 500); // Esperar 500ms después de que el usuario deje de escribir
+				}
+			}
+			
+			// Event listeners
+			if (codbarrioInput) {
+				codbarrioInput.addEventListener('input', buscarBarrio);
+				codbarrioInput.addEventListener('blur', buscarBarrio);
+			}
+			
+			if (empresaInput) {
+				empresaInput.addEventListener('change', buscarBarrio);
+			}
+		});
+	</script>
+</body>
+</html>
+

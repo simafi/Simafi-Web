@@ -1,0 +1,134 @@
+{% extends "compras/base.html" %}
+
+{% block active_dashboard %}active{% endblock %}
+
+{% block content %}
+<!-- Stats Row -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3 animate-in" style="animation-delay: 0.1s;">
+        <div class="premium-card stat-card">
+            <div class="stat-icon bg-warning text-dark"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="text-muted small">Req. Pendientes</div>
+                <div class="h3 fw-bold mb-0">{{ req_pendientes }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-in" style="animation-delay: 0.2s;">
+        <div class="premium-card stat-card">
+            <div class="stat-icon bg-info text-white"><i class="fas fa-file-invoice"></i></div>
+            <div>
+                <div class="text-muted small">SC en Proceso</div>
+                <div class="h3 fw-bold mb-0">{{ sc_abiertas }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-in" style="animation-delay: 0.3s;">
+        <div class="premium-card stat-card">
+            <div class="stat-icon bg-success text-white"><i class="fas fa-shopping-cart"></i></div>
+            <div>
+                <div class="text-muted small">Órdenes Abiertas</div>
+                <div class="h3 fw-bold mb-0">{{ oc_abiertas }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-in" style="animation-delay: 0.4s;">
+        <div class="premium-card stat-card">
+            <div class="stat-icon bg-primary text-white"><i class="fas fa-money-bill-wave"></i></div>
+            <div>
+                <div class="text-muted small">Gastos del Mes</div>
+                <div class="h3 fw-bold mb-0">L {{ monto_oc_mes|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Requisiciones section -->
+    <div class="col-lg-4 animate-in" style="animation-delay: 0.5s;">
+        <div class="premium-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div class="stat-icon bg-light text-success"><i class="fas fa-clipboard-list"></i></div>
+                <span class="badge bg-light text-dark">{{ count_req }} Total</span>
+            </div>
+            <h5 class="fw-bold mb-2">Gestión de Requisiciones</h5>
+            <p class="text-muted small mb-4">Gestione solicitudes internas de materiales y verifique existencias en bodega antes de comprar.</p>
+            <div class="d-grid gap-2">
+                <a href="{% url 'compras:requisicion_list' %}" class="btn-purchase"><i class="fas fa-list me-2"></i>Ver Listado</a>
+                <a href="{% url 'compras:requisicion_create' %}" class="btn-purchase-outline text-center"><i class="fas fa-plus me-2"></i>Nueva Requisición</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cotizaciones section -->
+    <div class="col-lg-4 animate-in" style="animation-delay: 0.6s;">
+        <div class="premium-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div class="stat-icon bg-light text-primary"><i class="fas fa-file-contract"></i></div>
+                <span class="badge bg-light text-dark">{{ count_sc }} Total</span>
+            </div>
+            <h5 class="fw-bold mb-2">Convocatorias y ONCAE</h5>
+            <p class="text-muted small mb-4">Prepare bases de licitación, invite proveedores y compare ofertas económicas bajo normativa ONCAE.</p>
+            <div class="d-grid gap-2">
+                <a href="{% url 'compras:solicitud_cotizacion_list' %}" class="btn-purchase" style="background-color: #3b82f6;"><i class="fas fa-users me-2"></i>Gestionar Ofertas</a>
+                <a href="{% url 'compras:solicitud_cotizacion_create' %}" class="btn-purchase-outline text-center" style="color: #3b82f6; border-color: #3b82f6;"><i class="fas fa-bullhorn me-2"></i>Nueva Convocatoria</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compras section -->
+    <div class="col-lg-4 animate-in" style="animation-delay: 0.7s;">
+        <div class="premium-card h-100 p-4">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div class="stat-icon bg-light text-secondary"><i class="fas fa-shopping-bag"></i></div>
+                <span class="badge bg-light text-dark">{{ count_oc }} Total</span>
+            </div>
+            <h5 class="fw-bold mb-2">Órdenes de Compra</h5>
+            <p class="text-muted small mb-4">Emisión de órdenes formales, compromisos presupuestarios y seguimiento de entregas.</p>
+            <div class="d-grid gap-2">
+                <a href="{% url 'compras:orden_compra_list' %}" class="btn-purchase" style="background-color: #64748b;"><i class="fas fa-file-import"></i> Administrar O.C.</a>
+                <a href="{% url 'compras:orden_compra_create' %}" class="btn-purchase-outline text-center" style="color: #64748b; border-color: #64748b;"><i class="fas fa-plus"></i> Nueva Orden</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8 animate-in" style="animation-delay: 0.8s;">
+        <div class="premium-card p-4">
+            <h5 class="fw-bold mb-4"><i class="fas fa-warehouse text-warning me-2"></i>Abastecimiento y Bodega</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="p-3 border rounded-3 hover-shadow-sm transition-all" style="background: #fffcf0;">
+                        <h6 class="fw-bold"><i class="fas fa-box-open me-2 text-warning"></i>Kardex de Inventario</h6>
+                        <p class="small text-muted">Consulte el historial de entradas y salidas de materiales según la normativa NIC 2.</p>
+                        <a href="{% url 'compras:movimiento_bodega_list' %}" class="btn btn-sm btn-outline-warning">Ver Movimientos</a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 border rounded-3 hover-shadow-sm transition-all" style="background: #f0fdf4;">
+                        <h6 class="fw-bold"><i class="fas fa-sign-in-alt me-2 text-success"></i>Entrada Directa</h6>
+                        <p class="small text-muted">Registre el ingreso físico de productos a bodega y actualice existencias.</p>
+                        <a href="{% url 'compras:movimiento_bodega_entrada' %}" class="btn btn-sm btn-success text-white">Registrar Entrada</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 animate-in" style="animation-delay: 0.9s;">
+        <div class="premium-card p-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+            <h5 class="fw-bold mb-3"><i class="fas fa-link text-info me-2"></i>Integraciones</h5>
+            <ul class="list-unstyled small opacity-80">
+                <li class="mb-2"><i class="fas fa-check-circle text-info me-2"></i>Presupuesto: Compromisos automáticos</li>
+                <li class="mb-2"><i class="fas fa-check-circle text-info me-2"></i>Tesorería: Órdenes de pago vinculadas</li>
+                <li class="mb-2"><i class="fas fa-check-circle text-info me-2"></i>Contabilidad: Kardex e Inventario NIC 2</li>
+            </ul>
+            <hr class="opacity-20">
+            <div class="d-flex gap-2 mt-4">
+                <a href="{% url 'presupuestos:gestionar_compromisos' %}" class="btn btn-sm btn-info text-white flex-fill" target="_blank">Presupuestos</a>
+                <a href="{% url 'tesoreria:pagos_tesoreria' %}" class="btn btn-sm btn-outline-info flex-fill" target="_blank">Pagos</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

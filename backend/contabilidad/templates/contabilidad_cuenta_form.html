@@ -1,0 +1,205 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:plan_cuentas' %}">Plan de Cuentas</a></li>
+            <li class="breadcrumb-item active">{{ titulo }}</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="cont-card">
+                <div class="card-header">
+                    <i class="fas fa-edit me-2"></i>{{ titulo }}
+                </div>
+                <div class="card-body cont-form">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Código de Cuenta</label>
+                                {{ form.codigo }}
+                                {% if form.codigo.errors %}<small class="text-danger">{{ form.codigo.errors.0 }}</small>{% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Nombre de la Cuenta</label>
+                                {{ form.nombre }}
+                                {% if form.nombre.errors %}<small class="text-danger">{{ form.nombre.errors.0 }}</small>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Grupo</label>
+                                <select name="grupo" id="id_grupo" class="form-control" required>
+                                    {% for value, label in grupo_choices %}
+                                        <option value="{{ value }}" {% if form.grupo.value != None and form.grupo.value|stringformat:"s" == value %}selected{% endif %}>{{ label }}</option>
+                                    {% empty %}
+                                        <option value="">— Sin grupos configurados —</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="btn btn-link btn-sm p-0 mt-1 text-primary" style="font-size:0.85rem;" data-bs-toggle="collapse" data-bs-target="#ayudaGrupo" aria-expanded="false">
+                                    <i class="fas fa-question-circle me-1"></i>¿Qué debe ir en Grupo?
+                                </button>
+                                <div class="collapse small text-muted mt-2" id="ayudaGrupo">
+                                    <div class="p-2 rounded border" style="background:#f7fafc;">
+                                        El <strong>Grupo</strong> clasifica la cuenta en una de las categorías del plan contable:<br>
+                                        <span class="badge bg-primary">1 Activo</span> — Bienes y derechos (efectivo, bancos, inventarios, cuentas por cobrar, activos fijos).<br>
+                                        <span class="badge bg-warning text-dark">2 Pasivo</span> — Obligaciones (cuentas por pagar, préstamos, impuestos por pagar).<br>
+                                        <span class="badge bg-info">3 Capital</span> — Patrimonio (capital social, reservas, utilidades acumuladas).<br>
+                                        <span class="badge bg-success">5 Ingresos</span> — Ventas, ingresos por servicios, otros ingresos.<br>
+                                        <span class="badge bg-danger">6/7 Egresos</span> — Gastos operativos, costos, gastos financieros y otros. Elija el grupo que corresponda al tipo de cuenta para que los reportes (balance, estado de resultados) se generen correctamente.
+                                    </div>
+                                </div>
+                                {% if form.grupo.errors %}<small class="text-danger">{{ form.grupo.errors.0 }}</small>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Cuenta Padre</label>
+                                {{ form.cuenta_padre }}
+                                <button type="button" class="btn btn-link btn-sm p-0 mt-1 text-primary" style="font-size:0.85rem;" data-bs-toggle="collapse" data-bs-target="#ayudaCuentaPadre" aria-expanded="false">
+                                    <i class="fas fa-question-circle me-1"></i>¿Qué es la cuenta padre?
+                                </button>
+                                <div class="collapse small text-muted mt-2" id="ayudaCuentaPadre">
+                                    <div class="p-2 rounded border" style="background:#f7fafc;">
+                                        Es la cuenta que <strong>agrupa</strong> a esta en el plan. Ejemplo: si crea "Caja General" (111-01-02), su cuenta padre puede ser "Efectivo" (111-01). Las cuentas de nivel 1 no tienen padre; las de nivel 2 tienen como padre la de nivel 1, y así sucesivamente. Sirve para ordenar el catálogo en árbol y sumar saldos por categoría.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Nivel Jerárquico</label>
+                                {{ form.nivel }}
+                                <button type="button" class="btn btn-link btn-sm p-0 mt-1 text-primary" style="font-size:0.85rem;" data-bs-toggle="collapse" data-bs-target="#ayudaNivelJerarquico" aria-expanded="false">
+                                    <i class="fas fa-question-circle me-1"></i>¿Qué es el nivel jerárquico?
+                                </button>
+                                <div class="collapse small text-muted mt-2" id="ayudaNivelJerarquico">
+                                    <div class="p-2 rounded border" style="background:#f7fafc;">
+                                        Indica qué tan “abajo” está la cuenta en el plan. Nivel <strong>1</strong> = categoría principal (ej. 1 Activo). Nivel <strong>2</strong> = subcategoría (ej. 11 Efectivo). Nivel <strong>3</strong> = rubro (ej. 111 Caja). Nivel <strong>4</strong> = cuenta. Nivel <strong>5</strong> = subcuenta de detalle. Si usa códigos con guiones (111-01-02), el nivel suele ser la cantidad de partes: 111 → 1, 111-01 → 2, 111-01-02 → 3.
+                                    </div>
+                                </div>
+                                {% if form.nivel.errors %}<small class="text-danger">{{ form.nivel.errors.0 }}</small>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Tipo</label>
+                                {{ form.tipo }}
+                                <button type="button" class="btn btn-link btn-sm p-0 mt-1 text-primary" style="font-size:0.85rem;" data-bs-toggle="collapse" data-bs-target="#ayudaTipo" aria-expanded="false">
+                                    <i class="fas fa-question-circle me-1"></i>¿Qué es el tipo de cuenta?
+                                </button>
+                                <div class="collapse small text-muted mt-2" id="ayudaTipo">
+                                    <div class="p-2 rounded border" style="background:#f7fafc;">
+                                        <strong>Título/Agrupadora:</strong> cuenta que solo sirve para agrupar otras (ej. "Efectivo y equivalentes"). No debe usarse en asientos; los movimientos se registran en las subcuentas.<br>
+                                        <strong>Detalle/Movimiento:</strong> cuenta donde sí se registran cargos y abonos en el libro diario (ej. "Caja General", "Banco X"). Use este tipo para las cuentas que aceptan movimientos.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Naturaleza</label>
+                                {{ form.naturaleza }}
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end gap-3">
+                                <div class="form-check">
+                                    {{ form.acepta_movimiento }}
+                                    <label class="form-check-label" style="font-size:0.85rem;">Acepta Movimiento</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Descripción</label>
+                                {{ form.descripcion }}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.requiere_centro_costo }}
+                                    <label class="form-check-label" style="font-size:0.85rem;">Requiere Centro de Costo</label>
+                                </div>
+                                <button type="button" class="btn btn-link btn-sm p-0 mt-1 text-primary" style="font-size:0.85rem;" data-bs-toggle="collapse" data-bs-target="#ayudaCentroCosto" aria-expanded="false">
+                                    <i class="fas fa-question-circle me-1"></i>¿Qué significa?
+                                </button>
+                                <div class="collapse small text-muted mt-2" id="ayudaCentroCosto">
+                                    <div class="p-2 rounded border" style="background:#f7fafc;">
+                                        Si marca esta opción, al registrar un asiento que use esta cuenta el sistema pedirá indicar un <strong>centro de costo</strong> (área, proyecto o departamento). Sirve para distribuir gastos o ingresos por sección y ver reportes por centro.<br>
+                                        <strong>¿Cuentas de costos o gastos?</strong> Sí — para cuentas de <strong>costos</strong> y <strong>gastos</strong> (grupos 6 y 7 Egresos) se recomienda marcar esta opción si desea reportes por área o departamento (por ejemplo: gastos por oficina, por proyecto, por centro). Deje sin marcar si la cuenta no necesita este detalle.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.requiere_tercero }}
+                                    <label class="form-check-label" style="font-size:0.85rem;">Requiere Tercero</label>
+                                </div>
+                                <button type="button" class="btn btn-link btn-sm p-0 mt-1 text-primary" style="font-size:0.85rem;" data-bs-toggle="collapse" data-bs-target="#ayudaTercero" aria-expanded="false">
+                                    <i class="fas fa-question-circle me-1"></i>¿Qué significa?
+                                </button>
+                                <div class="collapse small text-muted mt-2" id="ayudaTercero">
+                                    <div class="p-2 rounded border" style="background:#f7fafc;">
+                                        Si marca esta opción, al registrar un asiento con esta cuenta el sistema pedirá indicar un <strong>tercero</strong> (cliente, proveedor, empleado, etc.). Útil para cuentas por cobrar, por pagar o que siempre deben asociarse a una persona o entidad. Deje sin marcar si no aplica.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{ form.empresa }}
+                        <hr>
+                        {% if not cuenta %}
+                        <p class="small text-muted mb-2">Puede guardar varias cuentas sin salir de esta pantalla. Cuando termine de cargar el catálogo, use <strong>Terminar e ir al Plan de Cuentas</strong>.</p>
+                        {% endif %}
+                        <div class="d-flex justify-content-between flex-wrap gap-2">
+                            {% if cuenta %}
+                            <a href="{% url 'contabilidad:plan_cuentas' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Cancelar
+                            </a>
+                            {% else %}
+                            <a href="{% url 'contabilidad:plan_cuentas' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-sign-out-alt me-1"></i> Terminar e ir al Plan de Cuentas
+                            </a>
+                            {% endif %}
+                            <button type="submit" class="btn btn-cont-primary">
+                                <i class="fas fa-save me-1"></i> {% if cuenta %}Guardar Cambios{% else %}Guardar Cuenta y seguir agregando{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not cuenta %}
+<script>
+(function() {
+    var codigoInput = document.getElementById('id_codigo');
+    var formCard = codigoInput && codigoInput.closest('.cont-card');
+    if (!codigoInput || !formCard) return;
+    var urlBuscar = '{% url "contabilidad:ajax_cuenta_por_codigo" %}';
+
+    function verificarCodigo() {
+        var codigo = (codigoInput.value || '').trim();
+        if (!codigo) return;
+        fetch(urlBuscar + '?codigo=' + encodeURIComponent(codigo), {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.existe && data.url_editar) {
+                var msg = document.createElement('div');
+                msg.className = 'alert alert-info alert-dismissible fade show mt-2';
+                msg.setAttribute('role', 'alert');
+                msg.innerHTML = '<strong>Esta cuenta ya existe.</strong> Redirigiendo para mostrar los datos existentes en la base de datos… <button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                var cardBody = formCard.querySelector('.card-body');
+                cardBody.insertBefore(msg, cardBody.firstChild);
+                setTimeout(function() { window.location.href = data.url_editar; }, 1200);
+            }
+        })
+        .catch(function() {});
+    }
+
+    codigoInput.addEventListener('blur', function() { verificarCodigo(); });
+})();
+</script>
+{% endif %}
+{% endblock %}

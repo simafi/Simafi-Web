@@ -1,0 +1,36 @@
+{% extends "contabilidad_base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}
+<div class="cont-breadcrumb"><nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:tipo_inventario_list' %}">Tipos de inventario</a></li>
+    <li class="breadcrumb-item active">{{ titulo }}</li>
+</ol></nav></div>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="cont-card">
+                <div class="card-header"><i class="fas fa-tag me-2"></i>{{ titulo }}</div>
+                <div class="card-body cont-form">
+                    <form method="post">{% csrf_token %}
+                        <div class="mb-3"><label class="form-label">Nombre</label>{{ form.nombre }}{{ form.nombre.errors }}</div>
+                        <div class="mb-3"><label class="form-label">Orden</label>{{ form.orden }}{{ form.orden.errors }}</div>
+                        <div class="mb-3"><label class="form-label">Código de referencia (heredado)</label>{{ form.codigo_legacy }}{{ form.codigo_legacy.errors }}
+                            <p class="small text-muted mb-0">Opcional. Si proviene del listado estándar (p. ej. MATERIA_PRIMA), documéntelo aquí.</p>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Notas</label>{{ form.notas }}{{ form.notas.errors }}</div>
+                        <div class="mb-3 form-check">{{ form.is_active }} <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Activo (desmarque para ocultar en listas sin borrar)</label></div>
+                        {{ form.empresa }}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'contabilidad:tipo_inventario_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-cont-primary">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

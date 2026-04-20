@@ -1,0 +1,257 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}Estados Financieros{% endblock %}
+
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item active">Estados Financieros</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-file-invoice-dollar me-2"></i>Estados Financieros (NIC 1)</h4>
+    </div>
+
+    <!-- Hub de reportes -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-md-3">
+            <a href="{% url 'contabilidad:estados_financieros' %}" class="text-decoration-none">
+                <div class="cont-card h-100 border-primary border-2 text-center py-3">
+                    <i class="fas fa-balance-scale text-primary" style="font-size:1.5rem;"></i>
+                    <div class="fw-bold mt-1">Balance General</div>
+                    <small class="text-muted">y Estado de Resultados</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <a href="{% url 'contabilidad:balance_general_comparativo' %}" class="text-decoration-none">
+                <div class="cont-card h-100 text-center py-3">
+                    <i class="fas fa-columns text-secondary" style="font-size:1.5rem;"></i>
+                    <div class="fw-bold mt-1">Balance Comparativo</div>
+                    <small class="text-muted">Actual vs anterior</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <a href="{% url 'contabilidad:estado_resultados_comparativo' %}" class="text-decoration-none">
+                <div class="cont-card h-100 text-center py-3">
+                    <i class="fas fa-columns text-secondary" style="font-size:1.5rem;"></i>
+                    <div class="fw-bold mt-1">Resultados Comparativo</div>
+                    <small class="text-muted">Actual vs anterior</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <a href="{% url 'contabilidad:balanza_comprobacion' %}" class="text-decoration-none">
+                <div class="cont-card h-100 text-center py-3">
+                    <i class="fas fa-balance-scale-right text-secondary" style="font-size:1.5rem;"></i>
+                    <div class="fw-bold mt-1">Balanza de Comprobación</div>
+                    <small class="text-muted">Débitos, créditos y saldos</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <a href="{% url 'contabilidad:libro_mayor' %}" class="text-decoration-none">
+                <div class="cont-card h-100 text-center py-3">
+                    <i class="fas fa-book text-info" style="font-size:1.5rem;"></i>
+                    <div class="fw-bold mt-1">Libro Mayor</div>
+                    <small class="text-muted">Auxiliar de una cuenta</small>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Selector de ejercicio -->
+    <div class="cont-card mb-4">
+        <div class="card-body cont-form">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Ejercicio Fiscal</label>
+                    <select name="ejercicio" class="form-control" onchange="this.form.submit()">
+                        <option value="">-- Seleccione ejercicio --</option>
+                        {% for e in ejercicios %}
+                        <option value="{{ e.pk }}" {% if ejercicio_id == e.pk|stringformat:"d" %}selected{% endif %}>
+                            {{ e.anio }} - {{ e.descripcion }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Fecha Desde</label>
+                    <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Fecha Hasta</label>
+                    <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-cont-primary"><i class="fas fa-chart-bar me-1"></i> Generar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if ejercicio_id %}
+    <div class="cont-card mb-3 p-2" style="background:#f7fafc;">
+        <div><strong>Rango de fechas:</strong> {{ fecha_desde|default:'' }} al {{ fecha_hasta|default:'' }}</div>
+    </div>
+    <div class="row g-4">
+        <!-- BALANCE GENERAL -->
+        <div class="col-lg-6">
+            <div class="cont-card">
+                <div class="card-header" style="background:var(--cont-primary); color:#fff; border-radius:12px 12px 0 0;">
+                    <i class="fas fa-balance-scale me-2"></i>BALANCE GENERAL
+                </div>
+                <div class="card-body p-0">
+                    <!-- ACTIVOS -->
+                    <div style="background:#ebf8ff; padding:0.5rem 1rem; font-weight:700; color:#2a4365; border-bottom:1px solid #bee3f8;">
+                        <i class="fas fa-arrow-up me-1"></i> ACTIVOS
+                    </div>
+                    <table class="table cont-table mb-0">
+                        <tbody>
+                            {% for a in balance.activos %}
+                            <tr>
+                                <td><code>{{ a.cuenta__codigo }}</code></td>
+                                <td>{{ a.cuenta__nombre }}</td>
+                                <td class="text-end">{{ a.saldo|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-2">Sin datos</td></tr>
+                            {% endfor %}
+                            <tr style="background:#f7fafc; font-weight:700;">
+                                <td colspan="2" class="text-end">Total Activos:</td>
+                                <td class="text-end" style="color:var(--cont-accent);">{{ totales.total_activos|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- PASIVOS -->
+                    <div style="background:#fed7d7; padding:0.5rem 1rem; font-weight:700; color:#9b2c2c; border-bottom:1px solid #feb2b2;">
+                        <i class="fas fa-arrow-down me-1"></i> PASIVOS
+                    </div>
+                    <table class="table cont-table mb-0">
+                        <tbody>
+                            {% for p in balance.pasivos %}
+                            <tr>
+                                <td><code>{{ p.cuenta__codigo }}</code></td>
+                                <td>{{ p.cuenta__nombre }}</td>
+                                <td class="text-end">{{ p.saldo|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-2">Sin datos</td></tr>
+                            {% endfor %}
+                            <tr style="background:#f7fafc; font-weight:700;">
+                                <td colspan="2" class="text-end">Total Pasivos:</td>
+                                <td class="text-end" style="color:var(--cont-danger);">{{ totales.total_pasivos|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- PATRIMONIO -->
+                    <div style="background:#c6f6d5; padding:0.5rem 1rem; font-weight:700; color:#276749; border-bottom:1px solid #9ae6b4;">
+                        <i class="fas fa-landmark me-1"></i> PATRIMONIO
+                    </div>
+                    <table class="table cont-table mb-0">
+                        <tbody>
+                            {% for pat in balance.patrimonio %}
+                            <tr>
+                                <td><code>{{ pat.cuenta__codigo }}</code></td>
+                                <td>{{ pat.cuenta__nombre }}</td>
+                                <td class="text-end">{{ pat.saldo|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-2">Sin datos</td></tr>
+                            {% endfor %}
+                            <tr style="background:#f7fafc; font-weight:700;">
+                                <td colspan="2" class="text-end">Total Patrimonio:</td>
+                                <td class="text-end" style="color:var(--cont-success);">{{ totales.total_patrimonio|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ESTADO DE RESULTADOS -->
+        <div class="col-lg-6">
+            <div class="cont-card">
+                <div class="card-header" style="background:#276749; color:#fff; border-radius:12px 12px 0 0;">
+                    <i class="fas fa-chart-line me-2"></i>ESTADO DE RESULTADOS
+                </div>
+                <div class="card-body p-0">
+                    <!-- INGRESOS -->
+                    <div style="background:#c6f6d5; padding:0.5rem 1rem; font-weight:700; color:#276749; border-bottom:1px solid #9ae6b4;">
+                        <i class="fas fa-plus-circle me-1"></i> INGRESOS
+                    </div>
+                    <table class="table cont-table mb-0">
+                        <tbody>
+                            {% for i in resultado.ingresos %}
+                            <tr>
+                                <td><code>{{ i.cuenta__codigo }}</code></td>
+                                <td>{{ i.cuenta__nombre }}</td>
+                                <td class="text-end">{{ i.saldo|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-2">Sin datos</td></tr>
+                            {% endfor %}
+                            <tr style="background:#f7fafc; font-weight:700;">
+                                <td colspan="2" class="text-end">Total Ingresos:</td>
+                                <td class="text-end" style="color:var(--cont-success);">{{ totales.total_ingresos|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- GASTOS -->
+                    <div style="background:#fed7d7; padding:0.5rem 1rem; font-weight:700; color:#9b2c2c; border-bottom:1px solid #feb2b2;">
+                        <i class="fas fa-minus-circle me-1"></i> GASTOS
+                    </div>
+                    <table class="table cont-table mb-0">
+                        <tbody>
+                            {% for g in resultado.gastos %}
+                            <tr>
+                                <td><code>{{ g.cuenta__codigo }}</code></td>
+                                <td>{{ g.cuenta__nombre }}</td>
+                                <td class="text-end">{{ g.saldo|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-2">Sin datos</td></tr>
+                            {% endfor %}
+                            <tr style="background:#f7fafc; font-weight:700;">
+                                <td colspan="2" class="text-end">Total Gastos:</td>
+                                <td class="text-end" style="color:var(--cont-danger);">{{ totales.total_gastos|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- UTILIDAD / PÉRDIDA -->
+                    <div class="p-3 text-center" style="background:{% if totales.utilidad_neta >= 0 %}#f0fff4{% else %}#fff5f5{% endif %};">
+                        <h5 class="mb-1" style="color:{% if totales.utilidad_neta >= 0 %}#276749{% else %}#9b2c2c{% endif %};">
+                            {% if totales.utilidad_neta >= 0 %}
+                            <i class="fas fa-arrow-up"></i> UTILIDAD NETA
+                            {% else %}
+                            <i class="fas fa-arrow-down"></i> PÉRDIDA NETA
+                            {% endif %}
+                        </h5>
+                        <h3 style="color:{% if totales.utilidad_neta >= 0 %}var(--cont-success){% else %}var(--cont-danger){% endif %}; font-weight:700;">
+                            {{ totales.utilidad_neta|floatformat:2 }}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="cont-card p-5 text-center text-muted">
+        <i class="fas fa-chart-bar" style="font-size:3rem;"></i>
+        <p class="mt-3">Seleccione un ejercicio fiscal para generar los estados financieros.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

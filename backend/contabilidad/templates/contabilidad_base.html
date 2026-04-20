@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Contabilidad NIC/IAS{% endblock %} - SIMAFI Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cont-primary: #1a365d;
+            --cont-secondary: #2d3748;
+            --cont-accent: #3182ce;
+            --cont-success: #38a169;
+            --cont-warning: #d69e2e;
+            --cont-danger: #e53e3e;
+            --cont-bg: #f0f4f8;
+            --cont-card: #ffffff;
+            --cont-sidebar-bg: linear-gradient(180deg, #1a365d 0%, #2d3748 100%);
+            --cont-text: #2d3748;
+            --cont-text-light: #718096;
+            --cont-border: #e2e8f0;
+        }
+
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+
+        body {
+            background: var(--cont-bg);
+            color: var(--cont-text);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .cont-navbar {
+            background: linear-gradient(135deg, var(--cont-primary) 0%, #2b4c7e 100%);
+            padding: 0.6rem 1.5rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+        }
+        .cont-navbar .navbar-brand {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: -0.3px;
+        }
+        .cont-navbar .navbar-brand i { margin-right: 8px; color: #90cdf4; }
+        .cont-navbar .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; font-size: 0.9rem; }
+        .cont-navbar .nav-link:hover { color: #fff !important; }
+
+        /* Breadcrumb */
+        .cont-breadcrumb {
+            background: var(--cont-card);
+            border-bottom: 1px solid var(--cont-border);
+            padding: 0.7rem 1.5rem;
+        }
+        .cont-breadcrumb .breadcrumb { margin: 0; font-size: 0.85rem; }
+        .cont-breadcrumb .breadcrumb-item a { color: var(--cont-accent); text-decoration: none; }
+
+        /* Cards */
+        .cont-card {
+            background: var(--cont-card);
+            border-radius: 12px;
+            border: 1px solid var(--cont-border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: box-shadow 0.2s ease;
+        }
+        .cont-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .cont-card .card-header {
+            background: transparent;
+            border-bottom: 1px solid var(--cont-border);
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+        }
+
+        /* Tables */
+        .cont-table { font-size: 0.88rem; }
+        .cont-table thead th {
+            background: #f7fafc;
+            border-bottom: 2px solid var(--cont-border);
+            font-weight: 600;
+            color: var(--cont-text-light);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            padding: 0.75rem;
+        }
+        .cont-table tbody td { padding: 0.7rem 0.75rem; vertical-align: middle; }
+        .cont-table tbody tr:hover { background: #f7fafc; }
+
+        /* Buttons */
+        .btn-cont-primary {
+            background: linear-gradient(135deg, var(--cont-accent) 0%, #2b6cb0 100%);
+            border: none;
+            color: #fff;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 0.5rem 1.2rem;
+            font-size: 0.88rem;
+            transition: all 0.2s;
+        }
+        .btn-cont-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(49,130,206,0.3); color: #fff; }
+        .btn-cont-success { background: var(--cont-success); border: none; color: #fff; border-radius: 8px; font-weight: 500; }
+        .btn-cont-warning { background: var(--cont-warning); border: none; color: #fff; border-radius: 8px; font-weight: 500; }
+        .btn-cont-danger { background: var(--cont-danger); border: none; color: #fff; border-radius: 8px; font-weight: 500; }
+
+        /* Status badges */
+        .badge-borrador { background: #edf2f7; color: #4a5568; }
+        .badge-aprobado { background: #c6f6d5; color: #276749; }
+        .badge-contabilizado { background: #bee3f8; color: #2a4365; }
+        .badge-anulado { background: #fed7d7; color: #9b2c2c; }
+
+        /* Content container */
+        .cont-main { padding: 1.5rem; }
+
+        /* Page header */
+        .cont-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .cont-page-header h4 { font-weight: 700; margin: 0; color: var(--cont-primary); }
+
+        /* Form styles */
+        .cont-form .form-label { font-weight: 500; font-size: 0.85rem; color: var(--cont-text-light); margin-bottom: 4px; }
+        .cont-form .form-control { border-radius: 8px; border: 1.5px solid var(--cont-border); font-size: 0.9rem; }
+        .cont-form .form-control:focus { border-color: var(--cont-accent); box-shadow: 0 0 0 3px rgba(49,130,206,0.1); }
+
+        /* Animation */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="cont-navbar navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'contabilidad:contabilidad_menu_principal' %}">
+                <i class="fas fa-book"></i> Contabilidad NIC/IAS
+            </a>
+            <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+                <span class="nav-link"><i class="fas fa-building"></i> {{ empresa }}</span>
+                <span class="nav-link"><i class="fas fa-user"></i> {{ usuario }}</span>
+                <a href="{% url 'modules_core:menu_principal' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-th-large"></i> Menú Principal
+                </a>
+                <a href="{% url 'contabilidad:contabilidad_logout' %}" class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    {% block breadcrumb %}{% endblock %}
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container-fluid px-4 mt-2">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="border-radius:10px; font-size:0.9rem;">
+            {% if message.tags == 'success' %}<i class="fas fa-check-circle"></i>
+            {% elif message.tags == 'error' %}<i class="fas fa-exclamation-circle"></i>
+            {% elif message.tags == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
+            {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="cont-main fade-in">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

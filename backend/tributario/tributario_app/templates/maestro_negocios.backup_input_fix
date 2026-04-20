@@ -1,0 +1,2006 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gestión de Negocios</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Configuración del cursor de IA en español -->
+    <script src="{% static 'js/cursor_ai_config.js' %}"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(90deg, #1e88e5 0%, #0d47a1 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        header:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #545b62 0%, #3d444a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem 2.2rem;
+            align-items: flex-start;
+        }
+
+        .form-group {
+            background: #f8fafc;
+            border-radius: 13px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+            padding: 1.1rem 1rem 0.7rem 1rem;
+            margin-bottom: 0;
+            border: 1px solid #e5e7eb;
+            transition: box-shadow 0.18s;
+            flex: 1 1 auto;
+            min-width: 200px;
+        }
+
+        /* Clases para diferentes tamaños de campos */
+        .form-group-small {
+            flex: 0 1 150px;
+            min-width: 150px;
+        }
+
+        .form-group-medium {
+            flex: 1 1 250px;
+            min-width: 200px;
+        }
+
+        .form-group-large {
+            flex: 2 1 350px;
+            min-width: 300px;
+        }
+
+        .form-group-xlarge {
+            flex: 3 1 500px;
+            min-width: 400px;
+        }
+
+        /* Clases específicas para campos con ancho fijo */
+        .form-group-municipio {
+            flex: 0 1 140px;
+            min-width: 140px;
+            max-width: 140px;
+        }
+        
+        .form-group-municipio input[readonly] {
+            background-color: #f8f9fa !important;
+            color: #6c757d !important;
+            cursor: not-allowed;
+        }
+        
+        .form-group-rtm {
+            flex: 0 1 220px;
+            min-width: 220px;
+            max-width: 220px;
+        }
+
+        .form-group-expediente {
+            flex: 0 1 160px;
+            min-width: 160px;
+            max-width: 160px;
+        }
+
+        .form-group-fecha {
+            flex: 0 1 200px;
+            min-width: 200px;
+            max-width: 200px;
+        }
+
+        .form-group-rtn-negocio {
+            flex: 0 1 180px;
+            min-width: 180px;
+            max-width: 180px;
+        }
+
+        .form-group-rtn-negocio-specific {
+            flex: 0 1 220px;
+            min-width: 220px;
+            max-width: 220px;
+        }
+
+        .form-group-catastral-specific {
+            flex: 0 1 210px;
+            min-width: 210px;
+            max-width: 210px;
+        }
+
+        .form-group-coordenada-specific {
+            flex: 0 1 180px;
+            min-width: 180px;
+            max-width: 180px;
+        }
+        
+        .form-group-coordenada-x-specific {
+            flex: 0 1 220px;
+            min-width: 220px;
+            max-width: 220px;
+        }
+
+        .form-group-id_identidadrep-specific {
+            flex: 0 1 220px;
+            min-width: 220px;
+            max-width: 220px;
+        }
+
+        .form-group-nombre-negocio-specific {
+            flex: 0 1 450px;
+            min-width: 450px;
+            max-width: 450px;
+        }
+
+        .form-group-telefono-specific {
+            flex: 0 1 140px;
+            min-width: 140px;
+            max-width: 140px;
+        }
+
+        .form-group-celular-specific {
+            flex: 0 1 140px;
+            min-width: 140px;
+            max-width: 140px;
+        }
+
+        .form-group:focus-within {
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.13);
+            border-color: #2563eb;
+        }
+
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.35rem;
+            color: #374151;
+            font-weight: 600;
+            font-size: 1.02rem;
+            letter-spacing: 0.2px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.7rem 0.8rem;
+            border: 1.2px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 1.05rem;
+            background: #fff;
+            transition: border 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 3px rgba(30, 41, 59, 0.04);
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        input[type="email"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.09);
+        }
+
+        textarea {
+            min-height: 60px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            margin-top: 2.2rem;
+            justify-content: space-between;
+        }
+
+        button {
+            flex: 1 1 30%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.07rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-width: 140px;
+        }
+
+        /* Map Styles */
+        .map-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .map-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .map-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .map-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .map-btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .map-btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-1px);
+        }
+
+        .map-btn-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+        }
+
+        .map-btn-secondary:hover {
+            background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+            transform: translateY(-1px);
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .coordinates-info {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .coordinate-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .coordinate-value {
+            background: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #374151;
+        }
+        
+        .coordinate-value-x {
+            background: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #374151;
+            min-width: 140px;
+            width: 140px;
+        }
+
+        .map-instructions {
+            background: #e0f2fe;
+            border: 1px solid #0288d1;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #0277bd;
+        }
+
+        .map-instructions i {
+            margin-right: 8px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .map-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .coordinates-info {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .coordinate-display {
+                justify-content: space-between;
+            }
+            
+            .form-group-municipio {
+                flex: 1 1 100%;
+                min-width: 100%;
+                max-width: 100%;
+            }
+            
+            .form-group-coordenada-x-specific {
+                flex: 1 1 100%;
+                min-width: 100%;
+                max-width: 100%;
+            }
+            
+            .coordinate-value-x {
+                min-width: 100%;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-store"></i> Gestión de Negocios</h1>
+            <p class="subtitle">Sistema de administración y control de negocios</p>
+        </header>
+
+        <div class="card">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="form-grid">
+                    <!-- Primera línea -->
+                    <div class="form-group form-group-municipio">
+                        <label for="id_empre">Municipio <span style="color:#e11d48">*</span></label>
+                        <input type="text" id="id_empre" name="empre" maxlength="4" required readonly
+                               value="{{ municipio_codigo|default:negocio.empre|default_if_none:'' }}" 
+                               style="background-color: #f8f9fa; color: #6c757d;">
+                    </div>
+                    <div class="form-group form-group-rtm">
+                        <label for="id_rtm">RTM <span style="color:#e11d48">*</span></label>
+                        <input type="text" id="id_rtm" name="rtm" maxlength="16" required 
+                               style="text-transform: uppercase;"
+                               value="{{ negocio.rtm|default_if_none:'' }}" 
+                               oninput="this.value = this.value.toUpperCase()"
+                               placeholder="Ingrese RTM">
+                    </div>
+                    <div class="form-group form-group-expediente">
+                        <label for="id_expe">Expediente <span style="color:#e11d48">*</span></label>
+                        <input type="text" id="id_expe" name="expe" maxlength="12" required 
+                               style="text-transform: uppercase;"
+                               value="{{ negocio.expe|default_if_none:'' }}" 
+                               oninput="this.value = this.value.toUpperCase()"
+                               placeholder="Ingrese Expediente">
+                    </div>
+                    <div class="form-group form-group-fecha">
+                        <label for="id_fecha_ini">Fecha Inicio</label>
+                        <input type="date" id="id_fecha_ini" name="fecha_ini"
+                               value="{{ negocio.fecha_ini|date:'Y-m-d'|default_if_none:'' }}">
+                    </div>
+                    <div class="form-group form-group-fecha">
+                        <label for="id_fecha_can">Fecha Cancelación</label>
+                        <input type="date" id="id_fecha_can" name="fecha_can"
+                               value="{{ negocio.fecha_can|date:'Y-m-d'|default_if_none:'' }}">
+                    </div>
+
+                    <!-- Segunda línea -->
+                            <div class="form-group form-group-id_identidadrep-specific">
+            <label for="id_identidad">DNI</label>
+            <input type="text" id="id_identidad" name="identidad" maxlength="20"
+                   value="{{ negocio.identidad|default_if_none:'' }}">
+                    </div>
+                    <div class="form-group form-group-rtn-negocio-specific">
+                        <label for="id_rtnpersonal">RTN Personal</label>
+                        <input type="text" id="id_rtnpersonal" name="rtnpersonal" maxlength="20"
+                               value="{{ negocio.rtnpersonal|default_if_none:'' }}">
+                    </div>
+                    <div class="form-group" style="flex: 2 1 450px; min-width: 450px;">
+                        <label for="id_comerciante">Comerciante</label>
+                        <input type="text" id="id_comerciante" name="comerciante" maxlength="100"
+                               value="{{ negocio.comerciante|default_if_none:'' }}">
+                    </div>
+
+                    <!-- Tercera línea -->
+                    <div class="form-group form-group-rtn-negocio-specific">
+                        <label for="id_rtnnego">RTN Negocio</label>
+                        <input type="text" id="id_rtnnego" name="rtnnego" maxlength="19"
+                               value="{{ negocio.rtnnego|default_if_none:'' }}">
+                    </div>
+                    <div class="form-group form-group-nombre-negocio-specific">
+                        <label for="id_nombrenego">Nombre del Negocio</label>
+                        <input type="text" id="id_nombrenego" name="nombrenego" maxlength="100"
+                               value="{{ negocio.nombrenego|default_if_none:'' }}">
+                    </div>
+                    <div class="form-group form-group-large">
+                        <label for="id_actividad">Actividad Económica <span style="color:#e11d48">*</span> <small style="color: #6c757d; font-size: 0.85rem;">(Filtradas por municipio: {{ municipio_codigo }})</small></label>
+                        <select id="id_actividad" name="actividad" required>
+                            <option value="">Seleccione una actividad económica</option>
+                    {% for act in actividades %}
+                        <option value="{{ act.codigo }}" {% if negocio.actividad == act.codigo %}selected{% endif %}>
+                            {{ act.codigo }} - {{ act.descripcion }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+
+                    <!-- Cuarta línea -->
+                            <div class="form-group form-group-id_identidadrep-specific">
+            <label for="id_identidadrep">DNI Representante</label>
+            <input type="text" id="id_identidadrep" name="identidadrep" maxlength="20"
+                   value="{{ negocio.identidadrep|default_if_none:'' }}">
+                    </div>
+                    <div class="form-group" style="flex: 2 1 450px; min-width: 450px;">
+                        <label for="id_representante">Representante</label>
+                        <input type="text" id="id_representante" name="representante" maxlength="100"
+                               value="{{ negocio.representante|default_if_none:'' }}">
+                    </div>
+                    <div class="form-group form-group-small">
+                        <label for="id_estatus">Estado</label>
+                        <select id="id_estatus" name="estatus">
+                            <option value="A" {% if negocio.estatus == "A" %}selected{% endif %}>Activo</option>
+                            <option value="I" {% if negocio.estatus == "I" %}selected{% endif %}>Inactivo</option>
+                        </select>
+                    </div>
+
+                    <!-- Quinta línea -->
+            <div class="form-group form-group-catastral-specific">
+                <label for="id_catastral">Catastral</label>
+                <input type="text" id="id_catastral" name="catastral" maxlength="19" style="text-transform: uppercase;"
+                       value="{{ negocio.catastral|default_if_none:'' }}" oninput="this.value = this.value.toUpperCase()">
+            </div>
+            <div class="form-group form-group-coordenada-x-specific">
+                <label for="id_cx">Coordenada X</label>
+                <input type="number" id="id_cx" name="cx" step="0.0000001" min="-999.9999999" max="999.9999999"
+                       value="{{ negocio.cx|default_if_none:'0.0000000' }}">
+            </div>
+            <div class="form-group form-group-coordenada-specific">
+                <label for="id_cy">Coordenada Y</label>
+                <input type="number" id="id_cy" name="cy" step="0.0000001" min="-999.9999999" max="999.9999999"
+                       value="{{ negocio.cy|default_if_none:'0.0000000' }}">
+            </div>
+            <div class="form-group form-group-large">
+                <label for="id_direccion">Dirección</label>
+                <input type="text" id="id_direccion" name="direccion" maxlength="100"
+                       value="{{ negocio.direccion|default_if_none:'' }}">
+            </div>
+            <div class="form-group form-group-large">
+                <label for="id_correo">Correo</label>
+                <input type="email" id="id_correo" name="correo" maxlength="35"
+                       value="{{ negocio.correo|default_if_none:'' }}">
+            </div>
+            <div class="form-group form-group-large">
+                <label for="id_pagweb">Página Web</label>
+                <input type="text" id="id_pagweb" name="pagweb" maxlength="40"
+                       value="{{ negocio.pagweb|default_if_none:'' }}">
+            </div>
+
+            <!-- Sexta línea: Solo Socios -->
+            <div class="form-group" style="flex: 1 1 100%; min-width: 100%;">
+                <label for="id_socios">Socios</label>
+                <input type="text" id="id_socios" name="socios" maxlength="250"
+                       value="{{ negocio.socios|default_if_none:'' }}">
+            </div>
+            <div class="form-group" style="flex: 1 1 100%; min-width: 100%;">
+                <label for="id_comentario">Comentario</label>
+                <textarea id="id_comentario" name="comentario"
+                          maxlength="15000">{{ negocio.comentario|default_if_none:'' }}</textarea>
+            </div>
+        </div>
+
+        <!-- Map Navigation Section -->
+        <div class="map-container">
+            <div class="map-header">
+                <div class="map-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Navegación en Mapa
+                </div>
+                <div class="map-controls">
+                    <button type="button" class="map-btn map-btn-primary" onclick="centerOnHonduras()">
+                        <i class="fas fa-crosshairs"></i> Centrar en Honduras
+                    </button>
+                    <button type="button" class="map-btn map-btn-secondary" onclick="clearCoordinates()">
+                        <i class="fas fa-eraser"></i> Limpiar Coordenadas
+                    </button>
+                    <button type="button" class="map-btn map-btn-secondary" onclick="getCurrentLocation()">
+                        <i class="fas fa-location-arrow"></i> Mi Ubicación
+                    </button>
+                </div>
+            </div>
+            
+            <div class="map-instructions">
+                <i class="fas fa-info-circle"></i>
+                <strong>Instrucciones:</strong> Haz clic en el mapa para establecer las coordenadas del negocio. 
+                Las coordenadas se actualizarán automáticamente en los campos X e Y.
+            </div>
+            
+            <div id="map"></div>
+            
+            <div class="coordinates-info">
+                <div class="coordinate-display">
+                    <i class="fas fa-map-pin"></i>
+                    <span>Coordenada X:</span>
+                    <span class="coordinate-value-x" id="display-cx">{{ negocio.cx|default_if_none:'0.0000000' }}</span>
+                </div>
+                <div class="coordinate-display">
+                    <i class="fas fa-map-pin"></i>
+                    <span>Coordenada Y:</span>
+                    <span class="coordinate-value" id="display-cy">{{ negocio.cy|default_if_none:'0.0000000' }}</span>
+                </div>
+                <div class="coordinate-display">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Estado:</span>
+                    <span class="coordinate-value" id="coordinate-status">Listo para seleccionar</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group" style="text-align: center; margin-top: 30px;">
+            <button type="submit" name="accion" value="nuevo" class="btn btn-success">
+                <i class="fas fa-plus"></i> Nuevo
+            </button>
+            <button type="submit" name="accion" value="salvar" class="btn btn-primary">
+                <i class="fas fa-save"></i> Salvar
+            </button>
+            <button type="submit" name="accion" value="eliminar" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Eliminar
+            </button>
+            <button type="submit" name="accion" value="configuracion" class="btn btn-secondary">
+                <i class="fas fa-cog"></i> Configuración de Tasas
+            </button>
+            <button type="submit" name="accion" value="declaracion" class="btn btn-secondary">
+                <i class="fas fa-chart-bar"></i> Declaración Volumen de Ventas
+            </button>
+            <button type="submit" name="accion" value="historial" class="btn btn-secondary">
+                <i class="fas fa-history"></i> Historial de Pagos
+            </button>
+            <button type="submit" name="accion" value="notas" class="btn btn-secondary">
+                <i class="fas fa-sticky-note"></i> Notas de Débito y Crédito
+            </button>
+            <button type="submit" name="accion" value="estado" class="btn btn-secondary">
+                <i class="fas fa-file-invoice"></i> Estado de Cuenta
+            </button>
+        </div>
+            </form>
+        </div>
+        
+        {% if mensaje %}
+            <div class="mensaje {% if exito %}mensaje-exito{% else %}mensaje-error{% endif %}">
+                {{ mensaje }}
+            </div>
+        {% endif %}
+        
+        <!-- Botón Salir adicional al final de la página -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{% url 'tributario:tributario_menu_principal' %}" class="btn btn-secondary" style="font-size: 1.1rem; padding: 12px 25px;">
+                <i class="fas fa-sign-out-alt"></i> Salir al Menú Principal
+            </a>
+        </div>
+    </div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Initialize map
+        let map;
+        let marker;
+        let currentCoordinates = {
+            lat: parseFloat('{{ negocio.cy|default_if_none:"15.199999" }}'),
+            lng: parseFloat('{{ negocio.cx|default_if_none:"-86.241905" }}')
+        };
+
+        // Initialize map when page loads
+        // NOTA: Este event listener se consolidará con el principal más abajo
+
+        function initializeCoordinateDisplay() {
+            // Initialize coordinate display with proper format
+            const cxValue = document.getElementById('id_cx').value;
+            const cyValue = document.getElementById('id_cy').value;
+            
+            if (!cxValue || cxValue === '0' || cxValue === '0.0') {
+                document.getElementById('display-cx').textContent = '0.0000000';
+            } else {
+                document.getElementById('display-cx').textContent = parseFloat(cxValue).toFixed(7);
+            }
+            
+            if (!cyValue || cyValue === '0' || cyValue === '0.0') {
+                document.getElementById('display-cy').textContent = '0.0000000';
+            } else {
+                document.getElementById('display-cy').textContent = parseFloat(cyValue).toFixed(7);
+            }
+        }
+
+        function initializeMap() {
+            // Initialize the map centered on Honduras
+            map = L.map('map').setView([15.199999, -86.241905], 8);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add marker if coordinates exist and are valid
+            if (currentCoordinates.lat && currentCoordinates.lng && 
+                currentCoordinates.lat !== 0 && currentCoordinates.lng !== 0 &&
+                !isNaN(currentCoordinates.lat) && !isNaN(currentCoordinates.lng)) {
+                marker = L.marker([currentCoordinates.lat, currentCoordinates.lng]).addTo(map);
+                map.setView([currentCoordinates.lat, currentCoordinates.lng], 15);
+                document.getElementById('coordinate-status').textContent = 'Coordenadas cargadas del registro';
+                document.getElementById('coordinate-status').style.color = '#28a745';
+            }
+
+            // Handle map clicks
+            map.on('click', function(e) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                
+                // Update coordinates
+                updateCoordinates(lat, lng);
+                
+                // Update marker
+                if (marker) {
+                    marker.setLatLng([lat, lng]);
+                } else {
+                    marker = L.marker([lat, lng]).addTo(map);
+                }
+                
+                // Update status
+                document.getElementById('coordinate-status').textContent = 'Coordenadas seleccionadas';
+                document.getElementById('coordinate-status').style.color = '#28a745';
+            });
+
+            // Handle coordinate input changes
+            document.getElementById('id_cx').addEventListener('input', function() {
+                const cx = parseFloat(this.value) || 0;
+                const cy = parseFloat(document.getElementById('id_cy').value) || 0;
+                if (cx !== 0 && cy !== 0) {
+                    updateMapFromCoordinates(cx, cy);
+                }
+            });
+
+            document.getElementById('id_cy').addEventListener('input', function() {
+                const cx = parseFloat(document.getElementById('id_cx').value) || 0;
+                const cy = parseFloat(this.value) || 0;
+                if (cx !== 0 && cy !== 0) {
+                    updateMapFromCoordinates(cx, cy);
+                }
+            });
+        }
+
+        function updateCoordinates(lat, lng) {
+            // Update form fields
+            document.getElementById('id_cx').value = lng.toFixed(7);
+            document.getElementById('id_cy').value = lat.toFixed(7);
+            
+            // Update display
+            document.getElementById('display-cx').textContent = lng.toFixed(7);
+            document.getElementById('display-cy').textContent = lat.toFixed(7);
+            
+            // Update current coordinates
+            currentCoordinates.lat = lat;
+            currentCoordinates.lng = lng;
+        }
+
+        function updateMapFromCoordinates(cx, cy) {
+            if (marker) {
+                marker.setLatLng([cy, cx]);
+            } else {
+                marker = L.marker([cy, cx]).addTo(map);
+            }
+            map.setView([cy, cx], 15);
+            
+            // Update display
+            document.getElementById('display-cx').textContent = cx.toFixed(7);
+            document.getElementById('display-cy').textContent = cy.toFixed(7);
+            
+            // Update status
+            document.getElementById('coordinate-status').textContent = 'Coordenadas actualizadas';
+            document.getElementById('coordinate-status').style.color = '#28a745';
+        }
+
+        function centerOnHonduras() {
+            map.setView([15.199999, -86.241905], 8);
+            document.getElementById('coordinate-status').textContent = 'Centrado en Honduras';
+            document.getElementById('coordinate-status').style.color = '#007bff';
+        }
+
+        function clearCoordinates() {
+            // Clear form fields
+            document.getElementById('id_cx').value = '0.0000000';
+            document.getElementById('id_cy').value = '';
+            
+            // Clear display
+            document.getElementById('display-cx').textContent = '0.0000000';
+            document.getElementById('display-cy').textContent = '0.0000000';
+            
+            // Remove marker
+            if (marker) {
+                map.removeLayer(marker);
+                marker = null;
+            }
+            
+            // Reset coordinates
+            currentCoordinates.lat = 15.199999;
+            currentCoordinates.lng = -86.241905;
+            
+            // Update status
+            document.getElementById('coordinate-status').textContent = 'Coordenadas limpiadas';
+            document.getElementById('coordinate-status').style.color = '#dc3545';
+        }
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                document.getElementById('coordinate-status').textContent = 'Obteniendo ubicación...';
+                document.getElementById('coordinate-status').style.color = '#ffc107';
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        updateCoordinates(lat, lng);
+                        
+                        if (marker) {
+                            marker.setLatLng([lat, lng]);
+                        } else {
+                            marker = L.marker([lat, lng]).addTo(map);
+                        }
+                        map.setView([lat, lng], 15);
+                        
+                        document.getElementById('coordinate-status').textContent = 'Ubicación actual obtenida';
+                        document.getElementById('coordinate-status').style.color = '#28a745';
+                    },
+                    function(error) {
+                        document.getElementById('coordinate-status').textContent = 'Error al obtener ubicación';
+                        document.getElementById('coordinate-status').style.color = '#dc3545';
+                        console.error('Error getting location:', error);
+                    }
+                );
+            } else {
+                document.getElementById('coordinate-status').textContent = 'Geolocalización no soportada';
+                document.getElementById('coordinate-status').style.color = '#dc3545';
+            }
+        }
+
+        // Función para buscar negocio automáticamente
+        function buscarNegocio() {
+            const empre = document.getElementById('id_empre').value.trim();
+            const rtm = document.getElementById('id_rtm').value.trim();
+            const expe = document.getElementById('id_expe').value.trim();
+
+            // Solo buscar si todos los campos están llenos
+            if (empre && rtm && expe) {
+                console.log('Buscando negocio:', { empre, rtm, expe });
+
+                // Determinar la URL base correcta
+                let baseUrl = '';
+                if (window.location.pathname.includes('/maestro_negocios/')) {
+                    // Si estamos en maestro_negocios, usar URL relativa
+                    baseUrl = '';
+                } else {
+                    // Si estamos en otra página, usar URL absoluta
+                    baseUrl = window.location.origin;
+                }
+
+                // Construir la URL completa
+                const url = `${baseUrl}/ajax/buscar-negocio/?empre=${encodeURIComponent(empre)}&rtm=${encodeURIComponent(rtm)}&expe=${encodeURIComponent(expe)}`;
+                console.log('URL de búsqueda:', url);
+
+                // Hacer la petición
+                fetch(url)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Datos recibidos:', data);
+
+                        if (data.error) {
+                            // Mostrar mensaje de error
+                            mostrarMensaje('Negocio no encontrado', false);
+                            limpiarFormulario();
+                            // Habilitar campos RTM y Expediente si no existe el registro
+                            habilitarCamposRTMExpe();
+                        } else {
+                            // Llenar el formulario con los datos encontrados
+                            llenarFormulario(data);
+                            // Bloquear campos RTM y Expediente porque el registro existe
+                            bloquearCamposRTMExpe();
+                            mostrarMensaje('Negocio encontrado exitosamente. Los campos RTM y Expediente están bloqueados. Use "Nuevo" para crear otro registro.', true);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error en la búsqueda:', error);
+                        mostrarMensaje('Error al buscar el negocio: ' + error.message, false);
+                        // Habilitar campos RTM y Expediente en caso de error
+                        habilitarCamposRTMExpe();
+                    });
+            }
+        }
+
+        // Función para llenar el formulario con los datos del negocio
+        function llenarFormulario(data) {
+            console.log('Llenando formulario con datos:', data);
+            
+            // Función auxiliar para establecer valor de forma segura
+            function setFieldValue(fieldId, value) {
+                const element = document.getElementById(fieldId);
+                if (element && value !== null && value !== undefined) {
+                    element.value = value;
+                    console.log(`Campo ${fieldId} establecido con valor: ${value}`);
+                } else {
+                    console.log(`Campo ${fieldId} no encontrado o valor nulo: ${value}`);
+                }
+            }
+            
+            // Función auxiliar para habilitar/deshabilitar campos
+            function setFieldDisabled(fieldId, disabled) {
+                const element = document.getElementById(fieldId);
+                if (element) {
+                    element.disabled = disabled;
+                    console.log(`Campo ${fieldId} ${disabled ? 'deshabilitado' : 'habilitado'}`);
+                }
+            }
+            
+            // Campos principales
+            setFieldValue('id_empre', data.empre);
+            setFieldValue('id_rtm', data.rtm);
+            setFieldValue('id_expe', data.expe);
+            
+            // Los campos RTM y Expediente se manejan por separado según si el registro existe o no
+            console.log('Registro cargado. El estado de los campos RTM y Expediente se maneja en buscarNegocio.');
+            setFieldValue('id_nombrenego', data.nombrenego);
+            setFieldValue('id_comerciante', data.comerciante);
+            setFieldValue('id_identidad', data.identidad);
+            setFieldValue('id_rtnpersonal', data.rtnpersonal);
+            setFieldValue('id_rtnnego', data.rtnnego);
+            setFieldValue('id_catastral', data.catastral);
+            setFieldValue('id_identidadrep', data.identidadrep);
+            setFieldValue('id_representante', data.representante);
+            setFieldValue('id_direccion', data.direccion);
+            setFieldValue('id_actividad', data.actividad);
+            setFieldValue('id_rubro', data.rubro);
+            setFieldValue('id_categoria', data.categoria);
+            setFieldValue('id_estatus', data.estatus);
+            setFieldValue('id_fecha_ini', data.fecha_ini);
+            setFieldValue('id_fecha_can', data.fecha_can);
+            setFieldValue('id_telefono', data.telefono);
+            setFieldValue('id_celular', data.celular);
+            setFieldValue('id_socios', data.socios);
+            setFieldValue('id_correo', data.correo);
+            setFieldValue('id_pagweb', data.pagweb);
+            setFieldValue('id_comentario', data.comentario);
+            
+            // Manejar coordenadas con logging detallado
+            console.log('Procesando coordenadas del servidor:', data.cx, data.cy);
+            
+            // Establecer coordenadas en los campos del formulario
+            if (data.cx !== null && data.cx !== undefined && data.cx !== '') {
+                const cxValue = parseFloat(data.cx);
+                if (!isNaN(cxValue) && cxValue !== 0) {
+                    setFieldValue('id_cx', cxValue.toFixed(7));
+                    console.log(`Coordenada X establecida: ${cxValue.toFixed(7)}`);
+                } else {
+                    setFieldValue('id_cx', '0.0000000');
+                    console.log('Coordenada X inválida o cero, establecida en 0.0000000');
+                }
+            } else {
+                setFieldValue('id_cx', '0.0000000');
+                console.log('Coordenada X vacía, establecida en 0.0000000');
+            }
+            
+            if (data.cy !== null && data.cy !== undefined && data.cy !== '') {
+                const cyValue = parseFloat(data.cy);
+                if (!isNaN(cyValue) && cyValue !== 0) {
+                    setFieldValue('id_cy', cyValue.toFixed(7));
+                    console.log(`Coordenada Y establecida: ${cyValue.toFixed(7)}`);
+                } else {
+                    setFieldValue('id_cy', '');
+                    console.log('Coordenada Y inválida o cero, establecida en vacío');
+                }
+            } else {
+                setFieldValue('id_cy', '');
+                console.log('Coordenada Y vacía, establecida en vacío');
+            }
+            
+            // Actualizar coordenadas en el mapa si existen y son válidas
+            const cx = parseFloat(data.cx);
+            const cy = parseFloat(data.cy);
+            
+            console.log(`Coordenadas para mapa - CX: ${cx}, CY: ${cy}`);
+            console.log(`¿Son coordenadas válidas? CX: ${!isNaN(cx) && cx !== 0}, CY: ${!isNaN(cy) && cy !== 0}`);
+            
+            if (!isNaN(cx) && !isNaN(cy) && cx !== 0 && cy !== 0) {
+                console.log(`Actualizando coordenadas en mapa: X=${cx}, Y=${cy}`);
+                
+                // Actualizar coordenadas internas
+                currentCoordinates.lat = cy;
+                currentCoordinates.lng = cx;
+                
+                // Actualizar marcador en el mapa
+                if (marker) {
+                    marker.setLatLng([cy, cx]);
+                } else {
+                    marker = L.marker([cy, cx]).addTo(map);
+                }
+                
+                // Centrar mapa en las coordenadas con zoom apropiado
+                map.setView([cy, cx], 15);
+                
+                // Actualizar display de coordenadas
+                document.getElementById('display-cx').textContent = cx.toFixed(7);
+                document.getElementById('display-cy').textContent = cy.toFixed(7);
+                
+                // Actualizar estado
+                document.getElementById('coordinate-status').textContent = 'Coordenadas cargadas del registro';
+                document.getElementById('coordinate-status').style.color = '#28a745';
+                
+                console.log('Mapa actualizado exitosamente con coordenadas del registro');
+            } else {
+                console.log('Coordenadas inválidas, vacías o cero, no se actualiza el mapa');
+                // Limpiar marcador si no hay coordenadas válidas
+                if (marker) {
+                    map.removeLayer(marker);
+                    marker = null;
+                }
+                
+                // Centrar mapa en Honduras por defecto
+                map.setView([15.199999, -86.241905], 8);
+                
+                // Actualizar estado
+                document.getElementById('coordinate-status').textContent = 'Sin coordenadas válidas en el registro';
+                document.getElementById('coordinate-status').style.color = '#6c757d';
+            }
+            
+            console.log('Formulario llenado exitosamente');
+        }
+
+        // Función para bloquear campos RTM y Expediente cuando existe un registro
+        function bloquearCamposRTMExpe() {
+            const rtmElement = document.getElementById('id_rtm');
+            const expeElement = document.getElementById('id_expe');
+            
+            if (rtmElement) {
+                rtmElement.disabled = true;
+                rtmElement.style.backgroundColor = '#f8f9fa';
+                rtmElement.style.color = '#6c757d';
+                console.log('Campo RTM bloqueado');
+            }
+            
+            if (expeElement) {
+                expeElement.disabled = true;
+                expeElement.style.backgroundColor = '#f8f9fa';
+                expeElement.style.color = '#6c757d';
+                console.log('Campo Expediente bloqueado');
+            }
+        }
+
+        // Función para habilitar campos RTM y Expediente para nuevo registro
+        function habilitarCamposRTMExpe() {
+            const rtmElement = document.getElementById('id_rtm');
+            const expeElement = document.getElementById('id_expe');
+            
+            if (rtmElement) {
+                rtmElement.disabled = false;
+                rtmElement.style.backgroundColor = '';
+                rtmElement.style.color = '';
+                console.log('Campo RTM habilitado');
+            }
+            
+            if (expeElement) {
+                expeElement.disabled = false;
+                expeElement.style.backgroundColor = '';
+                expeElement.style.color = '';
+                console.log('Campo Expediente habilitado');
+            }
+        }
+
+        // Función para limpiar el formulario
+        function limpiarFormulario() {
+            const campos = [
+                'id_nombrenego', 'id_comerciante', 'id_identidad', 'id_telefono',
+                'id_actividad', 'id_rubro', 'id_catastral', 'id_direccion', 'id_correo',
+                'id_pagweb', 'id_socios', 'id_comentario'
+            ];
+            
+            campos.forEach(campo => {
+                const elemento = document.getElementById(campo);
+                if (elemento) {
+                    elemento.value = '';
+                }
+            });
+            
+            // Limpiar coordenadas
+            document.getElementById('id_cx').value = '0.0000000';
+            document.getElementById('id_cy').value = '';
+            clearCoordinates();
+            
+            // Habilitar campos RTM y Expediente para nuevo registro
+            habilitarCamposRTMExpe();
+            
+            console.log('Formulario limpiado correctamente. Campos RTM y Expediente habilitados para nuevo registro.');
+        }
+
+        // Función para mostrar mensajes
+        function mostrarMensaje(mensaje, esExito) {
+            console.log('🔔 Mostrando mensaje:', mensaje, 'Es éxito:', esExito);
+            
+            // Crear o actualizar el elemento de mensaje
+            let mensajeElement = document.getElementById('mensaje-dinamico');
+            if (!mensajeElement) {
+                mensajeElement = document.createElement('div');
+                mensajeElement.id = 'mensaje-dinamico';
+                mensajeElement.style.cssText = `
+                    padding: 15px;
+                    margin: 20px 0;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    text-align: center;
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 9999;
+                    min-width: 300px;
+                    max-width: 500px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    display: block;
+                    opacity: 1;
+                    transition: opacity 0.3s ease;
+                `;
+                document.body.appendChild(mensajeElement);
+                console.log('🔍 Elemento mensaje creado:', mensajeElement);
+            }
+            
+            // Configurar el mensaje
+            mensajeElement.textContent = mensaje;
+            mensajeElement.style.backgroundColor = esExito ? '#d4edda' : '#f8d7da';
+            mensajeElement.style.color = esExito ? '#155724' : '#721c24';
+            mensajeElement.style.border = `1px solid ${esExito ? '#c3e6cb' : '#f5c6cb'}`;
+            mensajeElement.style.display = 'block';
+            mensajeElement.style.opacity = '1';
+            
+            // Verificar que el elemento sea visible
+            console.log('🔍 Elemento visible:', mensajeElement.offsetParent !== null);
+            console.log('🔍 Estilos aplicados:', mensajeElement.style.cssText);
+            
+            // Ocultar después de 8 segundos (más tiempo para mensajes de error)
+            setTimeout(() => {
+                if (mensajeElement) {
+                    console.log('🔔 Ocultando mensaje después de timeout');
+                    mensajeElement.style.opacity = '0';
+                    setTimeout(() => {
+                        mensajeElement.style.display = 'none';
+                    }, 300);
+                }
+            }, 8000);
+        }
+
+        // Función de debug para mensajes
+        function debugMensaje(mensaje, esExito) {
+            console.log('🔔 DEBUG - Intentando mostrar mensaje:');
+            console.log('   Mensaje:', mensaje);
+            console.log('   Es éxito:', esExito);
+            
+            try {
+                mostrarMensaje(mensaje, esExito);
+                console.log('✅ Mensaje mostrado correctamente');
+            } catch (error) {
+                console.error('❌ Error al mostrar mensaje:', error);
+                // Fallback: alert simple
+                alert(mensaje);
+            }
+        }
+
+        // Función para mostrar confirmación personalizada
+        function mostrarConfirmacion(mensaje, callback) {
+            console.log('🔔 Mostrando confirmación personalizada:', mensaje);
+            
+            // Crear el modal de confirmación
+            const modal = document.createElement('div');
+            modal.id = 'modal-confirmacion';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            `;
+            
+            // Crear el contenido del modal
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background-color: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                position: relative;
+                transform: scale(0.9);
+                transition: transform 0.3s ease;
+            `;
+            
+            // Crear el mensaje
+            const mensajeElement = document.createElement('div');
+            mensajeElement.style.cssText = `
+                margin-bottom: 25px;
+                font-size: 16px;
+                line-height: 1.5;
+                color: #333;
+            `;
+            mensajeElement.textContent = mensaje;
+            
+            // Crear los botones
+            const botonesContainer = document.createElement('div');
+            botonesContainer.style.cssText = `
+                display: flex;
+                justify-content: center;
+                gap: 15px;
+            `;
+            
+            // Botón Confirmar
+            const btnConfirmar = document.createElement('button');
+            btnConfirmar.textContent = '✅ Confirmar';
+            btnConfirmar.style.cssText = `
+                padding: 12px 25px;
+                background-color: #28a745;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+                transition: background-color 0.3s ease;
+            `;
+            
+            // Botón Cancelar
+            const btnCancelar = document.createElement('button');
+            btnCancelar.textContent = '❌ Cancelar';
+            btnCancelar.style.cssText = `
+                padding: 12px 25px;
+                background-color: #dc3545;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+                transition: background-color 0.3s ease;
+            `;
+            
+            // Eventos de hover para los botones
+            btnConfirmar.onmouseover = () => btnConfirmar.style.backgroundColor = '#218838';
+            btnConfirmar.onmouseout = () => btnConfirmar.style.backgroundColor = '#28a745';
+            btnCancelar.onmouseover = () => btnCancelar.style.backgroundColor = '#c82333';
+            btnCancelar.onmouseout = () => btnCancelar.style.backgroundColor = '#dc3545';
+            
+            // Eventos de click
+            btnConfirmar.onclick = () => {
+                console.log('✅ Usuario confirmó la acción');
+                cerrarModal();
+                callback(true);
+            };
+            
+            btnCancelar.onclick = () => {
+                console.log('❌ Usuario canceló la acción');
+                cerrarModal();
+                callback(false);
+            };
+            
+            // Función para cerrar el modal
+            function cerrarModal() {
+                modal.style.opacity = '0';
+                modalContent.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    if (modal.parentNode) {
+                        modal.parentNode.removeChild(modal);
+                    }
+                }, 300);
+            }
+            
+            // Cerrar modal al hacer click fuera de él
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    cerrarModal();
+                    callback(false);
+                }
+            };
+            
+            // Cerrar modal con ESC
+            const handleEscape = (e) => {
+                if (e.key === 'Escape') {
+                    cerrarModal();
+                    callback(false);
+                    document.removeEventListener('keydown', handleEscape);
+                }
+            };
+            document.addEventListener('keydown', handleEscape);
+            
+            // Ensamblar el modal
+            botonesContainer.appendChild(btnConfirmar);
+            botonesContainer.appendChild(btnCancelar);
+            modalContent.appendChild(mensajeElement);
+            modalContent.appendChild(botonesContainer);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Animar la aparición
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modalContent.style.transform = 'scale(1)';
+            }, 10);
+            
+            console.log('🔍 Modal de confirmación creado y mostrado');
+        }
+
+        // Función para buscar identificación
+        function buscarIdentificacion(identidad, campoComerciante) {
+            if (!identidad) return;
+            
+            console.log('Buscando identificación:', identidad);
+            
+            // Determinar la URL base
+            let baseUrl = '';
+            if (window.location.pathname.includes('/maestro_negocios/')) {
+                baseUrl = '';
+            } else {
+                baseUrl = window.location.origin;
+            }
+            
+            const url = `${baseUrl}/ajax/buscar-identificacion/?identidad=${encodeURIComponent(identidad)}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Respuesta de identificación:', data);
+                    
+                    if (data.encontrado) {
+                        const nombres = data.nombres || '';
+                        const apellidos = data.apellidos || '';
+                        const nombreCompleto = `${nombres} ${apellidos}`.trim();
+                        
+                        if (nombreCompleto) {
+                            document.getElementById(campoComerciante).value = nombreCompleto;
+                            console.log('Nombre actualizado:', nombreCompleto);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al buscar identificación:', error);
+                });
+        }
+
+        // ===== ARQUITECTURA MODULAR PARA MANEJO DE BOTONES =====
+        
+        // Configuración centralizada de botones
+        const BOTONES_CONFIG = {
+            'nuevo': {
+                tipo: 'normal',
+                descripcion: 'Nuevo registro',
+                requiereValidacion: false,
+                requiereConfirmacion: false
+            },
+            'salvar': {
+                tipo: 'especial',
+                descripcion: 'Guardar registro',
+                requiereValidacion: false, // Desactivar validación automática
+                requiereConfirmacion: true,
+                handler: 'handleSalvarSubmit'
+            },
+            'eliminar': {
+                tipo: 'especial',
+                descripcion: 'Eliminar registro',
+                requiereValidacion: true,
+                requiereConfirmacion: true,
+                handler: 'handleEliminarSubmit'
+            },
+            'configuracion': {
+                tipo: 'normal',
+                descripcion: 'Configuración de Tasas',
+                requiereValidacion: false,
+                requiereConfirmacion: false
+            },
+            'declaracion': {
+                tipo: 'normal',
+                descripcion: 'Declaración Volumen de Ventas',
+                requiereValidacion: false,
+                requiereConfirmacion: false
+            },
+            'historial': {
+                tipo: 'normal',
+                descripcion: 'Historial de Pagos',
+                requiereValidacion: false,
+                requiereConfirmacion: false
+            },
+            'notas': {
+                tipo: 'normal',
+                descripcion: 'Notas de Débito y Crédito',
+                requiereValidacion: false,
+                requiereConfirmacion: false
+            },
+            'estado': {
+                tipo: 'normal',
+                descripcion: 'Estado de Cuenta',
+                requiereValidacion: false,
+                requiereConfirmacion: false
+            }
+        };
+        
+        // FUNCIÓN ÚNICA DE VALIDACIÓN
+        function validarCamposObligatorios() {
+            const empre = document.getElementById('id_empre');
+            const rtm = document.getElementById('id_rtm');
+            const expe = document.getElementById('id_expe');
+            
+            console.log('🔍 Validando campos obligatorios:');
+            console.log(`  - Municipio: "${empre.value.trim()}"`);
+            console.log(`  - RTM: "${rtm.value.trim()}" (disabled: ${rtm.disabled})`);
+            console.log(`  - Expediente: "${expe.value.trim()}" (disabled: ${expe.disabled})`);
+            
+            // Verificar si campos están deshabilitados (registro existe)
+            if (rtm.disabled && expe.disabled) {
+                console.log('✅ Campos RTM y EXPE están bloqueados (registro existe)');
+                console.log('✅ Permitir envío porque los campos están bloqueados');
+                return true; // Permitir envío si están bloqueados
+            }
+            
+            // Validación normal para campos habilitados
+            const empreValue = empre.value.trim();
+            const rtmValue = rtm.value.trim();
+            const expeValue = expe.value.trim();
+            
+            if (!empreValue || empreValue === '') {
+                console.log('❌ Campo Municipio faltante');
+                debugMensaje('Por favor, complete el campo Municipio', false);
+                return false;
+            }
+            
+            if (!rtmValue || rtmValue === '') {
+                console.log('❌ Campo RTM faltante');
+                debugMensaje('Por favor, complete el campo RTM', false);
+                return false;
+            }
+            
+            if (!expeValue || expeValue === '') {
+                console.log('❌ Campo Expediente faltante');
+                debugMensaje('Por favor, complete el campo Expediente', false);
+                return false;
+            }
+            
+            console.log('✅ Todos los campos obligatorios están completos');
+            return true;
+        }
+        
+        // Función para manejar botones de manera modular
+        function manejarBoton(botonValue, event) {
+            console.log(`🔄 Procesando botón: ${botonValue}`);
+            console.log(`🔍 Tipo de evento: ${event.type}`);
+            console.log(`🔍 Evento submitter:`, event.submitter);
+            
+            const config = BOTONES_CONFIG[botonValue];
+            if (!config) {
+                console.log(`ℹ️ Botón no configurado: ${botonValue} - Permitiendo envío normal`);
+                return true; // Permitir envío normal
+            }
+            
+            console.log(`✅ Configuración encontrada para ${botonValue}: ${config.descripcion}`);
+            console.log(`🔍 Tipo de botón: ${config.tipo}`);
+            console.log(`🔍 Requiere validación: ${config.requiereValidacion}`);
+            console.log(`🔍 Handler: ${config.handler}`);
+            
+            // Validar campos si es requerido (solo para botones que no son salvar)
+            if (config.requiereValidacion && botonValue !== 'salvar') {
+                console.log('🔍 Validando campos obligatorios...');
+                if (!validarCamposObligatorios()) {
+                    console.log('❌ Validación falló, previniendo envío');
+                    event.preventDefault();
+                    return false;
+                }
+                console.log('✅ Validación exitosa');
+            }
+            
+            // Manejar botones especiales
+            if (config.tipo === 'especial') {
+                console.log('🔍 Botón especial detectado, previniendo envío normal');
+                event.preventDefault();
+                
+                if (config.handler === 'handleSalvarSubmit') {
+                    console.log('🔄 Llamando a handleSalvarSubmit');
+                    try {
+                        handleSalvarSubmit();
+                        console.log('✅ handleSalvarSubmit ejecutado correctamente');
+                    } catch (error) {
+                        console.error('❌ Error al ejecutar handleSalvarSubmit:', error);
+                    }
+                } else if (config.handler === 'handleEliminarSubmit') {
+                    console.log('🔄 Llamando a handleEliminarSubmit');
+                    try {
+                        handleEliminarSubmit();
+                        console.log('✅ handleEliminarSubmit ejecutado correctamente');
+                    } catch (error) {
+                        console.error('❌ Error al ejecutar handleEliminarSubmit:', error);
+                    }
+                }
+                return false;
+            }
+            
+            // Para botones normales, permitir envío normal
+            console.log(`ℹ️ Botón normal: ${botonValue} - Permitiendo envío normal`);
+            return true;
+        }
+        
+        // UN SOLO EVENT LISTENER PARA TODO
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 DOMContentLoaded iniciado - Configurando arquitectura modular');
+            
+            // ===== INICIALIZACIÓN DEL MAPA =====
+            console.log('✅ Inicializando mapa');
+            initializeMap();
+            initializeCoordinateDisplay();
+            
+            // ===== CONFIGURACIÓN DE BÚSQUEDA AUTOMÁTICA =====
+            const empreInput = document.getElementById('id_empre');
+            const rtmInput = document.getElementById('id_rtm');
+            const expeInput = document.getElementById('id_expe');
+            
+            if (empreInput && rtmInput && expeInput) {
+                console.log('✅ Configurando búsqueda automática');
+                
+                // Búsqueda automática cuando se completa el último campo
+                expeInput.addEventListener('blur', function() {
+                    setTimeout(buscarNegocio, 500);
+                });
+                
+                // También buscar cuando se presiona Enter en el campo expediente
+                expeInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        buscarNegocio();
+                    }
+                });
+            }
+            
+                    // ===== CONFIGURACIÓN DE BÚSQUEDA DE DNI =====
+        const identidadInput = document.getElementById('id_identidad');
+        if (identidadInput) {
+            console.log('✅ Configurando búsqueda de DNI');
+            identidadInput.addEventListener('blur', function() {
+                const identidad = this.value.trim();
+                if (identidad) {
+                    buscarIdentificacion(identidad, 'id_comerciante');
+                }
+            });
+        }
+
+        // ===== CONFIGURACIÓN DE BÚSQUEDA DE DNI REPRESENTANTE =====
+        const identidadRepInput = document.getElementById('id_identidadrep');
+        if (identidadRepInput) {
+            console.log('✅ Configurando búsqueda de DNI representante');
+            identidadRepInput.addEventListener('blur', function() {
+                const identidad = this.value.trim();
+                if (identidad) {
+                    buscarIdentificacion(identidad, 'id_representante');
+                }
+            });
+        }
+            
+            // ===== CONFIGURACIÓN DEL MANEJO DE FORMULARIO MODULAR =====
+            const form = document.querySelector('form');
+            if (form) {
+                console.log('✅ Configurando manejo de formulario modular');
+                
+                form.addEventListener('submit', function(e) {
+                    const submitButton = e.submitter;
+                    const botonValue = submitButton ? submitButton.value : 'No identificado';
+                    
+                    console.log('🔄 Evento submit detectado');
+                    console.log('Botón presionado:', botonValue);
+                    
+                    // Usar la función modular para manejar el botón
+                    manejarBoton(botonValue, e);
+                });
+            } else {
+                console.error('❌ No se encontró el formulario');
+            }
+            
+            console.log('✅ Arquitectura modular configurada correctamente');
+            console.log('✅ Botones configurados:', Object.keys(BOTONES_CONFIG).join(', '));
+        });
+        
+        
+        
+        // Función para manejar el envío del formulario de salvar (versión simplificada)
+        function handleSalvarSubmit() {
+            console.log('🔄 Iniciando handleSalvarSubmit');
+            console.log('🔍 Buscando formulario...');
+            
+            const form = document.querySelector('form');
+            
+            if (!form) {
+                console.error('❌ No se encontró el formulario');
+                mostrarMensaje('Error: No se encontró el formulario', false);
+                return;
+            }
+            
+            console.log('✅ Formulario encontrado, obteniendo datos...');
+            console.log('🔍 Formulario:', form);
+            
+            // Usar la función consolidada de validación
+            if (!validarCamposObligatorios()) {
+                return; // Ya se mostró el mensaje de error
+            }
+            
+            // Mostrar confirmación antes de proceder
+            mostrarConfirmacion('¿Está seguro de que desea guardar este negocio? Esta acción puede crear o actualizar un registro en la base de datos.', function(confirmado) {
+                if (!confirmado) {
+                    console.log('❌ Usuario canceló el guardado');
+                    mostrarMensaje('Guardado cancelado por el usuario.', false);
+                    return;
+                }
+                
+                console.log('✅ Usuario confirmó el guardado, procediendo...');
+                
+                // Obtener todos los datos del formulario
+                const formData = new FormData(form);
+                
+                // Agregar campos deshabilitados manualmente (no se envían automáticamente)
+                const rtm = document.getElementById('id_rtm');
+                const expe = document.getElementById('id_expe');
+                
+                if (rtm.disabled && rtm.value) {
+                    console.log('🔧 Agregando campo RTM deshabilitado al FormData:', rtm.value);
+                    formData.append('rtm', rtm.value);
+                }
+                if (expe.disabled && expe.value) {
+                    console.log('🔧 Agregando campo EXPE deshabilitado al FormData:', expe.value);
+                    formData.append('expe', expe.value);
+                }
+                
+                formData.append('accion', 'salvar');
+                
+                console.log('✅ FormData creado, datos obtenidos');
+                console.log('🔍 Datos del formulario:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`  ${key}: ${value}`);
+                }
+                
+                // Mostrar indicador de carga
+                mostrarMensaje('Guardando negocio...', true);
+                
+                // Determinar la URL base
+                let baseUrl = '';
+                if (window.location.pathname.includes('/maestro_negocios/')) {
+                    baseUrl = '';
+                } else {
+                    baseUrl = window.location.origin;
+                }
+                
+                // Convertir a URLSearchParams
+                const urlParams = new URLSearchParams();
+                for (let [key, value] of formData.entries()) {
+                    urlParams.append(key, value);
+                }
+                
+                console.log('🌐 URL de envío:', `${baseUrl}/maestro_negocios/`);
+                console.log('📤 Datos del formulario:', Object.fromEntries(formData));
+                console.log('📤 URLSearchParams:', urlParams.toString());
+                
+                // Hacer la petición AJAX
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', `${baseUrl}/maestro_negocios/`, true);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                
+                console.log('📤 Enviando petición AJAX...');
+                
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('📥 Status de respuesta:', xhr.status);
+                        console.log('📥 Respuesta completa:', xhr.responseText);
+                        console.log('📥 Headers de respuesta:', xhr.getAllResponseHeaders());
+                        
+                        // Verificar si hay errores HTTP
+                        if (xhr.status !== 200) {
+                            console.error('❌ Error HTTP:', xhr.status);
+                            console.error('❌ Respuesta de error:', xhr.responseText);
+                            mostrarMensaje(`Error del servidor: ${xhr.status}`, false);
+                            return;
+                        }
+                        
+                        try {
+                            const data = JSON.parse(xhr.responseText);
+                            console.log('✅ Respuesta JSON parseada:', data);
+                            console.log('🔍 requiere_confirmacion:', data.requiere_confirmacion);
+                            console.log('🔍 existe:', data.existe);
+                            console.log('🔍 mensaje:', data.mensaje);
+                            console.log('🔍 exito:', data.exito);
+                            
+                            // Manejar confirmación de actualización
+                            if (data.requiere_confirmacion && data.existe) {
+                                console.log('✅ Negocio existe, mostrando confirmación interactiva');
+                                console.log('🔍 Mensaje de confirmación:', data.mensaje);
+                                
+                                // Mostrar confirmación interactiva personalizada
+                                mostrarConfirmacion(data.mensaje, function(confirmado) {
+                                    if (confirmado) {
+                                        console.log('✅ Usuario confirmó la actualización');
+                                        
+                                        // El usuario confirmó, enviar con confirmar_actualizacion=1
+                                        const formDataConfirmado = new FormData(form);
+                                        formDataConfirmado.append('accion', 'salvar');
+                                        formDataConfirmado.append('confirmar_actualizacion', '1');
+                                        
+                                        // Agregar campos deshabilitados manualmente (no se envían automáticamente)
+                                        const rtm = document.getElementById('id_rtm');
+                                        const expe = document.getElementById('id_expe');
+                                        
+                                        if (rtm.disabled && rtm.value) {
+                                            console.log('🔧 Agregando campo RTM deshabilitado al FormData de confirmación:', rtm.value);
+                                            formDataConfirmado.append('rtm', rtm.value);
+                                        }
+                                        if (expe.disabled && expe.value) {
+                                            console.log('🔧 Agregando campo EXPE deshabilitado al FormData de confirmación:', expe.value);
+                                            formDataConfirmado.append('expe', expe.value);
+                                        }
+                                        
+                                        const urlParamsConfirmado = new URLSearchParams();
+                                        for (let [key, value] of formDataConfirmado.entries()) {
+                                            urlParamsConfirmado.append(key, value);
+                                        }
+                                        
+                                        console.log('📤 Enviando confirmación de actualización...');
+                                        console.log('📤 Datos de confirmación:', Object.fromEntries(formDataConfirmado));
+                                        
+                                        // Mostrar indicador de actualización
+                                        mostrarMensaje('Actualizando negocio...', true);
+                                        
+                                        // Hacer la petición de confirmación
+                                        const xhrConfirmado = new XMLHttpRequest();
+                                        xhrConfirmado.open('POST', `${baseUrl}/maestro_negocios/`, true);
+                                        xhrConfirmado.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                                        xhrConfirmado.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                                        
+                                        xhrConfirmado.onreadystatechange = function() {
+                                            if (xhrConfirmado.readyState === 4) {
+                                                console.log('📥 Status de respuesta de confirmación:', xhrConfirmado.status);
+                                                console.log('📥 Respuesta completa de confirmación:', xhrConfirmado.responseText);
+                                                
+                                                // Verificar si hay errores HTTP
+                                                if (xhrConfirmado.status !== 200) {
+                                                    console.error('❌ Error HTTP en confirmación:', xhrConfirmado.status);
+                                                    console.error('❌ Respuesta de error:', xhrConfirmado.responseText);
+                                                    mostrarMensaje(`Error del servidor en confirmación: ${xhrConfirmado.status}`, false);
+                                                    return;
+                                                }
+                                                
+                                                try {
+                                                    const dataConfirmado = JSON.parse(xhrConfirmado.responseText);
+                                                    console.log('✅ Respuesta JSON de confirmación parseada:', dataConfirmado);
+                                                    
+                                                    if (dataConfirmado.exito) {
+                                                        console.log('✅ Actualización exitosa:', dataConfirmado.mensaje);
+                                                        mostrarMensaje(dataConfirmado.mensaje, true);
+                                                    } else {
+                                                        console.log('❌ Actualización fallida:', dataConfirmado.mensaje);
+                                                        mostrarMensaje(dataConfirmado.mensaje, false);
+                                                    }
+                                                } catch (e) {
+                                                    console.error('❌ Error al parsear respuesta de confirmación:', e);
+                                                    console.error('❌ Respuesta recibida:', xhrConfirmado.responseText);
+                                                    mostrarMensaje('Error inesperado en el servidor durante confirmación', false);
+                                                }
+                                            }
+                                        };
+                                        
+                                        console.log('🔄 Enviando petición AJAX de confirmación...');
+                                        console.log('📤 Datos de confirmación enviados:', urlParamsConfirmado.toString());
+                                        xhrConfirmado.send(urlParamsConfirmado.toString());
+                                        console.log('✅ Petición AJAX de confirmación enviada');
+                                    } else {
+                                        console.log('❌ Usuario canceló la actualización');
+                                        mostrarMensaje('Actualización cancelada por el usuario.', false);
+                                    }
+                                });
+                            } else if (data.exito) {
+                                // Manejar errores del servidor (solo si no es confirmación)
+                                if (!data.requiere_confirmacion) {
+                                    console.log('❌ Error del servidor:', data.mensaje);
+                                    mostrarMensaje(data.mensaje, false);
+                                    return;
+                                }
+                                console.log('✅ Guardado exitoso:', data.mensaje);
+                                console.log('✅ Datos guardados correctamente');
+                                mostrarMensaje(data.mensaje, true);
+                            } else {
+                                console.log('❌ Guardado fallido:', data.mensaje);
+                                mostrarMensaje(data.mensaje, false);
+                            }
+                        } catch (e) {
+                            console.error('Error al parsear respuesta:', e);
+                            console.error('Respuesta recibida:', xhr.responseText);
+                            mostrarMensaje('Error inesperado en el servidor', false);
+                        }
+                    }
+                };
+                
+                console.log('🔄 Enviando petición AJAX...');
+                console.log('📤 Datos enviados:', urlParams.toString());
+                xhr.send(urlParams.toString());
+                console.log('✅ Petición AJAX enviada');
+            });
+        }
+        
+        // Función para manejar el envío del formulario de eliminar
+        function handleEliminarSubmit() {
+            console.log('🔄 Iniciando handleEliminarSubmit');
+            const form = document.querySelector('form');
+            
+            if (!form) {
+                console.error('❌ No se encontró el formulario');
+                mostrarMensaje('Error: No se encontró el formulario', false);
+                return;
+            }
+            
+            // Obtener los campos obligatorios
+            const empre = document.getElementById('id_empre').value.trim();
+            const rtm = document.getElementById('id_rtm').value.trim();
+            const expe = document.getElementById('id_expe').value.trim();
+            
+            // Validar campos obligatorios
+            if (!empre || !rtm || !expe) {
+                mostrarMensaje('Los campos Empresa, RTM y Expediente son obligatorios para eliminar.', false);
+                return;
+            }
+            
+            // Confirmar eliminación usando modal personalizado
+            mostrarConfirmacion('¿Está seguro de que desea eliminar este negocio? Esta acción no se puede deshacer.', function(confirmado) {
+                if (!confirmado) {
+                    console.log('❌ Usuario canceló la eliminación');
+                    mostrarMensaje('Eliminación cancelada por el usuario.', false);
+                    return;
+                }
+                
+                console.log('✅ Usuario confirmó la eliminación, procediendo...');
+                
+                // Mostrar indicador de carga
+                mostrarMensaje('Eliminando negocio...', true);
+                
+                // Determinar la URL base
+                let baseUrl = '';
+                if (window.location.pathname.includes('/maestro_negocios/')) {
+                    baseUrl = '';
+                } else {
+                    baseUrl = window.location.origin;
+                }
+                
+                // Crear datos del formulario para eliminar
+                const formData = new FormData();
+                formData.append('empre', empre);
+                formData.append('rtm', rtm);
+                formData.append('expe', expe);
+                formData.append('accion', 'eliminar');
+                
+                // Convertir a URLSearchParams
+                const urlParams = new URLSearchParams();
+                for (let [key, value] of formData.entries()) {
+                    urlParams.append(key, value);
+                }
+                
+                console.log('Enviando petición AJAX para eliminar a:', `${baseUrl}/maestro_negocios/`);
+                console.log('Datos del formulario:', Object.fromEntries(formData));
+                
+                // Hacer la petición AJAX
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', `${baseUrl}/maestro_negocios/`, true);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        console.log('Status de respuesta:', xhr.status);
+                        console.log('Respuesta completa:', xhr.responseText);
+                        
+                        try {
+                            const data = JSON.parse(xhr.responseText);
+                            console.log('Respuesta del servidor:', data);
+                            
+                            if (data.exito) {
+                                mostrarMensaje(data.mensaje, true);
+                                
+                                // Si fue eliminado exitosamente, limpiar el formulario
+                                if (data.eliminado) {
+                                    setTimeout(() => {
+                                        limpiarFormulario();
+                                    }, 2000);
+                                }
+                            } else {
+                                mostrarMensaje(data.mensaje, false);
+                            }
+                        } catch (e) {
+                            console.error('Error al parsear respuesta:', e);
+                            console.error('Respuesta recibida:', xhr.responseText);
+                            mostrarMensaje('Error inesperado en el servidor', false);
+                        }
+                    }
+                };
+                
+                xhr.send(urlParams.toString());
+            });
+        }
+        
+
+    </script>
+</body>
+</html>

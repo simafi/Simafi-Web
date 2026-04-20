@@ -1,0 +1,147 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Factura #{{ factura.numero_factura }}{% endblock %}
+{% block breadcrumb %}Detalle Factura #{{ factura.numero_factura }}{% endblock %}
+{% block nav_facturas %}active{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#059669,#10b981)"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div>
+            <h1 class="page-title">Factura #{{ factura.numero_factura }}</h1>
+            <p class="page-subtitle">{{ factura.abonado.nombre }} | {{ factura.periodo_mes|stringformat:"02d" }}/{{ factura.periodo_ano }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'servicios_publicos:facturacion_lista' %}" class="btn-sp-secondary"><i class="fas fa-arrow-left"></i> Volver</a>
+        <button onclick="window.print()" class="btn-sp-secondary"><i class="fas fa-print"></i> Imprimir</button>
+        {% if factura.estado not in 'PA' %}
+        <form method="post" action="{% url 'servicios_publicos:factura_anular' factura.pk %}" style="display:inline" onsubmit="return confirm('¿Anular esta factura?')">
+            {% csrf_token %}
+            <button type="submit" class="btn-sp-danger"><i class="fas fa-ban"></i> Anular</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="form-panel">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h4 style="color:white;margin:0">{{ empresa }} - Municipalidad</h4>
+                    <small class="text-muted">Factura de Servicios Públicos</small>
+                </div>
+                <div class="text-end">
+                    {% if factura.estado == 'E' %}<span class="badge bg-warning text-dark fs-6">EMITIDA</span>
+                    {% elif factura.estado == 'P' %}<span class="badge bg-success fs-6">PAGADA</span>
+                    {% elif factura.estado == 'V' %}<span class="badge bg-danger fs-6">VENCIDA</span>
+                    {% elif factura.estado == 'A' %}<span class="badge bg-secondary fs-6">ANULADA</span>{% endif %}
+                </div>
+            </div>
+            <hr style="border-color:var(--sp-border)">
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="form-label">Abonado</div>
+                    <div style="color:white;font-weight:600">{{ factura.abonado.nombre }}</div>
+                    <div class="text-muted" style="font-size:0.85rem">Código: {{ factura.abonado.codigo_abonado }}</div>
+                    <div class="text-muted" style="font-size:0.85rem">{{ factura.abonado.direccion }}</div>
+                    <div class="text-muted" style="font-size:0.85rem">Categoría: {{ factura.abonado.get_categoria_display }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-label">Período</div>
+                    <div style="color:white;font-weight:600">{{ factura.periodo_mes|stringformat:"02d" }}/{{ factura.periodo_ano }}</div>
+                    <div class="text-muted" style="font-size:0.85rem">Emisión: {{ factura.fecha_emision|date:"d/m/Y" }}</div>
+                    {% if factura.fecha_vencimiento %}
+                    <div class="text-muted" style="font-size:0.85rem">Vencimiento: {{ factura.fecha_vencimiento|date:"d/m/Y" }}</div>
+                    {% endif %}
+                    {% if factura.recibo_pago %}<div class="text-muted" style="font-size:0.85rem">Recibo pago: {{ factura.recibo_pago }}</div>{% endif %}
+                </div>
+            </div>
+
+            <!-- Detalles -->
+            <table class="table">
+                <thead><tr><th>Concepto</th><th>Rubro</th><th>Consumo m³</th><th>Cargo Fijo</th><th>Cargo Consumo</th><th class="text-end">Subtotal</th></tr></thead>
+                <tbody>
+                    {% for d in detalles %}
+                    <tr>
+                        <td>{{ d.descripcion }}</td>
+                        <td><strong>{{ d.rubro }}</strong></td>
+                        <td>{{ d.consumo_m3|floatformat:2 }}</td>
+                        <td>L {{ d.cargo_fijo|floatformat:2 }}</td>
+                        <td>L {{ d.cargo_consumo|floatformat:2 }}</td>
+                        <td class="text-end fw-bold">L {{ d.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="border-top:2px solid var(--sp-border)">
+                        <td colspan="5" class="text-end" style="color:var(--sp-text-muted)">Subtotal</td>
+                        <td class="text-end fw-bold">L {{ factura.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    {% if factura.mora > 0 %}
+                    <tr>
+                        <td colspan="5" class="text-end" style="color:var(--sp-danger)">Mora</td>
+                        <td class="text-end" style="color:var(--sp-danger)">L {{ factura.mora|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr style="border-top:2px solid var(--sp-secondary)">
+                        <td colspan="5" class="text-end fw-bold" style="color:var(--sp-secondary);font-size:1rem">TOTAL</td>
+                        <td class="text-end" style="color:var(--sp-secondary);font-size:1.1rem;font-weight:800">L {{ factura.total|floatformat:2 }}</td>
+                    </tr>
+                    {% if factura.saldo_pendiente > 0 %}
+                    <tr>
+                        <td colspan="5" class="text-end" style="color:var(--sp-danger)">Saldo Pendiente</td>
+                        <td class="text-end fw-bold" style="color:var(--sp-danger)">L {{ factura.saldo_pendiente|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        {% if factura.lectura %}
+        <div class="data-card mb-4">
+            <div class="data-card-header"><h4><i class="fas fa-tachometer-alt me-2"></i>Lectura del Período</h4></div>
+            <div style="font-size:0.875rem">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Lec. Anterior:</span>
+                    <strong>{{ factura.lectura.lectura_anterior|floatformat:2 }} m³</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Lec. Actual:</span>
+                    <strong>{{ factura.lectura.lectura_actual|floatformat:2 }} m³</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="border-top:1px solid var(--sp-border);padding-top:.5rem;margin-top:.5rem">
+                    <span style="color:var(--sp-secondary)">Consumo:</span>
+                    <strong style="color:var(--sp-secondary)">{{ factura.lectura.consumo_m3|floatformat:2 }} m³</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Fecha lectura:</span>
+                    <span>{{ factura.lectura.fecha_lectura|date:"d/m/Y" }}</span>
+                </div>
+                {% if factura.lectura.foto_medidor %}
+                <div class="mt-3">
+                    <img src="{{ factura.lectura.foto_medidor.url }}" alt="Foto medidor"
+                         style="width:100%;border-radius:8px;border:1px solid var(--sp-border);max-height:200px;object-fit:cover">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="data-card">
+            <div class="data-card-header"><h4><i class="fas fa-user me-2"></i>Datos del Abonado</h4></div>
+            <div style="font-size:0.875rem">
+                <div class="mb-2"><span class="text-muted">Código: </span><strong>{{ factura.abonado.codigo_abonado }}</strong></div>
+                <div class="mb-2"><span class="text-muted">Ciclo: </span>{{ factura.abonado.ciclo|default:"-" }}</div>
+                <div class="mb-2"><span class="text-muted">Ruta: </span>{{ factura.abonado.ruta|default:"-" }} #{{ factura.abonado.secuencia }}</div>
+            </div>
+            <div class="mt-3">
+                <a href="{% url 'servicios_publicos:catastro_detalle' factura.abonado.pk %}" class="btn-sp-secondary w-100">
+                    <i class="fas fa-user"></i> Ver perfil del abonado
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

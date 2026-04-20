@@ -2,12 +2,12 @@
 # Instalación: pip install -r requirements.txt
 
 Django>=4.2,<5
-PyMySQL>=1.1
-cryptography>=45.0
+psycopg[binary]>=3.2
 djangorestframework>=3.14
 django-widget-tweaks>=1.5
 python-dotenv>=1.0
 gunicorn>=22.0
+whitenoise>=6.7
 
 # Exportaciones e informes (administrativo, configuración)
 openpyxl>=3.1

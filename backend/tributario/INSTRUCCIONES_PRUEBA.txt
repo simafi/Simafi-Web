@@ -1,0 +1,105 @@
+================================================================================
+INSTRUCCIONES PARA PROBAR EL FORMULARIO DECLARACION_VOLUMEN
+================================================================================
+
+PASO 1: INICIAR EL SERVIDOR
+----------------------------
+1. Abrir PowerShell en: C:\simafiweb\venv\Scripts
+2. Ejecutar: python manage.py runserver 127.0.0.1:8080
+3. Esperar mensaje: "Starting development server at http://127.0.0.1:8080/"
+
+PASO 2: LIMPIAR CACHE DEL NAVEGADOR
+------------------------------------
+1. Abrir el navegador (Chrome, Firefox, Edge)
+2. Presionar CTRL + SHIFT + DELETE
+3. Seleccionar:
+   - Caché e imágenes
+   - Cookies y datos de sitios
+4. Limpiar todo
+5. CERRAR COMPLETAMENTE EL NAVEGADOR
+6. Volver a abrir
+
+PASO 3: ACCEDER AL SISTEMA
+---------------------------
+1. Ir a: http://127.0.0.1:8080/
+2. Hacer login con las credenciales correctas
+3. Ir al menú tributario
+4. Seleccionar "Maestro de Negocios"
+
+PASO 4: ABRIR DECLARACIÓN DE VOLUMEN
+-------------------------------------
+1. Buscar un negocio (RTM001, EXPE001 por ejemplo)
+2. Hacer clic en el botón "Declaración de Volumen" del negocio
+3. Verificar que la URL sea: 
+   http://127.0.0.1:8080/tributario/declaracion-volumen/?rtm=XXX&expe=YYY
+
+PASO 5: LLENAR EL FORMULARIO
+-----------------------------
+1. Seleccionar Año: 2024
+2. Seleccionar Mes: Un mes que no exista (ej: 6, 7, 8)
+3. Seleccionar Tipo: Normal (1)
+4. Ingresar valores en los campos de ventas:
+   - Ventas Producción: 1000000
+   - Ventas Mercadería: 500000
+   - Ventas Servicios: 2000000
+   - Valores Exentos: 0
+   - Productos Controlados: 0
+5. Los demás campos pueden quedar en 0
+
+PASO 6: GUARDAR
+---------------
+1. Hacer clic en el botón "Guardar Declaración" (verde)
+2. IMPORTANTE: Verificar que aparezca un mensaje de éxito
+3. Verificar que el formulario se recargue
+
+PASO 7: VERIFICAR EN BASE DE DATOS
+-----------------------------------
+1. Abrir PowerShell en: C:\simafiweb\venv\Scripts\tributario
+2. Ejecutar: python -c "import os,sys,django;os.environ.setdefault('DJANGO_SETTINGS_MODULE','tributario_app.settings');django.setup();from tributario_app.models import DeclaracionVolumen;d=DeclaracionVolumen.objects.filter(empresa='0001',rtm='RTM001',expe='EXP001').order_by('-id').first();print(f'Última declaración: ID={d.id if d else None}, Mes={d.mes if d else None}, Ventas={d.ventas if d else None}')"
+
+================================================================================
+COSAS A VERIFICAR SI NO FUNCIONA
+================================================================================
+
+1. ¿Aparece algún mensaje de error en el navegador?
+2. ¿Aparece algún mensaje de error en la consola del servidor?
+3. ¿El formulario se envía o se queda en la misma página?
+4. ¿Hay algún mensaje de JavaScript en la consola del navegador? (F12)
+5. ¿El botón "Guardar" está habilitado?
+6. ¿Los campos obligatorios están llenos?
+
+================================================================================
+PROBLEMAS COMUNES
+================================================================================
+
+1. CACHE DEL NAVEGADOR:
+   - Solución: Limpiar cache completamente y cerrar/abrir navegador
+
+2. JAVASCRIPT BLOQUEANDO EL ENVÍO:
+   - Solución: Abrir consola del navegador (F12) y ver errores
+
+3. CSRF TOKEN INVÁLIDO:
+   - Solución: Refrescar la página antes de enviar el formulario
+
+4. SESIÓN EXPIRADA:
+   - Solución: Volver a hacer login
+
+5. SERVIDOR NO CORRIENDO:
+   - Solución: Verificar que el servidor esté corriendo en puerto 8080
+
+================================================================================
+RESULTADO ESPERADO
+================================================================================
+
+Después de hacer clic en "Guardar Declaración":
+1. Debe aparecer un mensaje verde: "Declaración creada correctamente"
+2. El formulario debe mostrar los datos guardados
+3. La lista de declaraciones debe actualizarse mostrando la nueva declaración
+4. La nueva declaración debe aparecer en la tabla con:
+   - Período: 2024/06 (o el mes que seleccionaste)
+   - Tipo: Normal
+   - Los valores que ingresaste
+
+================================================================================
+
+

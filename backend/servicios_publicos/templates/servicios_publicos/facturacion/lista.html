@@ -1,0 +1,199 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Facturas{% endblock %}
+{% block breadcrumb %}Facturas{% endblock %}
+{% block nav_facturas %}active{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#059669,#10b981)"><i class="fas fa-file-invoice"></i></div>
+        <div>
+            <h1 class="page-title">Facturas {{ q_mes|stringformat:"02d" }}/{{ q_ano }}</h1>
+            <p class="page-subtitle">{{ total_registros }} facturas | Total: L {{ totales.suma_total|floatformat:2|default:"0.00" }}</p>
+        </div>
+    </div>
+    <a href="{% url 'servicios_publicos:facturacion_generar' %}" class="btn-sp-primary">
+        <i class="fas fa-bolt"></i> Generar Facturas
+    </a>
+</div>
+
+<div class="filter-bar">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-2"><label class="form-label">Año</label>
+            <input type="number" name="ano" class="form-control" value="{{ q_ano }}"></div>
+        <div class="col-md-2"><label class="form-label">Mes</label>
+            <input type="number" name="mes" class="form-control" value="{{ q_mes }}" min="1" max="12"></div>
+        <div class="col-md-3"><label class="form-label">Ciclo</label>
+            <select name="ciclo" class="form-select"><option value="">Todos</option>
+            {% for c in ciclos %}<option value="{{ c }}" {% if c == q_ciclo %}selected{% endif %}>{{ c }}</option>{% endfor %}
+            </select></div>
+        <div class="col-md-2"><label class="form-label">Estado</label>
+            <select name="estado" class="form-select"><option value="">Todos</option>
+            {% for v,l in ESTADO_CHOICES %}<option value="{{ v }}" {% if v == q_estado %}selected{% endif %}>{{ l }}</option>{% endfor %}
+            </select></div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn-sp-primary w-100"><i class="fas fa-search"></i> Buscar</button>
+            <a href="{% url 'servicios_publicos:facturacion_lista' %}" class="btn-sp-secondary">✕</a>
+        </div>
+    </form>
+</div>
+
+<!-- Resumen -->
+<div class="row g-3 mb-4">
+    <div class="col-auto">
+        <div class="stat-card stat-green" style="min-width:160px">
+            <div class="stat-icon"><i class="fas fa-coins"></i></div>
+            <div class="stat-body"><div class="stat-value" style="font-size:1.1rem">L {{ totales.suma_total|floatformat:2|default:"0.00" }}</div><div class="stat-label">Total Facturado</div></div>
+        </div>
+    </div>
+    <div class="col-auto">
+        <div class="stat-card stat-red" style="min-width:160px">
+            <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="stat-body"><div class="stat-value" style="font-size:1.1rem">L {{ totales.suma_pendiente|floatformat:2|default:"0.00" }}</div><div class="stat-label">Pendiente de Pago</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="data-card">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th style="width:40px"><input type="checkbox" id="checkAllFacturas" class="form-check-input"></th>
+                    <th>#</th><th>Abonado</th><th>Ciclo</th><th>Emisión</th><th>Vencimiento</th><th>Total</th><th>Saldo</th><th>Estado</th><th>Acc.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in facturas %}
+                <tr id="row-{{ f.id }}">
+                    <td>
+                        {% if f.estado != 'P' and f.estado != 'A' %}
+                        <input type="checkbox" class="factura-checkbox form-check-input" value="{{ f.id }}" 
+                               data-nombre="{{ f.abonado.nombre }}" data-identidad="{{ f.abonado.identidad }}" 
+                               data-codigo="{{ f.abonado.codigo_abonado }}">
+                        {% endif %}
+                    </td>
+                    <td><a href="{% url 'servicios_publicos:factura_detalle' f.pk %}"><strong>#{{ f.numero_factura }}</strong></a></td>
+                    <td>{{ f.abonado.nombre|truncatechars:28 }}<br><small class="text-muted">{{ f.abonado.codigo_abonado }}</small></td>
+                    <td>{{ f.ciclo|default:"-" }}</td>
+                    <td>{{ f.fecha_emision|date:"d/m/Y" }}</td>
+                    <td>{{ f.fecha_vencimiento|date:"d/m/Y"|default:"-" }}</td>
+                    <td>L {{ f.total|floatformat:2 }}</td>
+                    <td>
+                        {% if f.saldo_pendiente > 0 %}
+                        <span style="color:var(--sp-danger);font-weight:700">L {{ f.saldo_pendiente|floatformat:2 }}</span>
+                        {% else %}
+                        <span style="color:var(--sp-success)">Pagado</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if f.estado == 'E' %}<span class="badge bg-warning text-dark">Emitida</span>
+                        {% elif f.estado == 'P' %}<span class="badge bg-success">Pagada</span>
+                        {% elif f.estado == 'V' %}<span class="badge bg-danger">Vencida</span>
+                        {% elif f.estado == 'A' %}<span class="badge bg-secondary">Anulada</span>
+                        {% else %}<span class="badge bg-info">{{ f.get_estado_display }}</span>{% endif %}
+                    </td>
+                    <td><a href="{% url 'servicios_publicos:factura_detalle' f.pk %}" style="color:var(--sp-secondary)"><i class="fas fa-eye"></i></a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center py-4 text-muted">No hay facturas para este período.
+                    <a href="{% url 'servicios_publicos:facturacion_generar' %}" class="btn-link">Generar facturas</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="data-card-footer p-3 border-top d-flex justify-content-between align-items-center" style="border-color:var(--sp-border) !important; background:rgba(255,255,255,0.02)">
+        <span class="text-muted small" id="selectedCount">0 facturas seleccionadas</span>
+        <button type="button" id="btnEnviarCaja" class="btn-sp-primary btn-sm" disabled style="background:linear-gradient(135deg,#059669,#10b981)">
+            <i class="fas fa-cash-register me-2"></i>Enviar seleccionadas a Caja
+        </button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkAll = document.getElementById('checkAllFacturas');
+    const checkboxes = document.querySelectorAll('.factura-checkbox');
+    const btnSend = document.getElementById('btnEnviarCaja');
+    const selectedCountSpan = document.getElementById('selectedCount');
+
+    function updateUI() {
+        const checked = document.querySelectorAll('.factura-checkbox:checked');
+        const count = checked.length;
+        selectedCountSpan.innerText = `${count} facturas seleccionadas`;
+        btnSend.disabled = count === 0;
+        
+        // Validar si todas las facturas seleccionadas son del mismo abonado (opcional, pero recomendado para recibos limpios)
+        if (count > 0) {
+            const firstAbonado = checked[0].dataset.codigo;
+            const sameAbonado = Array.from(checked).every(cb => cb.dataset.codigo === firstAbonado);
+            if (!sameAbonado) {
+                selectedCountSpan.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i> Múltiples abonados seleccionados</span>`;
+            }
+        }
+    }
+
+    if (checkAll) {
+        checkAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => {
+                cb.checked = checkAll.checked;
+            });
+            updateUI();
+        });
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateUI);
+    });
+
+    btnSend.addEventListener('click', async function() {
+        const checked = document.querySelectorAll('.factura-checkbox:checked');
+        const selectedIds = Array.from(checked).map(cb => cb.value);
+        if (selectedIds.length === 0) return;
+
+        const firstCb = checked[0];
+        const sameAbonado = Array.from(checked).every(cb => cb.dataset.codigo === firstCb.dataset.codigo);
+        
+        let confirmMsg = `¿Está seguro de enviar ${selectedIds.length} facturas al módulo de Caja?`;
+        if (!sameAbonado) {
+            confirmMsg = `⚠️ Ha seleccionado facturas de DIFERENTES ABONADOS. Se generará un recibo global. ¿Desea continuar?`;
+        }
+
+        if (!confirm(confirmMsg)) return;
+
+        btnSend.disabled = true;
+        btnSend.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+
+        try {
+            const response = await fetch("{% url 'servicios_publicos:facturacion_enviar_a_caja' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    factura_ids: selectedIds,
+                    identidad_pago: sameAbonado ? firstCb.dataset.identidad : "",
+                    nombre_pago: sameAbonado ? firstCb.dataset.nombre : "PAGO MÚLTIPLES ABONADOS",
+                    comentario: "FACTURACIÓN MASIVA AGUA"
+                })
+            });
+
+            const result = await response.json();
+            if (result.ok) {
+                alert(`¡Éxito! Registros enviados a Caja.\nNúmero de Recibo: ${result.recibo}\n${result.mensaje}`);
+                location.reload();
+            } else {
+                alert("Error: " + result.error);
+                btnSend.disabled = false;
+                btnSend.innerHTML = '<i class="fas fa-cash-register me-2"></i>Enviar seleccionadas a Caja';
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Ocurrió un error al intentar enviar a caja.");
+            btnSend.disabled = false;
+            btnSend.innerHTML = '<i class="fas fa-cash-register me-2"></i>Enviar seleccionadas a Caja';
+        }
+    });
+});
+</script>
+{% endblock %}

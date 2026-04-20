@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado Sumarial - Módulo Catastro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        .main-container {
+            padding: 40px 20px;
+        }
+        .result-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+        .table {
+            font-size: 0.9rem;
+        }
+        .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+            border: none;
+        }
+        .table tbody td {
+            text-align: right;
+            vertical-align: middle;
+        }
+        .table tbody td:first-child {
+            text-align: left;
+            font-weight: 600;
+        }
+        .table tfoot th {
+            background: #f8f9fa;
+            font-weight: 700;
+            text-align: right;
+        }
+        .table tfoot th:first-child {
+            text-align: left;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .filtros-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+                <i class="fas fa-map-marked-alt"></i> Sistema Catastro
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user"></i> {{ usuario_nombre }}
+                </span>
+                <a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="container">
+            <div class="result-container">
+                <h2 class="mb-4">
+                    <i class="fas fa-calculator me-2"></i>{{ nombre_sumarial }}
+                </h2>
+
+                {% if filtros_aplicados %}
+                <div class="filtros-box">
+                    <strong><i class="fas fa-filter me-2"></i>Filtros Aplicados:</strong>
+                    <ul class="mb-0 mt-2">
+                        {% for filtro in filtros_aplicados %}
+                        <li>{{ filtro }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Grupo</th>
+                                <th colspan="9" class="text-center">Totales</th>
+                            </tr>
+                            <tr>
+                                <th>Cantidad de Predios</th>
+                                <th>Avalúo Terreno</th>
+                                <th>Avalúo Edificación</th>
+                                <th>Avalúo Detalles Adicionales</th>
+                                <th>Avalúo Cultivo</th>
+                                <th>Exención</th>
+                                <th>Valor Grabable</th>
+                                <th>Impuesto</th>
+                                <th>Total Área</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fila in datos_sumarial %}
+                            <tr>
+                                <td>
+                                    {% for campo, valor in fila.grupo.items %}
+                                        {# Si el campo es el criterio principal de agrupación, no mostrar el label, solo el valor #}
+                                        {% if campo in grupo_por %}
+                                            {# Mostrar solo el valor con descripción si está disponible #}
+                                            {% if campo == 'uso' and fila.grupo_descripcion.uso %}
+                                                {{ fila.grupo_descripcion.uso }}<br>
+                                            {% elif campo == 'subuso' and fila.grupo_descripcion.subuso %}
+                                                {{ fila.grupo_descripcion.subuso }}<br>
+                                            {% elif campo == 'barrio' and fila.grupo_descripcion.barrio %}
+                                                {{ fila.grupo_descripcion.barrio }}<br>
+                                            {% elif campo == 'ficha' and fila.grupo_descripcion.ficha %}
+                                                {{ fila.grupo_descripcion.ficha }}<br>
+                                            {% elif campo == 'sexo' and fila.grupo_descripcion.sexo %}
+                                                {{ fila.grupo_descripcion.sexo }}<br>
+                                            {% elif campo == 'naturaleza' and fila.grupo_descripcion.naturaleza %}
+                                                {{ fila.grupo_descripcion.naturaleza }}<br>
+                                            {% elif campo == 'dominio' and fila.grupo_descripcion.dominio %}
+                                                {{ fila.grupo_descripcion.dominio }}<br>
+                                            {% elif campo == 'tipo' and fila.grupo_descripcion.tipo %}
+                                                {{ fila.grupo_descripcion.tipo }}<br>
+                                            {% elif campo == 'st' and fila.grupo_descripcion.st %}
+                                                {{ fila.grupo_descripcion.st }}<br>
+                                            {% elif campo == 'st' %}
+                                                {{ valor|default:"-" }}<br>
+                                            {% elif campo == 'zonificacion' %}
+                                                {{ valor|default:"-" }}<br>
+                                            {% elif campo == 'identidad' %}
+                                                {{ valor|default:"-" }}<br>
+                                            {% else %}
+                                                {{ valor|default:"-" }}<br>
+                                            {% endif %}
+                                        {% else %}
+                                            {# Si no es el criterio principal, mostrar con label #}
+                                            {% if campo == 'uso' and fila.grupo_descripcion.uso %}
+                                                <strong>Uso:</strong> {{ fila.grupo_descripcion.uso }}<br>
+                                            {% elif campo == 'subuso' and fila.grupo_descripcion.subuso %}
+                                                <strong>Sub Uso:</strong> {{ fila.grupo_descripcion.subuso }}<br>
+                                            {% elif campo == 'barrio' %}
+                                                <strong>Barrio:</strong> {% if fila.grupo_descripcion.barrio %}{{ fila.grupo_descripcion.barrio }}{% else %}{{ valor|default:"-" }}{% endif %}<br>
+                                            {% elif campo == 'ficha' and fila.grupo_descripcion.ficha %}
+                                                <strong>Ficha:</strong> {{ fila.grupo_descripcion.ficha }}<br>
+                                            {% elif campo == 'sexo' and fila.grupo_descripcion.sexo %}
+                                                <strong>Sexo:</strong> {{ fila.grupo_descripcion.sexo }}<br>
+                                            {% elif campo == 'identidad' %}
+                                                <strong>Identidad:</strong> {{ valor|default:"-" }}<br>
+                                            {% elif campo == 'naturaleza' and fila.grupo_descripcion.naturaleza %}
+                                                <strong>Naturaleza Jurídica:</strong> {{ fila.grupo_descripcion.naturaleza }}<br>
+                                            {% elif campo == 'dominio' and fila.grupo_descripcion.dominio %}
+                                                <strong>Clase de Dominio:</strong> {{ fila.grupo_descripcion.dominio }}<br>
+                                            {% elif campo == 'tipo' and fila.grupo_descripcion.tipo %}
+                                                <strong>Tipo de Documento:</strong> {{ fila.grupo_descripcion.tipo }}<br>
+                                            {% elif campo == 'st' and fila.grupo_descripcion.st %}
+                                                <strong>Estatus Tributario:</strong> {{ fila.grupo_descripcion.st }}<br>
+                                            {% elif campo == 'st' %}
+                                                <strong>Estatus Tributario:</strong> {{ valor|default:"-" }}<br>
+                                            {% elif campo == 'zonificacion' %}
+                                                <strong>Zonificación:</strong> {{ valor|default:"-" }}<br>
+                                            {% else %}
+                                                <strong>{{ campo|title }}:</strong> {{ valor|default:"-" }}<br>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>{{ fila.cantidad_predios }}</td>
+                                <td>L. {{ fila.avaluo_terreno|floatformat:2 }}</td>
+                                <td>L. {{ fila.avaluo_edificacion|floatformat:2 }}</td>
+                                <td>L. {{ fila.avaluo_detalles|floatformat:2 }}</td>
+                                <td>L. {{ fila.avaluo_cultivo|floatformat:2 }}</td>
+                                <td>L. {{ fila.exencion|floatformat:2 }}</td>
+                                <td>L. {{ fila.valor_grabable|floatformat:2 }}</td>
+                                <td>L. {{ fila.impuesto|floatformat:2 }}</td>
+                                <td>{{ fila.total_area|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="10" class="text-center text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>No se encontraron registros con los criterios especificados.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if datos_sumarial %}
+                        <tfoot>
+                            <tr>
+                                <th>TOTALES:</th>
+                                <th>{{ totales.cantidad_predios }}</th>
+                                <th>L. {{ totales.avaluo_terreno|floatformat:2 }}</th>
+                                <th>L. {{ totales.avaluo_edificacion|floatformat:2 }}</th>
+                                <th>L. {{ totales.avaluo_detalles|floatformat:2 }}</th>
+                                <th>L. {{ totales.avaluo_cultivo|floatformat:2 }}</th>
+                                <th>L. {{ totales.exencion|floatformat:2 }}</th>
+                                <th>L. {{ totales.valor_grabable|floatformat:2 }}</th>
+                                <th>L. {{ totales.impuesto|floatformat:2 }}</th>
+                                <th>{{ totales.total_area|floatformat:2 }}</th>
+                            </tr>
+                        </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'catastro:sumarial_avaluos_catastrales' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Volver
+                    </a>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'catastro:exportar_sumarial_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success">
+                            <i class="fas fa-file-excel me-2"></i> Exportar a Excel
+                        </a>
+                        <a href="{% url 'catastro:exportar_sumarial_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-danger">
+                            <i class="fas fa-file-pdf me-2"></i> Generar PDF
+                        </a>
+                        <button class="btn btn-primary" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i> Imprimir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

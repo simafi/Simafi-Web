@@ -1,0 +1,155 @@
+{% extends "presupuestos/menu_principal.html" %}
+
+{% block content %}
+<div class="container mt-4 pb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'presupuestos:presupuestos_menu_principal' %}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'presupuestos:informes_presupuestarios' %}?tipo=INGRESO">Informes</a></li>
+            <li class="breadcrumb-item active">Ingresos</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h3 class="text-success"><i class="fas fa-file-invoice-dollar me-2"></i>Panel de Informes de Ingresos</h3>
+            <p class="text-muted">Consulte la ejecución, liquidación y resúmenes del presupuesto de ingresos.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filtros Generales -->
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow-sm border-0 bg-white p-3">
+                <form method="GET" action="." class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Ejercicio Fiscal</label>
+                        <select name="ejercicio" class="form-select form-select-sm">
+                            {% for ej in ejercicios %}
+                            <option value="{{ ej.id }}" {% if ej.id|stringformat:"s" == ejercicio_id %}selected{% endif %}>{{ ej.anio }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Desde</label>
+                        <input type="date" name="fecha_desde" class="form-control form-control-sm" value="{{ fecha_desde }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Hasta</label>
+                        <input type="date" name="fecha_hasta" class="form-control form-control-sm" value="{{ fecha_hasta }}">
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-sm btn-success w-100">
+                            <i class="fas fa-sync-alt me-1"></i>Actualizar Filtros
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de Reportes -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-lift">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success bg-opacity-10 p-2 rounded me-3 text-success">
+                            <i class="fas fa-file-invoice fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Ejecución General</h5>
+                    </div>
+                    <p class="card-text text-muted small">Rentístico de ingresos del periodo fiscal. Incluye Presupuesto de Ingresos versus Recaudación Totalizada.</p>
+                    <a href="{% url 'presupuestos:reporte_ejecucion_general' %}?ejercicio={{ ejercicio_id }}" class="btn btn-sm btn-outline-success w-100">Generar Reporte</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-lift">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded me-3 text-primary">
+                            <i class="fas fa-calendar-check fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Ingresos por Periodo</h5>
+                    </div>
+                    <p class="card-text text-muted small">Muestra el rentístico filtrado por el rango de fechas seleccionado dentro del periodo fiscal.</p>
+                    <a href="{% url 'presupuestos:reporte_ejecucion_periodo' %}?ejercicio={{ ejercicio_id }}&desde={{ fecha_desde }}&hasta={{ fecha_hasta }}" class="btn btn-sm btn-outline-primary w-100">Generar por Periodo</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-lift">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-info bg-opacity-10 p-2 rounded me-3 text-info">
+                            <i class="fas fa-chart-line fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Resumen Mensual</h5>
+                    </div>
+                    <p class="card-text text-muted small">Desglose mensual de los 12 meses del periodo fiscal para los niveles 1 y 2 del catálogo.</p>
+                    <a href="{% url 'presupuestos:reporte_mensual_ingresos' %}?ejercicio={{ ejercicio_id }}" class="btn btn-sm btn-outline-info w-100">Ver Comparativo</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-lift">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning bg-opacity-10 p-2 rounded me-3 text-warning">
+                            <i class="fas fa-exchange-alt fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Reformas de Ingreso</h5>
+                    </div>
+                    <p class="card-text text-muted small">Detalle de ampliaciones, disminuciones y traspasos realizados en el presupuesto.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'presupuestos:reporte_reformas_ampliaciones' %}?ejercicio={{ ejercicio_id }}" class="btn btn-xs btn-link text-decoration-none text-start p-0 small text-warning"><i class="fas fa-plus-circle me-1"></i>Informe Ampliaciones</a>
+                        <a href="{% url 'presupuestos:reporte_reformas_traspasos' %}?ejercicio={{ ejercicio_id }}" class="btn btn-xs btn-link text-decoration-none text-start p-0 small text-warning"><i class="fas fa-random me-1"></i>Informe Traspasos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-lift border-start border-4 border-danger">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-danger bg-opacity-10 p-2 rounded me-3 text-danger">
+                            <i class="fas fa-balance-scale fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Liquidación Forma 01</h5>
+                    </div>
+                    <p class="card-text text-muted small">Informe de liquidación anual según rendición de cuentas. Incluye Ingreso Devengado y Recaudado.</p>
+                    <a href="{% url 'presupuestos:reporte_liquidacion_f01' %}?ejercicio={{ ejercicio_id }}" class="btn btn-sm btn-outline-danger w-100">Generar Forma 01</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-lift">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-secondary bg-opacity-10 p-2 rounded me-3 text-secondary">
+                            <i class="fas fa-search fa-lg"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Consulta por Cuenta</h5>
+                    </div>
+                    <p class="card-text text-muted small">Permite generar los ingresos por una cuenta o fracción de cuenta según el nivel consultado.</p>
+                    <a href="{% url 'presupuestos:consulta_por_cuenta' %}?ejercicio={{ ejercicio_id }}" class="btn btn-sm btn-outline-secondary w-100">Consultar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+    }
+    .tiny { font-size: 0.75rem; }
+    .btn-xs { font-size: 0.7rem; padding: 2px 5px; }
+</style>
+{% endblock %}

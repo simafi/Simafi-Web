@@ -1,0 +1,82 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Reporte de Morosos{% endblock %}
+{% block breadcrumb %}Morosos{% endblock %}
+{% block nav_reportes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#dc2626,#ef4444)"><i class="fas fa-exclamation-triangle"></i></div>
+        <div>
+            <h1 class="page-title">Abonados en Mora</h1>
+            <p class="page-subtitle">Abonados con saldo pendiente de pago - {{ empresa }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'servicios_publicos:reportes' %}" class="btn-sp-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a Reportes
+        </a>
+        <button onclick="window.print()" class="btn-sp-secondary">
+            <i class="fas fa-print"></i> Imprimir Reporte
+        </button>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="stat-card stat-red animate-in">
+            <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+            <div class="stat-body">
+                <div class="stat-value">L {{ total_mora|floatformat:2 }}</div>
+                <div class="stat-label">Total en Mora Acumulada</div>
+                <div class="stat-sub">{{ morosos.count }} abonados con deuda</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="data-card animate-in" style="animation-delay:0.1s">
+    <div class="data-card-header">
+        <h4><i class="fas fa-list-ol me-2"></i>Ranking de Deudores</h4>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre del Abonado</th>
+                    <th>Dirección</th>
+                    <th>Categoría</th>
+                    <th>Ciclo</th>
+                    <th class="text-end">Deuda Pendiente</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in morosos %}
+                <tr>
+                    <td><strong>{{ m.codigo_abonado }}</strong></td>
+                    <td>{{ m.nombre }}</td>
+                    <td class="small">{{ m.direccion|truncatechars:40 }}</td>
+                    <td>{{ m.get_categoria_display }}</td>
+                    <td>{{ m.ciclo|default:"-" }}</td>
+                    <td class="text-end fw-bold text-danger">L {{ m.deuda|floatformat:2 }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'servicios_publicos:catastro_detalle' m.pk %}" class="btn-link" title="Ver detalle">
+                            <i class="fas fa-search-dollar"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fas fa-check-circle fa-3x mb-3 text-success opacity-20 d-block"></i>
+                        No se encontraron abonados con mora pendiente en el sistema.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

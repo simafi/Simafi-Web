@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% if empresa and clave %}{% url 'catastro:cultivo_permanente_list' empresa=empresa cocata1=clave %}{% else %}{% url 'catastro:cultivo_permanente_list' %}{% endif %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ request.session.catastro_usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header {% if cultivo %}bg-warning text-dark{% else %}bg-info text-white{% endif %}">
+				<h5 class="mb-0">
+					<i class="fas {% if cultivo %}fa-edit{% else %}fa-plus-circle{% endif %} me-2"></i>{{ titulo }}
+				</h5>
+			</div>
+			<div class="card-body">
+				<!-- Mensajes -->
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<!-- Información del Bien Inmueble -->
+				{% if bien_inmueble %}
+				<div class="alert alert-info mb-3">
+					<h6 class="alert-heading">
+						<i class="fas fa-info-circle me-2"></i>Información del Bien Inmueble
+					</h6>
+					<hr>
+					<p class="mb-1"><strong>Clave Catastral:</strong> {{ bien_inmueble.cocata1 }}</p>
+					<p class="mb-1"><strong>Propietario:</strong> {{ bien_inmueble.nombres|default:"" }} {{ bien_inmueble.apellidos|default:"" }}</p>
+					<p class="mb-0"><strong>Ubicación:</strong> {{ bien_inmueble.ubicacion|default:"-" }}</p>
+				</div>
+				{% endif %}
+
+				<!-- Formulario -->
+				<form method="post" id="form-cultivo-permanente">
+					{% csrf_token %}
+					
+					<!-- Botón para mostrar/ocultar variables temporales -->
+					<div class="mb-3 d-flex justify-content-end">
+						<button type="button" class="btn btn-sm btn-outline-secondary" id="btn-toggle-variables-temporales">
+							<i class="fas fa-eye-slash me-1"></i> <span id="text-toggle-variables">Mostrar Variables Temporales</span>
+						</button>
+					</div>
+					
+					<div class="row g-3">
+						<!-- Empresa -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.empresa.id_for_label }}">
+								<strong>{{ form.empresa.label }}</strong>
+							</label>
+							{% if cultivo %}
+								<input type="text" 
+								       id="{{ form.empresa.id_for_label }}" 
+								       name="{{ form.empresa.name }}" 
+								       value="{{ cultivo.empresa|default:'' }}" 
+								       class="form-control" 
+								       maxlength="4" 
+								       readonly>
+							{% else %}
+								{{ form.empresa }}
+							{% endif %}
+							{{ form.empresa.errors }}
+							<small class="form-text text-muted">Se asigna automáticamente</small>
+						</div>
+
+						<!-- Clave Catastral -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.clave.id_for_label }}">
+								<strong>{{ form.clave.label }}</strong>
+							</label>
+							{% if cultivo %}
+								<input type="text" 
+								       id="{{ form.clave.id_for_label }}" 
+								       name="{{ form.clave.name }}" 
+								       value="{{ cultivo.clave|default:'' }}" 
+								       class="form-control" 
+								       maxlength="20" 
+								       readonly>
+							{% else %}
+								{{ form.clave }}
+							{% endif %}
+							{{ form.clave.errors }}
+							<small class="form-text text-muted">Se asigna automáticamente</small>
+						</div>
+
+						<!-- Clase de Cultivo y Variedad -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.clase.id_for_label }}">
+								<strong>{{ form.clase.label }}</strong>
+							</label>
+							{{ form.clase }}
+							{{ form.clase.errors }}
+							<small class="form-text text-muted">Seleccione una clase de cultivo</small>
+						</div>
+
+						<!-- Descripción de la Clase (solo lectura) - Variable Temporal -->
+						<div class="col-md-3 variable-temporal" style="display: none;">
+							<label class="form-label" for="{{ form.descripcion_clase.id_for_label }}">
+								<strong>{{ form.descripcion_clase.label }}</strong>
+							</label>
+							{{ form.descripcion_clase }}
+							{{ form.descripcion_clase.errors }}
+							<small class="form-text text-muted">Se completa automáticamente</small>
+						</div>
+
+						<!-- Árbol -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.arbol.id_for_label }}">
+								<strong>{{ form.arbol.label }}</strong>
+							</label>
+							{{ form.arbol }}
+							{{ form.arbol.errors }}
+							<small class="form-text text-muted">Número de árboles</small>
+						</div>
+
+						<!-- Estado Fitosanitario -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.estado.id_for_label }}">
+								<strong>{{ form.estado.label }}</strong>
+							</label>
+							{{ form.estado }}
+							{{ form.estado.errors }}
+							<small class="form-text text-muted">Seleccione el estado fitosanitario del cultivo</small>
+						</div>
+
+						<!-- Factor Estado (temporal) - Variable Temporal -->
+						<div class="col-md-3 variable-temporal" style="display: none;">
+							<label class="form-label" for="{{ form.factor_estado.id_for_label }}">
+								<strong>{{ form.factor_estado.label }}</strong>
+							</label>
+							{{ form.factor_estado }}
+							{{ form.factor_estado.errors }}
+							<small class="form-text text-muted">Factor según estado (temporal)</small>
+						</div>
+
+						<!-- Edad -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.edad.id_for_label }}">
+								<strong>{{ form.edad.label }}</strong>
+							</label>
+							{{ form.edad }}
+							{{ form.edad.errors }}
+							<small class="form-text text-muted">Edad en años</small>
+						</div>
+
+						<!-- Factor Edad (temporal) - Variable Temporal -->
+						<div class="col-md-3 variable-temporal" style="display: none;">
+							<label class="form-label" for="{{ form.factor_edad.id_for_label }}">
+								<strong>{{ form.factor_edad.label }}</strong>
+							</label>
+							{{ form.factor_edad }}
+							{{ form.factor_edad.errors }}
+							<small class="form-text text-muted">Factor según edad (temporal)</small>
+						</div>
+
+						<!-- Factor de Modificación -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.factor.id_for_label }}">
+								<strong>{{ form.factor.label }}</strong>
+							</label>
+							{{ form.factor }}
+							{{ form.factor.errors }}
+							<small class="form-text text-muted">Factor Estado × Factor Edad (automático)</small>
+						</div>
+
+						<!-- Valor por Árbol (solo lectura) - Variable Temporal -->
+						<div class="col-md-3 variable-temporal" style="display: none;">
+							<label class="form-label" for="{{ form.valorarbol.id_for_label }}">
+								<strong>{{ form.valorarbol.label }}</strong>
+							</label>
+							{{ form.valorarbol }}
+							{{ form.valorarbol.errors }}
+							<small class="form-text text-muted">Valor por árbol (temporal)</small>
+						</div>
+
+						<!-- Valor Cultivo -->
+						<div class="col-md-4">
+							<label class="form-label" for="{{ form.valor.id_for_label }}">
+								<strong>{{ form.valor.label }}</strong>
+							</label>
+							{{ form.valor }}
+							{{ form.valor.errors }}
+							<small class="form-text text-muted">Valor total del cultivo (calculado automáticamente)</small>
+						</div>
+					</div>
+
+					<!-- Botones -->
+					<div class="mt-4 d-flex justify-content-between">
+						<a href="{% if empresa and clave %}{% url 'catastro:cultivo_permanente_list' empresa=empresa cocata1=clave %}{% else %}{% url 'catastro:cultivo_permanente_list' %}{% endif %}" class="btn btn-secondary">
+							<i class="fas fa-arrow-left me-1"></i> Volver
+						</a>
+						<button type="submit" class="btn btn-primary">
+							<i class="fas fa-save me-1"></i> Guardar
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// Control de visibilidad de variables temporales
+			const btnToggleVariables = document.getElementById('btn-toggle-variables-temporales');
+			const textToggleVariables = document.getElementById('text-toggle-variables');
+			const iconToggleVariables = btnToggleVariables ? btnToggleVariables.querySelector('i') : null;
+			const variablesTemporales = document.querySelectorAll('.variable-temporal');
+			let variablesVisibles = false;
+			
+			if (btnToggleVariables) {
+				btnToggleVariables.addEventListener('click', function() {
+					variablesVisibles = !variablesVisibles;
+					
+					variablesTemporales.forEach(function(variable) {
+						if (variablesVisibles) {
+							variable.style.display = '';
+						} else {
+							variable.style.display = 'none';
+						}
+					});
+					
+					// Actualizar texto e ícono del botón
+					if (variablesVisibles) {
+						if (textToggleVariables) textToggleVariables.textContent = 'Ocultar Variables Temporales';
+						if (iconToggleVariables) {
+							iconToggleVariables.classList.remove('fa-eye-slash');
+							iconToggleVariables.classList.add('fa-eye');
+						}
+					} else {
+						if (textToggleVariables) textToggleVariables.textContent = 'Mostrar Variables Temporales';
+						if (iconToggleVariables) {
+							iconToggleVariables.classList.remove('fa-eye');
+							iconToggleVariables.classList.add('fa-eye-slash');
+						}
+					}
+				});
+			}
+			
+			// Obtener IDs de los campos
+			const claseSelectId = '{{ form.clase.id_for_label }}';
+			const descripcionClaseId = '{{ form.descripcion_clase.id_for_label }}';
+			const valorCultivoId = '{{ form.valor_cultivo.id_for_label }}';
+			const valorArbolId = '{{ form.valorarbol.id_for_label }}';
+			const factorId = '{{ form.factor.id_for_label }}';
+			const edadId = '{{ form.edad.id_for_label }}';
+			const empresaId = '{{ form.empresa.id_for_label }}';
+			
+			const claseSelect = document.getElementById(claseSelectId);
+			const descripcionClaseInput = document.getElementById(descripcionClaseId);
+			const valorCultivoInput = document.getElementById(valorCultivoId);
+			const valorArbolInput = document.getElementById(valorArbolId);
+			const factorInput = document.getElementById(factorId);
+			const factorEstadoId = '{{ form.factor_estado.id_for_label }}';
+			const factorEstadoInput = document.getElementById(factorEstadoId);
+			const factorEdadId = '{{ form.factor_edad.id_for_label }}';
+			const factorEdadInput = document.getElementById(factorEdadId);
+			const estadoSelect = document.getElementById('{{ form.estado.id_for_label }}');
+			const arbolInput = document.getElementById('{{ form.arbol.id_for_label }}');
+			const valorInput = document.getElementById('{{ form.valor.id_for_label }}');
+			const edadInput = document.getElementById(edadId);
+			const empresaInput = document.getElementById(empresaId);
+			const claveInput = document.getElementById('{{ form.clave.id_for_label }}');
+			// Verificar si hay una instancia (cultivo) para determinar si estamos editando
+			{% if cultivo and cultivo.id %}
+			const isEditing = true || window.location.pathname.includes('/editar/');
+			{% else %}
+			const isEditing = false || window.location.pathname.includes('/editar/');
+			{% endif %}
+			// Usar valores del formulario (instancia) si están disponibles, sino usar contexto
+			const empresa = empresaInput ? empresaInput.value : '{{ form.empresa.value|default:empresa|default:"" }}';
+			const clave = claveInput ? claveInput.value : '{{ form.clave.value|default:clave|default:"" }}';
+			
+			// Intentar obtener el campo factor por diferentes métodos si no se encuentra
+			let factorInputFinal = factorInput;
+			if (!factorInputFinal) {
+				// Intentar por name
+				factorInputFinal = document.querySelector('input[name="factor"]');
+			}
+			if (!factorInputFinal) {
+				// Intentar por id sin el prefijo
+				factorInputFinal = document.getElementById('id_factor');
+			}
+			
+			// Debug: Verificar que los elementos existen
+			console.log('🔍 Elementos encontrados:', {
+				claseSelect: !!claseSelect,
+				descripcionClaseInput: !!descripcionClaseInput,
+				valorCultivoInput: !!valorCultivoInput,
+				valorArbolInput: !!valorArbolInput,
+				factorInput: !!factorInput,
+				factorInputFinal: !!factorInputFinal,
+				edadInput: !!edadInput,
+				empresaInput: !!empresaInput,
+				factorId: factorId
+			});
+			
+			// Usar el factorInputFinal si se encontró
+			if (factorInputFinal && !factorInput) {
+				factorInput = factorInputFinal;
+			}
+			
+			// Protección: NO modificar empresa y clave si estamos editando
+			// isEditing ya fue definido arriba usando el template tag if
+			
+			// Si estamos editando, NO tocar los valores de empresa y clave
+			// Django ya los carga correctamente desde la instancia
+			if (isEditing) {
+				console.log('🔒 Modo edición: NO se modificarán empresa y clave');
+				console.log('🔒 Empresa actual:', empresaInput ? empresaInput.value : 'N/A');
+				console.log('🔒 Clave actual:', claveInput ? claveInput.value : 'N/A');
+				
+				// NO hacer nada - los valores ya están correctos desde el template
+				// Los campos readonly ya están protegidos en el HTML
+				// Los campos se renderizan directamente desde {{ cultivo.empresa }} y {{ cultivo.clave }}
+			} else {
+				// Solo para nuevos registros: establecer valores si están vacíos
+				if (empresaInput && !empresaInput.value.trim() && empresa) {
+					empresaInput.value = empresa;
+				}
+				if (claveInput && !claveInput.value.trim() && clave) {
+					claveInput.value = clave;
+				}
+			}
+			
+			if (claseSelect && empresaInput) {
+				function cargarDatosClase() {
+					const empresa = empresaInput.value.trim();
+					const claseCodigo = claseSelect.value ? claseSelect.value.trim() : '';
+					
+					console.log('🔍 cargarDatosClase:', { 
+						empresa, 
+						claseCodigo,
+						claseSelectValue: claseSelect.value,
+						claseOptionText: claseSelect.options[claseSelect.selectedIndex] ? claseSelect.options[claseSelect.selectedIndex].text : 'N/A'
+					});
+					
+					// Validar que tenemos empresa y código
+					if (!empresa || !claseCodigo) {
+						console.log('⚠️ Faltan empresa o código de clase');
+						// Limpiar campos si no hay clase seleccionada
+						if (descripcionClaseInput) descripcionClaseInput.value = '';
+						if (valorCultivoInput) valorCultivoInput.value = '';
+						if (valorArbolInput) valorArbolInput.value = '';
+						if (factorInput) factorInput.value = '';
+						return;
+					}
+					
+					// Realizar petición AJAX para obtener descripción y valor del árbol
+					// Siempre usar empresa y código (to_field_name='codigo' hace que el valor sea el código)
+					let url = '{% url "catastro:buscar_clase_cultivo_ajax" %}?empresa=' + encodeURIComponent(empresa) + '&codigo=' + encodeURIComponent(claseCodigo);
+					console.log('🔍 URL AJAX:', url);
+					
+					fetch(url)
+						.then(response => {
+							console.log('🔍 Response status:', response.status);
+							return response.json();
+						})
+						.then(data => {
+							console.log('🔍 Datos recibidos:', data);
+							
+							if (data.existe) {
+								// Llenar campos con los datos encontrados
+								if (descripcionClaseInput) {
+									descripcionClaseInput.value = data.descripcion || '';
+									console.log('✅ Descripción actualizada:', data.descripcion);
+								}
+								if (valorCultivoInput) {
+									valorCultivoInput.value = data.valor || '';
+									console.log('✅ Valor cultivo actualizado:', data.valor);
+								}
+								if (valorArbolInput) {
+									valorArbolInput.value = data.valor || '';
+									console.log('✅ Valor árbol actualizado:', data.valor);
+								}
+								
+								// NO asignar el valor de valorarbol al campo Factor
+								// El Factor se obtiene de la tabla factorcultivo según edad
+								
+								// Buscar el factor automáticamente si hay edad (solo si NO estamos editando)
+								if (!isEditing) {
+									buscarFactorCultivo();
+									// Recalcular el valor del cultivo solo si NO estamos editando
+									calcularValorCultivo();
+								}
+							} else {
+								console.log('⚠️ No se encontró el registro en valorarbol');
+								// Limpiar campos si no se encuentra
+								if (descripcionClaseInput) descripcionClaseInput.value = '';
+								if (valorCultivoInput) valorCultivoInput.value = '';
+								if (valorArbolInput) valorArbolInput.value = '';
+								if (factorInput) factorInput.value = '';
+							}
+						})
+						.catch(error => {
+							console.error('❌ Error en AJAX:', error);
+						});
+				}
+				
+				function buscarFactorCultivo() {
+					const empresa = empresaInput.value.trim();
+					const claseCodigo = claseSelect.value ? claseSelect.value.trim() : '';
+					const edad = edadInput ? edadInput.value.trim() : '';
+					
+					console.log('🔍 buscarFactorCultivo:', { empresa, claseCodigo, edad });
+					
+					// Validar que tenemos empresa, código y edad
+					if (!empresa || !claseCodigo || !edad) {
+						console.log('⚠️ Faltan parámetros para buscar factor (empresa, código o edad)');
+						// Limpiar el campo Factor si no hay parámetros suficientes
+						if (factorEdadInput) {
+							factorEdadInput.value = '';
+						}
+						// Recalcular Factor de Modificación (será 0 si factor_edad está vacío)
+						if (!isEditing) {
+							calcularFactorModificacion();
+						}
+						return;
+					}
+					
+					// Realizar petición AJAX para obtener el factor según empresa, código y edad
+					// La búsqueda se hace donde edad >= rango1 AND edad <= rango2
+					// Como to_field_name='codigo', el valor del select siempre es el código
+					const url = '{% url "catastro:buscar_factor_cultivo_ajax" %}?empresa=' + encodeURIComponent(empresa) + '&codigo=' + encodeURIComponent(claseCodigo) + '&edad=' + encodeURIComponent(edad);
+					console.log('🔍 URL buscarFactorCultivo:', url);
+					
+					fetch(url)
+						.then(response => response.json())
+						.then(data => {
+							console.log('🔍 Datos factorcultivo recibidos:', data);
+							
+							if (data.existe) {
+								// Asignar el factor encontrado en factorcultivo al campo factor_edad
+								const factorEdad = data.factor || '';
+								
+								if (factorEdadInput) {
+									factorEdadInput.value = factorEdad;
+									console.log('✅ Factor Edad actualizado con valor de factorcultivo:', factorEdad);
+									
+									// Disparar eventos para asegurar actualización
+									factorEdadInput.dispatchEvent(new Event('input', { bubbles: true }));
+									factorEdadInput.dispatchEvent(new Event('change', { bubbles: true }));
+								}
+								
+								// Calcular Factor de Modificación = Factor Estado * Factor Edad
+								if (!isEditing) {
+									calcularFactorModificacion();
+									// Recalcular el valor del cultivo solo si NO estamos editando
+									calcularValorCultivo();
+								}
+							} else {
+								// No se encontró factor en factorcultivo, limpiar los campos
+								console.log('⚠️ No se encontró factor en factorcultivo para edad', edad);
+								if (factorEdadInput) {
+									factorEdadInput.value = '';
+								}
+								// Solo recalcular si NO estamos editando
+								if (!isEditing) {
+									// Recalcular Factor de Modificación (será 0 si factor_edad está vacío)
+									calcularFactorModificacion();
+									// Recalcular el valor del cultivo (con factor = 0)
+									calcularValorCultivo();
+								}
+							}
+						})
+						.catch(error => {
+							console.error('❌ Error al buscar factor:', error);
+							limpiarFactor();
+						});
+				}
+				
+				// Función auxiliar para limpiar el factor
+				function limpiarFactor() {
+					// Limpiar Factor Edad
+					if (factorEdadInput) {
+						factorEdadInput.value = '';
+					}
+					// Recalcular Factor de Modificación (será 0 si factor_edad está vacío)
+					if (!isEditing) {
+						calcularFactorModificacion();
+					}
+				}
+				
+				// Función para calcular el Factor Estado según el Estado Fitosanitario
+				function calcularFactorEstado() {
+					if (!estadoSelect || !factorEstadoInput) {
+						return;
+					}
+					
+					const estado = estadoSelect.value;
+					let factorEstado = 0.00;
+					
+					if (estado === '1') {
+						factorEstado = 1.00;
+					} else if (estado === '2') {
+						factorEstado = 0.70;
+					} else if (estado === '3') {
+						factorEstado = 0.40;
+					}
+					
+					factorEstadoInput.value = factorEstado.toFixed(2);
+					console.log('✅ Factor Estado actualizado:', factorEstado, 'para estado:', estado);
+					
+					// Disparar eventos para asegurar actualización
+					factorEstadoInput.dispatchEvent(new Event('input', { bubbles: true }));
+					factorEstadoInput.dispatchEvent(new Event('change', { bubbles: true }));
+					
+					// Calcular Factor de Modificación
+					// Recalcular siempre (el usuario cambió el estado)
+					calcularFactorModificacion();
+					// Recalcular el valor del cultivo cuando cambia el estado
+					calcularValorCultivo();
+				}
+				
+				// Función para calcular el Factor de Modificación
+				// Factor de Modificación = Factor Estado * Factor Edad (redondeado a 2 dígitos)
+				function calcularFactorModificacion() {
+					if (!factorEstadoInput || !factorEdadInput || !factorInput) {
+						return;
+					}
+					
+					const factorEstado = parseFloat(factorEstadoInput.value) || 0;
+					const factorEdad = parseFloat(factorEdadInput.value) || 0;
+					
+					// Calcular: Factor de Modificación = Factor Estado * Factor Edad
+					const factorModificacion = factorEstado * factorEdad;
+					
+					// Redondear a 2 dígitos decimales
+					const factorRedondeado = Math.round(factorModificacion * 100) / 100;
+					
+					// Actualizar el campo Factor de Modificación
+					factorInput.value = factorRedondeado.toFixed(2);
+					console.log('✅ Factor de Modificación calculado:', factorRedondeado.toFixed(2), '(Factor Estado:', factorEstado, '× Factor Edad:', factorEdad, ')');
+					
+					// Disparar eventos para asegurar actualización
+					factorInput.dispatchEvent(new Event('input', { bubbles: true }));
+					factorInput.dispatchEvent(new Event('change', { bubbles: true }));
+				}
+				
+				// Función para calcular el Valor del Cultivo
+				// Valor = Árbol * Factor Estado * Valor por Árbol * Factor
+				function calcularValorCultivo() {
+					if (!arbolInput || !factorEstadoInput || !valorArbolInput || !factorInput || !valorInput) {
+						console.log('⚠️ Faltan campos para calcular el valor');
+						return;
+					}
+					
+					// Obtener valores de los campos
+					const arbol = parseFloat(arbolInput.value) || 0;
+					const factorEstado = parseFloat(factorEstadoInput.value) || 0;
+					const valorArbol = parseFloat(valorArbolInput.value) || 0;
+					const factor = parseFloat(factorInput.value) || 0;
+					
+					console.log('🔍 Valores para cálculo:', {
+						arbol: arbol,
+						factorEstado: factorEstado,
+						valorArbol: valorArbol,
+						factor: factor
+					});
+					
+					// Calcular: Valor = Árbol * Factor Estado * Valor por Árbol * Factor
+					const valor = arbol * factorEstado * valorArbol * factor;
+					
+					// Redondear a 2 decimales
+					const valorRedondeado = Math.round(valor * 100) / 100;
+					
+					// Actualizar el campo Valor
+					valorInput.value = valorRedondeado.toFixed(2);
+					console.log('✅ Valor del cultivo calculado:', valorRedondeado.toFixed(2));
+					
+					// Disparar eventos para asegurar actualización
+					valorInput.dispatchEvent(new Event('input', { bubbles: true }));
+					valorInput.dispatchEvent(new Event('change', { bubbles: true }));
+				}
+				
+				// Cargar datos cuando se selecciona una clase
+				claseSelect.addEventListener('change', function() {
+					cargarDatosClase();
+				});
+				
+				// Calcular Factor Estado cuando cambia el Estado Fitosanitario
+				if (estadoSelect) {
+					estadoSelect.addEventListener('change', function() {
+						calcularFactorEstado();
+					});
+					
+					// Calcular al cargar la página si ya hay un estado seleccionado
+					if (estadoSelect.value) {
+						calcularFactorEstado();
+					}
+				}
+				
+				// Recalcular valor cuando cambia el número de árboles
+				if (arbolInput) {
+					arbolInput.addEventListener('input', function() {
+						// Esperar un momento para que el usuario termine de escribir
+						clearTimeout(arbolInput.timeout);
+						arbolInput.timeout = setTimeout(function() {
+							calcularValorCultivo();
+						}, 300);
+					});
+					
+					arbolInput.addEventListener('change', function() {
+						calcularValorCultivo();
+					});
+				}
+				
+				// Recalcular Factor de Modificación cuando cambia el Factor Edad (si se edita manualmente)
+				if (factorEdadInput) {
+					factorEdadInput.addEventListener('input', function() {
+						calcularFactorModificacion();
+					});
+					
+					factorEdadInput.addEventListener('change', function() {
+						calcularFactorModificacion();
+					});
+				}
+				
+				// Recalcular Factor de Modificación cuando cambia el Factor Estado (si se edita manualmente)
+				if (factorEstadoInput) {
+					factorEstadoInput.addEventListener('input', function() {
+						calcularFactorModificacion();
+					});
+					
+					factorEstadoInput.addEventListener('change', function() {
+						calcularFactorModificacion();
+					});
+				}
+				
+				// Recalcular valor cuando cambia el Factor de Modificación (si se edita manualmente)
+				if (factorInput) {
+					factorInput.addEventListener('input', function() {
+						clearTimeout(factorInput.timeout);
+						factorInput.timeout = setTimeout(function() {
+							calcularValorCultivo();
+						}, 300);
+					});
+					
+					factorInput.addEventListener('change', function() {
+						calcularValorCultivo();
+					});
+				}
+				
+				// Recalcular valor cuando cambia el Valor por Árbol (si se edita manualmente)
+				if (valorArbolInput) {
+					valorArbolInput.addEventListener('input', function() {
+						calcularValorCultivo();
+					});
+					
+					valorArbolInput.addEventListener('change', function() {
+						calcularValorCultivo();
+					});
+				}
+				
+				// Recalcular valor cuando cambia el Factor Estado (si se edita manualmente)
+				if (factorEstadoInput) {
+					factorEstadoInput.addEventListener('input', function() {
+						calcularValorCultivo();
+					});
+					
+					factorEstadoInput.addEventListener('change', function() {
+						calcularValorCultivo();
+					});
+				}
+				
+				// Buscar factor cuando cambia la edad
+				if (edadInput) {
+					edadInput.addEventListener('input', function() {
+						// Esperar un momento para que el usuario termine de escribir
+						clearTimeout(edadInput.timeout);
+						edadInput.timeout = setTimeout(function() {
+							buscarFactorCultivo();
+						}, 500);
+					});
+					
+					edadInput.addEventListener('change', function() {
+						buscarFactorCultivo();
+					});
+				}
+				
+				// Cargar datos al cargar la página si ya hay una clase seleccionada
+				// PERO solo si NO estamos editando (al editar, los valores ya están en los campos)
+				if (claseSelect.value && !isEditing) {
+					cargarDatosClase();
+				}
+				
+				// Calcular valor inicial al cargar la página SOLO si NO estamos editando
+				// Si estamos editando, los valores ya están guardados y se muestran directamente
+				if (!isEditing) {
+					setTimeout(function() {
+						calcularValorCultivo();
+					}, 500);
+				} else {
+					// Si estamos editando, solo asegurar que los campos temporales estén visibles
+					console.log('📋 Modo edición: Los valores se cargan desde la BD, no se recalculan automáticamente');
+				}
+			}
+		});
+	</script>
+</body>
+</html>
+

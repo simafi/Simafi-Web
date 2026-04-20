@@ -1,0 +1,38 @@
+{% extends "ciudadano/base_ciudadano.html" %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card cdd-card mb-4">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="h4 mb-3">Bienvenido al portal ciudadano</h2>
+                <p class="text-muted">
+                    Este espacio permite al <strong>contribuyente</strong> iniciar trámites municipales en línea,
+                    de acuerdo con los principios de transparencia y simplificación administrativa previstos en la
+                    <strong>Ley de Municipalidades</strong> y normativa tributaria local aplicable en Honduras.
+                </p>
+                <ul class="small text-muted">
+                    <li>Registro de solicitudes (certificados, actualización de datos, peticiones y reclamos).</li>
+                    <li>Consulta del estado y de la <strong>respuesta oficial del municipio</strong> cuando esté registrada.</li>
+                    <li>Ciclo completo: ciudadano envía solicitud → personal municipal gestiona en la bandeja → respuesta visible en el portal.</li>
+                    <li>Enlace al módulo <strong>Tributario</strong> para gestiones administrativas internas del municipio.</li>
+                </ul>
+                {% if tiene_sesion %}
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <a href="{% url 'ciudadano:acceso_contribuyente' %}" class="btn btn-primary"><i class="fas fa-id-card me-2"></i>Identificación del contribuyente</a>
+                    <a href="{% url 'ciudadano:menu_ciudadano' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-right me-2"></i>Ir al menú de trámites</a>
+                    {% if puede_gestion %}
+                    <a href="{% url 'ciudadano:gestion_bandeja' %}" class="btn btn-warning text-dark"><i class="fas fa-inbox me-2"></i>Bandeja municipal (respuestas)</a>
+                    {% endif %}
+                    <a href="{% url 'ciudadano:marco_legal' %}" class="btn btn-outline-secondary"><i class="fas fa-balance-scale me-2"></i>Marco legal</a>
+                </div>
+                {% else %}
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Debe <a href="{% url 'modules_core:login_principal' %}">iniciar sesión en el sistema municipal</a> para usar los trámites en línea.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo }} - SIMAFI Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .bg-presu { background: #f8f9fa; }
+        .card-form { border-top: 5px solid; }
+        .border-success { border-color: #198754 !important; }
+        .border-danger { border-color: #dc3545 !important; }
+        .border-warning { border-color: #ffc107 !important; }
+        .btn-success { background-color: #198754; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-warning { background-color: #ffc107; color: white; }
+    </style>
+</head>
+<body class="bg-presu">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0 text-{{ clase }}"><i class="fas fa-edit me-2"></i>{{ titulo }}</h4>
+                <a href="{% url 'presupuestos:reformas_listado' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </a>
+            </div>
+
+            <div class="card shadow card-form border-{{ clase }} border-0 rounded-3">
+                <div class="card-body p-4">
+                    <form method="post" id="form-reforma">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Fecha del Registro</label>
+                                {{ form.fecha }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Ejercicio Fiscal</label>
+                                {{ form.ejercicio }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">No. Documento / Referencia</label>
+                                {{ form.referencia }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Punto de Acta / Resolución</label>
+                                {{ form.punto_acta }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">Concepto de la {{ titulo }}</label>
+                                {{ form.concepto }}
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold text-muted">Fondo / Fuente de Financiamiento</label>
+                                {{ form.fondo }}
+                            </div>
+
+                            {% if tipo == 'TRASPASO' %}
+                            <div class="col-12">
+                                <div class="alert alert-warning py-2 small mb-2 italic">
+                                    <i class="fas fa-info-circle me-1"></i>Seleccione la cuenta de la cual se debitará el monto.
+                                </div>
+                                <label class="form-label small fw-bold text-muted">Cuenta de Origen (Débito)</label>
+                                {{ form.cuenta_origen }}
+                            </div>
+                            {% endif %}
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">
+                                    {% if tipo == 'TRASPASO' %}
+                                        Cuenta de Destino (Crédito)
+                                    {% else %}
+                                        Cuenta Presupuestaria Afectada
+                                    {% endif %}
+                                </label>
+                                {{ form.cuenta_destino }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">Monto de la {{ titulo }}</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">L.</span>
+                                    {{ form.monto }}
+                                </div>
+                            </div>
+
+                            {{ form.empresa }}
+                        </div>
+
+                        <div class="mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-{{ clase }} w-100 py-2 fw-bold shadow-sm">
+                                <i class="fas fa-save me-2"></i>Aplicar {{ titulo }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3 text-muted small italic">
+                <i class="fas fa-shield-alt me-1"></i>Esta acción afectará directamente el presupuesto vigente y quedará registrada en el historial auditado.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+{% extends "constancia_base_word.html" %}
+
+{% block title %}Constancia de Colindantes - {{ cocata1 }}{% endblock %}
+
+{% block paper_content %}
+    <span class="title">CONSTANCIA CATASTRAL DE COLINDANTES</span>
+
+    <div class="content-para">
+        El suscrito Jefe del Departamento de Ordenamiento Territorial por medio de la Presente 
+        <span class="bold">HACE CONSTAR</span> que de acuerdo a los mapas Catastrales y a la base de Datos Catastral del Municipio de Puerto Cortés, se encuentra el predio identificado con Clave Catastral 
+        <span class="bold">{{ cocata1 }}</span> bajo la Matrícula No. 
+        <span class="bold">{{ legales.numero|default:"N/A" }}</span> Tomo 
+        <span class="bold">{{ legales.tomo|default:"N/A" }}</span> Asiento 
+        <span class="bold">{{ legales.asiento|default:"N/A" }}</span> Ubicado en 
+        <span class="bold">{{ datos_bien.ubicacion|upper }}</span> registrada a nombre de : 
+        <span class="bold">{% if datos_bien.apellidos %}{{ datos_bien.apellidos|upper }}{% endif %} / {% if datos_bien.nombres %}{{ datos_bien.nombres|upper }}{% endif %}</span> con DNI No. 
+        <span class="bold">{{ datos_bien.identidad|default:"- &nbsp;&nbsp; - &nbsp;&nbsp; -" }}</span> Tiene las siguientes medidas y colindantes:
+    </div>
+
+    <div style="margin-top: 30px; margin-left: 20px; font-family: 'Courier New', Courier, monospace;">
+        <div style="display: flex; margin-bottom: 20px; font-size: 12pt;">
+            <div style="width: 350px;">Extensión Superficial de</div>
+            <div class="bold" style="flex-grow: 1; text-align: right; padding-right: 60px;">{{ area_total|floatformat:2 }} M²</div>
+        </div>
+
+        {% for c in colindantes_list %}
+        <div style="display: flex; margin-bottom: 10px; font-size: 12pt;">
+            <div style="width: 150px;" class="bold">
+                {% if c.tipo == '1' %}Al Norte : {% elif c.tipo == '2' %}Al Sur : {% elif c.tipo == '3' %}Al Este : {% elif c.tipo == '4' %}Al Oeste : {% else %}Colindante : {% endif %}
+            </div>
+            <div style="flex-grow: 1;">{{ c.colindante|upper }}</div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; color: #666; font-family: Arial, sans-serif; font-size: 10pt; margin-top: 20px;">
+            No se encontraron colindancias registradas en el sistema.
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="content-para" style="margin-top: 30px;">
+        <span class="bold">OBSERVACIONES :</span> N/A
+    </div>
+
+    <div class="content-para" style="margin-top: 30px;">
+        Y para los fines que el interesado convenga se le extiende la presente constancia en la ciudad de Puerto Cortés a los {{ dia }} días del mes de {{ mes_nombre }} de {{ ano }} la cual tiene una vigencia de 6 meses 
+    </div>
+
+    <div class="signature-section">
+        <br><br><br>
+        <span class="bold">Ing. Melissa Gavarrete</span><br>
+        <span class="bold">Jefe Ordenamiento Territorial</span>
+    </div>
+{% endblock %}

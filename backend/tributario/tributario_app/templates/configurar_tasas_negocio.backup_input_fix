@@ -1,0 +1,625 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Configurar Tasas del Negocio</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(90deg, #1e88e5 0%, #0d47a1 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        header:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #545b62 0%, #3d4449 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            background: white;
+        }
+        
+        /* Estilo específico para el campo de edición de valor */
+        .valor-edit:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            background: white;
+        }
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+            display: block;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -15px;
+        }
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 0 15px;
+        }
+        .col-md-4 {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+            padding: 0 15px;
+        }
+        .col-md-3 {
+            flex: 0 0 25%;
+            max-width: 25%;
+            padding: 0 15px;
+        }
+        .col-md-12 {
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding: 0 15px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .form-section h5 {
+            color: #1e88e5;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mensaje {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mensaje-exito {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .mensaje-error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .table th {
+            background: linear-gradient(135deg, #1e88e5 0%, #0d47a1 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .btn-action {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .negocio-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 2px solid #2196f3;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .negocio-info h4 {
+            color: #1976d2;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        .negocio-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .negocio-detail {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        .negocio-detail strong {
+            color: #1976d2;
+        }
+        @media (max-width: 768px) {
+            .col-md-6, .col-md-4, .col-md-3 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1><i class="fas fa-cog"></i> Configurar Tasas del Negocio</h1>
+            <p class="subtitle">Gestionar las tasas y tarifas aplicables a este negocio específico</p>
+        </header>
+
+        <!-- Información del Negocio -->
+        {% if negocio %}
+        <div class="negocio-info">
+            <h4><i class="fas fa-building"></i> Información del Negocio</h4>
+            <div class="negocio-details">
+                <div class="negocio-detail">
+                    <strong>RTM:</strong> {{ negocio.rtm }}
+                </div>
+                <div class="negocio-detail">
+                    <strong>Expediente:</strong> {{ negocio.expe }}
+                </div>
+                <div class="negocio-detail">
+                    <strong>Nombre:</strong> {{ negocio.nombrenego }}
+                </div>
+                <div class="negocio-detail">
+                    <strong>Comerciante:</strong> {{ negocio.comerciante }}
+                </div>
+                <div class="negocio-detail">
+                    <strong>Dirección:</strong> {{ negocio.direccion }}
+                </div>
+                <div class="negocio-detail">
+                    <strong>Estado:</strong> 
+                    <span style="color: {% if negocio.estatus == 'A' %}#28a745{% else %}#dc3545{% endif %}; font-weight: bold;">
+                        {% if negocio.estatus == 'A' %}Activo{% else %}Inactivo{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Mensajes -->
+        {% if mensaje %}
+            <div class="mensaje {% if exito %}mensaje-exito{% else %}mensaje-error{% endif %}">
+                <i class="fas {% if exito %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %}"></i>
+                {{ mensaje }}
+            </div>
+        {% endif %}
+
+        <!-- Formulario para Agregar Tarifa -->
+        {% if form %}
+        <div class="card">
+            <h5><i class="fas fa-plus-circle"></i> Agregar Nueva Tarifa</h5>
+            <form method="post" id="formTarifaICS">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="agregar_tarifa">
+                
+                <!-- Campos ocultos del negocio -->
+                <input type="hidden" name="idneg" value="{{ negocio.id }}">
+                <input type="hidden" name="rtm" value="{{ negocio.rtm }}">
+                <input type="hidden" name="expe" value="{{ negocio.expe }}">
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="id_rubro" class="form-label">Rubro *</label>
+                        {{ form.rubro }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_tarifa_rubro" class="form-label">Tarifa del Rubro *</label>
+                        {{ form.tarifa_rubro }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_valor_personalizado" class="form-label">Valor Personalizado</label>
+                        {{ form.valor_personalizado }}
+                    </div>
+                </div>
+                
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-success btn-action">
+                            <i class="fas fa-plus"></i> Agregar Tarifa
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-action" onclick="limpiarFormulario()">
+                            <i class="fas fa-eraser"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Lista de Tarifas Configuradas -->
+        <div class="card">
+            <h5><i class="fas fa-list"></i> Tarifas Configuradas</h5>
+            {% if tarifas_ics %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>RTM</th>
+                                <th>Expediente</th>
+                                <th>Rubro</th>
+                                <th>Código Tarifa</th>
+                                <th>Valor</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tarifa in tarifas_ics %}
+                            <tr>
+                                <td>{{ tarifa.rtm }}</td>
+                                <td>{{ tarifa.expe }}</td>
+                                <td>{{ tarifa.rubro|default:"N/A" }}</td>
+                                <td>{{ tarifa.cod_tarifa }}</td>
+                                <td>
+                                    <span class="valor-actual" data-id="{{ tarifa.id }}">{{ tarifa.valor|floatformat:2 }}</span>
+                                    <input type="number" class="valor-edit form-control" data-id="{{ tarifa.id }}" 
+                                           value="{{ tarifa.valor }}" step="0.01" min="0" 
+                                           style="display: none; width: 150px; padding: 8px 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 1rem; transition: all 0.3s ease; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" 
+                                            onclick="editarValor({{ tarifa.id }})">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-sm" 
+                                            onclick="guardarValor({{ tarifa.id }})" 
+                                            style="display: none;" id="btn-guardar-{{ tarifa.id }}">
+                                        <i class="fas fa-save"></i> Guardar
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" 
+                                            onclick="eliminarTarifa({{ tarifa.id }})">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 40px; color: #6c757d;">
+                    <i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                    <h4>No hay tarifas configuradas</h4>
+                    <p>Use el formulario de arriba para agregar las primeras tarifas a este negocio.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Botón Volver -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{% url 'tributario:maestro_negocios' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Maestro de Negocios
+            </a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Función para cargar tarifas de un rubro
+        function cargarTarifasRubro() {
+            const rubroSelect = document.getElementById('id_rubro');
+            const tarifaSelect = document.getElementById('id_tarifa_rubro');
+            
+            if (!rubroSelect || !tarifaSelect) return;
+            
+            rubroSelect.addEventListener('change', function() {
+                const rubroCodigo = this.value;
+                
+                if (!rubroCodigo) {
+                    tarifaSelect.innerHTML = '<option value="">Seleccione primero un rubro</option>';
+                    return;
+                }
+                
+                // Mostrar loading
+                tarifaSelect.innerHTML = '<option value="">Cargando tarifas...</option>';
+                
+                // Hacer petición AJAX
+                fetch('{% url "tributario:obtener_tarifas_rubro" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `rubro=${rubroCodigo}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exito) {
+                        tarifaSelect.innerHTML = '<option value="">Seleccione una tarifa</option>';
+                        data.tarifas.forEach(tarifa => {
+                            const option = document.createElement('option');
+                            option.value = tarifa.cod_tarifa;
+                            option.textContent = `${tarifa.cod_tarifa} - ${tarifa.descripcion} (${tarifa.valor})`;
+                            option.dataset.valor = tarifa.valor;
+                            tarifaSelect.appendChild(option);
+                        });
+                        console.log('Tarifas cargadas:', data.tarifas.length, 'tarifas disponibles');
+                    } else {
+                        tarifaSelect.innerHTML = '<option value="">Error al cargar tarifas</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    tarifaSelect.innerHTML = '<option value="">Error al cargar tarifas</option>';
+                });
+            });
+        }
+        
+        // Función para actualizar valor personalizado cuando se selecciona una tarifa
+        function actualizarValorPersonalizado() {
+            const tarifaSelect = document.getElementById('id_tarifa_rubro');
+            const valorPersonalizado = document.getElementById('id_valor_personalizado');
+            
+            if (!tarifaSelect || !valorPersonalizado) return;
+            
+            tarifaSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption && selectedOption.dataset.valor) {
+                    // Guardar automáticamente el valor de la tarifa en el campo valor personalizado
+                    valorPersonalizado.value = selectedOption.dataset.valor;
+                    console.log('Valor de tarifa cargado automáticamente:', selectedOption.dataset.valor);
+                } else {
+                    valorPersonalizado.value = '';
+                }
+            });
+        }
+        
+        // Función para editar valor
+        function editarValor(tarifaId) {
+            const valorSpan = document.querySelector(`.valor-actual[data-id="${tarifaId}"]`);
+            const valorInput = document.querySelector(`.valor-edit[data-id="${tarifaId}"]`);
+            const btnEditar = event.target.closest('button');
+            const btnGuardar = document.getElementById(`btn-guardar-${tarifaId}`);
+            
+            if (valorSpan && valorInput && btnEditar && btnGuardar) {
+                valorSpan.style.display = 'none';
+                valorInput.style.display = 'inline-block';
+                btnEditar.style.display = 'none';
+                btnGuardar.style.display = 'inline-block';
+                valorInput.focus();
+            }
+        }
+        
+        // Función para guardar valor
+        function guardarValor(tarifaId) {
+            const valorInput = document.querySelector(`.valor-edit[data-id="${tarifaId}"]`);
+            const nuevoValor = valorInput.value;
+            
+            if (!nuevoValor || nuevoValor <= 0) {
+                alert('Por favor ingrese un valor válido mayor a 0');
+                return;
+            }
+            
+            // Crear FormData
+            const formData = new FormData();
+            formData.append('accion', 'actualizar_valor');
+            formData.append('tarifa_id', tarifaId);
+            formData.append('valor', nuevoValor);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            // Enviar petición
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Recargar la página para mostrar los cambios
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar el valor');
+            });
+        }
+        
+        // Función para eliminar tarifa
+        function eliminarTarifa(tarifaId) {
+            if (!confirm('¿Está seguro de que desea eliminar esta tarifa?')) {
+                return;
+            }
+            
+            // Crear FormData
+            const formData = new FormData();
+            formData.append('accion', 'eliminar_tarifa');
+            formData.append('tarifa_id', tarifaId);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            // Enviar petición
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Recargar la página para mostrar los cambios
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al eliminar la tarifa');
+            });
+        }
+        
+        // Función para limpiar formulario
+        function limpiarFormulario() {
+            if (confirm('¿Está seguro de que desea limpiar el formulario?')) {
+                document.getElementById('formTarifaICS').reset();
+                const tarifaSelect = document.getElementById('id_tarifa_rubro');
+                const valorPersonalizado = document.getElementById('id_valor_personalizado');
+                if (tarifaSelect) {
+                    tarifaSelect.innerHTML = '<option value="">Seleccione primero un rubro</option>';
+                }
+                if (valorPersonalizado) {
+                    valorPersonalizado.value = '';
+                }
+                console.log('Formulario limpiado');
+            }
+        }
+        
+        // Función para manejar el cambio de tarifa y actualizar valor automáticamente
+        function manejarCambioTarifa() {
+            const tarifaSelect = document.getElementById('id_tarifa_rubro');
+            const valorPersonalizado = document.getElementById('id_valor_personalizado');
+            
+            if (!tarifaSelect || !valorPersonalizado) return;
+            
+            // Agregar evento adicional para asegurar que se actualice el valor
+            tarifaSelect.addEventListener('change', function() {
+                setTimeout(() => {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption && selectedOption.dataset.valor) {
+                        valorPersonalizado.value = selectedOption.dataset.valor;
+                        console.log('Valor actualizado automáticamente:', selectedOption.dataset.valor);
+                    }
+                }, 100);
+            });
+        }
+        
+        // Inicializar funciones cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarTarifasRubro();
+            actualizarValorPersonalizado();
+            manejarCambioTarifa();
+        });
+    </script>
+</body>
+</html>

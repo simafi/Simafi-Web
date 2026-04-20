@@ -1,0 +1,204 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}Plan de Cuentas{% endblock %}
+
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item active">Plan de Cuentas</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-sitemap me-2"></i>Plan de Cuentas Contables</h4>
+        <a href="{% url 'contabilidad:cuenta_crear' %}" class="btn btn-cont-primary">
+            <i class="fas fa-plus me-1"></i> Nueva Cuenta
+        </a>
+    </div>
+
+    <!-- Primera cuenta al iniciar el sistema -->
+    <div class="cont-card mb-3 border-primary">
+        <div class="card-body py-2">
+            <button class="btn btn-sm btn-outline-primary w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#ayudaPrimeraCuenta" aria-expanded="false">
+                <i class="fas fa-lightbulb me-2"></i>¿Cuál debe ser la primera cuenta contable al iniciar el sistema?
+            </button>
+            <div class="collapse mt-2" id="ayudaPrimeraCuenta">
+                <div class="small">
+                    <p class="mb-2"><strong>La primera cuenta que debe crear es una cuenta de nivel 1 que represente el grupo Activo (título/agrupadora):</strong></p>
+                    <ul class="mb-2">
+                        <li><strong>Código:</strong> <code>1</code> (o <code>1-00</code> si usa guiones)</li>
+                        <li><strong>Nombre:</strong> Activo</li>
+                        <li><strong>Grupo:</strong> 1 Activo</li>
+                        <li><strong>Cuenta padre:</strong> (dejar vacío)</li>
+                        <li><strong>Nivel jerárquico:</strong> 1</li>
+                        <li><strong>Tipo:</strong> Título/Agrupadora (solo agrupa; los movimientos se registran en subcuentas)</li>
+                        <li><strong>Naturaleza:</strong> Deudora</li>
+                        <li><strong>Acepta movimiento:</strong> No (recomendado para títulos)</li>
+                    </ul>
+                    <p class="mb-1">Después cree las demás cabeceras de nivel 1: <strong>2 Pasivo</strong>, <strong>3 Capital</strong>, <strong>5 Ingresos</strong>, <strong>6 Egresos</strong> (mismo criterio: tipo Título, sin cuenta padre, nivel 1). Luego agregue las cuentas de detalle bajo cada una (por ejemplo bajo Activo: 11 Efectivo, 111 Caja, etc.).</p>
+                    <a href="{% url 'contabilidad:configuracion_inicial' %}">Ver guía de configuración inicial</a>.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ayuda: grupos Activo, Pasivo, Capital, Ingresos, Egresos -->
+    <div class="cont-card mb-3">
+        <div class="card-body py-2">
+            <button class="btn btn-sm btn-outline-primary w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#ayudaGrupos" aria-expanded="false">
+                <i class="fas fa-question-circle me-2"></i>¿Cómo configurar Activo, Pasivo, Capital, Ingresos y Egresos?
+            </button>
+            <div class="collapse mt-2" id="ayudaGrupos">
+                <div class="small text-muted">
+                    Cada cuenta debe tener un <strong>Grupo</strong>: <span class="badge bg-primary">1</span> Activo &nbsp;
+                    <span class="badge bg-warning text-dark">2</span> Pasivo &nbsp;
+                    <span class="badge bg-info">3</span> Capital (Patrimonio) &nbsp;
+                    <span class="badge bg-success">5</span> Ingresos &nbsp;
+                    <span class="badge bg-danger">6/7</span> Egresos (Gastos).
+                    <a href="{% url 'contabilidad:configuracion_inicial' %}">Ver guía completa</a>.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="cont-card mb-3">
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label mb-0" style="font-size:0.8rem;">Grupo</label>
+                    <select name="grupo" class="form-control form-control-sm" onchange="this.form.submit()">
+                        <option value="">-- Todos --</option>
+                        {% for g in grupos %}
+                        <option value="{{ g.codigo }}" {% if grupo_filtro == g.codigo %}selected{% endif %}>{{ g.codigo }} - {{ g.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-0" style="font-size:0.8rem;">Tipo</label>
+                    <select name="tipo" class="form-control form-control-sm" onchange="this.form.submit()">
+                        <option value="">-- Todos --</option>
+                        <option value="TITULO" {% if tipo_filtro == 'TITULO' %}selected{% endif %}>Título</option>
+                        <option value="DETALLE" {% if tipo_filtro == 'DETALLE' %}selected{% endif %}>Detalle</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label mb-0" style="font-size:0.8rem;">Buscar</label>
+                    <input type="text" name="q" class="form-control form-control-sm" value="{{ busqueda }}" placeholder="Código o nombre...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-sm btn-cont-primary"><i class="fas fa-search"></i> Filtrar</button>
+                    <a href="{% url 'contabilidad:plan_cuentas' %}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-times"></i></a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de cuentas: más ancho, cada cuenta en una sola línea -->
+    <style>
+        .plan-cuentas-wrap { width: 100%; overflow-x: auto; }
+        .plan-cuentas-grid { width: 100%; min-width: 1200px; }
+        .plan-cuentas-grid tbody tr { white-space: nowrap; }
+        .plan-cuentas-grid tbody tr td { white-space: nowrap; vertical-align: middle !important; }
+        .plan-cuentas-grid tbody tr.nivel-1 { --nivel-pad: 0; }
+        .plan-cuentas-grid tbody tr.nivel-2 { --nivel-pad: 1.25rem; }
+        .plan-cuentas-grid tbody tr.nivel-3 { --nivel-pad: 2.5rem; }
+        .plan-cuentas-grid tbody tr.nivel-4 { --nivel-pad: 3.75rem; }
+        .plan-cuentas-grid tbody tr.nivel-5 { --nivel-pad: 5rem; }
+        .plan-cuentas-grid tbody tr .td-codigo { padding-left: calc(0.5rem + var(--nivel-pad, 0)); }
+        .plan-cuentas-grid tbody tr .td-nombre { padding-left: calc(0.5rem + var(--nivel-pad, 0)); min-width: 280px; }
+        .plan-cuentas-grid tbody tr.nivel-4 { background-color: rgba(240, 247, 255, 0.65); }
+        .plan-cuentas-grid tbody tr.nivel-5 { background-color: rgba(240, 255, 240, 0.55); border-left: 3px solid #38a169; }
+        .plan-cuentas-grid tbody tr .nivel-badge { font-size: 0.8rem; min-width: 1.5em; display: inline-block; text-align: center; padding: 0.2em 0.4em; border-radius: 4px; background: #e2e8f0; color: #475569; }
+        .plan-cuentas-grid tbody tr.nivel-4 .nivel-badge { background: #3182ce; color: #fff; }
+        .plan-cuentas-grid tbody tr.nivel-5 .nivel-badge { background: #276749; color: #fff; }
+        .plan-cuentas-grid .indent-line { color: #94a3b8; margin-right: 0.35rem; font-size: 0.7rem; }
+    </style>
+    <div class="cont-card">
+        <div class="card-body p-0">
+            <div class="plan-cuentas-wrap table-responsive">
+                <table class="table cont-table mb-0 plan-cuentas-grid">
+                    <thead>
+                        <tr>
+                            <th style="width:160px; min-width:160px;">Código</th>
+                            <th style="min-width:280px;">Nombre</th>
+                            <th style="width:72px; min-width:72px;">Grupo</th>
+                            <th style="width:56px; min-width:56px;">Nivel</th>
+                            <th style="width:88px; min-width:88px;">Tipo</th>
+                            <th style="width:100px; min-width:100px;">Naturaleza</th>
+                            <th style="width:56px; min-width:56px;">Mov.</th>
+                            <th style="width:110px; min-width:110px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cuenta in cuentas %}
+                        <tr class="nivel-{{ cuenta.nivel }}">
+                            <td class="td-codigo">
+                                <span class="indent-line">{% if cuenta.nivel >= 4 %}<i class="fas fa-level-down-alt"></i>{% elif cuenta.nivel >= 2 %}<i class="fas fa-caret-right"></i>{% endif %}</span>
+                                <code style="font-size:0.9rem;{% if cuenta.tipo == 'TITULO' %} font-weight:700;{% endif %}">
+                                    {{ cuenta.codigo }}
+                                </code>
+                            </td>
+                            <td class="td-nombre" style="{% if cuenta.tipo == 'TITULO' %}font-weight:600;{% endif %}">
+                                {{ cuenta.nombre }}
+                            </td>
+                            <td><span class="badge bg-secondary">{{ cuenta.grupo.codigo }}</span></td>
+                            <td class="text-center"><span class="nivel-badge badge">{{ cuenta.nivel }}</span></td>
+                            <td>
+                                {% if cuenta.tipo == 'TITULO' %}
+                                <span class="badge" style="background:#ebf8ff; color:#2a4365;">Título</span>
+                                {% else %}
+                                <span class="badge" style="background:#f0fff4; color:#276749;">Detalle</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if cuenta.naturaleza == 'DEUDORA' %}
+                                <span style="color:#3182ce; font-size:0.8rem;"><i class="fas fa-arrow-up"></i> Deudora</span>
+                                {% else %}
+                                <span style="color:#38a169; font-size:0.8rem;"><i class="fas fa-arrow-down"></i> Acreedora</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if cuenta.acepta_movimiento %}
+                                <i class="fas fa-check-circle text-success"></i>
+                                {% else %}
+                                <i class="fas fa-times-circle text-muted"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'contabilidad:cuenta_editar' cuenta.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" action="{% url 'contabilidad:cuenta_eliminar' cuenta.pk %}" style="display:inline;" 
+                                      onsubmit="return confirm('¿Eliminar la cuenta {{ cuenta.codigo }}?')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="fas fa-inbox" style="font-size:2rem;"></i>
+                                <p class="mt-2 mb-0">No hay cuentas registradas. <a href="{% url 'contabilidad:cuenta_crear' %}">Crear la primera cuenta</a></p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer text-muted" style="font-size:0.8rem;">
+            Total: <strong>{{ cuentas|length }}</strong> cuentas
+        </div>
+    </div>
+</div>
+{% endblock %}

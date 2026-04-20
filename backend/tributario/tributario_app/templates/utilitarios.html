@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Utilitarios</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: #fff;
+            border-radius: 18px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+        h1 {
+            color: #2563eb;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+        .description {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .back-btn {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+        .back-btn:hover {
+            background: #1e40af;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fa-solid fa-toolbox"></i> Utilitarios</h1>
+        <p class="description">
+            Esta sección contiene herramientas y utilidades del sistema. 
+            Selecciona una opción desde el menú principal para acceder a las diferentes funcionalidades.
+        </p>
+        <a href="{% url 'tributario:tributario_menu_principal' %}" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i> Volver al Menú
+        </a>
+    </div>
+</body>
+</html>
+
+

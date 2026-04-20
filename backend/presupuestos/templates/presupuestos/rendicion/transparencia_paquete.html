@@ -1,0 +1,259 @@
+{% extends "presupuestos/menu_principal.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container-fluid mt-4 pb-5 px-3">
+    <div class="d-print-none mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'presupuestos:presupuestos_menu_principal' %}">Presupuestos</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'presupuestos:rendicion_cuentas_hub' %}?ejercicio={{ ejercicio.id }}">Rendición / IAIP</a></li>
+                <li class="breadcrumb-item active">IAIP {{ forma.codigo }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'presupuestos:rendicion_cuentas_hub' %}?ejercicio={{ ejercicio.id }}"><i class="fas fa-arrow-left me-1"></i>Volver</a>
+            <button type="button" class="btn btn-outline-dark btn-sm" onclick="window.print()"><i class="fas fa-print me-1"></i>Imprimir</button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="text-center border-bottom pb-3 mb-4">
+                <h5 class="fw-bold mb-1">{{ empresa_label|default:empresa }}</h5>
+                <h6 class="text-muted mb-1">
+                    <span class="badge bg-success me-1">IAIP</span>
+                    {{ forma.codigo }} — {{ forma.titulo }}
+                </h6>
+                <p class="small text-muted mb-0">Ejercicio fiscal {{ ejercicio.anio }} · {{ hoy }}</p>
+                <p class="small fst-italic mt-2 mb-0">{{ forma.normativa }}</p>
+            </div>
+
+            {% if paquete == 'iaip' %}
+                {% if forma_num == 1 %}
+                <div class="alert alert-success border-0 small">
+                    <strong>Marco legal (referencia Honduras):</strong> Ley de Transparencia y Acceso a la Información Pública (Decreto 170-2006) y su Reglamento.
+                    Publicación activa en el Portal Único de Transparencia y/o portal institucional, según lineamientos del IAIP.
+                    El ente debe mantener portal o medio oficial y señalar URL de acceso cuando corresponda.
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Ente obligado a transparentar</h6>
+                        <table class="table table-sm table-bordered">
+                            <tr><th class="bg-light" style="width:42%;">Identificador</th><td>{{ empresa_label|default:empresa }}</td></tr>
+                            <tr><th class="bg-light">Ejercicio</th><td>{{ ejercicio.anio }}</td></tr>
+                            <tr><th class="bg-light">Fecha de generación</th><td>{{ hoy }}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Publicación activa</h6>
+                        <p class="small text-muted mb-2">
+                            Complete según su publicación oficial (Portal Único de Transparencia del IAIP y/o portal institucional): enlace, fecha de última actualización y responsable.
+                        </p>
+                        <table class="table table-sm table-bordered">
+                            <tr><th class="bg-light">URL portal transparencia</th><td class="text-muted">_________________________</td></tr>
+                            <tr><th class="bg-light">Última actualización</th><td class="text-muted">____/____/________</td></tr>
+                            <tr><th class="bg-light">Responsable IAIP (interno)</th><td class="text-muted">_________________________</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                {% elif forma_num == 2 %}
+                <p class="small text-muted">Resumen ciudadano: montos en lempiras, nivel agregado (cuentas nivel ≤2).</p>
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <h6 class="fw-bold text-success">Ingresos</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light small"><tr><th>Cód.</th><th>Descripción</th><th class="text-end">Vigente</th><th class="text-end">Ejecutado</th><th class="text-end">%</th></tr></thead>
+                                <tbody class="small">
+                                    {% for d in ingresos %}
+                                    <tr class="{% if d.nivel == 1 %}fw-bold{% endif %}">
+                                        <td>{{ d.codigo }}</td><td>{{ d.nombre }}</td>
+                                        <td class="text-end font-monospace">{{ d.total_aprobado|floatformat:2|intcomma }}</td>
+                                        <td class="text-end font-monospace">{{ d.ejecutado|floatformat:2|intcomma }}</td>
+                                        <td class="text-end">{{ d.porcentaje|floatformat:1 }}%</td>
+                                    </tr>
+                                    {% empty %}<tr><td colspan="5" class="text-center">Sin datos.</td></tr>{% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <h6 class="fw-bold text-danger">Egresos</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light small"><tr><th>Cód.</th><th>Descripción</th><th class="text-end">Vigente</th><th class="text-end">Ejecutado</th><th class="text-end">%</th></tr></thead>
+                                <tbody class="small">
+                                    {% for d in egresos %}
+                                    <tr class="{% if d.nivel == 1 %}fw-bold{% endif %}">
+                                        <td>{{ d.codigo }}</td><td>{{ d.nombre }}</td>
+                                        <td class="text-end font-monospace">{{ d.total_aprobado|floatformat:2|intcomma }}</td>
+                                        <td class="text-end font-monospace">{{ d.ejecutado|floatformat:2|intcomma }}</td>
+                                        <td class="text-end">{{ d.porcentaje|floatformat:1 }}%</td>
+                                    </tr>
+                                    {% empty %}<tr><td colspan="5" class="text-center">Sin datos.</td></tr>{% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {% elif forma_num == 3 %}
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <h6 class="fw-bold text-success">Ampliaciones</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light small"><tr><th>Tipo</th><th>Fecha</th><th>Ref.</th><th>Cuenta</th><th>Fondo</th><th class="text-end">Monto</th><th>Concepto</th></tr></thead>
+                                <tbody class="small">
+                                    {% for r in reformas_ampliaciones %}
+                                    <tr>
+                                        <td>{{ r.tipo }}</td>
+                                        <td>{{ r.fecha|date:"d/m/Y" }}</td>
+                                        <td>{{ r.referencia }}</td>
+                                        <td>{% if r.cuenta %}{{ r.cuenta.codigo }} {{ r.cuenta.nombre|truncatechars:30 }}{% else %}—{% endif %}</td>
+                                        <td>{% if r.fondo %}{{ r.fondo.codigo }}{% else %}—{% endif %}</td>
+                                        <td class="text-end font-monospace">{{ r.monto|floatformat:2|intcomma }}</td>
+                                        <td>{{ r.concepto|truncatechars:60 }}</td>
+                                    </tr>
+                                    {% empty %}<tr><td colspan="7" class="text-center py-3">Sin ampliaciones.</td></tr>{% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <h6 class="fw-bold text-danger">Disminuciones (Reducciones)</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light small"><tr><th>Tipo</th><th>Fecha</th><th>Ref.</th><th>Cuenta</th><th>Fondo</th><th class="text-end">Monto</th><th>Concepto</th></tr></thead>
+                                <tbody class="small">
+                                    {% for r in reformas_disminuciones %}
+                                    <tr>
+                                        <td>{{ r.tipo }}</td>
+                                        <td>{{ r.fecha|date:"d/m/Y" }}</td>
+                                        <td>{{ r.referencia }}</td>
+                                        <td>{% if r.cuenta %}{{ r.cuenta.codigo }} {{ r.cuenta.nombre|truncatechars:30 }}{% else %}—{% endif %}</td>
+                                        <td>{% if r.fondo %}{{ r.fondo.codigo }}{% else %}—{% endif %}</td>
+                                        <td class="text-end font-monospace">{{ r.monto|floatformat:2|intcomma }}</td>
+                                        <td>{{ r.concepto|truncatechars:60 }}</td>
+                                    </tr>
+                                    {% empty %}<tr><td colspan="7" class="text-center py-3">Sin disminuciones.</td></tr>{% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {% elif forma_num == 4 %}
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <h6 class="fw-bold text-success">Ingresos por fondo</h6>
+                        <table class="table table-sm table-bordered small">
+                            <thead class="table-light"><tr><th>Fondo</th><th class="text-end">Vigente</th><th class="text-end">Ejecutado</th><th class="text-end">Saldo</th></tr></thead>
+                            <tbody>
+                                {% for r in fondos_ingreso %}
+                                <tr>
+                                    <td>{{ r.fondo_codigo }} — {{ r.fondo_nombre }}</td>
+                                    <td class="text-end font-monospace">{{ r.presupuesto_vigente|floatformat:2|intcomma }}</td>
+                                    <td class="text-end font-monospace">{{ r.ejecutado|floatformat:2|intcomma }}</td>
+                                    <td class="text-end font-monospace">{{ r.saldo|floatformat:2|intcomma }}</td>
+                                </tr>
+                                {% empty %}<tr><td colspan="4" class="text-center">—</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-lg-6">
+                        <h6 class="fw-bold text-danger">Egresos por fondo</h6>
+                        <table class="table table-sm table-bordered small">
+                            <thead class="table-light"><tr><th>Fondo</th><th class="text-end">Vigente</th><th class="text-end">Ejecutado</th><th class="text-end">Saldo</th></tr></thead>
+                            <tbody>
+                                {% for r in fondos_egreso %}
+                                <tr>
+                                    <td>{{ r.fondo_codigo }} — {{ r.fondo_nombre }}</td>
+                                    <td class="text-end font-monospace">{{ r.presupuesto_vigente|floatformat:2|intcomma }}</td>
+                                    <td class="text-end font-monospace">{{ r.ejecutado|floatformat:2|intcomma }}</td>
+                                    <td class="text-end font-monospace">{{ r.saldo|floatformat:2|intcomma }}</td>
+                                </tr>
+                                {% empty %}<tr><td colspan="4" class="text-center">—</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {% elif forma_num == 5 %}
+                {% for bloque in ordenes %}
+                <div class="mb-4 border rounded p-3">
+                    <div class="d-flex flex-wrap justify-content-between small mb-2">
+                        <div><strong>OP {{ bloque.orden.numero }}</strong> · {{ bloque.orden.fecha|date:"d/m/Y" }} · {{ bloque.orden.get_estado_display }}</div>
+                        <div class="font-monospace fw-bold">L. {{ bloque.orden.total|floatformat:2|intcomma }}</div>
+                    </div>
+                    <p class="small mb-1"><strong>Favorecido:</strong> {{ bloque.orden.favorecido }}</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="table-light"><tr><th>Cuenta</th><th>Fondo</th><th class="text-end">Monto</th></tr></thead>
+                            <tbody class="small">
+                                {% for det in bloque.detalles %}
+                                <tr>
+                                    <td>{{ det.cuenta_presupuestaria.codigo }}</td>
+                                    <td>{{ det.fondo.codigo }}</td>
+                                    <td class="text-end font-monospace">{{ det.monto|floatformat:2|intcomma }}</td>
+                                </tr>
+                                {% empty %}<tr><td colspan="3">Sin detalle.</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% empty %}<p class="text-muted text-center py-4">Sin órdenes de pago.</p>{% endfor %}
+
+                {% elif forma_num == 6 %}
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light small"><tr><th>Código</th><th>Proyecto</th><th>Descripción</th></tr></thead>
+                    <tbody class="small">
+                        {% for p in proyectos %}<tr><td>{{ p.codigo }}</td><td>{{ p.nombre }}</td><td>{{ p.descripcion|default:"—"|truncatechars:100 }}</td></tr>
+                        {% empty %}<tr><td colspan="3" class="text-center">Sin proyectos.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+
+                {% elif forma_num == 7 %}
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light small"><tr><th>Fecha</th><th>Tipo</th><th>Cuenta</th><th>Fondo</th><th class="text-end">Monto</th><th>Beneficiario</th></tr></thead>
+                    <tbody class="small">
+                        {% for o in operaciones %}
+                        <tr>
+                            <td>{{ o.fecha|date:"d/m/Y" }}</td>
+                            <td>{{ o.get_tipo_display }}</td>
+                            <td>{{ o.cuenta.codigo }}</td>
+                            <td>{{ o.fondo.codigo }}</td>
+                            <td class="text-end font-monospace">{{ o.monto|floatformat:2|intcomma }}</td>
+                            <td>{{ o.beneficiario|truncatechars:40 }}</td>
+                        </tr>
+                        {% empty %}<tr><td colspan="6" class="text-center">Sin operaciones manuales.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+
+                {% elif forma_num == 8 %}
+                <p class="small">Marque los rubros efectivamente publicados en el portal de transparencia (o anexe capturas según política del IAIP).</p>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between"><span>☐ Presupuesto inicial y vigente</span><span class="text-muted">Obs.: ________</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>☐ Ejecución presupuestaria / informes trimestrales</span><span class="text-muted">Obs.: ________</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>☐ Reformas y modificaciones</span><span class="text-muted">Obs.: ________</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>☐ Adquisiciones y contrataciones</span><span class="text-muted">Obs.: ________</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>☐ Recursos humanos / nómina (según normativa)</span><span class="text-muted">Obs.: ________</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>☐ Proyectos de inversión</span><span class="text-muted">Obs.: ________</span></li>
+                    <li class="list-group-item d-flex justify-content-between"><span>☐ Informes de auditoría o respuestas a observaciones</span><span class="text-muted">Obs.: ________</span></li>
+                </ul>
+
+                {% endif %}
+            {% endif %}
+
+            <div class="mt-4 pt-3 border-top small text-muted d-flex justify-content-between d-print-none">
+                <span>IAIP · Usuario: {{ usuario|default:"—" }}</span>
+                <span>SIMAFI Web — Presupuestos</span>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+@media print { .breadcrumb, .d-print-none { display: none !important; } body { background: #fff !important; } .card { box-shadow: none !important; } }
+</style>
+{% endblock %}

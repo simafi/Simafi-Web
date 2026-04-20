@@ -1,0 +1,2913 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Declaración de Volumen de Ventas</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(90deg, #1e88e5 0%, #0d47a1 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        header:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: white;
+        }
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #e0a800 0%, #e55a00 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+        }
+        .btn-info:hover {
+            background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem 2.2rem;
+            align-items: flex-start;
+        }
+
+        .form-group {
+            background: #f8fafc;
+            border-radius: 13px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+            padding: 1.1rem 1rem 0.7rem 1rem;
+            margin-bottom: 0;
+            border: 1px solid #e5e7eb;
+            transition: box-shadow 0.18s;
+            flex: 1 1 auto;
+            min-width: 200px;
+        }
+
+        /* Clases para diferentes tamaños de campos */
+        .form-group-small {
+            flex: 0 1 150px;
+            min-width: 150px;
+        }
+
+        .form-group-medium {
+            flex: 1 1 250px;
+            min-width: 200px;
+        }
+
+        .form-group-large {
+            flex: 2 1 350px;
+            min-width: 300px;
+        }
+
+        .form-group-xlarge {
+            flex: 3 1 500px;
+            min-width: 400px;
+        }
+
+        /* Clases específicas para campos con ancho fijo */
+        .form-group-empresa {
+            flex: 0 1 140px;
+            min-width: 140px;
+            max-width: 140px;
+        }
+        
+        .form-group-empresa input[readonly] {
+            background-color: #f8f9fa !important;
+            color: #6c757d !important;
+            cursor: not-allowed;
+        }
+        
+        .form-group-rtm {
+            flex: 0 1 150px;
+            min-width: 150px;
+            max-width: 150px;
+        }
+
+        .form-group-expe {
+            flex: 0 1 150px;
+            min-width: 150px;
+            max-width: 150px;
+        }
+        
+                 /* Estilos mejorados para la tabla de tarifas ICS */
+         .tarifas-ics-table {
+             margin-top: 1.5rem;
+             background: #fff;
+             border-radius: 16px;
+             box-shadow: 0 8px 32px rgba(30, 136, 229, 0.12);
+             overflow: hidden;
+             border: 2px solid #e3f2fd;
+         }
+         
+         .tarifas-ics-table .table {
+             font-size: 0.9rem;
+             margin-bottom: 0;
+             border-collapse: separate;
+             border-spacing: 0;
+         }
+         
+         .tarifas-ics-table .table th {
+             background: linear-gradient(135deg, #1e88e5 0%, #0d47a1 100%);
+             color: white;
+             font-weight: 700;
+             padding: 16px 12px;
+             font-size: 0.9rem;
+             text-align: center;
+             border: none;
+             position: relative;
+         }
+         
+         .tarifas-ics-table .table th:first-child {
+             border-top-left-radius: 14px;
+         }
+         
+         .tarifas-ics-table .table th:last-child {
+             border-top-right-radius: 14px;
+         }
+         
+         .tarifas-ics-table .table th i {
+             margin-right: 6px;
+             font-size: 0.85rem;
+         }
+         
+         .tarifas-ics-table .table td {
+             padding: 14px 12px;
+             vertical-align: middle;
+             border-bottom: 1px solid #e3f2fd;
+             background: #fff;
+             transition: all 0.3s ease;
+             text-align: center;
+         }
+         
+         .tarifas-ics-table .table tbody tr {
+             transition: all 0.3s ease;
+         }
+         
+         .tarifas-ics-table .table tbody tr:hover {
+             background: linear-gradient(135deg, #f8fafc 0%, #e6f7ff 100%);
+             transform: translateY(-2px);
+             box-shadow: 0 4px 16px rgba(30, 136, 229, 0.1);
+         }
+         
+         .tarifas-ics-table .table tbody tr:hover td {
+             background: transparent;
+         }
+         
+         .tarifas-ics-table .table tbody tr:last-child td:first-child {
+             border-bottom-left-radius: 14px;
+         }
+         
+         .tarifas-ics-table .table tbody tr:last-child td:last-child {
+             border-bottom-right-radius: 14px;
+         }
+        
+                 .codigo-tarifa-edit {
+             width: 100% !important;
+             padding: 10px 12px !important;
+             border: 2px solid #e3f2fd !important;
+             border-radius: 10px !important;
+             font-size: 0.9rem !important;
+             transition: all 0.3s ease !important;
+             background: linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%) !important;
+             max-width: 140px !important;
+             font-weight: 600 !important;
+             color: #1e88e5 !important;
+         }
+         
+         .codigo-tarifa-edit:focus {
+             outline: none !important;
+             border-color: #1e88e5 !important;
+             box-shadow: 0 0 0 4px rgba(30, 136, 229, 0.1) !important;
+             background: #fff !important;
+             transform: scale(1.02) !important;
+         }
+         
+         .valor-tarifa-edit {
+             width: 100% !important;
+             padding: 10px 12px !important;
+             border: 2px solid #e3f2fd !important;
+             border-radius: 10px !important;
+             font-size: 0.9rem !important;
+             transition: all 0.3s ease !important;
+             background: linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%) !important;
+             max-width: 110px !important;
+             font-weight: 600 !important;
+             color: #1e88e5 !important;
+         }
+         
+         .valor-tarifa-edit:focus {
+             outline: none !important;
+             border-color: #1e88e5 !important;
+             box-shadow: 0 0 0 4px rgba(30, 136, 229, 0.1) !important;
+             background: #fff !important;
+             transform: scale(1.02) !important;
+         }
+         
+         .codigo-tarifa-display, .valor-tarifa-display {
+             font-weight: 600;
+             color: #1e88e5;
+             padding: 8px 12px;
+             background: linear-gradient(135deg, #f8fafc 0%, #e6f7ff 100%);
+             border-radius: 8px;
+             border: 1px solid #e3f2fd;
+             display: inline-block;
+             min-width: 80px;
+             text-align: center;
+         }
+        
+                 .tarifas-ics-table .btn-sm {
+             padding: 8px 12px;
+             font-size: 0.8rem;
+             border-radius: 8px;
+             font-weight: 600;
+             transition: all 0.3s ease;
+             border: none;
+             min-width: 40px;
+             display: inline-flex;
+             align-items: center;
+             justify-content: center;
+             gap: 4px;
+         }
+         
+         .tarifas-ics-table .btn-primary {
+             background: linear-gradient(135deg, #1e88e5 0%, #0d47a1 100%);
+             color: white;
+         }
+         
+         .tarifas-ics-table .btn-primary:hover {
+             background: linear-gradient(135deg, #0d47a1 0%, #1e88e5 100%);
+             transform: translateY(-2px);
+             box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
+         }
+         
+         .tarifas-ics-table .btn-success {
+             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+             color: white;
+         }
+         
+         .tarifas-ics-table .btn-success:hover {
+             background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+             transform: translateY(-2px);
+             box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+         }
+
+        .form-group-ano {
+            flex: 0 1 150px;
+            min-width: 150px;
+            max-width: 150px;
+        }
+
+        .form-group-mes {
+            flex: 0 1 150px;
+            min-width: 150px;
+            max-width: 150px;
+        }
+
+        .form-group-tipo {
+            flex: 0 1 200px;
+            min-width: 200px;
+            max-width: 200px;
+        }
+
+        .form-group-unidad {
+            flex: 0 1 200px;
+            min-width: 200px;
+            max-width: 200px;
+        }
+
+        .form-group-factor {
+            flex: 0 1 150px;
+            min-width: 150px;
+            max-width: 150px;
+        }
+
+        .form-group-ventas {
+            flex: 0 1 200px;
+            min-width: 200px;
+            max-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], input[type="text"], input[type="email"], select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #fff;
+        }
+
+        input[type="text"]:focus, input[type="text"]:focus, input[type="email"]:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        input[readonly] {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .table th {
+            background: linear-gradient(135deg, #1e88e5 0%, #0d47a1 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .bg-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .bg-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .negocio-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #1e88e5;
+        }
+
+        .negocio-info h5 {
+            color: #1e88e5;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .negocio-info p {
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .negocio-info strong {
+            color: #495057;
+        }
+
+        .total-calculo {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.2em;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .form-check {
+            margin-bottom: 10px;
+        }
+
+        .form-check-input {
+            margin-right: 8px;
+        }
+
+        .form-check-label {
+            font-weight: 500;
+            color: #495057;
+            cursor: pointer;
+        }
+
+        .section-title {
+            color: #1e88e5;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        
+        .bg-success {
+            background-color: #28a745 !important;
+            color: white;
+        }
+        
+        .bg-secondary {
+            background-color: #6c757d !important;
+            color: white;
+        }
+
+        .form-layout {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-column {
+            flex: 2;
+        }
+
+        .tarifas-column {
+            flex: 1;
+        }
+
+        .tarifas-ics-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .tarifas-ics-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .tarifa-ics-item {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tarifa-ics-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .tarifa-ics-header h5 {
+            color: #1e88e5;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .tarifa-ics-content {
+            width: 100%;
+            text-align: center;
+        }
+
+        .tarifa-ics-content p {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .tarifa-ics-content strong {
+            font-size: 1.2em;
+            color: #28a745;
+        }
+
+        .no-tarifas {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+                 .no-tarifas i {
+             font-size: 2rem;
+             margin-bottom: 10px;
+         }
+         
+         /* Estilos mejorados para la sección de Volúmenes de Venta */
+        .volumenes-venta-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #1e88e5;
+        }
+        
+        .volumenes-venta-section .section-title {
+            color: #1e88e5;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .volumenes-venta-section .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem 2.2rem;
+            align-items: flex-start;
+        }
+        
+        .volumenes-venta-section .form-group {
+            background: #f8fafc;
+            border-radius: 13px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+            padding: 1.1rem 1rem 0.7rem 1rem;
+            margin-bottom: 0;
+            border: 1px solid #e5e7eb;
+            transition: box-shadow 0.18s;
+            flex: 1 1 auto;
+            min-width: 200px;
+        }
+        
+        .volumenes-venta-section .form-group label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .volumenes-venta-section .form-group label i {
+            margin-right: 8px;
+            color: #1e88e5;
+        }
+        
+        .volumenes-venta-section input[type="text"], 
+        .volumenes-venta-section input[type="number"] {
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            width: 100%;
+        }
+        
+        .volumenes-venta-section input[type="text"]:focus, 
+        .volumenes-venta-section input[type="number"]:focus {
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .volumenes-venta-section input[type="text"][readonly], 
+        .volumenes-venta-section input[type="number"][readonly] {
+            background-color: #e9ecef;
+            opacity: 1;
+        }
+        
+        /* Estilos específicos para campos numéricos */
+        .volumenes-venta-section input[inputmode="decimal"] {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .volumenes-venta-section .form-text {
+            margin-top: 0.25rem;
+            font-size: 0.875em;
+            color: #6c757d;
+        }
+        
+        .volumenes-venta-section .form-text i {
+            margin-right: 0.3rem;
+        }
+         
+         /* Estilos para mensajes de cálculo de tarifas escalonadas */
+         .tarifa-calculo-mensaje {
+             margin-top: 10px;
+             padding: 12px 16px;
+             background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+             border: 1px solid #4caf50;
+             border-radius: 8px;
+             box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+             animation: slideIn 0.3s ease-out;
+         }
+         
+         .tarifa-calculo-info {
+             color: #2e7d32;
+             font-size: 0.9rem;
+             line-height: 1.4;
+         }
+         
+         .tarifa-calculo-info strong {
+             color: #1b5e20;
+             font-weight: 600;
+         }
+         
+         .tarifa-calculo-info small {
+             color: #388e3c;
+             font-style: italic;
+         }
+         
+         @keyframes slideIn {
+             from {
+                 opacity: 0;
+                 transform: translateY(-10px);
+             }
+             to {
+                 opacity: 1;
+                 transform: translateY(0);
+             }
+         }
+         
+         /* Estilos para el mensaje del total del impuesto */
+         .total-impuesto-mensaje {
+             margin-top: 20px;
+             padding: 20px;
+             background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+             border: 2px solid #ff9800;
+             border-radius: 12px;
+             box-shadow: 0 4px 16px rgba(255, 152, 0, 0.2);
+             animation: slideIn 0.4s ease-out;
+         }
+         
+         .total-impuesto-info h4 {
+             color: #e65100;
+             font-size: 1.2rem;
+             font-weight: 700;
+             margin-bottom: 15px;
+             text-align: center;
+             border-bottom: 2px solid #ff9800;
+             padding-bottom: 10px;
+         }
+         
+         .calculo-individual {
+             background: #fff;
+             padding: 10px 15px;
+             margin: 8px 0;
+             border-radius: 8px;
+             border-left: 4px solid #ff9800;
+             font-size: 0.95rem;
+             line-height: 1.4;
+         }
+         
+         .impuesto-calculado {
+             color: #e65100;
+             font-weight: 600;
+         }
+         
+         .total-final {
+             background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+             color: white;
+             padding: 15px;
+             border-radius: 10px;
+             text-align: center;
+             font-size: 1.1rem;
+             margin: 15px 0;
+             box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+         }
+         
+         .nota-impuesto {
+             color: #bf360c;
+             font-style: italic;
+             text-align: center;
+             display: block;
+             margin-top: 10px;
+         }
+         
+                 .nota-impuesto i {
+            margin-right: 5px;
+        }
+        
+        
+        /* Estilos específicos para el campo impuesto calculado */
+        #id_impuesto {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%) !important;
+            border: 2px solid #ff9800 !important;
+            color: #e65100 !important;
+            font-weight: 700 !important;
+            font-size: 1.1rem !important;
+            text-align: center !important;
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2) !important;
+        }
+        
+        #id_impuesto:focus {
+            border-color: #f57c00 !important;
+            box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.2) !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .form-grid {
+                flex-direction: column;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+            
+            .table {
+                font-size: 0.9rem;
+            }
+            
+            .table th,
+            .table td {
+                padding: 8px;
+            }
+
+            .form-layout {
+                flex-direction: column;
+            }
+
+            .form-column,
+            .tarifas-column {
+                width: 100%;
+            }
+        }
+    </style>
+
+<!-- Calculadora Automática ICS - Integración Real -->
+{% load static %}
+<script>
+/**
+ * Sistema de cálculo interactivo EMBEBIDO para formulario declaracion_volumen
+ * Versión simplificada que se incluye directamente en el template
+ */
+
+class DeclaracionVolumenInteractivo {
+    constructor() {
+        this.tarifas = [
+            {"rango1": 0.0, "rango2": 500000.0, "valor": 0.3, "categoria": "1", "descripcion": "Rango $0 - $500,000"},
+            {"rango1": 500000.01, "rango2": 10000000.0, "valor": 0.4, "categoria": "1", "descripcion": "Rango $500,000 - $10,000,000"},
+            {"rango1": 10000000.01, "rango2": 20000000.0, "valor": 0.3, "categoria": "1", "descripcion": "Rango $10,000,000 - $20,000,000"},
+            {"rango1": 20000000.01, "rango2": 30000000.0, "valor": 0.2, "categoria": "1", "descripcion": "Rango $20,000,000 - $30,000,000"},
+            {"rango1": 30000000.01, "rango2": 9999999999.0, "valor": 0.15, "categoria": "1", "descripcion": "Rango $30,000,000 - $9,999,999,999"}
+        ];
+        this.camposCalculados = ['ventai', 'ventac', 'ventas', 'controlado', 'unidad', 'factor'];
+        this.variablesOcultas = {};
+        this.impuestosCalculados = {};
+        this.initializeSystem();
+    }
+
+    async initializeSystem() {
+        this.verificarCamposDisponibles();
+        this.setupEventListeners();
+        this.crearVariablesOcultas();
+        console.log('🚀 Sistema de cálculo interactivo inicializado (versión embebida)');
+    }
+
+    crearVariablesOcultas() {
+        // Crear variables ocultas para cada tipo de cálculo
+        this.camposCalculados.forEach(campo => {
+            const input = document.getElementById(`id_${campo}`);
+            if (input) {
+                // Variable para valor base
+                this.variablesOcultas[`${campo}_base`] = 0;
+                // Variable para impuesto calculado
+                this.variablesOcultas[`${campo}_impuesto`] = 0;
+            }
+        });
+        
+        console.log('🔧 Variables ocultas creadas:', this.variablesOcultas);
+    }
+
+    verificarCamposDisponibles() {
+        console.log('🔍 Verificando campos disponibles...');
+        
+        const camposRequeridos = ['ventai', 'ventac', 'ventas', 'controlado', 'impuesto', 'unidad', 'factor'];
+        const camposEncontrados = [];
+        const camposFaltantes = [];
+        
+        camposRequeridos.forEach(campo => {
+            const elemento = document.getElementById(`id_${campo}`);
+            if (elemento) {
+                camposEncontrados.push(campo);
+                console.log(`✅ Campo ${campo} encontrado: ${elemento.tagName} con valor "${elemento.value || 'vacío'}"`);
+            } else {
+                camposFaltantes.push(campo);
+                console.error(`❌ Campo ${campo} NO encontrado (id_${campo})`);
+            }
+        });
+        
+        console.log(`📊 Resumen de campos: ${camposEncontrados.length}/${camposRequeridos.length} encontrados`);
+        
+        if (camposFaltantes.length > 0) {
+            console.warn(`⚠️ Campos faltantes: ${camposFaltantes.join(', ')}`);
+        } else {
+            console.log('✅ Todos los campos requeridos están disponibles');
+        }
+    }
+
+    setupEventListeners() {
+        const campos = ['ventai', 'ventac', 'ventas', 'controlado', 'unidad', 'factor'];
+        campos.forEach(campo => {
+            const input = document.getElementById(`id_${campo}`);
+            if (input) {
+                input.addEventListener('input', () => this.calcularEnTiempoReal(campo));
+                input.addEventListener('blur', () => this.calcularEnTiempoReal(campo));
+            }
+        });
+        
+        // Listeners básicos configurados
+    }
+
+    /**
+     * Configura listeners para campos mes y tipo para recalcular multa automáticamente
+     */
+    setupMesYTipoListeners() {
+        // Usar setTimeout para asegurar que el DOM esté completamente cargado
+        setTimeout(() => {
+            const campoMes = document.getElementById('{{ form.mes.id_for_label }}');
+            const campoTipo = document.getElementById('{{ form.tipo.id_for_label }}');
+            
+            if (campoMes) {
+                campoMes.addEventListener('change', () => {
+                    console.log('🔄 Mes cambió, recalculando multa automáticamente');
+                    this.recalcularMultaAutomaticamente();
+                });
+                console.log('✅ Listener agregado al campo MES');
+            } else {
+                console.warn('⚠️ Campo MES no encontrado para agregar listener');
+            }
+            
+            if (campoTipo) {
+                campoTipo.addEventListener('change', () => {
+                    console.log('🔄 Tipo cambió, recalculando multa automáticamente');
+                    this.recalcularMultaAutomaticamente();
+                });
+                console.log('✅ Listener agregado al campo TIPO');
+            } else {
+                console.warn('⚠️ Campo TIPO no encontrado para agregar listener');
+            }
+        }, 1000);
+    }
+
+    /**
+     * Recalcula la multa automáticamente cuando cambia mes o tipo
+     */
+    recalcularMultaAutomaticamente() {
+        // Obtener el impuesto actual
+        const campoImpuesto = document.getElementById('{{ form.impuesto.id_for_label }}');
+        const impuestoActual = parseFloat(campoImpuesto?.value) || 0;
+        
+        if (impuestoActual > 0) {
+            console.log(`🧮 Recalculando multa con impuesto actual: L. ${impuestoActual.toFixed(2)}`);
+            
+            // Calcular nueva multa
+            const nuevaMulta = this.calcularMultaDeclaracionTardia(impuestoActual);
+            
+            // Actualizar campo de multa
+            this.actualizarCampoMulta(nuevaMulta);
+        } else {
+            console.log('⚠️ No hay impuesto calculado para recalcular multa');
+            // Si no hay impuesto, la multa debe ser 0
+            this.actualizarCampoMulta(0);
+        }
+    }
+
+    calcularEnTiempoReal(fieldName) {
+        console.log(`🔄 Calculando impuesto INDEPENDIENTE para campo: ${fieldName}`);
+        
+        // Obtener valores de todos los campos
+        const valoresVentas = this.obtenerValoresVentas();
+        console.log('📊 Valores de ventas obtenidos:', valoresVentas);
+        
+        // PASO 1: Calcular cada impuesto INDEPENDIENTEMENTE y guardar en variables ocultas
+        this.calcularYGuardarImpuestosIndependientes(valoresVentas);
+        
+        // PASO 2: Hacer una sola suma usando las variables ocultas
+        const totalImpuesto = this.sumarImpuestosDesdeVariablesOcultas();
+        
+        // PASO 3: Calcular multa por declaración tardía
+        const multaDeclaracion = this.calcularMultaDeclaracionTardia(totalImpuesto);
+        
+        // PASO 4: Actualizar campos de impuesto y multa
+        this.actualizarCampoImpuesto(totalImpuesto);
+        this.actualizarCampoMulta(multaDeclaracion);
+    }
+
+    obtenerValorCampo(fieldName) {
+        const input = document.getElementById(`id_${fieldName}`);
+        if (!input) return 0;
+        
+        let valor = input.value;
+        console.log(`🔍 Campo ${fieldName}: valor original="${valor}"`);
+        
+        if (!valor) return 0;
+        
+        // PARSING MEJORADO DE FORMATOS NUMÉRICOS
+        // Caso 1: "50,000.00" (formato americano con miles y decimales)
+        if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+            valor = valor.replace(/,/g, '');
+            console.log(`✅ Formato americano detectado: "${input.value}" → "${valor}"`);
+        }
+        // Caso 2: "50,000" (formato americano con miles, sin decimales)
+        else if (/^\d{1,3}(,\d{3})+$/.test(valor)) {
+            valor = valor.replace(/,/g, '');
+            console.log(`✅ Formato americano sin decimales: "${input.value}" → "${valor}"`);
+        }
+        // Caso 3: "50.000,00" (formato europeo con miles y decimales)
+        else if (/^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(valor)) {
+            valor = valor.replace(/\./g, '').replace(',', '.');
+            console.log(`✅ Formato europeo detectado: "${input.value}" → "${valor}"`);
+        }
+        // Caso 4: "50.000" (formato europeo con miles, sin decimales)
+        else if (/^\d{1,3}(\.\d{3})+$/.test(valor)) {
+            valor = valor.replace(/\./g, '');
+            console.log(`✅ Formato europeo sin decimales: "${input.value}" → "${valor}"`);
+        }
+        // Caso 5: "50.00" (formato americano simple con decimales)
+        else if (/^\d+\.\d{1,2}$/.test(valor)) {
+            // Mantener como está - formato americano válido
+            console.log(`✅ Formato americano simple: "${input.value}" → "${valor}"`);
+        }
+        // Caso 6: "50,00" (formato europeo simple con decimales)
+        else if (/^\d+,\d{1,2}$/.test(valor)) {
+            valor = valor.replace(',', '.');
+            console.log(`✅ Formato europeo simple: "${input.value}" → "${valor}"`);
+        }
+        // Caso 7: Solo números
+        else if (/^\d+$/.test(valor)) {
+            console.log(`✅ Solo números: "${input.value}" → "${valor}"`);
+        }
+        
+        // Limpiar caracteres no numéricos excepto punto decimal
+        valor = valor.replace(/[^0-9.]/g, '');
+        const numeroFinal = parseFloat(valor) || 0;
+        
+        console.log(`🔍 Campo ${fieldName}: "${input.value}" → parseado=${numeroFinal}`);
+        return numeroFinal;
+    }
+
+    calcularImpuestoCampo(fieldName, valor) {
+        if (!valor || valor <= 0) {
+            console.log(`⚠️ Campo ${fieldName}: valor ${valor} es 0 o negativo, impuesto = 0`);
+            return 0;
+        }
+
+        let impuesto = 0;
+
+        switch(fieldName) {
+            case 'ventai':
+                console.log(`📋 Calculando Ventas Rubro Producción: ${valor}`);
+                impuesto = this.calcularImpuestoICS(valor).impuestoTotal;
+                break;
+            case 'ventac':
+                console.log(`📋 Calculando Ventas Mercadería: ${valor}`);
+                impuesto = this.calcularImpuestoICS(valor).impuestoTotal;
+                break;
+            case 'ventas':
+                console.log(`📋 Calculando Ventas por Servicios: ${valor}`);
+                impuesto = this.calcularImpuestoICS(valor).impuestoTotal;
+                break;
+            case 'controlado':
+                console.log(`📋 Calculando Ventas Productos Controlados: ${valor}`);
+                impuesto = this.calcularImpuestoICSControlados(valor).impuestoTotal;
+                break;
+            case 'unidad':
+            case 'factor':
+                console.log(`📋 Calculando Factor × Unidad: ${fieldName} = ${valor}`);
+                const valorUnidad = this.obtenerValorCampo('unidad');
+                const valorFactor = this.obtenerValorCampo('factor');
+                if (valorUnidad > 0 && valorFactor > 0) {
+                    impuesto = Math.round((valorUnidad * valorFactor) * 100) / 100;
+                    console.log(`   Cálculo: ${valorUnidad} × ${valorFactor} = ${impuesto}`);
+                } else {
+                    impuesto = 0;
+                    console.log(`   Uno de los valores es 0: unidad=${valorUnidad}, factor=${valorFactor}`);
+                }
+                break;
+            default:
+                console.log(`⚠️ Campo desconocido: ${fieldName}`);
+                impuesto = 0;
+        }
+
+        console.log(`✅ Impuesto calculado para ${fieldName}: L. ${impuesto.toFixed(2)}`);
+        return impuesto;
+    }
+
+    actualizarVariableOculta(fieldName, valorBase, impuesto) {
+        console.log(`🔧 ACTUALIZANDO VARIABLE OCULTA PARA: ${fieldName}`);
+        
+        // Actualizar variable base
+        this.variablesOcultas[`${fieldName}_base`] = valorBase;
+        // Actualizar variable impuesto
+        this.variablesOcultas[`${fieldName}_impuesto`] = impuesto;
+        
+        // Actualizar campo oculto en el formulario
+        const campoOcultoBase = document.getElementById(`hidden_${fieldName}_base`);
+        const campoOcultoImpuesto = document.getElementById(`hidden_${fieldName}_impuesto`);
+        
+        if (campoOcultoBase) {
+            campoOcultoBase.value = valorBase;
+            console.log(`🔧 Campo oculto actualizado: ${fieldName}_base = ${valorBase}`);
+        }
+        if (campoOcultoImpuesto) {
+            campoOcultoImpuesto.value = impuesto;
+            console.log(`🔧 Campo oculto actualizado: ${fieldName}_impuesto = ${impuesto}`);
+        }
+        
+        // Para Factor × Unidad, actualizar también la variable combinada
+        if (fieldName === 'unidad' || fieldName === 'factor') {
+            const valorUnidad = this.obtenerValorCampo('unidad');
+            const valorFactor = this.obtenerValorCampo('factor');
+            if (valorUnidad > 0 && valorFactor > 0) {
+                const impuestoCombinado = Math.round((valorUnidad * valorFactor) * 100) / 100;
+                this.variablesOcultas['unidadFactor_impuesto'] = impuestoCombinado;
+                const campoOcultoCombinado = document.getElementById('hidden_unidadFactor_impuesto');
+                if (campoOcultoCombinado) {
+                    campoOcultoCombinado.value = impuestoCombinado;
+                    console.log(`🔧 Campo oculto actualizado: unidadFactor_impuesto = ${impuestoCombinado}`);
+                }
+            }
+        }
+        
+        // NO recalcular todas las variables ocultas aquí para evitar bucles infinitos
+        // Solo actualizar la variable específica del campo modificado
+        console.log(`✅ Variable oculta actualizada para ${fieldName}: ${impuesto}`);
+    }
+
+    recalcularTodasLasVariablesOcultas() {
+        console.log('🔄 RECALCULANDO TODAS LAS VARIABLES OCULTAS...');
+        
+        // Obtener todos los valores actuales
+        const valoresVentas = this.obtenerValoresVentas();
+        console.log('📊 Valores obtenidos para recalcular:', valoresVentas);
+        
+        // Recalcular impuesto para cada campo
+        const campos = ['ventai', 'ventac', 'ventas', 'controlado', 'unidad', 'factor'];
+        
+        campos.forEach(campo => {
+            const valor = valoresVentas[campo] || 0;
+            const impuesto = this.calcularImpuestoCampo(campo, valor);
+            
+            // Actualizar variables ocultas
+            this.variablesOcultas[`${campo}_base`] = valor;
+            this.variablesOcultas[`${campo}_impuesto`] = impuesto;
+            
+            // Actualizar campos ocultos en el formulario
+            const campoOcultoBase = document.getElementById(`hidden_${campo}_base`);
+            const campoOcultoImpuesto = document.getElementById(`hidden_${campo}_impuesto`);
+            
+            if (campoOcultoBase) {
+                campoOcultoBase.value = valor;
+                console.log(`🔧 Recalculado: ${campo}_base = ${valor}`);
+            }
+            if (campoOcultoImpuesto) {
+                campoOcultoImpuesto.value = impuesto;
+                console.log(`🔧 Recalculado: ${campo}_impuesto = ${impuesto}`);
+            }
+        });
+        
+        // Recalcular Factor × Unidad si aplica
+        const valorUnidad = valoresVentas.unidad || 0;
+        const valorFactor = valoresVentas.factor || 0;
+        if (valorUnidad > 0 && valorFactor > 0) {
+            const impuestoCombinado = Math.round((valorUnidad * valorFactor) * 100) / 100;
+            this.variablesOcultas['unidadFactor_impuesto'] = impuestoCombinado;
+            const campoOcultoCombinado = document.getElementById('hidden_unidadFactor_impuesto');
+            if (campoOcultoCombinado) {
+                campoOcultoCombinado.value = impuestoCombinado;
+                console.log(`🔧 Recalculado: unidadFactor_impuesto = ${impuestoCombinado}`);
+            }
+        }
+        
+        console.log('✅ Todas las variables ocultas recalculadas');
+        console.log('📋 Estado final de variables ocultas:', this.variablesOcultas);
+    }
+
+    /**
+     * Calcula cada impuesto independientemente y los guarda en variables ocultas
+     */
+    calcularYGuardarImpuestosIndependientes(valoresVentas) {
+        console.log('🧮 CALCULANDO IMPUESTOS INDEPENDIENTES:');
+        
+        // 1. Ventas Rubro Producción (ventai)
+        const valorVentai = valoresVentas.ventai || 0;
+        const impuestoVentai = valorVentai > 0 ? this.calcularImpuestoICS(valorVentai).impuestoTotal : 0;
+        this.variablesOcultas.ventai_base = valorVentai;
+        this.variablesOcultas.ventai_impuesto = impuestoVentai;
+        console.log(`   📊 Ventas Rubro Producción: L. ${valorVentai.toLocaleString('es-HN', {minimumFractionDigits: 2})} → Impuesto: L. ${impuestoVentai.toFixed(2)}`);
+        
+        // 2. Ventas Mercadería (ventac)
+        const valorVentac = valoresVentas.ventac || 0;
+        const impuestoVentac = valorVentac > 0 ? this.calcularImpuestoICS(valorVentac).impuestoTotal : 0;
+        this.variablesOcultas.ventac_base = valorVentac;
+        this.variablesOcultas.ventac_impuesto = impuestoVentac;
+        console.log(`   📊 Ventas Mercadería: L. ${valorVentac.toLocaleString('es-HN', {minimumFractionDigits: 2})} → Impuesto: L. ${impuestoVentac.toFixed(2)}`);
+        
+        // 3. Ventas por Servicios (ventas)
+        const valorVentas = valoresVentas.ventas || 0;
+        const impuestoVentas = valorVentas > 0 ? this.calcularImpuestoICS(valorVentas).impuestoTotal : 0;
+        this.variablesOcultas.ventas_base = valorVentas;
+        this.variablesOcultas.ventas_impuesto = impuestoVentas;
+        console.log(`   📊 Ventas por Servicios: L. ${valorVentas.toLocaleString('es-HN', {minimumFractionDigits: 2})} → Impuesto: L. ${impuestoVentas.toFixed(2)}`);
+        
+        // 4. Ventas Productos Controlados (controlado)
+        const valorControlado = valoresVentas.controlado || 0;
+        const impuestoControlado = valorControlado > 0 ? this.calcularImpuestoICSControlados(valorControlado).impuestoTotal : 0;
+        this.variablesOcultas.controlado_base = valorControlado;
+        this.variablesOcultas.controlado_impuesto = impuestoControlado;
+        console.log(`   📊 Productos Controlados: L. ${valorControlado.toLocaleString('es-HN', {minimumFractionDigits: 2})} → Impuesto: L. ${impuestoControlado.toFixed(2)}`);
+        
+        // 5. Unidad × Factor
+        const valorUnidad = valoresVentas.unidad || 0;
+        const valorFactor = valoresVentas.factor || 0;
+        const impuestoUnidadFactor = (valorUnidad > 0 && valorFactor > 0) ? Math.round((valorUnidad * valorFactor) * 100) / 100 : 0;
+        this.variablesOcultas.unidad_base = valorUnidad;
+        this.variablesOcultas.factor_base = valorFactor;
+        this.variablesOcultas.unidadFactor_impuesto = impuestoUnidadFactor;
+        console.log(`   📊 Unidad × Factor: ${valorUnidad} × ${valorFactor} = L. ${impuestoUnidadFactor.toFixed(2)}`);
+        
+        console.log('✅ Variables ocultas actualizadas:', this.variablesOcultas);
+    }
+
+    /**
+     * Suma todos los impuestos desde las variables ocultas
+     */
+    sumarImpuestosDesdeVariablesOcultas() {
+        console.log('🎯 SUMANDO IMPUESTOS DESDE VARIABLES OCULTAS:');
+        
+        const impuestoVentai = this.variablesOcultas.ventai_impuesto || 0;
+        const impuestoVentac = this.variablesOcultas.ventac_impuesto || 0;
+        const impuestoVentas = this.variablesOcultas.ventas_impuesto || 0;
+        const impuestoControlado = this.variablesOcultas.controlado_impuesto || 0;
+        const impuestoUnidadFactor = this.variablesOcultas.unidadFactor_impuesto || 0;
+        
+        // Verificar tipos y convertir a números
+        const ventai = parseFloat(impuestoVentai) || 0;
+        const ventac = parseFloat(impuestoVentac) || 0;
+        const ventas = parseFloat(impuestoVentas) || 0;
+        const controlado = parseFloat(impuestoControlado) || 0;
+        const unidadFactor = parseFloat(impuestoUnidadFactor) || 0;
+        
+        console.log('🔢 IMPUESTOS INDIVIDUALES (convertidos a números):');
+        console.log(`   • Ventas Rubro Producción: L. ${ventai.toFixed(2)}`);
+        console.log(`   • Ventas Mercadería: L. ${ventac.toFixed(2)}`);
+        console.log(`   • Ventas por Servicios: L. ${ventas.toFixed(2)}`);
+        console.log(`   • Productos Controlados: L. ${controlado.toFixed(2)}`);
+        console.log(`   • Unidad × Factor: L. ${unidadFactor.toFixed(2)}`);
+        
+        // Suma total
+        const totalImpuesto = ventai + ventac + ventas + controlado + unidadFactor;
+        
+        console.log('🎯 SUMA PASO A PASO:');
+        console.log(`   Paso 1: ${ventai.toFixed(2)}`);
+        console.log(`   Paso 2: ${ventai.toFixed(2)} + ${ventac.toFixed(2)} = ${(ventai + ventac).toFixed(2)}`);
+        console.log(`   Paso 3: ${(ventai + ventac).toFixed(2)} + ${ventas.toFixed(2)} = ${(ventai + ventac + ventas).toFixed(2)}`);
+        console.log(`   Paso 4: ${(ventai + ventac + ventas).toFixed(2)} + ${controlado.toFixed(2)} = ${(ventai + ventac + ventas + controlado).toFixed(2)}`);
+        console.log(`   Paso 5: ${(ventai + ventac + ventas + controlado).toFixed(2)} + ${unidadFactor.toFixed(2)} = ${totalImpuesto.toFixed(2)}`);
+        
+        console.log(`💰 TOTAL IMPUESTO FINAL: L. ${totalImpuesto.toFixed(2)}`);
+        
+        // CALCULAR Y ACTUALIZAR MULTA AUTOMÁTICAMENTE
+        const multaCalculada = this.calcularMultaDeclaracionTardia(totalImpuesto);
+        this.actualizarCampoMulta(multaCalculada);
+        
+        return totalImpuesto;
+    }
+
+    /**
+     * Calcula la multa por declaración tardía
+     */
+    calcularMultaDeclaracionTardia(impuestoCalculado) {
+        // Obtener mes y tipo de declaración
+        const campoMes = document.getElementById('{{ form.mes.id_for_label }}');
+        const campoTipo = document.getElementById('{{ form.tipo.id_for_label }}');
+        
+        if (!campoMes || !campoTipo) {
+            console.warn('⚠️ No se encontraron campos mes o tipo para calcular multa');
+            return 0;
+        }
+        
+        const mes = parseInt(campoMes.value) || 1;
+        const tipo = parseInt(campoTipo.value) || 1;
+        
+        console.log(`🧮 CALCULANDO MULTA DECLARACIÓN TARDÍA:`);
+        console.log(`   Mes: ${mes} (${mes === 1 ? 'Enero' : 'No es enero'})`);
+        console.log(`   Tipo: ${tipo} (${tipo === 1 ? 'Normal' : tipo === 2 ? 'Apertura' : 'Desconocido'})`);
+        console.log(`   Impuesto: L. ${impuestoCalculado.toFixed(2)}`);
+        
+        let multa = 0;
+        
+        // Regla 1: Si es enero, no hay multa
+        if (mes === 1) {
+            multa = 0;
+            console.log(`   ✅ Enero: No hay multa`);
+        }
+        // Regla 2: Si mes != enero y tipo = normal (1), multa = impuesto
+        else if (mes !== 1 && tipo === 1) {
+            multa = impuestoCalculado;
+            console.log(`   ⚠️ Mes ${mes} + Tipo Normal: Multa = Impuesto = L. ${multa.toFixed(2)}`);
+        }
+        // Regla 3: Si mes != enero y tipo = apertura (2), multa = 0.00
+        else if (mes !== 1 && tipo === 2) {
+            multa = 0;
+            console.log(`   ✅ Mes ${mes} + Tipo Apertura: Multa = L. 0.00`);
+        }
+        // Por defecto, no hay multa
+        else {
+            multa = 0;
+            console.log(`   ✅ Caso por defecto: No hay multa`);
+        }
+        
+        console.log(`💰 MULTA CALCULADA: L. ${multa.toFixed(2)}`);
+        return multa;
+    }
+
+    /**
+     * Actualiza el campo de multa en la interfaz
+     */
+    actualizarCampoMulta(multaDeclaracion) {
+        const camposMulta = [
+            '{{ form.multadecla.id_for_label }}', // Campo principal del formulario
+            'id_multadecla',                      // Campo directo
+            'multadecla'                          // Campo alternativo
+        ];
+
+        let campoActualizado = false;
+        
+        for (const id of camposMulta) {
+            const campo = document.getElementById(id);
+            if (campo) {
+                campo.value = multaDeclaracion.toFixed(2);
+                campo.style.backgroundColor = multaDeclaracion > 0 ? '#fff3cd' : '#e8f5e8';
+                campo.style.fontWeight = 'bold';
+                campo.style.color = multaDeclaracion > 0 ? '#856404' : '#155724';
+                campoActualizado = true;
+                console.log(`💰 Campo multa actualizado (${id}): L. ${multaDeclaracion.toFixed(2)}`);
+                break;
+            }
+        }
+
+        if (!campoActualizado) {
+            console.warn('⚠️ No se encontró campo para mostrar la multa calculada');
+        }
+    }
+
+    calcularTodosLosImpuestos(valoresVentas) {
+        const resultados = {};
+        
+        // 1. Ventas Rubro Producción (con tarifas ICS)
+        resultados.industria = this.calcularImpuestoICS(valoresVentas.ventai || 0);
+        this.variablesOcultas.ventai_base = valoresVentas.ventai || 0;
+        this.variablesOcultas.ventai_impuesto = resultados.industria.impuestoTotal;
+        
+        // 2. Ventas Mercadería (con tarifas ICS)
+        resultados.comercio = this.calcularImpuestoICS(valoresVentas.ventac || 0);
+        this.variablesOcultas.ventac_base = valoresVentas.ventac || 0;
+        this.variablesOcultas.ventac_impuesto = resultados.comercio.impuestoTotal;
+        
+        // 3. Ventas por Servicios (con tarifas ICS)
+        resultados.servicios = this.calcularImpuestoICS(valoresVentas.ventas || 0);
+        this.variablesOcultas.ventas_base = valoresVentas.ventas || 0;
+        this.variablesOcultas.ventas_impuesto = resultados.servicios.impuestoTotal;
+        
+        // 4. Ventas Productos Controlados (con tarifas ICS)
+        console.log('🔍 Calculando productos controlados...');
+        console.log(`   Valor base controlado: ${valoresVentas.controlado || 0}`);
+        resultados.controlados = this.calcularImpuestoICSControlados(valoresVentas.controlado || 0);
+        console.log(`   Impuesto calculado controlados: ${resultados.controlados.impuestoTotal}`);
+        this.variablesOcultas.controlado_base = valoresVentas.controlado || 0;
+        this.variablesOcultas.controlado_impuesto = resultados.controlados.impuestoTotal;
+        console.log(`   Variable oculta controlado_impuesto: ${this.variablesOcultas.controlado_impuesto}`);
+        
+        // 5. Factor × Unidad (multiplicación simple)
+        resultados.unidadFactor = this.calcularImpuestoUnidadFactor(valoresVentas.unidad || 0, valoresVentas.factor || 0);
+        this.variablesOcultas.unidad_base = valoresVentas.unidad || 0;
+        this.variablesOcultas.factor_base = valoresVentas.factor || 0;
+        this.variablesOcultas.unidadFactor_impuesto = resultados.unidadFactor.impuestoTotal;
+        
+        console.log('💰 Resultados de cálculo por tipo:', resultados);
+        console.log('🔧 Variables ocultas actualizadas:', this.variablesOcultas);
+        
+        return resultados;
+    }
+
+    calcularSumaTotal(resultados) {
+        // Verificar cada resultado individualmente antes de sumar
+        console.log('🔍 VERIFICACIÓN INDIVIDUAL DE RESULTADOS:');
+        console.log(`   Industria: ${resultados.industria.impuestoTotal} (tipo: ${typeof resultados.industria.impuestoTotal})`);
+        console.log(`   Comercio: ${resultados.comercio.impuestoTotal} (tipo: ${typeof resultados.comercio.impuestoTotal})`);
+        console.log(`   Servicios: ${resultados.servicios.impuestoTotal} (tipo: ${typeof resultados.servicios.impuestoTotal})`);
+        console.log(`   Controlados: ${resultados.controlados.impuestoTotal} (tipo: ${typeof resultados.controlados.impuestoTotal})`);
+        console.log(`   UnidadFactor: ${resultados.unidadFactor.impuestoTotal} (tipo: ${typeof resultados.unidadFactor.impuestoTotal})`);
+        
+        // Convertir a números para asegurar que no hay problemas de tipo
+        const industria = parseFloat(resultados.industria.impuestoTotal) || 0;
+        const comercio = parseFloat(resultados.comercio.impuestoTotal) || 0;
+        const servicios = parseFloat(resultados.servicios.impuestoTotal) || 0;
+        const controlados = parseFloat(resultados.controlados.impuestoTotal) || 0;
+        const unidadFactor = parseFloat(resultados.unidadFactor.impuestoTotal) || 0;
+        
+        console.log('🔢 VALORES CONVERTIDOS A NÚMEROS:');
+        console.log(`   Industria: ${industria}`);
+        console.log(`   Comercio: ${comercio}`);
+        console.log(`   Servicios: ${servicios}`);
+        console.log(`   Controlados: ${controlados}`);
+        console.log(`   UnidadFactor: ${unidadFactor}`);
+        
+        // Sumar solo los impuestos calculados (no los valores base)
+        const totalImpuesto = industria + comercio + servicios + controlados + unidadFactor;
+        
+        console.log('🎯 SUMATORIA COMPLETA DE IMPUESTOS:');
+        console.log(`   • Industria (Ventas Rubro Producción): L. ${industria.toFixed(2)}`);
+        console.log(`   • Comercio (Ventas Mercadería): L. ${comercio.toFixed(2)}`);
+        console.log(`   • Servicios (Ventas por Servicios): L. ${servicios.toFixed(2)}`);
+        console.log(`   • Controlados (Ventas Productos Controlados): L. ${controlados.toFixed(2)}`);
+        console.log(`   • Factor × Unidad: L. ${unidadFactor.toFixed(2)}`);
+        console.log(`   = TOTAL IMPUESTO CALCULADO: L. ${totalImpuesto.toFixed(2)}`);
+        
+        // Verificación específica de la suma paso a paso
+        console.log('🔍 VERIFICACIÓN PASO A PASO:');
+        console.log(`   Paso 1: Industria = ${industria}`);
+        console.log(`   Paso 2: Industria + Comercio = ${industria} + ${comercio} = ${industria + comercio}`);
+        console.log(`   Paso 3: + Servicios = ${industria + comercio} + ${servicios} = ${industria + comercio + servicios}`);
+        console.log(`   Paso 4: + Controlados = ${industria + comercio + servicios} + ${controlados} = ${industria + comercio + servicios + controlados}`);
+        console.log(`   Paso 5: + UnidadFactor = ${industria + comercio + servicios + controlados} + ${unidadFactor} = ${totalImpuesto}`);
+        
+        // Verificación específica para el caso 500,000 + 500,000
+        if (industria === 150 && controlados === 500) {
+            console.log('⚠️ CASO ESPECÍFICO 500,000 + 500,000:');
+            console.log(`   Industria (500,000): ${industria} ✅`);
+            console.log(`   Controlados (500,000): ${controlados} ✅`);
+            console.log(`   Suma esperada: 150 + 500 = 650`);
+            console.log(`   Suma obtenida: ${totalImpuesto}`);
+            console.log(`   ¿Es correcta?: ${totalImpuesto === 650 ? 'SÍ' : 'NO'}`);
+        }
+        
+        // Verificación adicional para productos controlados
+        if (controlados > 0) {
+            console.log('⚠️ VERIFICACIÓN ESPECÍFICA PRODUCTOS CONTROLADOS:');
+            console.log(`   Valor base controlado: ${this.variablesOcultas.controlado_base}`);
+            console.log(`   Impuesto calculado: ${controlados}`);
+            console.log(`   Variable oculta: ${this.variablesOcultas.controlado_impuesto}`);
+            console.log(`   ¿Coinciden?: ${controlados === this.variablesOcultas.controlado_impuesto ? 'SÍ' : 'NO'}`);
+        }
+        
+        return totalImpuesto;
+    }
+
+    actualizarVariablesOcultas(resultados) {
+        // Actualizar campos ocultos en el formulario para envío
+        Object.keys(this.variablesOcultas).forEach(key => {
+            const campoOculto = document.getElementById(`hidden_${key}`);
+            if (campoOculto) {
+                campoOculto.value = this.variablesOcultas[key];
+                console.log(`🔧 Campo oculto actualizado: ${key} = ${this.variablesOcultas[key]}`);
+            }
+        });
+    }
+
+    obtenerValoresVentas() {
+        const campos = ['ventai', 'ventac', 'ventas', 'controlado', 'unidad', 'factor'];
+        const valores = {};
+
+        console.log('🔍 OBTENIENDO VALORES DE TODOS LOS CAMPOS:');
+        console.log('📊 Campos a verificar:', campos);
+
+        campos.forEach(campo => {
+            const input = document.getElementById(`id_${campo}`);
+            console.log(`🔍 Verificando campo ${campo}:`);
+            console.log(`   Elemento encontrado: ${input ? 'SÍ' : 'NO'}`);
+            if (input) {
+                console.log(`   Valor en input: "${input.value}"`);
+                console.log(`   Valor vacío: ${!input.value}`);
+            }
+            
+            if (input && input.value) {
+                let tipo = 'general';
+                if (campo === 'unidad') {
+                    tipo = 'unidad';
+                } else if (campo === 'factor') {
+                    tipo = 'factor';
+                }
+                
+                const valor = this.limpiarValor(input.value, tipo);
+                console.log(`   Valor limpiado: ${valor} (tipo: ${tipo})`);
+                console.log(`   Valor > 0: ${valor > 0}`);
+                
+                // Validación específica para ventai para detectar valores anómalos
+                if (campo === 'ventai') {
+                    console.log(`🔍 VALIDACIÓN ESPECÍFICA VENTAI:`);
+                    console.log(`   Valor original: "${input.value}"`);
+                    console.log(`   Valor limpiado: ${valor}`);
+                    console.log(`   Valor > 1000000: ${valor > 1000000}`);
+                    
+                    // Detectar valores anómalos que podrían causar el problema de 5000.00
+                    if (valor > 1000000) {
+                        console.log(`⚠️ ALERTA: Valor de ventai parece anómalo: ${valor}`);
+                        console.log(`   Posible causa: formato incorrecto o lectura duplicada`);
+                        console.log(`   Este valor produciría un impuesto de: L. ${(valor * 0.003):.2f}`);
+                    }
+                }
+                
+                // Validación específica para controlado para detectar valores anómalos
+                if (campo === 'controlado') {
+                    console.log(`🔍 VALIDACIÓN ESPECÍFICA CONTROLADO:`);
+                    console.log(`   Valor original: "${input.value}"`);
+                    console.log(`   Valor limpiado: ${valor}`);
+                    console.log(`   Valor > 1000000: ${valor > 1000000}`);
+                    
+                    // Detectar valores anómalos
+                    if (valor > 1000000) {
+                        console.log(`⚠️ ALERTA: Valor de controlado parece anómalo: ${valor}`);
+                        console.log(`   Posible causa: formato con comas (5,000,000) o valor incorrecto`);
+                        console.log(`   Valor esperado para 500,000: 500000`);
+                        console.log(`   Este valor produciría un impuesto de: L. ${(valor * 0.0001).toFixed(2)}`);
+                    }
+                }
+                
+                if (valor > 0) {
+                    valores[campo] = valor;
+                    console.log(`✅ Campo ${campo} detectado con valor: ${valor} (tipo: ${tipo})`);
+                } else {
+                    console.log(`⚠️ Campo ${campo} tiene valor 0 o negativo: ${valor}`);
+                }
+            } else {
+                console.log(`❌ Campo ${campo} no tiene valor o no existe`);
+            }
+        });
+
+        console.log('📋 Valores finales de ventas:', valores);
+        console.log('🔍 Verificación específica de campos críticos:');
+        console.log(`   ventai en valores: ${valores.hasOwnProperty('ventai') ? 'SÍ' : 'NO'}`);
+        console.log(`   controlado en valores: ${valores.hasOwnProperty('controlado') ? 'SÍ' : 'NO'}`);
+        if (valores.hasOwnProperty('ventai')) {
+            console.log(`   Valor de ventai: ${valores.ventai}`);
+        }
+        if (valores.hasOwnProperty('controlado')) {
+            console.log(`   Valor de controlado: ${valores.controlado}`);
+        }
+        
+        return valores;
+    }
+
+    limpiarValor(valor, tipo = 'general') {
+        if (!valor) return 0;
+        
+        // PARSING MEJORADO PARA MANEJAR FORMATOS CORRECTAMENTE
+        let valorLimpio = valor.toString();
+        
+        // Caso 1: "50,000.00" (formato americano con miles y decimales)
+        if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valorLimpio)) {
+            valorLimpio = valorLimpio.replace(/,/g, '');
+            console.log(`✅ Formato americano detectado en limpiarValor: "${valor}" → "${valorLimpio}"`);
+        }
+        // Caso 2: "50,000" (formato americano con miles, sin decimales)
+        else if (/^\d{1,3}(,\d{3})+$/.test(valorLimpio)) {
+            valorLimpio = valorLimpio.replace(/,/g, '');
+            console.log(`✅ Formato americano sin decimales en limpiarValor: "${valor}" → "${valorLimpio}"`);
+        }
+        // Caso 3: "50.000,00" (formato europeo con miles y decimales)
+        else if (/^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(valorLimpio)) {
+            valorLimpio = valorLimpio.replace(/\./g, '').replace(',', '.');
+            console.log(`✅ Formato europeo detectado en limpiarValor: "${valor}" → "${valorLimpio}"`);
+        }
+        // Caso 4: "50.000" (formato europeo con miles, sin decimales)
+        else if (/^\d{1,3}(\.\d{3})+$/.test(valorLimpio)) {
+            valorLimpio = valorLimpio.replace(/\./g, '');
+            console.log(`✅ Formato europeo sin decimales en limpiarValor: "${valor}" → "${valorLimpio}"`);
+        }
+        // Fallback: limpiar caracteres no numéricos excepto punto decimal
+        else {
+            valorLimpio = valorLimpio.replace(/[^0-9.]/g, '');
+        }
+        
+        if (tipo === 'unidad') {
+            // Para Unidad: solo enteros (11 dígitos máximo)
+            valorLimpio = valorLimpio.split('.')[0]; // Remover parte decimal
+            if (valorLimpio.length > 11) {
+                valorLimpio = valorLimpio.substring(0, 11);
+            }
+            const numero = parseInt(valorLimpio) || 0;
+            return numero;
+        } else if (tipo === 'factor') {
+            // Para Factor: 10 enteros, 2 decimales (DECIMAL(10,2))
+            const partes = valorLimpio.split('.');
+            let parteEntera = partes[0] || '0';
+            let parteDecimal = partes[1] || '00';
+            
+            // Limitar a 10 enteros
+            if (parteEntera.length > 10) {
+                parteEntera = parteEntera.substring(0, 10);
+            }
+            
+            // Limitar a 2 decimales
+            if (parteDecimal.length > 2) {
+                parteDecimal = parteDecimal.substring(0, 2);
+            }
+            
+            const numero = parseFloat(parteEntera + '.' + parteDecimal) || 0;
+            return numero;
+        } else {
+            // Para otros campos: comportamiento general
+            const numero = parseFloat(valorLimpio) || 0;
+            return numero;
+        }
+    }
+
+    calcularImpuestoICS(valorVentas) {
+        if (!valorVentas || valorVentas <= 0) {
+            return { impuestoTotal: 0, detalleCalculo: [], valorVentas: 0 };
+        }
+
+        let impuestoTotal = 0;
+        let valorRestante = valorVentas;
+        const detalleCalculo = [];
+
+        for (const tarifa of this.tarifas) {
+            if (valorRestante <= 0) break;
+
+            const diferencialRango = tarifa.rango2 - tarifa.rango1;
+            if (diferencialRango <= 0) continue;
+
+            let valorAplicable;
+            if (valorRestante <= diferencialRango) {
+                valorAplicable = valorRestante;
+                valorRestante = 0;
+            } else {
+                valorAplicable = diferencialRango;
+                valorRestante -= diferencialRango;
+            }
+
+            const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+            impuestoTotal += impuestoRango;
+
+            detalleCalculo.push({
+                rango1: tarifa.rango1,
+                rango2: tarifa.rango2,
+                valorAplicable: valorAplicable,
+                tarifaPorMil: tarifa.valor,
+                impuestoRango: impuestoRango,
+                descripcion: tarifa.descripcion
+            });
+        }
+
+        return {
+            impuestoTotal: Math.round(impuestoTotal * 100) / 100,
+            detalleCalculo: detalleCalculo,
+            valorVentas: valorVentas
+        };
+    }
+
+    calcularImpuestoICSControlados(valorVentas) {
+        if (!valorVentas || valorVentas <= 0) {
+            return { impuestoTotal: 0, detalleCalculo: [], valorVentas: 0 };
+        }
+
+        // Tarifas CORREGIDAS para productos controlados según especificación real
+        // Primera fila: 0.10 por millar, resto: 0.01 por millar
+        const tarifasControlados = [
+            {"rango1": 0.0, "rango2": 1000000.0, "valor": 0.10, "categoria": "2", "descripcion": "Controlados $0 - $1,000,000 (0.10 por millar)"},
+            {"rango1": 1000000.01, "rango2": 9999999999.0, "valor": 0.01, "categoria": "2", "descripcion": "Controlados $1,000,000+ (0.01 por millar)"}
+        ];
+
+        let impuestoTotal = 0;
+        let valorRestante = valorVentas;
+        const detalleCalculo = [];
+
+        for (const tarifa of tarifasControlados) {
+            if (valorRestante <= 0) break;
+
+            const diferencialRango = tarifa.rango2 - tarifa.rango1;
+            if (diferencialRango <= 0) continue;
+
+            let valorAplicable;
+            if (valorRestante <= diferencialRango) {
+                valorAplicable = valorRestante;
+                valorRestante = 0;
+            } else {
+                valorAplicable = diferencialRango;
+                valorRestante -= diferencialRango;
+            }
+
+            const impuestoRango = Math.round((valorAplicable * tarifa.valor / 1000) * 100) / 100;
+            impuestoTotal += impuestoRango;
+
+            detalleCalculo.push({
+                rango1: tarifa.rango1,
+                rango2: tarifa.rango2,
+                valorAplicable: valorAplicable,
+                tarifaPorMil: tarifa.valor,
+                impuestoRango: impuestoRango,
+                descripcion: tarifa.descripcion
+            });
+        }
+
+        return {
+            impuestoTotal: Math.round(impuestoTotal * 100) / 100,
+            detalleCalculo: detalleCalculo,
+            valorVentas: valorVentas
+        };
+    }
+
+    calcularImpuestoUnidadFactor(valorUnidad, valorFactor) {
+        // Validar que ambos valores sean mayores a cero
+        if (!valorUnidad || valorUnidad <= 0 || !valorFactor || valorFactor <= 0) {
+            console.log('⚠️ Unidad o Factor no válidos - Unidad:', valorUnidad, 'Factor:', valorFactor);
+            return { 
+                impuestoTotal: 0, 
+                detalleCalculo: [], 
+                valorUnidad: valorUnidad || 0, 
+                valorFactor: valorFactor || 0,
+                valorCalculado: 0
+            };
+        }
+
+        // Multiplicación simple: Factor × Unidad
+        const valorCalculado = valorFactor * valorUnidad;
+        
+        console.log(`🧮 Cálculo Factor × Unidad:`);
+        console.log(`   Factor: ${valorFactor}`);
+        console.log(`   Unidad: ${valorUnidad}`);
+        console.log(`   Resultado: ${valorFactor} × ${valorUnidad} = ${valorCalculado}`);
+
+        // NO aplicar tarifas ICS - es una multiplicación simple
+        // El resultado se suma directamente al total de impuestos
+        const impuestoTotal = valorCalculado;
+        
+        const detalleCalculo = [{
+            descripcion: `Factor × Unidad (${valorFactor} × ${valorUnidad})`,
+            valorUnidad: valorUnidad,
+            valorFactor: valorFactor,
+            valorCalculado: valorCalculado,
+            impuestoAplicado: impuestoTotal
+        }];
+
+        console.log(`✅ Valor calculado para Factor × Unidad: L. ${impuestoTotal.toFixed(2)}`);
+
+        return {
+            impuestoTotal: impuestoTotal,
+            detalleCalculo: detalleCalculo,
+            valorUnidad: valorUnidad,
+            valorFactor: valorFactor,
+            valorCalculado: valorCalculado
+        };
+    }
+
+    actualizarCampoImpuesto(totalImpuesto) {
+        const campoImpuesto = document.getElementById('id_impuesto');
+        if (campoImpuesto) {
+            const valorAnterior = campoImpuesto.value;
+            campoImpuesto.value = totalImpuesto.toFixed(2);
+            
+            console.log(`✅ Campo impuesto actualizado:`);
+            console.log(`   Valor anterior: L. ${valorAnterior || '0.00'}`);
+            console.log(`   Valor nuevo: L. ${totalImpuesto.toFixed(2)}`);
+            
+            // Verificar que el valor se haya actualizado correctamente
+            if (campoImpuesto.value === totalImpuesto.toFixed(2)) {
+                console.log(`✅ Verificación exitosa: Campo impuesto contiene el valor correcto`);
+            } else {
+                console.error(`❌ Error: Campo impuesto no se actualizó correctamente`);
+            }
+            
+            // Disparar evento de cambio para notificar a otros sistemas
+            campoImpuesto.dispatchEvent(new Event('change', { bubbles: true }));
+        } else {
+            console.error('❌ Campo impuesto no encontrado (id_impuesto)');
+        }
+    }
+
+    recalcular() {
+        this.calcularEnTiempoReal('manual');
+    }
+}
+
+// Inicializar cuando el DOM esté listo
+let declaracionVolumenInteractivo;
+document.addEventListener('DOMContentLoaded', () => {
+    declaracionVolumenInteractivo = new DeclaracionVolumenInteractivo();
+    window.declaracionVolumenInteractivo = declaracionVolumenInteractivo; // Hacer disponible globalmente
+    console.log('✅ Sistema de cálculo embebido cargado correctamente');
+});
+
+// Funciones globales para compatibilidad
+window.calcularImpuestosDeclaracion = () => {
+    if (declaracionVolumenInteractivo) {
+        declaracionVolumenInteractivo.recalcular();
+    }
+};
+
+window.obtenerCalculosDeclaracion = () => {
+    if (declaracionVolumenInteractivo) {
+        return declaracionVolumenInteractivo.obtenerValoresVentas();
+    }
+    return null;
+};
+</script>
+<style>
+    /* Estilos para calculadora automática */
+    .campo-calculado {
+        border-left: 4px solid #28a745 !important;
+        background-color: #f8fff8 !important;
+        transition: all 0.3s ease;
+    }
+    
+    .campo-calculado:focus {
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+        border-color: #28a745 !important;
+    }
+    
+    .resultado-calculo {
+        background-color: #e8f5e8 !important;
+        font-weight: bold !important;
+        color: #155724 !important;
+        border: 2px solid #28a745 !important;
+        font-size: 1.1em !important;
+    }
+    
+    .feedback-calculo {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 12px 18px;
+        border-radius: 8px;
+        z-index: 1050;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        font-weight: bold;
+        min-width: 280px;
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .campo-ventas-destacado {
+        background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%) !important;
+        border: 2px solid #28a745 !important;
+        font-weight: 500;
+    }
+    
+</style>
+
+<script>
+    // Configuración específica para formulario real
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar indicadores visuales a campos de ventas
+    const camposVentas = [
+        '{{ form.ventai.id_for_label }}',
+        '{{ form.ventac.id_for_label }}',
+        '{{ form.ventas.id_for_label }}',
+        '{{ form.valorexcento.id_for_label }}',
+        '{{ form.controlado.id_for_label }}'
+    ];
+    
+    camposVentas.forEach(campoId => {
+        const campo = document.getElementById(campoId);
+        if (campo) {
+            campo.classList.add('campo-calculado');
+            
+            // Configurar atributos para DECIMAL(16,2) - máximo 14 enteros + 2 decimales
+            campo.setAttribute('maxlength', '17'); // 14 enteros + 1 punto + 2 decimales
+            campo.setAttribute('pattern', '^\\d{1,14}(\\.\\d{0,2})?$');
+            campo.setAttribute('inputmode', 'decimal');
+            campo.setAttribute('data-format', 'decimal-16-2');
+            
+            // Agregar evento para validación en tiempo real
+            campo.addEventListener('input', function() {
+                // Limpiar caracteres no numéricos excepto punto decimal
+                let valor = this.value.replace(/[^0-9.]/g, '');
+                
+                // Asegurar solo un punto decimal
+                const partes = valor.split('.');
+                if (partes.length > 2) {
+                    valor = partes[0] + '.' + partes.slice(1).join('');
+                }
+                
+                // Recalcular partes después de la limpieza
+                const partesLimpias = valor.split('.');
+                
+                // Limitar a 14 enteros
+                if (partesLimpias[0].length > 14) {
+                    partesLimpias[0] = partesLimpias[0].substring(0, 14);
+                }
+                
+                // Limitar a 2 decimales
+                if (partesLimpias.length === 2 && partesLimpias[1].length > 2) {
+                    partesLimpias[1] = partesLimpias[1].substring(0, 2);
+                }
+                
+                // Reconstruir el valor
+                valor = partesLimpias[0] + (partesLimpias.length === 2 ? '.' + partesLimpias[1] : '');
+                
+                this.value = valor;
+                
+                // Debug: mostrar en consola para verificar
+                if (valor.length > 3) {
+                    console.log(`Campo ${campoId}: ${valor} (longitud: ${valor.length})`);
+                }
+            });
+            
+        }
+    });
+    
+    // Configuración específica para campo Unidad (solo enteros, 11 dígitos)
+    const campoUnidad = document.getElementById('id_unidad');
+    if (campoUnidad) {
+        campoUnidad.classList.add('campo-calculado');
+        campoUnidad.setAttribute('maxlength', '11'); // Máximo 11 dígitos enteros
+        campoUnidad.setAttribute('pattern', '^\\d{1,11}$');
+        campoUnidad.setAttribute('inputmode', 'numeric');
+        campoUnidad.setAttribute('data-format', 'integer-11');
+        
+        campoUnidad.addEventListener('input', function() {
+            // Solo permitir números enteros
+            let valor = this.value.replace(/[^0-9]/g, '');
+            
+            // Limitar a 11 dígitos
+            if (valor.length > 11) {
+                valor = valor.substring(0, 11);
+            }
+            
+            this.value = valor;
+            
+            if (valor.length > 0) {
+                console.log(`Campo Unidad: ${valor} (solo enteros, máximo 11 dígitos)`);
+            }
+        });
+    }
+    
+    // Configuración específica para campo Factor (DECIMAL(10,2))
+    const campoFactor = document.getElementById('id_factor');
+    if (campoFactor) {
+        campoFactor.classList.add('campo-calculado');
+        campoFactor.setAttribute('maxlength', '13'); // 10 enteros + 1 punto + 2 decimales
+        campoFactor.setAttribute('pattern', '^\\d{1,10}(\\.\\d{0,2})?$');
+        campoFactor.setAttribute('inputmode', 'decimal');
+        campoFactor.setAttribute('data-format', 'decimal-10-2');
+        
+        campoFactor.addEventListener('input', function() {
+            // Limpiar caracteres no numéricos excepto punto decimal
+            let valor = this.value.replace(/[^0-9.]/g, '');
+            
+            // Asegurar solo un punto decimal
+            const partes = valor.split('.');
+            if (partes.length > 2) {
+                valor = partes[0] + '.' + partes.slice(1).join('');
+            }
+            
+            // Recalcular partes después de la limpieza
+            const partesLimpias = valor.split('.');
+            
+            // Limitar a 10 enteros
+            if (partesLimpias[0].length > 10) {
+                partesLimpias[0] = partesLimpias[0].substring(0, 10);
+            }
+            
+            // Limitar a 2 decimales
+            if (partesLimpias.length === 2 && partesLimpias[1].length > 2) {
+                partesLimpias[1] = partesLimpias[1].substring(0, 2);
+            }
+            
+            // Reconstruir el valor
+            valor = partesLimpias[0] + (partesLimpias.length === 2 ? '.' + partesLimpias[1] : '');
+            
+            this.value = valor;
+            
+            if (valor.length > 0) {
+                console.log(`Campo Factor: ${valor} (10 enteros, 2 decimales)`);
+            }
+        });
+    }
+    
+    // Destacar campo de impuesto
+    const campoImpuesto = document.getElementById('id_impuesto');
+    if (campoImpuesto) {
+        campoImpuesto.classList.add('resultado-calculo');
+        campoImpuesto.readOnly = true;
+        campoImpuesto.title = 'Campo calculado automáticamente - Tabla declara';
+    }
+    
+    // Mensaje de bienvenida
+    setTimeout(() => {
+        if (window.declaracionVolumenInteractivo) {
+            mostrarNotificacion('🚀 Calculadora automática ICS activada');
+        }
+    }, 1000);
+});
+
+function mostrarNotificacion(mensaje) {
+    const notif = document.createElement('div');
+    notif.className = 'feedback-calculo';
+    notif.innerHTML = mensaje;
+    document.body.appendChild(notif);
+    
+    setTimeout(() => {
+        if (notif && notif.parentNode) {
+            notif.style.opacity = '0';
+            setTimeout(() => notif.remove(), 300);
+        }
+    }, 4000);
+}
+
+// Función para recalcular manualmente (botón opcional)
+function recalcularImpuestos() {
+    if (window.declaracionVolumenInteractivo) {
+        window.declaracionVolumenInteractivo.recalcular();
+        mostrarNotificacion('🔄 Impuestos recalculados');
+    }
+}
+</script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1><i class="fas fa-chart-bar"></i> Declaración de Volumen de Ventas</h1>
+            <p class="subtitle">{{ modulo }} - {{ descripcion }}</p>
+        </header>
+
+        <!-- Mensajes -->
+        {% if mensaje %}
+            <div class="alert {% if exito %}alert-success{% else %}alert-danger{% endif %}">
+                <i class="fas {% if exito %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %}"></i>
+                {{ mensaje }}
+            </div>
+        {% endif %}
+
+        <!-- Información del Negocio -->
+        {% if negocio %}
+            <div class="card">
+                <div class="negocio-info">
+                    <h5><i class="fas fa-building"></i> Información del Negocio</h5>
+                    <div class="form-grid">
+                        <div class="form-group form-group-small">
+                            <label><strong>RTM:</strong></label>
+                            <p>{{ negocio.rtm }}</p>
+                        </div>
+                        <div class="form-group form-group-small">
+                            <label><strong>Expediente:</strong></label>
+                            <p>{{ negocio.expe }}</p>
+                        </div>
+                        <div class="form-group form-group-large">
+                            <label><strong>Nombre:</strong></label>
+                            <p>{{ negocio.nombrenego }}</p>
+                        </div>
+                        <div class="form-group form-group-large">
+                            <label><strong>Comerciante:</strong></label>
+                            <p>{{ negocio.comerciante }}</p>
+                        </div>
+                        <div class="form-group form-group-xlarge">
+                            <label><strong>Dirección:</strong></label>
+                            <p>{{ negocio.direccion }}</p>
+                        </div>
+                        <div class="form-group form-group-medium">
+                            <label><strong>Actividad:</strong></label>
+                            <p>{{ negocio.actividad }}</p>
+                        </div>
+                        <div class="form-group form-group-small">
+                            <label><strong>Categoría:</strong></label>
+                            <p>{{ negocio.categoria }}</p>
+                        </div>
+                        <div class="form-group form-group-small">
+                            <label><strong>Estatus:</strong></label>
+                            <p>{{ negocio.estatus }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Advertencia:</strong> No se encontró información del negocio. 
+                    Asegúrese de acceder desde el formulario de Maestro de Negocios.
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Formulario de Declaración -->
+        <div class="card">
+            <h3 class="section-title"><i class="fas fa-edit"></i> Formulario de Declaración</h3>
+            
+                         <div class="form-layout">
+                 <!-- Formulario -->
+                 <div class="form-column" style="width: 100%;">
+                        <form method="post" id="declaracionForm">
+                        {% csrf_token %}
+                        
+                        <!-- Campos ocultos para variables de cálculo -->
+                        <input type="hidden" id="hidden_ventai_base" name="ventai_base" value="0">
+                        <input type="hidden" id="hidden_ventai_impuesto" name="ventai_impuesto" value="0">
+                        <input type="hidden" id="hidden_ventac_base" name="ventac_base" value="0">
+                        <input type="hidden" id="hidden_ventac_impuesto" name="ventac_impuesto" value="0">
+                        <input type="hidden" id="hidden_ventas_base" name="ventas_base" value="0">
+                        <input type="hidden" id="hidden_ventas_impuesto" name="ventas_impuesto" value="0">
+                        <input type="hidden" id="hidden_controlado_base" name="controlado_base" value="0">
+                        <input type="hidden" id="hidden_controlado_impuesto" name="controlado_impuesto" value="0">
+                        <input type="hidden" id="hidden_unidad_base" name="unidad_base" value="0">
+                        <input type="hidden" id="hidden_factor_base" name="factor_base" value="0">
+                        <input type="hidden" id="hidden_unidadFactor_impuesto" name="unidadFactor_impuesto" value="0">
+                        
+                                                 <!-- Información Básica -->
+                         <div class="volumenes-venta-section">
+                             <h4 class="section-title"><i class="fas fa-info-circle"></i> Información Básica</h4>
+                             <div class="form-grid">
+                                 <div class="form-group form-group-empresa">
+                                     <label for="{{ form.idneg.id_for_label }}" class="required">
+                                         <i class="fas fa-id-badge"></i> ID Negocio
+                                     </label>
+                                     {{ form.idneg }}
+                                 </div>
+                                 
+                                 <div class="form-group form-group-rtm">
+                                     <label for="{{ form.rtm.id_for_label }}" class="required">
+                                         <i class="fas fa-id-card"></i> RTM
+                                     </label>
+                                     {{ form.rtm }}
+                                 </div>
+                                 
+                                 <div class="form-group form-group-expe">
+                                     <label for="{{ form.expe.id_for_label }}" class="required">
+                                         <i class="fas fa-folder"></i> Expediente
+                                     </label>
+                                     {{ form.expe }}
+                                 </div>
+                             </div>
+                         </div>
+                         
+                         <!-- Período de Declaración -->
+                         <div class="volumenes-venta-section">
+                             <h4 class="section-title"><i class="fas fa-calendar"></i> Período de Declaración</h4>
+                             <div class="form-grid">
+                                 <div class="form-group form-group-ano">
+                                     <label for="id_ano" class="required">
+                                         <i class="fas fa-calendar"></i> Año
+                                     </label>
+                                     <select id="id_ano" name="ano" class="form-control" required>
+                                         <option value="">Seleccione año</option>
+                                         {% for ano in anos_disponibles %}
+                                             <option value="{{ ano.ano }}" {% if form.ano.value == ano.ano %}selected{% endif %}>
+                                                 {{ ano.ano }}
+                                             </option>
+                                         {% endfor %}
+                                     </select>
+                                 </div>
+                                 
+                                 <div class="form-group form-group-mes">
+                                     <label for="id_mes" class="required">
+                                         <i class="fas fa-calendar-alt"></i> Mes
+                                     </label>
+                                     <select id="id_mes" name="mes" class="form-control" required>
+                                         <option value="">Seleccione mes</option>
+                                         <option value="1" {% if form.mes.value == 1 %}selected{% endif %}>Enero</option>
+                                         <option value="2" {% if form.mes.value == 2 %}selected{% endif %}>Febrero</option>
+                                         <option value="3" {% if form.mes.value == 3 %}selected{% endif %}>Marzo</option>
+                                         <option value="4" {% if form.mes.value == 4 %}selected{% endif %}>Abril</option>
+                                         <option value="5" {% if form.mes.value == 5 %}selected{% endif %}>Mayo</option>
+                                         <option value="6" {% if form.mes.value == 6 %}selected{% endif %}>Junio</option>
+                                         <option value="7" {% if form.mes.value == 7 %}selected{% endif %}>Julio</option>
+                                         <option value="8" {% if form.mes.value == 8 %}selected{% endif %}>Agosto</option>
+                                         <option value="9" {% if form.mes.value == 9 %}selected{% endif %}>Septiembre</option>
+                                         <option value="10" {% if form.mes.value == 10 %}selected{% endif %}>Octubre</option>
+                                         <option value="11" {% if form.mes.value == 11 %}selected{% endif %}>Noviembre</option>
+                                         <option value="12" {% if form.mes.value == 12 %}selected{% endif %}>Diciembre</option>
+                                     </select>
+                                 </div>
+                             </div>
+                         </div>
+                        
+                        <!-- Tipo de Declaración -->
+                        <div class="volumenes-venta-section">
+                            <h4 class="section-title"><i class="fas fa-list"></i> Tipo de Declaración</h4>
+                            <div class="form-grid">
+                                <div class="form-group form-group-tipo">
+                                    <label class="required">
+                                        <i class="fas fa-tag"></i> Tipo
+                                    </label>
+                                    {{ form.tipo }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                                                                           <!-- Volúmenes de Venta -->
+                          <div class="volumenes-venta-section">
+                              <h4 class="section-title"><i class="fas fa-chart-line"></i> Volúmenes de Venta</h4>
+                              <div class="form-grid">
+                              <div class="form-group form-group-ventas">
+                                  <label for="{{ form.ventai.id_for_label }}">
+                                      <i class="fas fa-industry"></i> Ventas Rubro Producción
+                                  </label>
+                                  {{ form.ventai }}
+                              </div>
+                              
+                              <div class="form-group form-group-ventas">
+                                  <label for="{{ form.ventac.id_for_label }}">
+                                      <i class="fas fa-shopping-cart"></i> Ventas Mercadería
+                                  </label>
+                                  {{ form.ventac }}
+                              </div>
+                              
+                              <div class="form-group form-group-ventas">
+                                  <label for="{{ form.ventas.id_for_label }}">
+                                      <i class="fas fa-tools"></i> Ventas por Servicios
+                                  </label>
+                                  {{ form.ventas }}
+                              </div>
+                              
+                              <div class="form-group form-group-ventas">
+                                  <label for="{{ form.valorexcento.id_for_label }}">
+                                      <i class="fas fa-ban"></i> Valores Exentos
+                                  </label>
+                                  {{ form.valorexcento }}
+                              </div>
+                              
+                                                             <div class="form-group form-group-ventas">
+                                   <label for="{{ form.controlado.id_for_label }}">
+                                       <i class="fas fa-shield-alt"></i> Ventas Productos Controlados
+                                   </label>
+                                   {{ form.controlado }}
+                               </div>
+                               
+                               <!-- Campo Valor Base (suma de todos los volúmenes) -->
+                               <div class="form-group form-group-ventas">
+                                   <label for="valor_base">
+                                       <i class="fas fa-calculator"></i> Valor Base (Total)
+                                   </label>
+                                   <input type="text" id="valor_base" name="valor_base" 
+                                          class="form-control" readonly 
+                                          style="background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%); 
+                                                 border: 2px solid #28a745; 
+                                                 color: #155724; 
+                                                 font-weight: 700; 
+                                                 text-align: center;"
+                                          value="0.00">
+                               </div>
+                               
+                               <div class="form-group form-group-ventas">
+                                   <label for="{{ form.unidad.id_for_label }}">
+                                       <i class="fas fa-ruler"></i> Unidad
+                                   </label>
+                                   {{ form.unidad }}
+                                   <small class="form-text">
+                                       <i class="fas fa-info-circle"></i> Formato: 11 enteros (ej: 12345678901)
+                                   </small>
+                               </div>
+                               
+                               <div class="form-group form-group-ventas">
+                                   <label for="{{ form.factor.id_for_label }}">
+                                       <i class="fas fa-percentage"></i> Factor
+                                   </label>
+                                   {{ form.factor }}
+                                   <small class="form-text">
+                                       <i class="fas fa-info-circle"></i> Formato: 10 enteros, 2 decimales (ej: 1234567890.99)
+                                   </small>
+                               </div>
+                               
+                               <div class="form-group form-group-ventas">
+                                   <label for="{{ form.multadecla.id_for_label }}">
+                                       <i class="fas fa-exclamation-triangle"></i> Multa Declaración Tardía
+                                   </label>
+                                   {{ form.multadecla }}
+                                   <small class="form-text text-warning">
+                                       <i class="fas fa-info-circle"></i> 
+                                       <strong>Automático:</strong> 
+                                       Enero = L. 0.00 | 
+                                       Mes ≠ Enero + Normal = Impuesto | 
+                                       Mes ≠ Enero + Apertura = L. 0.00
+                                   </small>
+                               </div>
+                               
+                               <div class="form-group form-group-ventas">
+                                   <label for="{{ form.impuesto.id_for_label }}">
+                                       <i class="fas fa-calculator"></i> Impuesto Calculado
+                                   </label>
+                                   {{ form.impuesto }}
+                               </div>
+                           </div>
+                           
+                           <!-- Tarifas Vinculadas al Negocio -->
+                          <h4 class="section-title" style="margin-top: 30px;"><i class="fas fa-link"></i> Tarifas Vinculadas al Negocio</h4>
+                          {% if tarifas_ics %}
+                              <div class="tarifas-ics-table">
+                                  <table class="table table-sm">
+                                      <thead>
+                                          <tr>
+                                              <th><i class="fas fa-hashtag"></i> Código Rubro</th>
+                                              <th><i class="fas fa-tag"></i> Nombre Rubro</th>
+                                              <th><i class="fas fa-code"></i> Código Tarifa</th>
+                                              <th><i class="fas fa-dollar-sign"></i> Valor</th>
+                                              <th><i class="fas fa-edit"></i> Acciones</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          {% for tarifa in tarifas_ics %}
+                                              <tr data-tarifa-id="{{ tarifa.id }}">
+                                                  <td>{{ tarifa.rubro|default:"N/A" }}</td>
+                                                  <td>{{ tarifa.rubro_nombre|default:"N/A" }}</td>
+                                                  <td>
+                                                      <span class="codigo-tarifa-display">{{ tarifa.cod_tarifa }}</span>
+                                                      <select class="codigo-tarifa-edit" 
+                                                              style="display: none;" 
+                                                              onchange="actualizarValorTarifa({{ tarifa.id }}, this.value)">
+                                                          <option value="">Seleccione tarifa</option>
+                                                          {% for opcion in tarifa.tarifas_disponibles %}
+                                                              <option value="{{ opcion.codigo }}" 
+                                                                      data-valor="{{ opcion.valor }}"
+                                                                      {% if opcion.codigo == tarifa.cod_tarifa %}selected{% endif %}>
+                                                                  {{ opcion.codigo }} - {{ opcion.descripcion }}
+                                                              </option>
+                                                          {% endfor %}
+                                                      </select>
+                                                  </td>
+                                                  <td>
+                                                      <span class="valor-tarifa-display">L. {{ tarifa.valor|floatformat:2 }}</span>
+                                                      <input type="text" class="valor-tarifa-edit" 
+                                                             value="{{ tarifa.valor }}" step="0.01" min="0" 
+                                                             style="display: none;">
+                                                  </td>
+                                                  <td>
+                                                      <button type="button" class="btn btn-primary btn-sm" 
+                                                              onclick="editarCodifa({{ tarifa.id }})">
+                                                          <i class="fas fa-edit"></i>
+                                                      </button>
+                                                      <button type="button" class="btn btn-success btn-sm" 
+                                                              onclick="guardarTarifa({{ tarifa.id }})" 
+                                                              style="display: none;" id="btn-guardar-{{ tarifa.id }}">
+                                                          <i class="fas fa-save"></i>
+                                                      </button>
+                                                  </td>
+                                              </tr>
+                                          {% endfor %}
+                                      </tbody>
+                                  </table>
+                              </div>
+                          {% else %}
+                              <div class="no-tarifas">
+                                  <i class="fas fa-info-circle"></i>
+                                  <p>No hay tarifas vinculadas a este negocio</p>
+                              </div>
+                          {% endif %}
+                                                     </div>
+                           
+                         <!-- Total de Cálculo -->
+                        <div class="total-calculo">
+                            <i class="fas fa-calculator"></i>
+                            <strong>Base para Cálculo: L. <span id="totalCalculo">0.00</span></strong>
+                            <br>
+                            <small>Suma de todos los volúmenes de venta</small>
+                        </div>
+                        
+                        <!-- Botones -->
+                        <div class="form-actions">
+                            <button type="submit" name="accion" value="guardar" class="btn btn-success">
+                                <i class="fas fa-save"></i> Guardar Declaración
+                            </button>
+                            <button type="submit" name="accion" value="nuevo" class="btn btn-info">
+                                <i class="fas fa-plus"></i> Nueva Declaración
+                            </button>
+                            <a href="{% url 'tributario:maestro_negocios' %}?empresa={{ request.GET.empresa }}&rtm={{ request.GET.rtm }}&expe={{ request.GET.expe }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver a Negocios
+                            </a>
+                        </div>
+                    </form>
+                                 </div>
+             </div>
+        </div>
+
+        <!-- Lista de Declaraciones -->
+        {% if declaraciones %}
+            <div class="card">
+                <h3 class="section-title"><i class="fas fa-list-alt"></i> Declaraciones Registradas</h3>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-calendar"></i> Período</th>
+                                <th><i class="fas fa-tag"></i> Tipo</th>
+                                <th><i class="fas fa-industry"></i> Producción</th>
+                                <th><i class="fas fa-shopping-cart"></i> Mercadería</th>
+                                <th><i class="fas fa-tools"></i> Servicios</th>
+                                <th><i class="fas fa-ban"></i> Exentos</th>
+                                <th><i class="fas fa-shield-alt"></i> Controlados</th>
+                                <th><i class="fas fa-calculator"></i> Total</th>
+                                <th><i class="fas fa-cogs"></i> Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for declaracion in declaraciones %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ declaracion.ano }}/{{ declaracion.mes|floatformat:"0"|stringformat:"02d" }}</strong>
+                                    </td>
+                                                                             <td>
+                                             {% if declaracion.tipo == 1 %}
+                                                 <span class="badge bg-primary">Normal</span>
+                                             {% else %}
+                                                 <span class="badge bg-warning">Apertura</span>
+                                             {% endif %}
+                                         </td>
+                                    <td>L. {{ declaracion.ventai|floatformat:2 }}</td>
+                                    <td>L. {{ declaracion.ventac|floatformat:2 }}</td>
+                                    <td>L. {{ declaracion.ventas|floatformat:2 }}</td>
+                                    <td>L. {{ declaracion.valorexcento|floatformat:2 }}</td>
+                                    <td>L. {{ declaracion.controlado|floatformat:2 }}</td>
+                                    <td>
+                                        <strong>L. {{ declaracion.ventai|add:declaracion.ventac|add:declaracion.ventas|add:declaracion.valorexcento|add:declaracion.controlado|floatformat:2 }}</strong>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-info btn-sm" onclick="editarDeclaracion({{ declaracion.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="eliminarDeclaracion({{ declaracion.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/declaracion_volumen_interactivo.js' %}"></script>
+    <script>
+        // Función para formatear números con separadores de miles
+        function formatearNumero(numero) {
+            return numero.toLocaleString('es-HN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        // Función para calcular y actualizar el Valor Base (suma de todos los volúmenes)
+        function calcularValorBase() {
+            // Función auxiliar para limpiar y convertir valores
+            function limpiarYConvertir(valor) {
+                if (!valor || valor === '') return 0;
+                // Remover comas y espacios, luego convertir a número
+                const valorLimpio = valor.toString().replace(/[,\s]/g, '');
+                const numero = parseFloat(valorLimpio);
+                return isNaN(numero) ? 0 : numero;
+            }
+            
+            // Obtener valores de todos los campos de ventas
+            const ventai = limpiarYConvertir(document.getElementById('{{ form.ventai.id_for_label }}').value);
+            const ventac = limpiarYConvertir(document.getElementById('{{ form.ventac.id_for_label }}').value);
+            const ventas = limpiarYConvertir(document.getElementById('{{ form.ventas.id_for_label }}').value);
+            const valorexcento = limpiarYConvertir(document.getElementById('{{ form.valorexcento.id_for_label }}').value);
+            const controlado = limpiarYConvertir(document.getElementById('{{ form.controlado.id_for_label }}').value);
+            
+            // Calcular el valor base total
+            const valorBase = ventai + ventac + ventas + valorexcento + controlado;
+            
+            console.log('📊 Cálculo Valor Base:', {
+                ventai: ventai,
+                ventac: ventac,
+                ventas: ventas,
+                valorexcento: valorexcento,
+                controlado: controlado,
+                total: valorBase
+            });
+            
+            // Actualizar el campo Valor Base con formato
+            const campoValorBase = document.getElementById('valor_base');
+            if (campoValorBase) {
+                campoValorBase.value = formatearNumero(valorBase);
+                console.log('✅ Campo Valor Base actualizado:', formatearNumero(valorBase));
+            }
+            
+            // Actualizar también el total de cálculo existente
+            const totalCalculo = document.getElementById('totalCalculo');
+            if (totalCalculo) {
+                totalCalculo.textContent = formatearNumero(valorBase);
+            }
+            
+            return valorBase;
+        }
+        
+        // Agregar event listeners para actualizar el Valor Base en tiempo real
+        document.addEventListener('DOMContentLoaded', function() {
+            const camposVentas = [
+                '{{ form.ventai.id_for_label }}',
+                '{{ form.ventac.id_for_label }}',
+                '{{ form.ventas.id_for_label }}',
+                '{{ form.valorexcento.id_for_label }}',
+                '{{ form.controlado.id_for_label }}'
+            ];
+            
+            camposVentas.forEach(campoId => {
+                const campo = document.getElementById(campoId);
+                if (campo) {
+                    campo.addEventListener('input', calcularValorBase);
+                    campo.addEventListener('change', calcularValorBase);
+                }
+            });
+            
+            // Calcular valor base inicial
+            calcularValorBase();
+            
+            // También calcular cuando se cargan valores iniciales (para edición)
+            setTimeout(() => {
+                calcularValorBase();
+                formatearCampoImpuesto(); // Formatear campo impuesto si tiene valor
+            }, 500);
+        });
+        
+        // Sistema de cálculo interactivo ya incluido via declaracion_volumen_interactivo.js
+        // Este script maneja automáticamente:
+        // - Cálculo en tiempo real de impuestos ICS
+        // - Formateo de números con separadores de miles
+        // - Validación de formato DECIMAL(16,2)
+        // - Actualización automática del campo impuesto
+        
+        // Función para verificar que el sistema esté funcionando
+        function verificarSistemaCalculo() {
+            if (window.declaracionVolumenInteractivo) {
+                console.log('✅ Sistema de cálculo interactivo cargado correctamente');
+                return true;
+            } else {
+                console.error('❌ Sistema de cálculo interactivo no encontrado');
+                return false;
+            }
+        }
+        
+        // Función para recalcular manualmente
+        function recalcularManual() {
+            if (window.declaracionVolumenInteractivo) {
+                window.declaracionVolumenInteractivo.recalcular();
+                console.log('🔄 Recálculo manual ejecutado');
+            } else {
+                console.error('❌ Sistema de cálculo no disponible');
+            }
+        }
+        
+        // Función global para recalcular el Valor Base manualmente
+        window.recalcularValorBase = function() {
+            console.log('🔄 Recalculando Valor Base manualmente...');
+            calcularValorBase();
+        };
+        
+        // Función global para formatear el campo Impuesto Calculado manualmente
+        window.formatearImpuestoCalculado = function() {
+            console.log('🔄 Formateando campo Impuesto Calculado manualmente...');
+            formatearCampoImpuesto();
+        };
+        
+        // Función para formatear el campo Impuesto Calculado
+        function formatearCampoImpuesto() {
+            const campoImpuesto = document.getElementById('id_impuesto');
+            if (campoImpuesto && campoImpuesto.value) {
+                const valor = parseFloat(campoImpuesto.value.replace(/[,\s]/g, '')) || 0;
+                if (valor > 0) {
+                    campoImpuesto.value = formatearNumero(valor);
+                    console.log('✅ Campo Impuesto Calculado formateado:', formatearNumero(valor));
+                }
+            }
+        }
+        
+        // Función para validar formulario antes de enviar
+        document.getElementById('declaracionForm').addEventListener('submit', function(e) {
+            // Validar campos obligatorios
+            const ano = document.getElementById('id_ano').value;
+            const mes = document.getElementById('id_mes').value;
+            
+            if (!ano) {
+                e.preventDefault();
+                alert('Por favor seleccione un año.');
+                return false;
+            }
+            
+            if (!mes) {
+                e.preventDefault();
+                alert('Por favor seleccione un mes.');
+                return false;
+            }
+            
+            // Función auxiliar para parsing mejorado de números
+            function parsearValorMejorado(valor) {
+                if (!valor) return 0;
+                
+                // Caso 1: "50,000.00" (formato americano con miles y decimales)
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor.replace(/,/g, '')) || 0;
+                }
+                // Caso 2: "50,000" (formato americano con miles, sin decimales)
+                else if (/^\d{1,3}(,\d{3})+$/.test(valor)) {
+                    return parseFloat(valor.replace(/,/g, '')) || 0;
+                }
+                // Caso 3: "50.000,00" (formato europeo con miles y decimales)
+                else if (/^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0;
+                }
+                // Caso 4: "50.000" (formato europeo con miles, sin decimales)
+                else if (/^\d{1,3}(\.\d{3})+$/.test(valor)) {
+                    return parseFloat(valor.replace(/\./g, '')) || 0;
+                }
+                // Caso 5: "50.00" (formato americano simple con decimales)
+                else if (/^\d+\.\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor) || 0;
+                }
+                // Caso 6: "50,00" (formato europeo simple con decimales)
+                else if (/^\d+,\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor.replace(',', '.')) || 0;
+                }
+                // Caso 7: Solo números
+                else if (/^\d+$/.test(valor)) {
+                    return parseFloat(valor) || 0;
+                }
+                // Fallback: limpiar caracteres no numéricos excepto punto decimal
+                else {
+                    const valorLimpio = valor.replace(/[^0-9.]/g, '');
+                    return parseFloat(valorLimpio) || 0;
+                }
+            }
+            
+            const ventai = parsearValorMejorado(document.getElementById('{{ form.ventai.id_for_label }}').value);
+            const ventac = parsearValorMejorado(document.getElementById('{{ form.ventac.id_for_label }}').value);
+            const ventas = parsearValorMejorado(document.getElementById('{{ form.ventas.id_for_label }}').value);
+            const valorexcento = parsearValorMejorado(document.getElementById('{{ form.valorexcento.id_for_label }}').value);
+            const controlado = parsearValorMejorado(document.getElementById('{{ form.controlado.id_for_label }}').value);
+            
+            const total = ventai + ventac + ventas + valorexcento + controlado;
+            
+            if (total <= 0) {
+                e.preventDefault();
+                alert('Por favor ingrese al menos un valor de ventas mayor a 0.');
+                return false;
+            }
+            
+            // Verificar que el campo impuesto tenga un valor
+            const campoImpuesto = document.getElementById('id_impuesto');
+            if (campoImpuesto && (!campoImpuesto.value || parseFloat(campoImpuesto.value) <= 0)) {
+                e.preventDefault();
+                alert('El cálculo del impuesto no se ha completado. Por favor espere un momento y vuelva a intentar.');
+                return false;
+            }
+            
+            return true;
+        });
+        
+        // ===== VALIDACIÓN Y CÁLCULO DE PRODUCTOS CONTROLADOS =====
+        
+        // Función para calcular impuesto ICS (para ventai, ventac, ventas)
+        function calcularImpuestoICS(valorVentas) {
+            if (!valorVentas || valorVentas <= 0) {
+                return 0;
+            }
+            
+            // Tarifas ICS normales
+            const tarifas = [
+                {"rango1": 0.0, "rango2": 1000000.0, "valor": 0.3, "categoria": "1", "descripcion": "ICS $0 - $1,000,000"},
+                {"rango1": 1000000.01, "rango2": 5000000.0, "valor": 0.15, "categoria": "1", "descripcion": "ICS $1,000,000 - $5,000,000"},
+                {"rango1": 5000000.01, "rango2": 9999999999.0, "valor": 0.3, "categoria": "1", "descripcion": "ICS $5,000,000+"}
+            ];
+            
+            let impuestoTotal = 0;
+            for (const tarifa of tarifas) {
+                if (valorVentas >= tarifa.rango1 && valorVentas <= tarifa.rango2) {
+                    impuestoTotal = (valorVentas / 1000) * tarifa.valor;
+                    break;
+                }
+            }
+            
+            return impuestoTotal;
+        }
+        
+        // Función para calcular impuesto de productos controlados
+        function calcularImpuestoProductosControlados(valorProductosControlados) {
+            if (!valorProductosControlados || valorProductosControlados <= 0) {
+                return Promise.resolve({
+                    exito: false,
+                    mensaje: 'El valor de productos controlados debe ser mayor a 0'
+                });
+            }
+            
+            return fetch('/ajax/calcular-impuesto-productos-controlados/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `valor_productos_controlados=${encodeURIComponent(valorProductosControlados)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('📊 Resultado cálculo productos controlados:', data);
+                return data;
+            })
+            .catch(error => {
+                console.error('❌ Error en cálculo productos controlados:', error);
+                return {
+                    exito: false,
+                    mensaje: 'Error al calcular impuesto de productos controlados'
+                };
+            });
+        }
+        
+        // Función para validar y calcular impuesto total
+        async function validarYCalcularImpuestoTotal() {
+            // Función auxiliar para parsing mejorado de números (reutilizada)
+            function parsearValorMejorado(valor) {
+                if (!valor) return 0;
+                
+                // Caso 1: "50,000.00" (formato americano con miles y decimales)
+                if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor.replace(/,/g, '')) || 0;
+                }
+                // Caso 2: "50,000" (formato americano con miles, sin decimales)
+                else if (/^\d{1,3}(,\d{3})+$/.test(valor)) {
+                    return parseFloat(valor.replace(/,/g, '')) || 0;
+                }
+                // Caso 3: "50.000,00" (formato europeo con miles y decimales)
+                else if (/^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0;
+                }
+                // Caso 4: "50.000" (formato europeo con miles, sin decimales)
+                else if (/^\d{1,3}(\.\d{3})+$/.test(valor)) {
+                    return parseFloat(valor.replace(/\./g, '')) || 0;
+                }
+                // Caso 5: "50.00" (formato americano simple con decimales)
+                else if (/^\d+\.\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor) || 0;
+                }
+                // Caso 6: "50,00" (formato europeo simple con decimales)
+                else if (/^\d+,\d{1,2}$/.test(valor)) {
+                    return parseFloat(valor.replace(',', '.')) || 0;
+                }
+                // Caso 7: Solo números
+                else if (/^\d+$/.test(valor)) {
+                    return parseFloat(valor) || 0;
+                }
+                // Fallback: limpiar caracteres no numéricos excepto punto decimal
+                else {
+                    const valorLimpio = valor.replace(/[^0-9.]/g, '');
+                    return parseFloat(valorLimpio) || 0;
+                }
+            }
+            
+            const ventai = parsearValorMejorado(document.getElementById('{{ form.ventai.id_for_label }}').value);
+            const ventac = parsearValorMejorado(document.getElementById('{{ form.ventac.id_for_label }}').value);
+            const ventas = parsearValorMejorado(document.getElementById('{{ form.ventas.id_for_label }}').value);
+            const controlado = parsearValorMejorado(document.getElementById('{{ form.controlado.id_for_label }}').value);
+            
+            let impuestoTotal = 0;
+            let mensajeValidacion = '';
+            
+            // Calcular impuesto de productos controlados si hay valor
+            if (controlado > 0) {
+                const resultadoControlado = await calcularImpuestoProductosControlados(controlado);
+                if (resultadoControlado.exito) {
+                    impuestoTotal += parseFloat(resultadoControlado.total);
+                    mensajeValidacion += `Productos Controlados: L. ${resultadoControlado.total.toFixed(2)} (${resultadoControlado.detalle})\n`;
+                } else {
+                    alert('Error en cálculo de productos controlados: ' + resultadoControlado.mensaje);
+                    return;
+                }
+            }
+            
+            // Calcular otros impuestos usando las tarifas correctas
+            let otrosImpuestos = 0;
+            
+            // Calcular impuesto para Ventas Rubro Producción (ventai)
+            if (ventai > 0) {
+                const impuestoVentai = calcularImpuestoICS(ventai);
+                otrosImpuestos += impuestoVentai;
+                mensajeValidacion += `Ventas Rubro Producción: L. ${impuestoVentai.toFixed(2)}\n`;
+            }
+            
+            // Calcular impuesto para Ventas Mercadería (ventac)
+            if (ventac > 0) {
+                const impuestoVentac = calcularImpuestoICS(ventac);
+                otrosImpuestos += impuestoVentac;
+                mensajeValidacion += `Ventas Mercadería: L. ${impuestoVentac.toFixed(2)}\n`;
+            }
+            
+            // Calcular impuesto para Ventas por Servicios (ventas)
+            if (ventas > 0) {
+                const impuestoVentas = calcularImpuestoICS(ventas);
+                otrosImpuestos += impuestoVentas;
+                mensajeValidacion += `Ventas por Servicios: L. ${impuestoVentas.toFixed(2)}\n`;
+            }
+            
+            impuestoTotal += otrosImpuestos;
+            
+            if (otrosImpuestos > 0) {
+                mensajeValidacion += `Otros Impuestos (Producción + Mercadería + Servicios): L. ${otrosImpuestos.toFixed(2)}\n`;
+            }
+            
+            // Actualizar el campo de impuesto calculado
+            document.getElementById('{{ form.impuesto.id_for_label }}').value = impuestoTotal.toFixed(2);
+            
+            // Mostrar resumen del cálculo
+            if (mensajeValidacion) {
+                console.log('📋 Resumen de cálculo de impuestos:\n' + mensajeValidacion);
+                console.log(`💰 Total Impuesto Calculado: L. ${impuestoTotal.toFixed(2)}`);
+            }
+        }
+        
+        // Verificar sistema al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                verificarSistemaCalculo();
+            }, 1000);
+            
+            // Restaurar funcionalidad específica para Productos Controlados
+            const campoControlado = document.getElementById('{{ form.controlado.id_for_label }}');
+            if (campoControlado) {
+                // Restaurar funcionalidad original para Productos Controlados
+                campoControlado.addEventListener('blur', function() {
+                    const valor = parseFloat(this.value) || 0;
+                    if (valor > 0) {
+                        console.log('🔄 Validando productos controlados con valor:', valor);
+                        // Usar la función original que ya funcionaba bien
+                        validarYCalcularImpuestoTotal();
+                    }
+                });
+                
+                campoControlado.addEventListener('input', function() {
+                    // Validación en tiempo real mientras se escribe
+                    const valor = parseFloat(this.value) || 0;
+                    if (valor > 0) {
+                        // Debounce para evitar muchas llamadas
+                        clearTimeout(this.validationTimeout);
+                        this.validationTimeout = setTimeout(() => {
+                            console.log('🔄 Validación en tiempo real productos controlados:', valor);
+                            // Usar la función original que ya funcionaba bien
+                            validarYCalcularImpuestoTotal();
+                        }, 500);
+                    }
+                });
+                
+                console.log('✅ Event listeners específicos restaurados para Productos Controlados');
+            }
+        });
+    </script>
+</body>
+</html>

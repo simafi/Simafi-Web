@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ usuario_nombre }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card">
+			<div class="card-header bg-success text-white">
+				<h5 class="mb-0">
+					<i class="fas fa-tractor me-2"></i>{{ titulo }}
+				</h5>
+			</div>
+			<div class="card-body">
+				<!-- INYECCIÓN DIRECTA DE DATOS PARA EL COMBOBOX -->
+				<script>
+				// Datos hardcodeados de factores de riego mientras se resuelve el problema del contexto
+				var factoresRiegoHardcoded = [
+					{codigo: '01', descripcion: 'I', valor: 94770.00},
+					{codigo: '02', descripcion: 'II', valor: 67231.80},
+					{codigo: '03', descripcion: 'III', valor: 56201.40},
+					{codigo: '04', descripcion: 'IV', valor: 20849.38},
+					{codigo: '05', descripcion: 'V', valor: 15034.45},
+					{codigo: '06', descripcion: 'VI', valor: 9563.29},
+					{codigo: '07', descripcion: 'VII', valor: 7765.65},
+					{codigo: '08', descripcion: 'VIII', valor: 6438.00}
+				];
+				
+				// Función para poblar los comboboxes con datos hardcodeados
+				function poblarComboboxFactoresRiego() {
+					var selects = document.querySelectorAll('select[name="suelo-fac[]"]');
+					selects.forEach(function(select) {
+						// Limpiar opciones existentes excepto la primera
+						while(select.options.length > 1) {
+							select.remove(1);
+						}
+						// Agregar opciones hardcodeadas
+						factoresRiegoHardcoded.forEach(function(factor) {
+							var option = document.createElement('option');
+							option.value = factor.codigo;
+							option.textContent = factor.codigo + ' - ' + factor.descripcion;
+							select.appendChild(option);
+						});
+					});
+				}
+				
+				// Ejecutar cuando el DOM esté listo
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', poblarComboboxFactoresRiego);
+				} else {
+					poblarComboboxFactoresRiego();
+				}
+				
+				// Función para actualizar el campo Monto cuando se selecciona un código
+				// Hacerla global para que esté disponible en todos los contextos
+				window.actualizarMontoDesdeCodigo = function(selectElement) {
+					var codigoSeleccionado = selectElement.value;
+					if (!codigoSeleccionado) {
+						return; // No hacer nada si no hay código seleccionado
+					}
+					
+					// Encontrar la fila que contiene este select
+					var fila = selectElement.closest('tr');
+					if (!fila) {
+						return;
+					}
+					
+					// Encontrar el campo Monto en la misma fila
+					var campoMonto = fila.querySelector('input[name="suelo-monto[]"]');
+					if (!campoMonto) {
+						return;
+					}
+					
+					// Buscar el valor en los datos hardcodeados
+					if (typeof factoresRiegoHardcoded !== 'undefined') {
+						var factorEncontrado = factoresRiegoHardcoded.find(function(factor) {
+							return factor.codigo === codigoSeleccionado;
+						});
+						
+						if (factorEncontrado) {
+							// Actualizar el campo Monto con el valor del factor de riego
+							campoMonto.value = factorEncontrado.valor.toFixed(2);
+							console.log('Monto actualizado automáticamente:', factorEncontrado.valor);
+							return;
+						}
+					}
+					
+					// Si no se encuentra en los datos hardcodeados, intentar obtenerlo de la API
+					// Construir la URL manualmente para evitar problemas con el template tag
+					var baseUrl = window.location.origin + '/catastro/api/factor-riego/';
+					var apiUrl = baseUrl + codigoSeleccionado + '/';
+					fetch(apiUrl, {
+						method: 'GET',
+						headers: {
+							'X-Requested-With': 'XMLHttpRequest'
+						}
+					})
+					.then(function(response) {
+						if (response.ok) {
+							return response.json();
+						}
+						throw new Error('Error al obtener factor de riego');
+					})
+					.then(function(data) {
+						if (data && data.valor !== undefined) {
+							campoMonto.value = parseFloat(data.valor).toFixed(2);
+							console.log('Monto actualizado desde API:', data.valor);
+						}
+					})
+					.catch(function(error) {
+						console.error('Error al obtener valor del factor de riego:', error);
+					});
+				};
+				
+				// Agregar event listeners a todos los selects de código existentes y futuros
+				function configurarEventListenersCodigo() {
+					// Event listeners para selects existentes
+					var selects = document.querySelectorAll('select[name="suelo-fac[]"]');
+					selects.forEach(function(select) {
+						// Remover listener anterior si existe
+						select.removeEventListener('change', function() {});
+						// Agregar nuevo listener
+						select.addEventListener('change', function() {
+							if (typeof window.actualizarMontoDesdeCodigo === 'function') {
+								window.actualizarMontoDesdeCodigo(this);
+							}
+						});
+					});
+				}
+				
+				// Ejecutar cuando el DOM esté listo
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', configurarEventListenersCodigo);
+				} else {
+					configurarEventListenersCodigo();
+				}
+				</script>
+				<div class="alert alert-info d-flex justify-content-between align-items-center">
+					<div>
+					<i class="fas fa-info-circle me-2"></i>
+					Clave Catastral: <strong id="cocata1">{{ cocata1 }}</strong>
+					{% if not es_rural %}
+					<span class="badge bg-warning text-dark ms-2">Advertencia: la ficha actual no es 2 (rural)</span>
+					{% endif %}
+				</div>
+					<div>
+						<label class="form-label fw-bold me-2">Municipio:</label>
+						{% if empresa_login %}
+						<input type="text" name="municipio" id="municipio" class="form-control d-inline-block" value="{{ empresa_login }}" readonly style="width: 100px; background: #f0f0f0 !important; display: inline-block !important;">
+						<input type="hidden" name="suelo-empresa" id="suelo-empresa" value="{{ empresa_login }}">
+						{% elif municipio %}
+						<input type="text" name="municipio" id="municipio" class="form-control d-inline-block" value="{{ municipio }}" readonly style="width: 100px; background: #f0f0f0 !important; display: inline-block !important;">
+						<input type="hidden" name="suelo-empresa" id="suelo-empresa" value="{{ municipio }}">
+						{% else %}
+						<input type="text" name="municipio" id="municipio" class="form-control d-inline-block" value="{{ registro.empresa }}" readonly style="width: 100px; background: #f0f0f0 !important; display: inline-block !important;">
+						<input type="hidden" name="suelo-empresa" id="suelo-empresa" value="{{ registro.empresa }}">
+						{% endif %}
+					</div>
+				</div>
+				<form id="form-rural" method="post" class="row g-3">
+					{% csrf_token %}
+					<input type="hidden" name="cocata1" value="{{ cocata1 }}">
+					<input type="hidden" name="empresa" value="{{ empresa_login }}">
+
+					<!-- ========== SECCIÓN CLASIFICACION DEL SUELO ========== -->
+					<div class="col-md-12">
+						<div class="card border-warning shadow-sm" style="display: block !important; visibility: visible !important; border: 2px solid #ffc107 !important; margin-bottom: 20px;">
+							<div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center" style="background-color: #ffc107 !important; padding: 15px !important;">
+								<h5 class="mb-0" style="font-weight: bold !important; font-size: 1.3em !important; color: black !important;">
+									<i class="fas fa-layer-group me-2"></i>CLASIFICACION DEL SUELO
+								</h5>
+								<button type="button" class="btn btn-sm btn-secondary" id="btn-limpiar-clasificacion" style="display: block !important;">
+									<i class="fas fa-eraser me-1"></i> Limpiar
+								</button>
+							</div>
+							<div class="card-body" style="display: block !important; visibility: visible !important; padding: 20px !important;">
+								<div class="table-responsive">
+									<table class="table table-bordered table-hover" id="tabla-clasificacion-suelo">
+										<thead class="table-warning">
+											<tr>
+												<th style="width: 20%;">Factor Riego</th>
+												<th style="width: 20%;">Codigo</th>
+												<th style="width: 20%;">AREA(HAS)</th>
+												<th style="width: 20%;">Monto</th>
+												<th style="width: 20%;">Acciones</th>
+											</tr>
+										</thead>
+										<tbody id="tbody-clasificacion-suelo">
+											<tr class="fila-clasificacion-unica" data-id="">
+												<td>
+													<input type="number" id="suelo-codfac-unico" name="suelo-codfac-unico" class="form-control text-end suelo-codfac-input" step="0.001" placeholder="0.000" value="0.000" style="display: block !important;" min="0" max="999.999">
+												</td>
+												<td>
+													<select id="suelo-fac-unico" name="suelo-fac-unico" class="form-select suelo-fac-select" style="display: block !important;">
+														<option value="">-- Seleccione --</option>
+														{% for factor in factores_riego %}
+														<option value="{{ factor.codigo }}">{{ factor.codigo }} - {{ factor.descripcion }}</option>
+														{% empty %}
+														<option value="" disabled>No hay factores de riego disponibles</option>
+														{% endfor %}
+													</select>
+												</td>
+												<td>
+													<input type="number" id="suelo-facarea-unico" name="suelo-facarea-unico" class="form-control text-end suelo-facarea-input" step="0.01" placeholder="0.00" value="0.00" style="display: block !important;">
+												</td>
+												<td>
+													<input type="number" id="suelo-monto-unico" name="suelo-monto-unico" class="form-control text-end suelo-monto-input" step="0.01" placeholder="0.00" value="0.00" style="display: block !important;" readonly>
+												</td>
+												<td>
+													<button type="button" class="btn btn-sm btn-primary btn-guardar-fila-unica" style="display: block !important;" title="Guardar esta clasificación">
+														<i class="fas fa-save me-1"></i> Guardar
+													</button>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- ========== FIN SECCIÓN CLASIFICACION DEL SUELO ========== -->
+
+					<!-- ========== GRID DE DATOS REGISTRADOS EN AREASRURALES ========== -->
+					<div class="col-md-12">
+						<div class="card border-info shadow-sm" style="display: block !important; visibility: visible !important; border: 2px solid #17a2b8 !important; margin-bottom: 20px;">
+							<div class="card-header bg-info text-white d-flex justify-content-between align-items-center" style="background-color: #17a2b8 !important; padding: 15px !important;">
+								<h5 class="mb-0" style="font-weight: bold !important; font-size: 1.3em !important; color: white !important;">
+									<i class="fas fa-table me-2"></i>DATOS REGISTRADOS EN AREAS RURALES
+								</h5>
+								<button type="button" class="btn btn-sm btn-light" id="btn-refrescar-areas-rurales" onclick="window.location.reload();" style="display: block !important;">
+									<i class="fas fa-sync-alt me-1"></i> Refrescar
+								</button>
+							</div>
+							<div class="card-body" style="display: block !important; visibility: visible !important; padding: 20px !important;">
+								{% if areas_rurales_registradas %}
+								<div class="table-responsive">
+									<table class="table table-bordered table-striped table-hover" id="tabla-areas-rurales">
+										<thead class="table-info">
+											<tr>
+												<th style="width: 8%;">ID</th>
+												<th style="width: 12%;">Factor Riego</th>
+												<th style="width: 12%;">Codigo</th>
+												<th style="width: 10%;">Descripción</th>
+												<th style="width: 12%;">AREA(HAS)</th>
+												<th style="width: 12%;">Monto</th>
+												<th style="width: 10%;">Usuario</th>
+												<th style="width: 10%;">Fecha</th>
+												<th style="width: 14%;">Acciones</th>
+											</tr>
+										</thead>
+										<tbody>
+											{% for area in areas_rurales_registradas %}
+											<tr data-area-id="{{ area.id }}">
+												<td>{{ area.id }}</td>
+												<td class="text-end">{{ area.fac_formatted }}</td>
+												<td>{{ area.codfac|default:"-" }}</td>
+												<td>{{ area.descripcion_factor|default:"-" }}</td>
+												<td class="text-end">{{ area.facarea|floatformat:2 }}</td>
+												<td class="text-end">{{ area.monto|floatformat:2 }}</td>
+												<td>{{ area.usuario|default:"-" }}</td>
+												<td>{% if area.fechasys %}{{ area.fechasys|date:"d/m/Y H:i" }}{% else %}-{% endif %}</td>
+												<td>
+													<button type="button" class="btn btn-sm btn-danger btn-eliminar-registro" data-area-id="{{ area.id }}" title="Eliminar este registro">
+														<i class="fas fa-trash"></i> Eliminar
+													</button>
+												</td>
+											</tr>
+											{% endfor %}
+										</tbody>
+										<tfoot class="table-secondary">
+											<tr>
+												<td colspan="8" class="text-end" style="font-weight: bold;">
+													<label class="form-label mb-0 me-2">Valor Total:</label>
+												</td>
+												<td>
+													<input type="number" step="0.01" class="form-control text-end" id="valor-total-areas-rurales" name="terreno-bvlbas1" value="{% if suma_monto_areas_rurales %}{{ suma_monto_areas_rurales|floatformat:2 }}{% else %}0.00{% endif %}" style="font-weight: bold;" readonly>
+												</td>
+											</tr>
+										</tfoot>
+									</table>
+								</div>
+								{% else %}
+								<div class="alert alert-info mb-0" style="display: block !important;">
+									<i class="fas fa-info-circle me-2"></i>
+									<strong>No hay registros:</strong> Aún no se han guardado datos en Areas Rurales para esta clave catastral ({{ cocata1 }}).
+								</div>
+								<div class="mt-3">
+									<div class="row">
+										<div class="col-md-4 offset-md-8">
+											<label class="form-label"><strong>Valor Total:</strong></label>
+											<input type="number" step="0.01" class="form-control text-end" id="valor-total-areas-rurales" name="terreno-bvlbas1" value="{% if suma_monto_areas_rurales %}{{ suma_monto_areas_rurales|floatformat:2 }}{% else %}0.00{% endif %}" readonly>
+										</div>
+									</div>
+								</div>
+								{% endif %}
+							</div>
+						</div>
+					</div>
+					<!-- ========== FIN GRID DE DATOS REGISTRADOS ========== -->
+
+					<!-- ========== SECCIÓN FACTORES DE MODIFICACION DE TERRENOS RURALES ========== -->
+					<div class="col-md-12">
+						<div class="card border-success shadow-sm" style="display: block !important; visibility: visible !important; border: 2px solid #28a745 !important; margin-bottom: 20px;">
+							<div class="card-header bg-success text-white d-flex justify-content-between align-items-center" style="background-color: #28a745 !important; padding: 15px !important;">
+								<h5 class="mb-0" style="font-weight: bold !important; font-size: 1.3em !important; color: white !important;">
+									<i class="fas fa-sliders-h me-2"></i>FACTORES DE MODIFICACION DE TERRENOS RURALES
+								</h5>
+							</div>
+							<div class="card-body" style="display: block !important; visibility: visible !important; padding: 20px !important;">
+								<div class="row g-3">
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-fcarea">
+											<strong>Área</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-fcarea" 
+											   name="terreno-fcarea" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.fcarea.value %}{{ form.fcarea.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999">
+									</div>
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-fcubic">
+											<strong>Ubicacion</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-fcubic" 
+											   name="terreno-fcubic" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.fcubic.value %}{{ form.fcubic.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999">
+									</div>
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-fcservi">
+											<strong>Servicios</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-fcservi" 
+											   name="terreno-fcservi" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.fcservi.value %}{{ form.fcservi.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999">
+									</div>
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-fcacceso">
+											<strong>Acceso</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-fcacceso" 
+											   name="terreno-fcacceso" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.fcacceso.value %}{{ form.fcacceso.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999">
+									</div>
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-fcagua">
+											<strong>Agua</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-fcagua" 
+											   name="terreno-fcagua" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.fcagua.value %}{{ form.fcagua.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999">
+									</div>
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-bfacmodi">
+											<strong>Factor Combinado</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-bfacmodi" 
+											   name="terreno-bfacmodi" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.bfacmodi.value %}{{ form.bfacmodi.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999"
+											   readonly>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- ========== FIN SECCIÓN FACTORES DE MODIFICACION DE TERRENOS RURALES ========== -->
+
+					<!-- ========== SECCIÓN DATOS PARA AVALUO DE TERRENOS EN PROCESO DE DESARROLLO ========== -->
+					<div class="col-md-12">
+						<div class="card border-primary shadow-sm" style="display: block !important; visibility: visible !important; border: 2px solid #007bff !important; margin-bottom: 20px;">
+							<div class="card-header bg-primary text-white d-flex justify-content-between align-items-center" style="background-color: #007bff !important; padding: 15px !important;">
+								<h5 class="mb-0" style="font-weight: bold !important; font-size: 1.3em !important; color: white !important;">
+									<i class="fas fa-city me-2"></i>DATOS PARA AVALUO DE TERRENOS EN PROCESO DE DESARROLLO
+								</h5>
+							</div>
+							<div class="card-body" style="display: block !important; visibility: visible !important; padding: 20px !important;">
+								<div class="row g-3">
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-fcarea2">
+											<strong>Área</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-fcarea2" 
+											   name="terreno-fcarea2" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.fcarea2.value %}{{ form.fcarea2.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999">
+									</div>
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-fcservi2">
+											<strong>Servicios</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-fcservi2" 
+											   name="terreno-fcservi2" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.fcservi2.value %}{{ form.fcservi2.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999">
+									</div>
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-fctopo">
+											<strong>Topografía</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-fctopo" 
+											   name="terreno-fctopo" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.fctopo.value %}{{ form.fctopo.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999">
+									</div>
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-fcconfi">
+											<strong>Configuración</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-fcconfi" 
+											   name="terreno-fcconfi" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.fcconfi.value %}{{ form.fcconfi.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999">
+									</div>
+									<div class="col-md-3 col-lg-2">
+										<label class="form-label" for="id_terreno-bfacmod2">
+											<strong>Factor Combinado</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-bfacmod2" 
+											   name="terreno-bfacmod2" 
+											   class="form-control text-end" 
+											   step="0.001" 
+											   placeholder="0.000" 
+											   value="{% if form.bfacmod2.value %}{{ form.bfacmod2.value }}{% else %}0.000{% endif %}" 
+											   style="display: block !important; max-width: 120px;" 
+											   min="0" 
+											   max="999.999"
+											   readonly>
+									</div>
+									<div class="col-md-6 col-lg-4">
+										<label class="form-label" for="id_terreno-bvlbas2">
+											<strong>Valor Básico</strong>
+										</label>
+										<input type="number" 
+											   id="id_terreno-bvlbas2" 
+											   name="terreno-bvlbas2" 
+											   class="form-control text-end" 
+											   step="0.01" 
+											   placeholder="0.00" 
+											   value="{% if form.bvlbas2.value %}{{ form.bvlbas2.value }}{% else %}0.00{% endif %}" 
+											   style="display: block !important;" 
+											   min="0">
+									</div>
+									<div class="col-md-6 col-lg-4">
+										<label class="form-label" for="id_baream21">
+											<strong>Area (Has)</strong>
+										</label>
+										<input type="number" 
+											   id="id_baream21" 
+											   name="baream21" 
+											   class="form-control text-end" 
+											   step="0.01" 
+											   placeholder="0.00" 
+											   value="{% if form.baream21.value %}{{ form.baream21.value }}{% else %}0.00{% endif %}" 
+											   style="display: block !important;" 
+											   min="0">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- ========== FIN SECCIÓN DATOS PARA AVALUO DE TERRENOS EN PROCESO DE DESARROLLO ========== -->
+					
+					<!-- ========== SECCIÓN VALOR DEL TERRENO ========== -->
+					<div class="col-md-12">
+						<div class="card border-dark shadow-sm" style="display: block !important; visibility: visible !important; border: 2px solid #343a40 !important; margin-bottom: 20px;">
+							<div class="card-header bg-dark text-white d-flex justify-content-between align-items-center" style="background-color: #343a40 !important; padding: 15px !important;">
+								<h5 class="mb-0" style="font-weight: bold !important; font-size: 1.3em !important; color: white !important;">
+									<i class="fas fa-dollar-sign me-2"></i>VALOR DEL TERRENO
+								</h5>
+							</div>
+							<div class="card-body" style="display: block !important; visibility: visible !important; padding: 20px !important;">
+								<div class="row g-3">
+									<div class="col-md-6 col-lg-4">
+										<label class="form-label" for="valor_terreno">
+											<strong>Valor de Avalúo</strong>
+										</label>
+										<input type="number" 
+											   step="0.01" 
+											   class="form-control text-end" 
+											   name="valor_terreno" 
+											   id="valor_terreno"
+											   value="{% if registro.bvl2tie %}{{ registro.bvl2tie|floatformat:2 }}{% else %}0.00{% endif %}"
+											   style="display: block !important; font-weight: bold; font-size: 1.1em;"
+											   readonly>
+									</div>
+									<div class="col-md-6 col-lg-4">
+										<label class="form-label" for="id_terreno-usuario">
+											<strong>Usuario</strong>
+										</label>
+										<input type="text" 
+											   id="id_terreno-usuario" 
+											   name="terreno-usuario" 
+											   class="form-control" 
+											   value="{% if terreno.usuario %}{{ terreno.usuario }}{% else %}{{ usuario_nombre }}{% endif %}" 
+											   style="display: block !important;" 
+											   readonly>
+									</div>
+									<div class="col-md-6 col-lg-4">
+										<label class="form-label" for="id_terreno-fechasys">
+											<strong>Fecha</strong>
+										</label>
+										<input type="text" 
+											   id="id_terreno-fechasys" 
+											   name="terreno-fechasys" 
+											   class="form-control" 
+											   value="{% if terreno.fechasys %}{{ terreno.fechasys|date:'d/m/Y H:i' }}{% else %}{% now 'd/m/Y H:i' %}{% endif %}" 
+											   style="display: block !important;" 
+											   readonly>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- ========== FIN SECCIÓN VALOR DEL TERRENO ========== -->
+
+					<div class="col-12 d-flex justify-content-end mt-3">
+						<a href="{% url 'catastro:bienes_inmuebles_registrar' %}?cocata1={{ cocata1 }}" class="btn btn-secondary me-2">
+							<i class="fas fa-chevron-left me-1"></i> Volver a Registrar Bien Inmueble
+						</a>
+						{% if terreno.id %}
+						<button type="button" id="btn-eliminar-avaluo" class="btn btn-danger me-2">
+							<i class="fas fa-trash me-1"></i> Eliminar Avalúo
+						</button>
+						{% endif %}
+						<button type="button" id="btn-guardar" class="btn btn-success">
+							<i class="fas fa-save me-1"></i> Guardar
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+	// Función para normalizar valores inmediatamente al cargar (antes de que el navegador los parse)
+	(function() {
+		// Normalizar todos los campos numéricos tan pronto como el script se carga
+		function normalizarValoresIniciales() {
+			const camposNumericos = document.querySelectorAll('input[type="number"]');
+			camposNumericos.forEach(function(campo) {
+				// Normalizar el atributo value si existe
+				if (campo.hasAttribute('value')) {
+					let valorAttr = campo.getAttribute('value');
+					if (valorAttr && String(valorAttr).includes(',')) {
+						// Convertir comas a puntos
+						valorAttr = String(valorAttr).replace(/,/g, '.');
+						// Remover cualquier carácter no numérico excepto punto y signo negativo
+						valorAttr = valorAttr.replace(/[^\d.-]/g, '');
+						// Asegurar que solo haya un punto decimal
+						const partes = valorAttr.split('.');
+						if (partes.length > 2) {
+							valorAttr = partes[0] + '.' + partes.slice(1).join('');
+						}
+						campo.setAttribute('value', valorAttr);
+						campo.value = valorAttr;
+					}
+				}
+				// También normalizar el valor actual si existe
+				if (campo.value && String(campo.value).includes(',')) {
+					let valorStr = String(campo.value);
+					valorStr = valorStr.replace(/,/g, '.');
+					valorStr = valorStr.replace(/[^\d.-]/g, '');
+					const partes = valorStr.split('.');
+					if (partes.length > 2) {
+						valorStr = partes[0] + '.' + partes.slice(1).join('');
+					}
+					campo.value = valorStr;
+				}
+			});
+		}
+		
+		// Ejecutar inmediatamente si el DOM ya está cargado
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', normalizarValoresIniciales);
+		} else {
+			normalizarValoresIniciales();
+		}
+		
+		// También ejecutar después de un pequeño delay para asegurar que todos los valores estén cargados
+		setTimeout(normalizarValoresIniciales, 10);
+		setTimeout(normalizarValoresIniciales, 50);
+		setTimeout(normalizarValoresIniciales, 100);
+	})();
+	
+	// Función para normalizar un valor individual
+	function normalizarValorCampo(campo) {
+		if (!campo || campo.type !== 'number') return false;
+		
+		// Normalizar el valor del campo
+		if (campo.value) {
+			let valorStr = String(campo.value);
+			if (valorStr.includes(',')) {
+				// Convertir comas a puntos
+				valorStr = valorStr.replace(/,/g, '.');
+				// Remover cualquier carácter no numérico excepto punto y signo negativo
+				valorStr = valorStr.replace(/[^\d.-]/g, '');
+				// Asegurar que solo haya un punto decimal
+				const partes = valorStr.split('.');
+				if (partes.length > 2) {
+					valorStr = partes[0] + '.' + partes.slice(1).join('');
+				}
+				campo.value = valorStr;
+				return true;
+			}
+		}
+		
+		// También verificar el atributo value directamente
+		if (campo.hasAttribute('value')) {
+			let valorAttr = campo.getAttribute('value');
+			if (valorAttr && String(valorAttr).includes(',')) {
+				// Convertir comas a puntos
+				valorAttr = String(valorAttr).replace(/,/g, '.');
+				// Remover cualquier carácter no numérico excepto punto y signo negativo
+				valorAttr = valorAttr.replace(/[^\d.-]/g, '');
+				// Asegurar que solo haya un punto decimal
+				const partes = valorAttr.split('.');
+				if (partes.length > 2) {
+					valorAttr = partes[0] + '.' + partes.slice(1).join('');
+				}
+				campo.setAttribute('value', valorAttr);
+				campo.value = valorAttr;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	// Interceptar cambios en campos numéricos para normalizar automáticamente (debe estar al inicio)
+	document.addEventListener('input', function(e) {
+		if (e.target && e.target.type === 'number') {
+			normalizarValorCampo(e.target);
+		}
+	}, true);
+	
+	// Interceptar cambios en campos numéricos al hacer blur
+	document.addEventListener('blur', function(e) {
+		if (e.target && e.target.type === 'number') {
+			normalizarValorCampo(e.target);
+		}
+	}, true);
+	
+	// Usar MutationObserver para detectar cambios en atributos value y elementos agregados al DOM
+	if (typeof MutationObserver !== 'undefined') {
+		const observer = new MutationObserver(function(mutations) {
+			mutations.forEach(function(mutation) {
+				if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+					const target = mutation.target;
+					if (target && target.type === 'number') {
+						normalizarValorCampo(target);
+					}
+				}
+				// También normalizar elementos recién agregados al DOM
+				if (mutation.type === 'childList') {
+					mutation.addedNodes.forEach(function(node) {
+						if (node.nodeType === 1) { // Element node
+							if (node.type === 'number') {
+								normalizarValorCampo(node);
+							}
+							// También buscar campos numéricos dentro del nodo agregado
+							const camposNumericos = node.querySelectorAll && node.querySelectorAll('input[type="number"]');
+							if (camposNumericos) {
+								camposNumericos.forEach(function(campo) {
+									normalizarValorCampo(campo);
+								});
+							}
+						}
+					});
+				}
+			});
+		});
+		
+		// Observar cambios cuando el DOM esté listo
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', function() {
+				// Observar el body completo para detectar cambios en atributos y elementos agregados
+				observer.observe(document.body, {
+					attributes: true,
+					attributeFilter: ['value'],
+					childList: true,
+					subtree: true
+				});
+				// Normalizar todos los campos existentes
+				document.querySelectorAll('input[type="number"]').forEach(function(campo) {
+					normalizarValorCampo(campo);
+				});
+			});
+		} else {
+			// Observar el body completo para detectar cambios en atributos y elementos agregados
+			observer.observe(document.body, {
+				attributes: true,
+				attributeFilter: ['value'],
+				childList: true,
+				subtree: true
+			});
+			// Normalizar todos los campos existentes
+			document.querySelectorAll('input[type="number"]').forEach(function(campo) {
+				normalizarValorCampo(campo);
+			});
+		}
+	}
+(function(){
+	const cocata = "{{ cocata1 }}";
+	const apiUrl = "{% url 'catastro:api_avaluo_terreno' %}";
+	
+	// Variable temporal para almacenar el valor del factor de riego
+	let valorfactor = 0.00;
+	
+	// Función para obtener el valor del factor de riego desde el código seleccionado
+	function obtenerValorFactor(codigoSeleccionado, callback) {
+		if (!codigoSeleccionado) {
+			valorfactor = 0.00;
+			if (callback) callback(0.00);
+			return;
+		}
+		
+		// Buscar en factoresRiegoHardcoded si está disponible
+		if (typeof factoresRiegoHardcoded !== 'undefined' && factoresRiegoHardcoded.length > 0) {
+			const factor = factoresRiegoHardcoded.find(f => f.codigo === codigoSeleccionado);
+			if (factor && factor.valor) {
+				valorfactor = parseFloat(factor.valor) || 0.00;
+				console.log('Valor factor obtenido desde hardcoded:', valorfactor);
+				if (callback) callback(valorfactor);
+				return;
+			}
+		}
+		
+		// Si no está en hardcoded, hacer petición AJAX
+		const baseUrl = window.location.origin + '/catastro/api/factor-riego/';
+		const apiUrl = baseUrl + codigoSeleccionado + '/';
+		
+		fetch(apiUrl, {
+			method: 'GET',
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest'
+			}
+		})
+		.then(function(response) {
+			if (!response.ok) {
+				throw new Error('Error al obtener el valor del factor de riego');
+			}
+			return response.json();
+		})
+		.then(function(data) {
+			if (data.success && data.valor) {
+				valorfactor = parseFloat(data.valor) || 0.00;
+				console.log('Valor factor obtenido desde API:', valorfactor);
+				if (callback) callback(valorfactor);
+			} else {
+				valorfactor = 0.00;
+				if (callback) callback(0.00);
+			}
+		})
+		.catch(function(error) {
+			console.error('Error al obtener el valor del factor de riego:', error);
+			valorfactor = 0.00;
+			if (callback) callback(0.00);
+		});
+	}
+	
+	// Función para calcular y actualizar el monto automáticamente
+	// Fórmula: monto = fac * facarea * valorfactor (redondeado a 2 decimales)
+	function calcularMontoAutomatico(usarValorFactorActual) {
+		const facInput = document.getElementById('suelo-codfac-unico');
+		const codigoSelect = document.getElementById('suelo-fac-unico');
+		const facareaInput = document.getElementById('suelo-facarea-unico');
+		const montoInput = document.getElementById('suelo-monto-unico');
+		
+		if (!facInput || !codigoSelect || !facareaInput || !montoInput) {
+			return;
+		}
+		
+		const fac = parseFloat(facInput.value) || 0.000;
+		const facarea = parseFloat(facareaInput.value) || 0.00;
+		const codigoSeleccionado = codigoSelect.value;
+		
+		// Si hay código seleccionado y necesitamos obtener el valor del factor
+		if (codigoSeleccionado && !usarValorFactorActual) {
+			obtenerValorFactor(codigoSeleccionado, function(valorFactor) {
+				// Calcular: fac * facarea * valorfactor
+				const montoCalculado = fac * facarea * valorFactor;
+				// Redondear a 2 decimales
+				const montoRedondeado = Math.round(montoCalculado * 100) / 100;
+				montoInput.value = montoRedondeado.toFixed(2);
+				console.log(`Monto calculado: ${fac} * ${facarea} * ${valorFactor} = ${montoRedondeado.toFixed(2)}`);
+			});
+		} else {
+			// Usar el valor factor actual almacenado o 0 si no hay código
+			const valorFactorActual = codigoSeleccionado ? valorfactor : 0.00;
+			// Calcular: fac * facarea * valorfactor
+			const montoCalculado = fac * facarea * valorFactorActual;
+			// Redondear a 2 decimales
+			const montoRedondeado = Math.round(montoCalculado * 100) / 100;
+			montoInput.value = montoRedondeado.toFixed(2);
+			console.log(`Monto calculado: ${fac} * ${facarea} * ${valorFactorActual} = ${montoRedondeado.toFixed(2)}`);
+		}
+	}
+	
+	// Función para guardar la fila única de clasificación del suelo
+	function guardarFilaUnica() {
+		const codfac = document.getElementById('suelo-codfac-unico')?.value || '';
+		const fac = document.getElementById('suelo-fac-unico')?.value || '';
+		const facarea = document.getElementById('suelo-facarea-unico')?.value || '0.00';
+		const monto = document.getElementById('suelo-monto-unico')?.value || '0.00';
+		
+		// Validar que haya datos
+		if (!codfac && !fac && facarea === '0.00' && monto === '0.00') {
+			alert('Por favor, complete al menos un campo antes de guardar.');
+			return;
+		}
+		
+		const btnGuardar = document.querySelector('.btn-guardar-fila-unica');
+		if (!btnGuardar) return;
+		
+		// Deshabilitar el botón mientras se procesa
+		btnGuardar.disabled = true;
+		btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Guardando...';
+		
+		// Preparar datos para enviar
+		const formData = new FormData();
+		formData.append('cocata1', cocata);
+		formData.append('suelo-codfac[]', codfac);
+		formData.append('suelo-fac[]', fac);
+		formData.append('suelo-facarea[]', facarea);
+		formData.append('suelo-monto[]', monto);
+		formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+		
+		// Enviar datos a la API
+		fetch('/catastro/api/guardar-areas-rurales/', {
+			method: 'POST',
+			body: formData,
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest'
+			}
+		})
+		.then(function(response) {
+			if (!response.ok) {
+				return response.json().then(function(data) {
+					throw new Error(data.error || 'Error al guardar los datos');
+				});
+			}
+			return response.json();
+		})
+		.then(function(data) {
+			if (data.success) {
+				// Actualizar el campo Valor Total con la sumatoria recibida
+				const valorTotalInput = document.getElementById('valor-total-areas-rurales');
+				if (valorTotalInput && data.suma_monto !== undefined) {
+					valorTotalInput.value = parseFloat(data.suma_monto).toFixed(2);
+					// Recalcular Valor de Avalúo después de actualizar Valor Total
+					if (typeof calcularValorAvaluo === 'function') {
+						calcularValorAvaluo();
+					}
+				}
+				alert('✅ ' + data.message);
+				// Limpiar los campos después de guardar
+				limpiarCamposClasificacion();
+				// Recargar la página para mostrar los datos actualizados en el grid
+				setTimeout(function() {
+					window.location.reload();
+				}, 500);
+			} else {
+				alert('❌ Error: ' + (data.error || 'No se pudo guardar los datos'));
+			}
+		})
+		.catch(function(error) {
+			console.error('Error:', error);
+			alert('❌ Error al guardar: ' + (error.message || 'Error desconocido'));
+		})
+		.finally(function() {
+			// Restaurar el botón
+			btnGuardar.disabled = false;
+			btnGuardar.innerHTML = '<i class="fas fa-save me-1"></i> Guardar';
+		});
+	}
+	
+	// Función para limpiar los campos de clasificación
+	function limpiarCamposClasificacion() {
+		document.getElementById('suelo-codfac-unico').value = '0.000';
+		document.getElementById('suelo-fac-unico').value = '';
+		document.getElementById('suelo-facarea-unico').value = '0.00';
+		document.getElementById('suelo-monto-unico').value = '0.00';
+	}
+	
+	// Función para eliminar un registro del grid
+	function eliminarRegistroAreasRurales(areaId) {
+		if (!confirm('¿Está seguro de que desea eliminar este registro?')) {
+			return;
+		}
+		
+		const btnEliminar = document.querySelector(`.btn-eliminar-registro[data-area-id="${areaId}"]`);
+		if (!btnEliminar) return;
+		
+		// Deshabilitar el botón mientras se procesa
+		btnEliminar.disabled = true;
+		btnEliminar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+		
+		// Preparar datos para enviar
+		const formData = new FormData();
+		formData.append('area_id', areaId);
+		formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+		
+		// Enviar petición de eliminación
+		fetch('/catastro/api/eliminar-area-rural/', {
+			method: 'POST',
+			body: formData,
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest'
+			}
+		})
+		.then(function(response) {
+			if (!response.ok) {
+				return response.json().then(function(data) {
+					throw new Error(data.error || 'Error al eliminar el registro');
+				});
+			}
+			return response.json();
+		})
+		.then(function(data) {
+			if (data.success) {
+				// Actualizar el campo Valor Total con la sumatoria recibida
+				const valorTotalInput = document.getElementById('valor-total-areas-rurales');
+				if (valorTotalInput && data.suma_monto !== undefined) {
+					valorTotalInput.value = parseFloat(data.suma_monto).toFixed(2);
+					// Recalcular Valor de Avalúo después de actualizar Valor Total
+					if (typeof calcularValorAvaluo === 'function') {
+						calcularValorAvaluo();
+					}
+				}
+				alert('✅ ' + data.message);
+				// Recargar la página para actualizar el grid
+				window.location.reload();
+			} else {
+				alert('❌ Error: ' + (data.error || 'No se pudo eliminar el registro'));
+			}
+		})
+		.catch(function(error) {
+			console.error('Error:', error);
+			alert('❌ Error al eliminar: ' + (error.message || 'Error desconocido'));
+		})
+		.finally(function() {
+			// Restaurar el botón
+			btnEliminar.disabled = false;
+			btnEliminar.innerHTML = '<i class="fas fa-trash"></i> Eliminar';
+		});
+	}
+	
+	function toFormData(form) {
+		const data = new FormData(form);
+		return data;
+	}
+	function loadData() {
+		const url = new URL(apiUrl, window.location.origin);
+		url.searchParams.set('cocata1', cocata);
+		
+		// Guardar el valor actual de bvlbas1 antes de cargar datos para protegerlo
+		const valorTotalInput = document.getElementById('valor-total-areas-rurales');
+		const valorBvlbas1Original = valorTotalInput ? valorTotalInput.value : null;
+		
+		fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+			.then(r => r.json())
+			.then(data => {
+				if (!data || !data.campos) return;
+				const campos = data.campos;
+				for (const [k, v] of Object.entries(campos)) {
+					// NO sobrescribir el campo bvlbas1 si ya tiene un valor válido de suma_monto_areas_rurales
+					if (k === 'terreno-bvlbas1' || k === 'bvlbas1') {
+						// Solo actualizar si el valor original estaba vacío o era 0
+						if (valorBvlbas1Original && parseFloat(valorBvlbas1Original) > 0) {
+							continue; // Mantener el valor original de suma_monto_areas_rurales
+						}
+					}
+					
+					const el = document.querySelector(`[name="${k}"]`);
+					if (el) {
+						// Normalizar valor (convertir todas las comas a puntos) antes de asignar
+						let valorNormalizado = String(v).replace(/,/g, '.');
+						// Si es un campo numérico, asegurar formato correcto
+						if (el.type === 'number') {
+							// Remover cualquier carácter no numérico excepto punto y signo negativo
+							valorNormalizado = valorNormalizado.replace(/[^\d.-]/g, '');
+							// Asegurar que solo haya un punto decimal
+							const partes = valorNormalizado.split('.');
+							if (partes.length > 2) {
+								valorNormalizado = partes[0] + '.' + partes.slice(1).join('');
+							}
+						}
+						el.value = valorNormalizado;
+					}
+				}
+				if (typeof campos.bvl2tie !== 'undefined') {
+					let valorTerreno = String(campos.bvl2tie).replace(/,/g, '.');
+					// Limpiar caracteres no numéricos excepto punto y signo negativo
+					valorTerreno = valorTerreno.replace(/[^\d.-]/g, '');
+					// Asegurar que solo haya un punto decimal
+					const partes = valorTerreno.split('.');
+					if (partes.length > 2) {
+						valorTerreno = partes[0] + '.' + partes.slice(1).join('');
+					}
+					const valorTerrenoEl = document.getElementById('valor_terreno');
+					if (valorTerrenoEl) {
+						valorTerrenoEl.value = valorTerreno;
+					}
+				}
+				
+				// Restaurar el valor de bvlbas1 si tenía un valor válido antes de cargar
+				const valorTotalInputRestore = document.getElementById('valor-total-areas-rurales');
+				if (valorTotalInputRestore && valorBvlbas1Original && parseFloat(valorBvlbas1Original) > 0) {
+					valorTotalInputRestore.value = valorBvlbas1Original;
+				}
+				
+				// Normalizar todos los campos después de cargar datos (múltiples veces)
+				setTimeout(function() {
+					normalizarTodosLosCamposNumericos();
+					// Asegurar que bvlbas1 mantenga su valor después de normalizar
+					if (valorTotalInput && valorBvlbas1Original && parseFloat(valorBvlbas1Original) > 0) {
+						valorTotalInput.value = valorBvlbas1Original;
+					}
+				}, 50);
+				setTimeout(function() {
+					normalizarTodosLosCamposNumericos();
+					// Asegurar que bvlbas1 mantenga su valor después de normalizar
+					if (valorTotalInput && valorBvlbas1Original && parseFloat(valorBvlbas1Original) > 0) {
+						valorTotalInput.value = valorBvlbas1Original;
+					}
+				}, 200);
+			})
+			.catch(() => {});
+	}
+	function saveData() {
+		const form = document.getElementById('form-rural');
+		if (!form) {
+			alert('❌ Error: No se encontró el formulario');
+			console.error('Formulario form-rural no encontrado');
+			return;
+		}
+		
+		console.log('Guardando avalúo rural...');
+		console.log('URL actual:', window.location.href);
+		console.log('Método del formulario:', form.method);
+		
+		// Normalizar todos los campos numéricos antes de enviar
+		normalizarTodosLosCamposNumericos();
+		
+		// Verificar que el formulario tenga el token CSRF
+		const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+		if (!csrfToken) {
+			alert('❌ Error: Token CSRF no encontrado. Por favor, recargue la página.');
+			console.error('Token CSRF no encontrado');
+			return;
+		}
+		
+		// Cambiar el método del formulario a POST normal en lugar de AJAX
+		form.method = 'POST';
+		form.action = window.location.href;
+		
+		// Mostrar mensaje de guardado
+		const btnGuardar = document.getElementById('btn-guardar');
+		if (btnGuardar) {
+			btnGuardar.disabled = true;
+			btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Guardando...';
+		}
+		
+		console.log('Enviando formulario...');
+		form.submit();
+	}
+	
+	// Función para proteger el valor de bvlbas1 (suma_monto_areas_rurales)
+	function protegerValorBvlbas1() {
+		const valorTotalInput = document.getElementById('valor-total-areas-rurales');
+		if (valorTotalInput && window.valorBvlbas1Protegido) {
+			const valorActual = parseFloat(valorTotalInput.value) || 0;
+			const valorProtegido = parseFloat(window.valorBvlbas1Protegido) || 0;
+			// Si el valor protegido es mayor que 0 y el actual es 0 o menor, restaurar el protegido
+			if (valorProtegido > 0 && valorActual < valorProtegido) {
+				valorTotalInput.value = valorProtegido.toFixed(2);
+			}
+		}
+	}
+	
+	// Función global para normalizar valores numéricos (debe estar fuera de DOMContentLoaded)
+	function normalizarTodosLosCamposNumericos() {
+		const camposNumericos = document.querySelectorAll('input[type="number"]');
+		let camposNormalizados = 0;
+		camposNumericos.forEach(function(campo) {
+			// NO normalizar el campo bvlbas1 si tiene un valor protegido
+			if (campo.id === 'valor-total-areas-rurales' && window.valorBvlbas1Protegido) {
+				const valorProtegido = parseFloat(window.valorBvlbas1Protegido) || 0;
+				if (valorProtegido > 0) {
+					return; // Saltar este campo
+				}
+			}
+			
+			// Usar la función normalizarValorCampo que también verifica el atributo value
+			if (normalizarValorCampo(campo)) {
+				camposNormalizados++;
+				// Disparar evento change para que otros listeners se ejecuten
+				campo.dispatchEvent(new Event('change', { bubbles: true }));
+			}
+		});
+		if (camposNormalizados > 0) {
+			console.log(`Normalizados ${camposNormalizados} campos numéricos (comas convertidas a puntos)`);
+		}
+		// Proteger el valor de bvlbas1 después de normalizar
+		protegerValorBvlbas1();
+		return camposNormalizados;
+	}
+	
+	// Normalizar inmediatamente cuando el script se carga (antes de DOMContentLoaded)
+	function ejecutarNormalizacionInmediata() {
+		// Normalizar todos los campos que ya existen en el DOM
+		normalizarTodosLosCamposNumericos();
+		
+		// También normalizar usando la función individual para cada campo
+		document.querySelectorAll('input[type="number"]').forEach(function(campo) {
+			normalizarValorCampo(campo);
+		});
+	}
+	
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', function() {
+			ejecutarNormalizacionInmediata();
+		});
+	} else {
+		// El DOM ya está cargado
+		ejecutarNormalizacionInmediata();
+	}
+	
+	document.addEventListener('DOMContentLoaded', function(){
+		// Normalizar antes de cargar datos
+		normalizarTodosLosCamposNumericos();
+		
+		// Proteger el valor de bvlbas1 antes de cargar datos
+		const valorTotalInputProtected = document.getElementById('valor-total-areas-rurales');
+		if (valorTotalInputProtected && valorTotalInputProtected.value && parseFloat(valorTotalInputProtected.value) > 0) {
+			// Guardar el valor inicial para protegerlo
+			window.valorBvlbas1Protegido = valorTotalInputProtected.value;
+		}
+		
+		loadData();
+		
+		// Ejecutar normalización múltiples veces para asegurar
+		// Proteger el valor de bvlbas1 durante la normalización
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			protegerValorBvlbas1();
+		}, 10);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			protegerValorBvlbas1();
+		}, 100);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			protegerValorBvlbas1();
+		}, 300);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			protegerValorBvlbas1();
+		}, 600);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			protegerValorBvlbas1();
+		}, 1000);
+		
+		// Botón guardar de la fila única de clasificación
+		const btnGuardarFilaUnica = document.querySelector('.btn-guardar-fila-unica');
+		if (btnGuardarFilaUnica) {
+			btnGuardarFilaUnica.addEventListener('click', guardarFilaUnica);
+		}
+		
+		// Botón limpiar campos de clasificación
+		const btnLimpiar = document.getElementById('btn-limpiar-clasificacion');
+		if (btnLimpiar) {
+			btnLimpiar.addEventListener('click', limpiarCamposClasificacion);
+		}
+		
+		// Event listeners para recalcular monto automáticamente cuando cambien los campos
+		// Factor Riego (suelo-codfac-unico)
+		const facInput = document.getElementById('suelo-codfac-unico');
+		if (facInput) {
+			facInput.addEventListener('input', calcularMontoAutomatico);
+			facInput.addEventListener('change', calcularMontoAutomatico);
+		}
+		
+		// Codigo (suelo-fac-unico)
+		const selectCodigoUnico = document.getElementById('suelo-fac-unico');
+		if (selectCodigoUnico) {
+			selectCodigoUnico.addEventListener('change', function() {
+				// Obtener el valor del factor primero, luego calcular
+				const codigoSeleccionado = this.value;
+				obtenerValorFactor(codigoSeleccionado, function() {
+					// Usar el valor factor que ya se obtuvo
+					calcularMontoAutomatico(true);
+				});
+			});
+		}
+		
+		// AREA(HAS) (suelo-facarea-unico)
+		const facareaInput = document.getElementById('suelo-facarea-unico');
+		if (facareaInput) {
+			facareaInput.addEventListener('input', calcularMontoAutomatico);
+			facareaInput.addEventListener('change', calcularMontoAutomatico);
+		}
+		
+		// Función para normalizar valores numéricos (convertir comas a puntos)
+		function normalizarValorNumerico(valor) {
+			if (!valor) return '';
+			// Convertir coma a punto para formato HTML5 number input
+			return String(valor).replace(',', '.');
+		}
+		
+		// Función para parsear valores numéricos con comas o puntos
+		function parsearNumero(valor) {
+			if (!valor && valor !== 0) return 0;
+			// Convertir todas las comas a puntos antes de parsear
+			const valorStr = String(valor);
+			const valorNormalizado = valorStr.replace(/,/g, '.'); // Reemplazar todas las comas
+			const numero = parseFloat(valorNormalizado);
+			return isNaN(numero) ? 0 : numero;
+		}
+		
+		// Función para calcular Factor Combinado automáticamente
+		// Fórmula: Factor Combinado = Área * Ubicacion * Servicios * Acceso * Agua
+		function calcularFactorCombinado() {
+			const fcareaInput = document.getElementById('id_terreno-fcarea');
+			const fcubicInput = document.getElementById('id_terreno-fcubic');
+			const fcserviInput = document.getElementById('id_terreno-fcservi');
+			const fcaccesoInput = document.getElementById('id_terreno-fcacceso');
+			const fcaguaInput = document.getElementById('id_terreno-fcagua');
+			const bfacmodiInput = document.getElementById('id_terreno-bfacmodi');
+			
+			if (!fcareaInput || !fcubicInput || !fcserviInput || !fcaccesoInput || !fcaguaInput || !bfacmodiInput) {
+				return;
+			}
+			
+			// Normalizar valores en los campos antes de parsear (convertir comas a puntos)
+			if (fcareaInput.value && String(fcareaInput.value).includes(',')) {
+				fcareaInput.value = String(fcareaInput.value).replace(/,/g, '.');
+			}
+			if (fcubicInput.value && String(fcubicInput.value).includes(',')) {
+				fcubicInput.value = String(fcubicInput.value).replace(/,/g, '.');
+			}
+			if (fcserviInput.value && String(fcserviInput.value).includes(',')) {
+				fcserviInput.value = String(fcserviInput.value).replace(/,/g, '.');
+			}
+			if (fcaccesoInput.value && String(fcaccesoInput.value).includes(',')) {
+				fcaccesoInput.value = String(fcaccesoInput.value).replace(/,/g, '.');
+			}
+			if (fcaguaInput.value && String(fcaguaInput.value).includes(',')) {
+				fcaguaInput.value = String(fcaguaInput.value).replace(/,/g, '.');
+			}
+			
+			// Parsear valores normalizados
+			const area = parsearNumero(fcareaInput.value);
+			const ubicacion = parsearNumero(fcubicInput.value);
+			const servicios = parsearNumero(fcserviInput.value);
+			const acceso = parsearNumero(fcaccesoInput.value);
+			const agua = parsearNumero(fcaguaInput.value);
+			
+			// Calcular: Área * Ubicacion * Servicios * Acceso * Agua
+			const factorCombinado = area * ubicacion * servicios * acceso * agua;
+			
+			// Redondear a 3 decimales
+			const factorCombinadoRedondeado = Math.round(factorCombinado * 1000) / 1000;
+			
+			bfacmodiInput.value = factorCombinadoRedondeado.toFixed(3);
+			
+			console.log(`Factor Combinado calculado: ${area} * ${ubicacion} * ${servicios} * ${acceso} * ${agua} = ${factorCombinadoRedondeado.toFixed(3)}`);
+			
+			// Recalcular Valor de Avalúo después de calcular Factor Combinado
+			calcularValorAvaluo();
+		}
+		
+		// Función para calcular Factor Combinado 2 automáticamente
+		// Fórmula: Factor Combinado = Área * Servicios * Topografía * Configuración
+		function calcularFactorCombinado2() {
+			const fcarea2Input = document.getElementById('id_terreno-fcarea2');
+			const fcservi2Input = document.getElementById('id_terreno-fcservi2');
+			const fctopoInput = document.getElementById('id_terreno-fctopo');
+			const fcconfiInput = document.getElementById('id_terreno-fcconfi');
+			const bfacmod2Input = document.getElementById('id_terreno-bfacmod2');
+			
+			if (!fcarea2Input || !fcservi2Input || !fctopoInput || !fcconfiInput || !bfacmod2Input) {
+				return;
+			}
+			
+			// Normalizar valores en los campos antes de parsear (convertir comas a puntos)
+			if (fcarea2Input.value && String(fcarea2Input.value).includes(',')) {
+				fcarea2Input.value = String(fcarea2Input.value).replace(/,/g, '.');
+			}
+			if (fcservi2Input.value && String(fcservi2Input.value).includes(',')) {
+				fcservi2Input.value = String(fcservi2Input.value).replace(/,/g, '.');
+			}
+			if (fctopoInput.value && String(fctopoInput.value).includes(',')) {
+				fctopoInput.value = String(fctopoInput.value).replace(/,/g, '.');
+			}
+			if (fcconfiInput.value && String(fcconfiInput.value).includes(',')) {
+				fcconfiInput.value = String(fcconfiInput.value).replace(/,/g, '.');
+			}
+			
+			// Parsear valores normalizados
+			const area = parsearNumero(fcarea2Input.value);
+			const servicios = parsearNumero(fcservi2Input.value);
+			const topografia = parsearNumero(fctopoInput.value);
+			const configuracion = parsearNumero(fcconfiInput.value);
+			
+			// Calcular: Área * Servicios * Topografía * Configuración
+			const factorCombinado = area * servicios * topografia * configuracion;
+			
+			// Redondear a 3 decimales
+			const factorCombinadoRedondeado = Math.round(factorCombinado * 1000) / 1000;
+			
+			bfacmod2Input.value = factorCombinadoRedondeado.toFixed(3);
+			
+			console.log(`Factor Combinado 2 calculado: ${area} * ${servicios} * ${topografia} * ${configuracion} = ${factorCombinadoRedondeado.toFixed(3)}`);
+			
+			// Recalcular Valor de Avalúo después de calcular Factor Combinado 2
+			calcularValorAvaluo();
+		}
+		
+		// Función para calcular Valor de Avalúo automáticamente
+		// fraccion1 = Valor Total × Factor Combinado (FACTORES DE MODIFICACION DE TERRENOS RURALES)
+		// fraccion2 = Valor Básico × Area (Has) × Factor Combinado (DATOS PARA AVALUO DE TERRENOS EN PROCESO DE DESARROLLO)
+		// Valor de Avalúo = fraccion1 + fraccion2 (ambas fracciones redondeadas a 2 dígitos)
+		function calcularValorAvaluo() {
+			const valorTotalInput = document.getElementById('valor-total-areas-rurales');
+			const bfacmodiInput = document.getElementById('id_terreno-bfacmodi');
+			const bvlbas2Input = document.getElementById('id_terreno-bvlbas2');
+			const baream21Input = document.getElementById('id_baream21');
+			const bfacmod2Input = document.getElementById('id_terreno-bfacmod2');
+			const valorAvaluoInput = document.getElementById('valor_terreno');
+			
+			if (!valorAvaluoInput) {
+				return;
+			}
+			
+			// Normalizar valores antes de parsear
+			if (valorTotalInput && valorTotalInput.value && String(valorTotalInput.value).includes(',')) {
+				valorTotalInput.value = String(valorTotalInput.value).replace(/,/g, '.');
+			}
+			if (bfacmodiInput && bfacmodiInput.value && String(bfacmodiInput.value).includes(',')) {
+				bfacmodiInput.value = String(bfacmodiInput.value).replace(/,/g, '.');
+			}
+			if (bvlbas2Input && bvlbas2Input.value && String(bvlbas2Input.value).includes(',')) {
+				bvlbas2Input.value = String(bvlbas2Input.value).replace(/,/g, '.');
+			}
+			if (baream21Input && baream21Input.value && String(baream21Input.value).includes(',')) {
+				baream21Input.value = String(baream21Input.value).replace(/,/g, '.');
+			}
+			if (bfacmod2Input && bfacmod2Input.value && String(bfacmod2Input.value).includes(',')) {
+				bfacmod2Input.value = String(bfacmod2Input.value).replace(/,/g, '.');
+			}
+			
+			// Parsear valores normalizados
+			const valorTotal = parsearNumero(valorTotalInput ? valorTotalInput.value : '0');
+			const factorCombinado1 = parsearNumero(bfacmodiInput ? bfacmodiInput.value : '0');
+			const valorBasico = parsearNumero(bvlbas2Input ? bvlbas2Input.value : '0');
+			const area21 = parsearNumero(baream21Input ? baream21Input.value : '0');
+			const factorCombinado2 = parsearNumero(bfacmod2Input ? bfacmod2Input.value : '0');
+			
+			// Calcular fraccion1 = Valor Total × Factor Combinado (redondeado a 2 dígitos)
+			const fraccion1 = valorTotal * factorCombinado1;
+			const fraccion1Redondeada = Math.round(fraccion1 * 100) / 100;
+			
+			// Calcular fraccion2 = Valor Básico × Area (Has) × Factor Combinado 2 (redondeado a 2 dígitos)
+			const fraccion2 = valorBasico * area21 * factorCombinado2;
+			const fraccion2Redondeada = Math.round(fraccion2 * 100) / 100;
+			
+			// Calcular Valor de Avalúo = fraccion1 + fraccion2
+			const valorAvaluo = fraccion1Redondeada + fraccion2Redondeada;
+			const valorAvaluoRedondeado = Math.round(valorAvaluo * 100) / 100;
+			
+			// Actualizar el campo Valor de Avalúo
+			valorAvaluoInput.value = valorAvaluoRedondeado.toFixed(2);
+			
+			console.log(`Valor de Avalúo calculado: fraccion1 (${valorTotal} × ${factorCombinado1} = ${fraccion1Redondeada.toFixed(2)}) + fraccion2 (${valorBasico} × ${area21} × ${factorCombinado2} = ${fraccion2Redondeada.toFixed(2)}) = ${valorAvaluoRedondeado.toFixed(2)}`);
+		}
+		
+		// Event listeners para recalcular Factor Combinado automáticamente cuando cambien los campos
+		const fcareaInput = document.getElementById('id_terreno-fcarea');
+		if (fcareaInput) {
+			fcareaInput.addEventListener('input', calcularFactorCombinado);
+			fcareaInput.addEventListener('change', calcularFactorCombinado);
+		}
+		
+		const fcubicInput = document.getElementById('id_terreno-fcubic');
+		if (fcubicInput) {
+			fcubicInput.addEventListener('input', calcularFactorCombinado);
+			fcubicInput.addEventListener('change', calcularFactorCombinado);
+		}
+		
+		const fcserviInput = document.getElementById('id_terreno-fcservi');
+		if (fcserviInput) {
+			fcserviInput.addEventListener('input', calcularFactorCombinado);
+			fcserviInput.addEventListener('change', calcularFactorCombinado);
+		}
+		
+		const fcaccesoInput = document.getElementById('id_terreno-fcacceso');
+		if (fcaccesoInput) {
+			fcaccesoInput.addEventListener('input', calcularFactorCombinado);
+			fcaccesoInput.addEventListener('change', calcularFactorCombinado);
+		}
+		
+		const fcaguaInput = document.getElementById('id_terreno-fcagua');
+		if (fcaguaInput) {
+			fcaguaInput.addEventListener('input', calcularFactorCombinado);
+			fcaguaInput.addEventListener('change', calcularFactorCombinado);
+		}
+		
+		// Event listeners para recalcular Valor de Avalúo cuando cambien los campos relacionados
+		const valorTotalInputListener = document.getElementById('valor-total-areas-rurales');
+		if (valorTotalInputListener) {
+			valorTotalInputListener.addEventListener('input', calcularValorAvaluo);
+			valorTotalInputListener.addEventListener('change', calcularValorAvaluo);
+		}
+		
+		const bfacmodiInput = document.getElementById('id_terreno-bfacmodi');
+		if (bfacmodiInput) {
+			bfacmodiInput.addEventListener('input', calcularValorAvaluo);
+			bfacmodiInput.addEventListener('change', calcularValorAvaluo);
+		}
+		
+		const bvlbas2Input = document.getElementById('id_terreno-bvlbas2');
+		if (bvlbas2Input) {
+			bvlbas2Input.addEventListener('input', calcularValorAvaluo);
+			bvlbas2Input.addEventListener('change', calcularValorAvaluo);
+		}
+		
+		const baream21Input = document.getElementById('id_baream21');
+		if (baream21Input) {
+			baream21Input.addEventListener('input', calcularValorAvaluo);
+			baream21Input.addEventListener('change', calcularValorAvaluo);
+		}
+		
+		const bfacmod2Input = document.getElementById('id_terreno-bfacmod2');
+		if (bfacmod2Input) {
+			bfacmod2Input.addEventListener('input', calcularValorAvaluo);
+			bfacmod2Input.addEventListener('change', calcularValorAvaluo);
+		}
+		
+		// Calcular Factor Combinado al cargar la página después de normalizar valores
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularFactorCombinado();
+		}, 200);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularFactorCombinado();
+		}, 500);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularFactorCombinado();
+		}, 1000);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularFactorCombinado();
+			calcularValorAvaluo();
+		}, 1500);
+		
+		// Event listeners para recalcular Factor Combinado 2 automáticamente cuando cambien los campos
+		const fcarea2Input = document.getElementById('id_terreno-fcarea2');
+		if (fcarea2Input) {
+			fcarea2Input.addEventListener('input', calcularFactorCombinado2);
+			fcarea2Input.addEventListener('change', calcularFactorCombinado2);
+		}
+		
+		const fcservi2Input = document.getElementById('id_terreno-fcservi2');
+		if (fcservi2Input) {
+			fcservi2Input.addEventListener('input', calcularFactorCombinado2);
+			fcservi2Input.addEventListener('change', calcularFactorCombinado2);
+		}
+		
+		const fctopoInput = document.getElementById('id_terreno-fctopo');
+		if (fctopoInput) {
+			fctopoInput.addEventListener('input', calcularFactorCombinado2);
+			fctopoInput.addEventListener('change', calcularFactorCombinado2);
+		}
+		
+		const fcconfiInput = document.getElementById('id_terreno-fcconfi');
+		if (fcconfiInput) {
+			fcconfiInput.addEventListener('input', calcularFactorCombinado2);
+			fcconfiInput.addEventListener('change', calcularFactorCombinado2);
+		}
+		
+		// Calcular Factor Combinado 2 al cargar la página después de normalizar valores
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularFactorCombinado2();
+		}, 200);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularFactorCombinado2();
+		}, 500);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularFactorCombinado2();
+		}, 1000);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularFactorCombinado2();
+			calcularValorAvaluo();
+		}, 1500);
+		
+		// Calcular Valor de Avalúo al cargar la página después de normalizar valores
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularValorAvaluo();
+		}, 200);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularValorAvaluo();
+		}, 500);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularValorAvaluo();
+		}, 1000);
+		setTimeout(function() {
+			normalizarTodosLosCamposNumericos();
+			calcularValorAvaluo();
+		}, 1500);
+		
+		// Botones eliminar registro del grid
+		const btnEliminarRegistros = document.querySelectorAll('.btn-eliminar-registro');
+		btnEliminarRegistros.forEach(btn => {
+			btn.addEventListener('click', function() {
+				const areaId = this.getAttribute('data-area-id');
+				if (areaId) {
+					eliminarRegistroAreasRurales(areaId);
+				}
+			});
+		});
+		
+		// Botón guardar formulario completo
+		const btn = document.getElementById('btn-guardar');
+		btn && btn.addEventListener('click', saveData);
+		
+		// Botón eliminar avalúo del terreno
+		const btnEliminarAvaluo = document.getElementById('btn-eliminar-avaluo');
+		if (btnEliminarAvaluo) {
+			btnEliminarAvaluo.addEventListener('click', function() {
+				const cocata1 = document.getElementById('cocata1').textContent.trim();
+				
+				if (!cocata1) {
+					alert('❌ Error: No se pudo obtener la clave catastral');
+					return;
+				}
+				
+				// Confirmar eliminación
+				if (!confirm('⚠️ ¿Está seguro de que desea eliminar el avalúo del terreno?\n\nEsta acción no se puede deshacer.')) {
+					return;
+				}
+				
+				// Deshabilitar el botón mientras se procesa
+				btnEliminarAvaluo.disabled = true;
+				btnEliminarAvaluo.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Eliminando...';
+				
+				// Enviar solicitud AJAX
+				fetch('/catastro/api/eliminar-avaluo-terreno/', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+						'X-Requested-With': 'XMLHttpRequest'
+					},
+					body: JSON.stringify({
+						cocata1: cocata1
+					})
+				})
+				.then(function(response) {
+					if (!response.ok) {
+						return response.json().then(function(data) {
+							throw new Error(data.error || 'Error al eliminar el avalúo');
+						});
+					}
+					return response.json();
+				})
+				.then(function(data) {
+					if (data.success) {
+						alert('✅ ' + data.message);
+						// Redirigir a la página de registro de bienes inmuebles
+						const cocata = document.getElementById('terreno-cocata1')?.value || '{{ cocata1|default:"" }}';
+						window.location.href = '{% url "catastro:bienes_inmuebles_registrar" %}' + (cocata ? '?cocata1=' + encodeURIComponent(cocata) : '');
+					} else {
+						alert('❌ Error: ' + (data.error || 'No se pudo eliminar el avalúo'));
+						// Restaurar el botón
+						btnEliminarAvaluo.disabled = false;
+						btnEliminarAvaluo.innerHTML = '<i class="fas fa-trash me-1"></i> Eliminar Avalúo';
+					}
+				})
+				.catch(function(error) {
+					console.error('Error:', error);
+					alert('❌ Error al eliminar: ' + (error.message || 'Error desconocido'));
+					// Restaurar el botón
+					btnEliminarAvaluo.disabled = false;
+					btnEliminarAvaluo.innerHTML = '<i class="fas fa-trash me-1"></i> Eliminar Avalúo';
+				});
+			});
+		}
+	});
+})();
+</script>
+</body>
+</html>
+
+
+

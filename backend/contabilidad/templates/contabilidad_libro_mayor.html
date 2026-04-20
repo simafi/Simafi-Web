@@ -1,0 +1,144 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}Libro Mayor / Auxiliar de Cuenta{% endblock %}
+
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item active">Libro Mayor</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-book me-2"></i>Libro Mayor / Auxiliar de Cuenta (NIC 1)</h4>
+        <p class="text-muted small mb-0">Consulte saldos y movimientos por cuenta contable.</p>
+    </div>
+
+    <!-- Filtros -->
+    <div class="cont-card mb-3">
+        <div class="card-body cont-form">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Cuenta Contable</label>
+                    <select name="cuenta" class="form-control" onchange="this.form.submit()">
+                        <option value="">-- Seleccione una cuenta --</option>
+                        {% for c in cuentas %}
+                        <option value="{{ c.pk }}" {% if cuenta_id == c.pk|stringformat:"d" %}selected{% endif %}>
+                            {{ c.codigo }} - {{ c.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Ejercicio Fiscal</label>
+                    <select name="ejercicio" class="form-control" onchange="this.form.submit()">
+                        <option value="">-- Todos --</option>
+                        {% for e in ejercicios %}
+                        <option value="{{ e.pk }}" {% if ejercicio_id == e.pk|stringformat:"d" %}selected{% endif %}>
+                            {{ e.anio }} - {{ e.descripcion }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Fecha Desde</label>
+                    <input type="date" name="fecha_desde" class="form-control form-control-sm" value="{{ fecha_desde }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Fecha Hasta</label>
+                    <input type="date" name="fecha_hasta" class="form-control form-control-sm" value="{{ fecha_hasta }}">
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-cont-primary"><i class="fas fa-search"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if cuenta_seleccionada %}
+    <!-- Info de la cuenta -->
+    <div class="cont-card mb-3 p-3" style="background:#f7fafc;">
+        <div class="row">
+            <div class="col-md-3"><small class="text-muted">Código</small><div class="fw-bold">{{ cuenta_seleccionada.codigo }}</div></div>
+            <div class="col-md-5"><small class="text-muted">Nombre</small><div class="fw-bold">{{ cuenta_seleccionada.nombre }}</div></div>
+            <div class="col-md-2"><small class="text-muted">Naturaleza</small><div class="fw-bold">{{ cuenta_seleccionada.naturaleza }}</div></div>
+            <div class="col-md-2"><small class="text-muted">Grupo</small><div class="fw-bold">{{ cuenta_seleccionada.grupo }}</div></div>
+        </div>
+    </div>
+
+    <!-- Saldos por período -->
+    {% if registros %}
+    <div class="cont-card mb-3">
+        <div class="card-header"><i class="fas fa-table me-1"></i> Saldos por Período</div>
+        <div class="card-body p-0">
+            <table class="table cont-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Período</th>
+                        <th class="text-end">Saldo Anterior</th>
+                        <th class="text-end">Débitos</th>
+                        <th class="text-end">Créditos</th>
+                        <th class="text-end">Saldo Final</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in registros %}
+                    <tr>
+                        <td>{{ r.periodo.nombre }}</td>
+                        <td class="text-end">{{ r.saldo_anterior|floatformat:2 }}</td>
+                        <td class="text-end" style="color:var(--cont-accent);">{{ r.debitos|floatformat:2 }}</td>
+                        <td class="text-end" style="color:var(--cont-success);">{{ r.creditos|floatformat:2 }}</td>
+                        <td class="text-end fw-bold">{{ r.saldo_final|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Movimientos individuales -->
+    {% if movimientos %}
+    <div class="cont-card">
+        <div class="card-header"><i class="fas fa-exchange-alt me-1"></i> Movimientos Contabilizados</div>
+        <div class="card-body p-0">
+            <table class="table cont-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Asiento</th>
+                        <th>Concepto</th>
+                        <th class="text-end">Debe</th>
+                        <th class="text-end">Haber</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in movimientos %}
+                    <tr>
+                        <td>{{ m.asiento.fecha|date:"d/m/Y" }}</td>
+                        <td><a href="{% url 'contabilidad:asiento_ver' m.asiento.pk %}"><code>{{ m.asiento.numero }}</code></a></td>
+                        <td>{{ m.concepto|default:m.asiento.concepto|truncatechars:60 }}</td>
+                        <td class="text-end">{% if m.debe > 0 %}{{ m.debe|floatformat:2 }}{% endif %}</td>
+                        <td class="text-end">{% if m.haber > 0 %}{{ m.haber|floatformat:2 }}{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% elif not cuenta_id %}
+    <div class="cont-card p-5 text-center text-muted">
+        <i class="fas fa-search" style="font-size:3rem;"></i>
+        <p class="mt-3">Seleccione una cuenta contable para consultar su libro mayor.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

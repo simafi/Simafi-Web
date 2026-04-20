@@ -1,0 +1,80 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Órdenes de Trabajo{% endblock %}
+{% block breadcrumb %}Órdenes de Trabajo{% endblock %}
+{% block nav_ordenes %}active{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#ea580c,#f97316)"><i class="fas fa-clipboard-list"></i></div>
+        <div>
+            <h1 class="page-title">Órdenes de Trabajo</h1>
+            <p class="page-subtitle">{{ total }} órdenes registradas</p>
+        </div>
+    </div>
+    <a href="{% url 'servicios_publicos:orden_nueva' %}" class="btn-sp-primary">
+        <i class="fas fa-plus"></i> Nueva Orden
+    </a>
+</div>
+<div class="filter-bar">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-3"><label class="form-label">Buscar</label>
+            <input type="text" name="q" class="form-control" value="{{ q_texto }}" placeholder="Descripción o abonado"></div>
+        <div class="col-md-3"><label class="form-label">Tipo</label>
+            <select name="tipo" class="form-select"><option value="">Todos</option>
+            {% for v,l in TIPO_CHOICES %}<option value="{{ v }}" {% if v == q_tipo %}selected{% endif %}>{{ l }}</option>{% endfor %}
+            </select></div>
+        <div class="col-md-2"><label class="form-label">Estado</label>
+            <select name="estado" class="form-select"><option value="">Todos</option>
+            {% for v,l in ESTADO_CHOICES %}<option value="{{ v }}" {% if v == q_estado %}selected{% endif %}>{{ l }}</option>{% endfor %}
+            </select></div>
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn-sp-primary w-100"><i class="fas fa-search"></i> Buscar</button>
+            <a href="{% url 'servicios_publicos:ordenes_lista' %}" class="btn-sp-secondary">✕</a>
+        </div>
+    </form>
+</div>
+<div class="data-card">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr><th>#OT</th><th>Tipo</th><th>Abonado</th><th>Responsable</th><th>Prioridad</th><th>Fecha</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for ot in ordenes %}
+                <tr>
+                    <td><strong style="color:var(--sp-secondary)">#{{ ot.numero_ot }}</strong></td>
+                    <td>{{ ot.get_tipo_display }}</td>
+                    <td>{{ ot.abonado.nombre|truncatechars:25|default:"-" }}
+                        {% if ot.abonado %}<br><small class="text-muted">{{ ot.abonado.codigo_abonado }}</small>{% endif %}</td>
+                    <td>
+                      {% if ot.responsable_asignado %}
+                        {{ ot.responsable_asignado.codigo }} - {{ ot.responsable_asignado.nombre|truncatechars:18 }}
+                      {% else %}
+                        {{ ot.tecnico_asignado|default:"-"|truncatechars:20 }}
+                      {% endif %}
+                    </td>
+                    <td>
+                        {% if ot.prioridad == 'A' %}<span class="badge bg-danger">Alta</span>
+                        {% elif ot.prioridad == 'M' %}<span class="badge bg-warning text-dark">Media</span>
+                        {% else %}<span class="badge bg-secondary">Baja</span>{% endif %}
+                    </td>
+                    <td>{{ ot.fecha_emision|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if ot.estado == 'P' %}<span class="badge bg-secondary">Pendiente</span>
+                        {% elif ot.estado == 'A' %}<span class="badge bg-info">Asignada</span>
+                        {% elif ot.estado == 'E' %}<span class="badge bg-primary">En Ejecución</span>
+                        {% elif ot.estado == 'C' %}<span class="badge bg-success">Completada</span>
+                        {% elif ot.estado == 'X' %}<span class="badge bg-danger">Cancelada</span>{% endif %}
+                    </td>
+                    <td><a href="{% url 'servicios_publicos:orden_detalle' ot.pk %}" style="color:var(--sp-secondary)"><i class="fas fa-eye"></i></a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center py-4 text-muted">
+                    No hay órdenes de trabajo. <a href="{% url 'servicios_publicos:orden_nueva' %}" class="btn-link">Crear primera OT</a>
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

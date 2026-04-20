@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Gerencial - Gráficos Catastrales</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            background: #f5f7fa;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: #ffffff !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 3px solid #667eea;
+        }
+        .main-container {
+            padding: 30px 20px;
+        }
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        .stats-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        .stats-card .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        .chart-container {
+            position: relative;
+            height: 450px;
+            margin: 20px 0;
+        }
+        .chart-container-small {
+            position: relative;
+            height: 350px;
+            margin: 20px 0;
+        }
+        .chart-type-selector {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .btn-chart-type {
+            margin: 5px;
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-weight: 500;
+        }
+        .btn-chart-type.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .data-table {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+        }
+        .data-table table {
+            width: 100%;
+        }
+        .data-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .data-table th {
+            padding: 15px;
+            font-weight: 600;
+            text-align: left;
+        }
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        .export-buttons {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        .btn-export {
+            margin: 5px;
+            border-radius: 6px;
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+        .filtros-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .badge-stat {
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+            }
+            .chart-card, .stats-card, .data-table {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light no-print">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+                <i class="fas fa-chart-line me-2"></i> <strong>Dashboard Gerencial</strong>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user"></i> {{ usuario_nombre }}
+                </span>
+                <a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2"><i class="fas fa-chart-bar me-3"></i>{{ titulo_grafico }}</h1>
+                        <p class="mb-0 opacity-75">
+                            <i class="fas fa-building me-2"></i>{{ municipio_descripcion }}
+                            <span class="ms-3"><i class="fas fa-calendar me-2"></i>{{ "now"|date:"d/m/Y H:i" }}</span>
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span class="badge bg-light text-dark px-3 py-2" style="font-size: 1rem;">
+                            <i class="fas fa-layer-group me-2"></i>Nivel: {{ nivel_texto }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros Aplicados -->
+            {% if filtros_aplicados %}
+            <div class="filtros-box">
+                <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtros Aplicados:</h5>
+                <div class="row">
+                    {% for filtro in filtros_aplicados %}
+                    <div class="col-md-6 mb-2">
+                        <i class="fas fa-check-circle me-2 text-primary"></i>{{ filtro }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Estadísticas Resumidas -->
+            <div class="row mb-4" id="statsSection">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stat-label">Total {{ nivel_texto }}</div>
+                        <div class="stat-value" id="statTotal">0</div>
+                        <div class="text-muted small">
+                            <i class="fas fa-chart-line me-1"></i>Suma total
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stat-label">Promedio</div>
+                        <div class="stat-value" id="statPromedio">0</div>
+                        <div class="text-muted small">
+                            <i class="fas fa-calculator me-1"></i>Valor promedio
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stat-label">Máximo</div>
+                        <div class="stat-value" id="statMaximo">0</div>
+                        <div class="text-muted small">
+                            <i class="fas fa-arrow-up me-1"></i>Valor más alto
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stat-label">Mínimo</div>
+                        <div class="stat-value" id="statMinimo">0</div>
+                        <div class="text-muted small">
+                            <i class="fas fa-arrow-down me-1"></i>Valor más bajo
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Exportación -->
+            <div class="export-buttons no-print">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h5 class="mb-3"><i class="fas fa-download me-2"></i>Exportar Gráfico:</h5>
+                        <button type="button" class="btn btn-success btn-export" onclick="exportarPNG()">
+                            <i class="fas fa-image me-2"></i>Exportar PNG
+                        </button>
+                        <button type="button" class="btn btn-danger btn-export" onclick="exportarPDF()">
+                            <i class="fas fa-file-pdf me-2"></i>Exportar PDF
+                        </button>
+                        <button type="button" class="btn btn-primary btn-export" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Imprimir
+                        </button>
+                    </div>
+                    <a href="{% url 'catastro:generacion_graficos' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Volver
+                    </a>
+                </div>
+            </div>
+
+            <!-- Selector de Tipo de Gráfico -->
+            <div class="chart-card no-print">
+                <div class="chart-type-selector">
+                    <h5 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Tipo de Visualización:</h5>
+                    <button class="btn btn-outline-primary btn-chart-type active" onclick="cambiarTipoGrafico('bar', this)">
+                        <i class="fas fa-chart-bar me-2"></i>Barras
+                    </button>
+                    <button class="btn btn-outline-primary btn-chart-type" onclick="cambiarTipoGrafico('line', this)">
+                        <i class="fas fa-chart-line me-2"></i>Líneas
+                    </button>
+                    <button class="btn btn-outline-primary btn-chart-type" onclick="cambiarTipoGrafico('pie', this)">
+                        <i class="fas fa-chart-pie me-2"></i>Pastel
+                    </button>
+                    <button class="btn btn-outline-primary btn-chart-type" onclick="cambiarTipoGrafico('doughnut', this)">
+                        <i class="fas fa-circle-notch me-2"></i>Dona
+                    </button>
+                    <button class="btn btn-outline-primary btn-chart-type" onclick="cambiarTipoGrafico('polarArea', this)">
+                        <i class="fas fa-bullseye me-2"></i>Área Polar
+                    </button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="graficoPrincipal"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico Secundario (Pastel/Dona) -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="chart-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Distribución Porcentual</h5>
+                        <div class="chart-container-small">
+                            <canvas id="graficoPastel"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-card">
+                        <h5 class="mb-3"><i class="fas fa-percentage me-2"></i>Top 5 Categorías</h5>
+                        <div class="chart-container-small">
+                            <canvas id="graficoTop5"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Datos Detallada -->
+            <div class="data-table">
+                <h5 class="mb-4"><i class="fas fa-table me-2"></i>Datos Detallados</h5>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Categoría</th>
+                            <th class="text-end">{{ nivel_texto }}</th>
+                            <th class="text-end">Porcentaje</th>
+                            <th class="text-end">Acumulado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaDatos">
+                        <!-- Se llenará con JavaScript -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-primary">
+                            <th colspan="2">TOTAL</th>
+                            <th class="text-end" id="totalTabla">0</th>
+                            <th class="text-end">100%</th>
+                            <th class="text-end">-</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Registrar plugin de datalabels
+        Chart.register(ChartDataLabels);
+        
+        // Obtener datos del contexto Django
+        const labels = {{ labels|safe }};
+        const valores = {{ valores|safe }};
+        const nivelTexto = '{{ nivel_texto }}';
+        const tituloGrafico = '{{ titulo_grafico }}';
+        
+        // Calcular estadísticas
+        const total = valores.reduce((a, b) => a + b, 0);
+        const promedio = valores.length > 0 ? total / valores.length : 0;
+        const maximo = Math.max(...valores);
+        const minimo = Math.min(...valores);
+        
+        // Actualizar estadísticas
+        document.getElementById('statTotal').textContent = formatearValor(total);
+        document.getElementById('statPromedio').textContent = formatearValor(promedio);
+        document.getElementById('statMaximo').textContent = formatearValor(maximo);
+        document.getElementById('statMinimo').textContent = formatearValor(minimo);
+        document.getElementById('totalTabla').textContent = formatearValor(total);
+        
+        // Generar colores profesionales
+        const coloresProfesionales = [
+            '#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe',
+            '#43e97b', '#fa709a', '#fee140', '#30cfd0', '#a8edea',
+            '#fed6e3', '#a8caba', '#5d4e75', '#ffecd2', '#fcb69f'
+        ];
+        
+        const backgroundColors = labels.map((_, i) => coloresProfesionales[i % coloresProfesionales.length]);
+        const borderColors = backgroundColors.map(c => c);
+        
+        // Configuración común
+        const configComun = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: tituloGrafico,
+                    font: {
+                        size: 18,
+                        weight: 'bold'
+                    },
+                    padding: 20
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null || context.parsed !== null) {
+                                const valor = context.parsed.y !== null ? context.parsed.y : context.parsed;
+                                label += formatearValor(valor);
+                                const porcentaje = ((valor / total) * 100).toFixed(2);
+                                label += ` (${porcentaje}%)`;
+                            }
+                            return label;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: '#333',
+                    font: {
+                        weight: 'bold',
+                        size: 11
+                    },
+                    formatter: function(value) {
+                        if (value < total * 0.05) return ''; // Ocultar etiquetas muy pequeñas
+                        return formatearValor(value);
+                    }
+                }
+            }
+        };
+        
+        // Gráfico Principal
+        let chartPrincipal;
+        const ctxPrincipal = document.getElementById('graficoPrincipal').getContext('2d');
+        
+        function crearGraficoPrincipal(tipo = 'bar') {
+            if (chartPrincipal) {
+                chartPrincipal.destroy();
+            }
+            
+            const config = {
+                type: tipo,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: nivelTexto,
+                        data: valores,
+                        backgroundColor: tipo === 'bar' || tipo === 'line' ? 
+                            backgroundColors.map(c => c + '80') : backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    ...configComun,
+                    scales: tipo === 'bar' || tipo === 'line' ? {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatearValor(value);
+                                },
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    } : {}
+                }
+            };
+            
+            chartPrincipal = new Chart(ctxPrincipal, config);
+        }
+        
+        // Gráfico Pastel
+        const ctxPastel = document.getElementById('graficoPastel').getContext('2d');
+        const chartPastel = new Chart(ctxPastel, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: valores,
+                    backgroundColor: backgroundColors,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                ...configComun,
+                plugins: {
+                    ...configComun.plugins,
+                    datalabels: {
+                        color: '#fff',
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+                        formatter: function(value, context) {
+                            const porcentaje = ((value / total) * 100).toFixed(1);
+                            if (porcentaje < 3) return '';
+                            return porcentaje + '%';
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Gráfico Top 5
+        const top5Labels = labels.slice(0, 5);
+        const top5Valores = valores.slice(0, 5);
+        const ctxTop5 = document.getElementById('graficoTop5').getContext('2d');
+        const chartTop5 = new Chart(ctxTop5, {
+            type: 'doughnut',
+            data: {
+                labels: top5Labels,
+                datasets: [{
+                    data: top5Valores,
+                    backgroundColor: backgroundColors.slice(0, 5),
+                    borderColor: '#fff',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                ...configComun,
+                plugins: {
+                    ...configComun.plugins,
+                    title: {
+                        ...configComun.plugins.title,
+                        text: 'Top 5 Categorías'
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: {
+                            weight: 'bold',
+                            size: 12
+                        },
+                        formatter: function(value) {
+                            const porcentaje = ((value / top5Valores.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
+                            return porcentaje + '%';
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Crear gráfico principal inicial
+        crearGraficoPrincipal('bar');
+        
+        // Función para cambiar tipo de gráfico
+        function cambiarTipoGrafico(tipo, buttonElement) {
+            crearGraficoPrincipal(tipo);
+            // Actualizar botones activos
+            document.querySelectorAll('.btn-chart-type').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            if (buttonElement) {
+                buttonElement.classList.add('active');
+            }
+        }
+        
+        // Función para formatear valores
+        function formatearValor(valor) {
+            if (nivelTexto === 'Predios') {
+                return Math.round(valor).toLocaleString('es-HN');
+            } else {
+                return 'L. ' + valor.toLocaleString('es-HN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        }
+        
+        // Llenar tabla de datos
+        let acumulado = 0;
+        const tablaBody = document.getElementById('tablaDatos');
+        labels.forEach((label, index) => {
+            const valor = valores[index];
+            const porcentaje = ((valor / total) * 100).toFixed(2);
+            acumulado += parseFloat(porcentaje);
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong>${label}</strong></td>
+                <td class="text-end">${formatearValor(valor)}</td>
+                <td class="text-end">
+                    <span class="badge bg-primary badge-stat">${porcentaje}%</span>
+                </td>
+                <td class="text-end">${acumulado.toFixed(2)}%</td>
+            `;
+            tablaBody.appendChild(row);
+        });
+        
+        // Función para exportar PNG
+        function exportarPNG() {
+            const canvas = document.getElementById('graficoPrincipal');
+            html2canvas(document.querySelector('.chart-card'), {
+                backgroundColor: '#ffffff',
+                scale: 2
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'grafico_catastral_' + new Date().getTime() + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+        
+        // Función para exportar PDF
+        function exportarPDF() {
+            html2canvas(document.body, {
+                backgroundColor: '#ffffff',
+                scale: 2
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('landscape', 'mm', 'a4');
+                const imgWidth = 297;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save('grafico_catastral_' + new Date().getTime() + '.pdf');
+            });
+        }
+    </script>
+</body>
+</html>

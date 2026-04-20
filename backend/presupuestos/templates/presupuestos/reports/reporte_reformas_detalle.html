@@ -1,0 +1,72 @@
+{% extends "presupuestos/menu_principal.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid mt-4 pb-5 px-4">
+    <div class="d-print-none mb-3 d-flex justify-content-between align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'presupuestos:informes_ingresos_hub' %}">Panel de Ingresos</a></li>
+                <li class="breadcrumb-item active">Reformas</li>
+            </ol>
+        </nav>
+        <button onclick="window.print()" class="btn btn-outline-dark">
+            <i class="fas fa-print me-2"></i>Imprimir
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <h4 class="fw-bold mb-1">{{ empresa_nombre }}</h4>
+                <h5 class="text-muted mb-1">{{ titulo }}</h5>
+                <p class="small text-muted">{{ subtitulo }}</p>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle border">
+                    <thead class="bg-light text-center small fw-bold">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Referencia</th>
+                            <th>Cuenta Origen</th>
+                            <th>Cuenta Destino</th>
+                            <th>Descripción / Concepto</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for r in datos %}
+                        <tr>
+                            <td class="text-nowrap">{{ r.fecha|date:"d/m/Y" }}</td>
+                            <td>{{ r.referencia }}</td>
+                            <td class="text-muted">
+                                {% if r.cuenta_origen %}
+                                    {{ r.cuenta_origen.codigo }} - {{ r.cuenta_origen.nombre|truncatechars:30 }}
+                                {% else %}
+                                    ---
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ r.cuenta_destino.codigo }} - {{ r.cuenta_destino.nombre|truncatechars:30 }}
+                            </td>
+                            <td class="small">{{ r.concepto }}</td>
+                            <td class="text-end font-monospace fw-bold">{{ r.monto|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No se registraron movimientos en este apartado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4 small text-muted d-flex justify-content-between">
+                <span>Generado el: {{ hoy }}</span>
+                <span>SIMAFI WEB - Detalle de Reformas Presupuestarias</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

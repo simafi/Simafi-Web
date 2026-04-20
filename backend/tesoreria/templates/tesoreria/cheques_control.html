@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Cheques - SIMAFI Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .delivered { color: #198754; font-weight: bold; }
+        .pending { color: #fd7e14; font-weight: bold; }
+        .voided { color: #dc3545; text-decoration: line-through; }
+    </style>
+</head>
+<body>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <div>
+            <h4 class="mb-0 text-primary"><i class="fas fa-user-check me-2"></i>Control de Entrega de Cheques</h4>
+            <p class="text-muted small mb-0">Registra la entrega física de cheques a los beneficiarios.</p>
+        </div>
+        <a href="{% url 'tesoreria:tesoreria_menu_principal' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="px-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="px-3">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-white py-3">
+                <form class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <input type="text" name="q" class="form-control" placeholder="Buscar por no. o beneficiario..." value="{{ q }}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">No. Cheque</th>
+                                <th>Fecha Emisión</th>
+                                <th>Beneficiario</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                                <th>Entrega</th>
+                                <th class="text-center pe-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in cheques %}
+                            <tr class="{% if c.estado == 'ANULADO' %}table-light voided{% endif %}">
+                                <td class="ps-4 fw-bold">{{ c.numero_referencia }}</td>
+                                <td>{{ c.fecha|date:"d/m/Y" }}</td>
+                                <td>{{ c.beneficiario }}</td>
+                                <td class="fw-bold">L. {{ c.monto_total|floatformat:2 }}</td>
+                                <td>
+                                    {% if c.estado == 'EMITIDO' %}
+                                        <span class="badge bg-warning text-dark">Pendiente</span>
+                                    {% elif c.estado == 'PAGADO' %}
+                                        <span class="badge bg-success">Pagado</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Anulado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if c.is_delivered %}
+                                        <span class="delivered small"><i class="fas fa-check-circle me-1"></i>Entregado ({{ c.fecha_entrega|date:"d/m/Y" }})</span>
+                                    {% else %}
+                                        <span class="pending small"><i class="fas fa-clock me-1"></i>No entregado</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center pe-4">
+                                    {% if c.estado != 'ANULADO' %}
+                                        <div class="btn-group btn-group-sm">
+                                            {% if not c.is_delivered %}
+                                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalEntregar{{ c.id }}">
+                                                <i class="fas fa-hand-holding-usd"></i> Entregar
+                                            </button>
+                                            {% endif %}
+                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalAnular{{ c.id }}">
+                                                <i class="fas fa-ban"></i> Anular
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+
+                            <!-- Modal Entregar -->
+                            <div class="modal fade" id="modalEntregar{{ c.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm">
+                                    <form method="post" class="modal-content">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="pago_id" value="{{ c.id }}">
+                                        <input type="hidden" name="accion" value="entregar">
+                                        <div class="modal-header">
+                                            <h6 class="modal-title">Confirmar Entrega</h6>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <p class="small">Ingrese la fecha en que se entregó el cheque <strong>{{ c.numero_referencia }}</strong>:</p>
+                                            <input type="date" name="fecha_entrega" class="form-control form-control-sm" required value="{% now 'Y-m-d' %}">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-success btn-sm">Guardar Entrega</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Modal Anular -->
+                            <div class="modal fade" id="modalAnular{{ c.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm">
+                                    <form method="post" class="modal-content">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="pago_id" value="{{ c.id }}">
+                                        <input type="hidden" name="accion" value="anular">
+                                        <div class="modal-header">
+                                            <h6 class="modal-title text-danger">Anular Cheque</h6>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                                            <p class="small">¿Está seguro de anular el cheque <strong>{{ c.numero_referencia }}</strong>? Esta acción liberará las órdenes de pago asociadas.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">No, volver</button>
+                                            <button type="submit" class="btn btn-danger btn-sm">Sí, anular</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">No se encontraron cheques.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

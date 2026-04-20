@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ request.session.catastro_usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header {% if costo %}bg-warning text-dark{% else %}bg-primary text-white{% endif %}">
+				<h5 class="mb-0">
+					<i class="fas {% if costo %}fa-edit{% else %}fa-plus-circle{% endif %} me-2"></i>{{ titulo }}
+					{% if costo %}
+					<small class="ms-2">(Registro existente - Modo edición)</small>
+					{% endif %}
+				</h5>
+			</div>
+			<div class="card-body">
+				<!-- Mensajes -->
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<!-- Resultados de búsqueda automática -->
+				<div id="resultados-busqueda" class="alert alert-info" style="display: none;">
+					<h6 class="mb-2"><i class="fas fa-info-circle me-2"></i>Registro existente encontrado - Los valores se han cargado automáticamente en el formulario:</h6>
+					<div class="row">
+						<div class="col-md-4">
+							<strong>Costo:</strong> <span id="resultado-costo">-</span>
+						</div>
+						<div class="col-md-4">
+							<strong>Rango 1:</strong> <span id="resultado-rango1">-</span>
+						</div>
+						<div class="col-md-4">
+							<strong>Rango 2:</strong> <span id="resultado-rango2">-</span>
+						</div>
+					</div>
+					<small class="text-muted">Puede modificar estos valores según sea necesario.</small>
+				</div>
+
+				<!-- Formulario -->
+				<form method="post" id="form-costo">
+					{% csrf_token %}
+					{% if costo %}
+					<input type="hidden" name="editar_existente" value="1">
+					{% endif %}
+					<div class="row g-3">
+						<!-- Empresa (oculto) -->
+						<div class="col-md-12" style="display: none;">
+							<label class="form-label" for="{{ form.empresa.id_for_label }}">
+								<strong>{{ form.empresa.label }}</strong>
+							</label>
+							{{ form.empresa }}
+							{{ form.empresa.errors }}
+						</div>
+						
+						<!-- Uso (Combobox desde usoedifica) -->
+						<div class="col-md-4">
+							<label class="form-label" for="{{ form.uso.id_for_label }}">
+								<strong>{{ form.uso.label }}</strong>
+							</label>
+							{{ form.uso }}
+							{{ form.uso.errors }}
+							<small class="form-text text-muted">Seleccione un uso de edificación</small>
+						</div>
+						
+						<!-- Clase (Combobox) -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.clase.id_for_label }}">
+								<strong>{{ form.clase.label }}</strong>
+							</label>
+							{{ form.clase }}
+							{{ form.clase.errors }}
+							<small class="form-text text-muted">Seleccione una clase</small>
+						</div>
+						
+						<!-- Calidad (Campo numérico) -->
+						<div class="col-md-2">
+							<label class="form-label" for="{{ form.calidad.id_for_label }}">
+								<strong>{{ form.calidad.label }}</strong>
+							</label>
+							{{ form.calidad }}
+							{{ form.calidad.errors }}
+							<small class="form-text text-muted">Máximo 3 dígitos</small>
+						</div>
+						
+						<!-- Costo -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.costo.id_for_label }}">
+								<strong>{{ form.costo.label }}</strong>
+							</label>
+							{{ form.costo }}
+							{{ form.costo.errors }}
+							<small class="form-text text-muted">Formato: 0.00</small>
+						</div>
+					</div>
+					
+					<div class="row g-3 mt-2">
+						<!-- Rango 1 -->
+						<div class="col-md-6">
+							<label class="form-label" for="{{ form.rango1.id_for_label }}">
+								<strong>{{ form.rango1.label }}</strong>
+							</label>
+							{{ form.rango1 }}
+							{{ form.rango1.errors }}
+							<small class="form-text text-muted">Rango mínimo de pesos</small>
+						</div>
+						
+						<!-- Rango 2 -->
+						<div class="col-md-6">
+							<label class="form-label" for="{{ form.rango2.id_for_label }}">
+								<strong>{{ form.rango2.label }}</strong>
+							</label>
+							{{ form.rango2 }}
+							{{ form.rango2.errors }}
+							<small class="form-text text-muted">Rango máximo de pesos</small>
+						</div>
+					</div>
+
+					<!-- Botones -->
+					<div class="row mt-4">
+						<div class="col-12 d-flex justify-content-between">
+							<a href="{% url 'catastro:costos_list' %}" class="btn btn-secondary">
+								<i class="fas fa-arrow-left me-1"></i> Volver
+							</a>
+							<button type="submit" class="btn btn-success">
+								<i class="fas fa-save me-1"></i> Guardar
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		let datosEncontrados = null;
+		
+		document.addEventListener('DOMContentLoaded', function() {
+			const usoInput = document.getElementById('{{ form.uso.id_for_label }}');
+			const claseInput = document.getElementById('{{ form.clase.id_for_label }}');
+			const calidadInput = document.getElementById('{{ form.calidad.id_for_label }}');
+			const costoInput = document.getElementById('{{ form.costo.id_for_label }}');
+			const rango1Input = document.getElementById('{{ form.rango1.id_for_label }}');
+			const rango2Input = document.getElementById('{{ form.rango2.id_for_label }}');
+			const empresa = '{{ empresa }}';
+			
+			// Validar que el campo calidad solo acepte números
+			if (calidadInput) {
+				calidadInput.addEventListener('input', function(e) {
+					// Solo permitir números
+					this.value = this.value.replace(/[^0-9]/g, '');
+					// Limitar a 3 caracteres
+					if (this.value.length > 3) {
+						this.value = this.value.slice(0, 3);
+					}
+					// Buscar automáticamente cuando cambia
+					buscarCosto();
+				});
+				
+				// Validar al perder el foco
+				calidadInput.addEventListener('blur', function(e) {
+					if (this.value && (isNaN(this.value) || parseInt(this.value) < 0)) {
+						this.value = '';
+					}
+					buscarCosto();
+				});
+			}
+			
+			// Buscar automáticamente cuando cambian uso o clase
+			if (usoInput) {
+				usoInput.addEventListener('change', buscarCosto);
+			}
+			if (claseInput) {
+				claseInput.addEventListener('change', buscarCosto);
+			}
+			
+			// Formatear el campo costo con separador de miles (opcional)
+			if (costoInput) {
+				costoInput.addEventListener('blur', function(e) {
+					const value = parseFloat(this.value);
+					if (!isNaN(value) && value >= 0) {
+						this.value = value.toFixed(2);
+					}
+				});
+			}
+			
+			// Validar campos rango1 y rango2 para que solo acepten números enteros
+			if (rango1Input) {
+				rango1Input.addEventListener('input', function(e) {
+					// Solo permitir números enteros
+					this.value = this.value.replace(/[^0-9]/g, '');
+				});
+				rango1Input.addEventListener('blur', function(e) {
+					// Asegurar que sea un número entero válido
+					const value = parseInt(this.value) || 0;
+					this.value = value.toString();
+				});
+			}
+			
+			if (rango2Input) {
+				rango2Input.addEventListener('input', function(e) {
+					// Solo permitir números enteros
+					this.value = this.value.replace(/[^0-9]/g, '');
+				});
+				rango2Input.addEventListener('blur', function(e) {
+					// Asegurar que sea un número entero válido
+					const value = parseInt(this.value) || 0;
+					this.value = value.toString();
+				});
+			}
+			
+			// Función para buscar costo automáticamente
+			function buscarCosto() {
+				const uso = usoInput ? usoInput.value.trim() : '';
+				const clase = claseInput ? claseInput.value.trim() : '';
+				const calidad = calidadInput ? calidadInput.value.trim() : '';
+				
+				// Ocultar resultados anteriores
+				document.getElementById('resultados-busqueda').style.display = 'none';
+				datosEncontrados = null;
+				
+				// Solo buscar si todos los campos tienen valor
+				if (!empresa || !uso || !clase || !calidad) {
+					return;
+				}
+				
+				// Construir URL de búsqueda
+				const url = '{% url "catastro:api_buscar_costo" %}?empresa=' + encodeURIComponent(empresa) +
+					'&uso=' + encodeURIComponent(uso) +
+					'&clase=' + encodeURIComponent(clase) +
+					'&calidad=' + encodeURIComponent(calidad);
+				
+				// Realizar búsqueda
+				fetch(url)
+					.then(response => response.json())
+					.then(data => {
+						if (data.encontrado && data.costo) {
+							// Guardar datos encontrados
+							datosEncontrados = data;
+							
+							// Cargar automáticamente los valores en los campos del formulario
+							if (costoInput) {
+								costoInput.value = parseFloat(data.costo).toFixed(2);
+							}
+							if (rango1Input) {
+								// Convertir a entero y asegurar que sea un número válido
+								const rango1 = parseInt(data.rango1) || 0;
+								rango1Input.value = rango1.toString();
+							}
+							if (rango2Input) {
+								// Convertir a entero y asegurar que sea un número válido
+								const rango2 = parseInt(data.rango2) || 0;
+								rango2Input.value = rango2.toString();
+							}
+							
+							// Mostrar panel informativo indicando que se encontró un registro existente
+							document.getElementById('resultado-costo').textContent = parseFloat(data.costo).toFixed(2);
+							document.getElementById('resultado-rango1').textContent = data.rango1 || '0';
+							document.getElementById('resultado-rango2').textContent = data.rango2 || '0';
+							document.getElementById('resultados-busqueda').style.display = 'block';
+							document.getElementById('resultados-busqueda').className = 'alert alert-info';
+							
+							console.log('Valores cargados automáticamente:', {
+								costo: data.costo,
+								rango1: data.rango1,
+								rango2: data.rango2
+							});
+						} else {
+							// No se encontró registro - limpiar campos si estaban llenos
+							document.getElementById('resultados-busqueda').style.display = 'none';
+							// No limpiar los campos manualmente, dejar que el usuario los llene
+						}
+					})
+					.catch(error => {
+						console.error('Error al buscar costo:', error);
+						document.getElementById('resultados-busqueda').style.display = 'none';
+					});
+			}
+			
+			// Función para cargar datos encontrados en el formulario (mantener para compatibilidad)
+			window.cargarDatosEncontrados = function() {
+				if (datosEncontrados) {
+					if (costoInput) {
+						costoInput.value = parseFloat(datosEncontrados.costo).toFixed(2);
+					}
+					if (rango1Input) {
+						rango1Input.value = datosEncontrados.rango1 || '0';
+					}
+					if (rango2Input) {
+						rango2Input.value = datosEncontrados.rango2 || '0';
+					}
+					// Ocultar el mensaje de resultados
+					document.getElementById('resultados-busqueda').style.display = 'none';
+				}
+			};
+		});
+	</script>
+</body>
+</html>
+
+
+

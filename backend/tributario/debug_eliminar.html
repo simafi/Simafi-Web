@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Eliminar</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .result { background: #e9ecef; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; white-space: pre-line; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Eliminar Tarifa</h1>
+    
+    <div class="debug">
+        <h3>Simular llamada desde template:</h3>
+        <p><code>eliminarTarifa('0301', '0001', 'Tarifa Test', '0001', '2024')</code></p>
+        <button onclick="simularEliminar()">Simular Eliminar</button>
+    </div>
+    
+    <div id="result"></div>
+
+    <script>
+        // Función simplificada para debug
+        function eliminarTarifa(empresa, cod_tarifa, descripcion, rubro, ano) {
+            console.log('🔍 eliminarTarifa llamada con:');
+            console.log('   - empresa:', empresa, '(tipo:', typeof empresa, ')');
+            console.log('   - cod_tarifa:', cod_tarifa, '(tipo:', typeof cod_tarifa, ')');
+            console.log('   - descripcion:', descripcion, '(tipo:', typeof descripcion, ')');
+            console.log('   - rubro:', rubro, '(tipo:', typeof rubro, ')');
+            console.log('   - ano:', ano, '(tipo:', typeof ano, ')');
+            
+            const result = document.getElementById('result');
+            let html = '🔍 eliminarTarifa llamada con:\n';
+            html += `   - empresa: "${empresa}" (tipo: ${typeof empresa}) ✅ NECESARIO\n`;
+            html += `   - cod_tarifa: "${cod_tarifa}" (tipo: ${typeof cod_tarifa}) ✅ NECESARIO\n`;
+            html += `   - rubro: "${rubro}" (tipo: ${typeof rubro}) ✅ NECESARIO\n`;
+            html += `   - ano: "${ano}" (tipo: ${typeof ano}) ✅ NECESARIO\n`;
+            html += `   - descripcion: "${descripcion}" (tipo: ${typeof descripcion}) ℹ️ SOLO PARA CONFIRMACIÓN\n\n`;
+            
+            // Verificar parámetros necesarios
+            const parametrosNecesarios = [
+                {nombre: 'empresa', valor: empresa},
+                {nombre: 'cod_tarifa', valor: cod_tarifa},
+                {nombre: 'rubro', valor: rubro},
+                {nombre: 'ano', valor: ano}
+            ];
+            
+            html += '📋 Verificación de parámetros necesarios:\n';
+            let todosPresentes = true;
+            parametrosNecesarios.forEach(param => {
+                if (param.valor && param.valor.toString().trim() !== '') {
+                    html += `   ✅ ${param.nombre}: "${param.valor}" - OK\n`;
+                } else {
+                    html += `   ❌ ${param.nombre}: "${param.valor}" - FALTANTE\n`;
+                    todosPresentes = false;
+                }
+            });
+            
+            html += `\n🎯 Resultado: ${todosPresentes ? '✅ Todos los parámetros presentes' : '❌ Faltan parámetros obligatorios'}\n\n`;
+            
+            if (todosPresentes) {
+                html += '📤 Parámetros específicos que se enviarían al servidor:\n';
+                html += `   - accion: "eliminar"\n`;
+                html += `   - empresa: "${empresa}" ✅\n`;
+                html += `   - cod_tarifa: "${cod_tarifa}" ✅\n`;
+                html += `   - rubro: "${rubro}" ✅\n`;
+                html += `   - ano: "${ano}" ✅\n`;
+                html += `   - descripcion: NO se envía (solo para confirmación)\n`;
+            }
+            
+            result.innerHTML = html;
+        }
+
+        function simularEliminar() {
+            // Simular la llamada exacta del template
+            eliminarTarifa('0301', '0001', 'Tarifa Test', '0001', '2024');
+        }
+
+        // Ejecutar al cargar
+        window.onload = function() {
+            simularEliminar();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Orden de Trabajo #{{ orden.numero_ot }}{% endblock %}
+{% block breadcrumb %}OT #{{ orden.numero_ot }}{% endblock %}
+{% block nav_ordenes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#ea580c,#f97316)"><i class="fas fa-file-contract"></i></div>
+        <div>
+            <h1 class="page-title">Orden de Trabajo #{{ orden.numero_ot }}</h1>
+            <p class="page-subtitle">Emisión: {{ orden.fecha_emision|date:"d/m/Y" }} | Tipo: {{ orden.get_tipo_display }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'servicios_publicos:ordenes_lista' %}" class="btn-sp-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+        <button onclick="window.print()" class="btn-sp-secondary">
+            <i class="fas fa-print"></i> Imprimir OT
+        </button>
+        {% if orden.estado != 'C' and orden.estado != 'X' %}
+        <a href="{% url 'servicios_publicos:orden_editar' orden.pk %}" class="btn-sp-secondary">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-lg-8">
+        <div class="form-panel mb-4 animate-in">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom" style="border-color:var(--sp-border) !important">
+                <h4 style="color:white;margin:0"><i class="fas fa-info-circle me-2 text-warning"></i>Detalles de la Solicitud</h4>
+                <div>
+                    {% if orden.prioridad == 'A' %}<span class="badge bg-danger fs-6 px-3">ALTA PRIORIDAD</span>
+                    {% elif orden.prioridad == 'M' %}<span class="badge bg-warning text-dark fs-6 px-3">MEDIA</span>
+                    {% else %}<span class="badge bg-secondary fs-6 px-3">BAJA</span>{% endif %}
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">TIPO DE TRABAJO</div>
+                    <div class="fw-bold fs-5">{{ orden.get_tipo_display }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">CONCEPTO / RECLAMO</div>
+                    <div class="fw-bold fs-6">{{ orden.concepto|default:"Sin clasificar" }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">ESTADO ACTUAL</div>
+                    <div>
+                        {% if orden.estado == 'P' %}<span class="badge bg-secondary">PENDIENTE</span>
+                        {% elif orden.estado == 'A' %}<span class="badge bg-info">ASIGNADA</span>
+                        {% elif orden.estado == 'E' %}<span class="badge bg-primary">EN EJECUCIÓN</span>
+                        {% elif orden.estado == 'C' %}<span class="badge bg-success">COMPLETADA</span>
+                        {% elif orden.estado == 'X' %}<span class="badge bg-danger">CANCELADA</span>{% endif %}
+                    </div>
+                </div>
+                <div class="col-12 mt-3">
+                    <div class="text-muted small mb-1">DESCRIPCIÓN DEL REQUERIMIENTO</div>
+                    <div class="p-3 rounded" style="background:var(--sp-surface2); border:1px solid var(--sp-border); color:white; line-height:1.6">
+                        {{ orden.descripcion|linebreaksbr }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">TÉCNICO / CUADRILLA ASIGNADA</div>
+                    <div class="fw-bold"><i class="fas fa-user-hard-hat me-2 text-muted"></i>
+                        {% if orden.responsable_asignado %}
+                          {{ orden.responsable_asignado }}
+                        {% else %}
+                          {{ orden.tecnico_asignado|default:"Sin asignar" }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">FECHA PROGRAMADA</div>
+                    <div class="fw-bold"><i class="fas fa-calendar-alt me-2 text-muted"></i>{{ orden.fecha_programada|date:"d/m/Y"|default:"Pendiente" }}</div>
+                </div>
+            </div>
+        </div>
+
+        {% if orden.estado == 'C' %}
+        <div class="form-panel animate-in" style="border-color:var(--sp-success) !important; animation-delay:0.1s">
+            <div class="form-panel-title" style="color:var(--sp-success); border-color:rgba(16,185,129,0.2) !important">
+                <i class="fas fa-check-double"></i> Resultado del Cierre
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">RESPONSABLE QUE RESOLVIÓ</div>
+                    <div class="fw-bold">{{ orden.responsable_cierre|default:"-" }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">FECHA DE FINALIZACIÓN</div>
+                    <div class="fw-bold">{{ orden.fecha_cierre|date:"d/m/Y" }}</div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="text-muted small mb-1">COSTO TOTAL ESTIMADO</div>
+                    <div class="fw-bold fs-5 text-success">L {{ orden.costo_total|floatformat:2 }}</div>
+                </div>
+                <div class="col-12 mt-2">
+                    <div class="text-muted small mb-1">INFORME TÉCNICO / RESULTADO</div>
+                    <div class="p-3 rounded italic" style="background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.2); color:#a7f3d0">
+                        {{ orden.resultado|default:"No se registró detalle del resultado." }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% elif orden.estado != 'X' %}
+        <div class="form-panel animate-in" style="animation-delay:0.1s">
+            <div class="form-panel-title"><i class="fas fa-door-closed"></i> Finalizar y Cerrar Orden</div>
+            <form method="post" action="{% url 'servicios_publicos:orden_cerrar' orden.pk %}">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Código del Responsable (Fontanero) *</label>
+                        <input type="text" name="responsable_codigo" class="form-control" required placeholder="Ej: FNT-001">
+                        <small class="text-muted">Debe existir en el catálogo de Fontaneros/Responsables.</small>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Resultado Final / Hallazgos *</label>
+                        <textarea name="resultado" class="form-control" rows="3" required placeholder="Describa el trabajo realizado o el motivo de cierre..."></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Costo Total de Trabajo (L)</label>
+                        <input type="number" name="costo_total" class="form-control" value="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button type="submit" class="btn-sp-primary w-100" style="background:linear-gradient(135deg,var(--sp-success),#059669)">
+                            <i class="fas fa-check-circle"></i> Registrar Finalización
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        {% if orden.abonado %}
+        <div class="data-card mb-4 animate-in" style="animation-delay:0.2s">
+            <div class="data-card-header"><h4><i class="fas fa-user-circle me-2"></i>Abonado Vinculado</h4></div>
+            <div class="p-1">
+                <div class="fw-bold mb-1">{{ orden.abonado.nombre }}</div>
+                <div class="text-muted small mb-3">ID: {{ orden.abonado.codigo_abonado }}</div>
+                
+                <div class="small mb-2"><i class="fas fa-map-marker-alt me-2 text-muted"></i>{{ orden.abonado.direccion|truncatechars:100 }}</div>
+                <div class="small mb-4"><i class="fas fa-route me-2 text-muted"></i>Ciclo {{ orden.abonado.ciclo|default:"-" }} / Ruta {{ orden.abonado.ruta|default:"-" }}</div>
+                
+                <a href="{% url 'servicios_publicos:catastro_detalle' orden.abonado.pk %}" class="btn-sp-secondary btn-sm w-100">
+                    Ver Perfil Completo
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="data-card animate-in" style="animation-delay:0.3s">
+            <div class="data-card-header"><h4><i class="fas fa-box-open me-2"></i>Insumos y Repuestos</h4></div>
+            <div class="p-1">
+                <table class="table table-sm" style="font-size:0.8rem">
+                    <thead>
+                        <tr><th>Insumo</th><th class="text-end">Cant.</th><th class="text-end">Subtotal</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for item in insumos %}
+                        <tr>
+                            <td>{{ item.descripcion }}</td>
+                            <td class="text-end">{{ item.cantidad|floatformat:1 }}</td>
+                            <td class="text-end">L {{ item.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center py-3 text-muted">No se han registrado insumos</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if insumos %}
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" class="text-end font-bold">TOTAL INSUMOS</td>
+                            <td class="text-end fw-bold text-info">L {{ total_insumos|floatformat:2 }}</td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

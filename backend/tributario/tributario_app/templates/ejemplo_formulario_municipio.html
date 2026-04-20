@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ejemplo Formulario con Municipio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background: #f4f6f8;
+        }
+        .container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        input[type="text"], input[type="hidden"], select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .code-example {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ejemplo: Formulario con Código de Municipio</h1>
+        
+        <div class="info-box">
+            <h3>Información del Municipio Actual</h3>
+            <p><strong>Código:</strong> {{ empresa }}</p>
+            <p><strong>Descripción:</strong> {{ municipio_descripcion }}</p>
+            <p><strong>Desde diccionario:</strong> {{ municipio_info.codigo }} - {{ municipio_info.descripcion }}</p>
+        </div>
+
+        <h2>Formulario de Ejemplo</h2>
+        
+        <form method="post" action="#">
+            {% csrf_token %}
+            
+            <!-- Campo oculto con código de municipio -->
+            <div class="form-group">
+                <label for="municipio_hidden">Código de Municipio (oculto):</label>
+                <input type="hidden" name="municipio" id="municipio_hidden" value="{{ empresa }}">
+                <input type="text" value="{{ empresa }}" readonly style="background: #f9f9f9;">
+            </div>
+            
+            <!-- Campo visible con descripción -->
+            <div class="form-group">
+                <label for="municipio_desc">Municipio:</label>
+                <input type="text" id="municipio_desc" value="{{ municipio_descripcion }}" readonly style="background: #f9f9f9;">
+            </div>
+            
+            <!-- Otros campos del formulario -->
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" name="nombre" id="nombre" placeholder="Ingrese nombre">
+            </div>
+            
+            <div class="form-group">
+                <label for="identidad">Identidad:</label>
+                <input type="text" name="identidad" id="identidad" placeholder="Ingrese identidad">
+            </div>
+            
+            <div class="form-group">
+                <label for="direccion">Dirección:</label>
+                <input type="text" name="direccion" id="direccion" placeholder="Ingrese dirección">
+            </div>
+            
+            <button type="submit" style="background: #007bff; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer;">
+                Guardar
+            </button>
+        </form>
+
+        <h2>Código de Ejemplo</h2>
+        
+        <h3>1. Campo Oculto en Formulario</h3>
+        <div class="code-example">
+&lt;input type="hidden" name="municipio" value="{{ empresa }}"&gt;
+        </div>
+        
+        <h3>2. Campo Visible con Descripción</h3>
+        <div class="code-example">
+&lt;label&gt;Municipio: {{ municipio_descripcion }}&lt;/label&gt;
+        </div>
+        
+        <h3>3. Uso en JavaScript</h3>
+        <div class="code-example">
+&lt;script&gt;
+    var municipioCodigo = '{{ empresa }}';
+    var municipioDescripcion = '{{ municipio_descripcion }}';
+    
+    // Ejemplo de uso
+    console.log('Código de municipio:', municipioCodigo);
+    console.log('Descripción de municipio:', municipioDescripcion);
+    
+    // Validar que el municipio esté seleccionado
+    if (!municipioCodigo) {
+        alert('Debe seleccionar un municipio');
+    }
+&lt;/script&gt;
+        </div>
+        
+        <h3>4. Uso en Django View</h3>
+        <div class="code-example">
+def mi_vista(request):
+    # Obtener código de municipio de la sesión
+    empresa = request.session.get('empresa')
+    
+    if request.method == 'POST':
+        # El formulario ya incluye el municipio automáticamente
+        municipio = request.POST.get('municipio')
+        # ... resto del código
+        </div>
+        
+        <h3>5. Variables Disponibles en Plantillas</h3>
+        <div class="code-example">
+{{ empresa }}          # Código del municipio (ej: "0301")
+{{ municipio_descripcion }}     # Descripción del municipio (ej: "COMAYAGUA")
+{{ municipio_info.codigo }}     # Código desde diccionario
+{{ municipio_info.descripcion }} # Descripción desde diccionario
+        </div>
+    </div>
+    
+    <script>
+        // Ejemplo de JavaScript con los datos del municipio
+        var municipioCodigo = '{{ empresa }}';
+        var municipioDescripcion = '{{ municipio_descripcion }}';
+        
+        console.log('Municipio actual:', municipioDescripcion, '(', municipioCodigo, ')');
+        
+        // Función para validar formulario
+        function validarFormulario() {
+            if (!municipioCodigo) {
+                alert('Error: No hay municipio seleccionado');
+                return false;
+            }
+            return true;
+        }
+        
+        // Función para mostrar información del municipio
+        function mostrarMunicipio() {
+            alert('Municipio: ' + municipioDescripcion + '\nCódigo: ' + municipioCodigo);
+        }
+    </script>
+</body>
+</html> 

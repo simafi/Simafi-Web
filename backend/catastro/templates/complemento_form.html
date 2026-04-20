@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% if cocata1 %}{% url 'catastro:bienes_inmuebles_registrar' %}?cocata1={{ cocata1 }}{% else %}{% url 'catastro:catastro_configuracion' %}{% endif %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header {% if complemento %}bg-warning text-dark{% else %}bg-primary text-white{% endif %} d-flex justify-content-between align-items-center">
+				<h5 class="mb-0">
+					<i class="fas {% if complemento %}fa-edit{% else %}fa-plus-circle{% endif %} me-2"></i>{{ titulo }}
+				</h5>
+				<a href="{% if cocata1 %}{% url 'catastro:bienes_inmuebles_registrar' %}?cocata1={{ cocata1 }}{% else %}{% url 'catastro:catastro_configuracion' %}{% endif %}" class="btn btn-light btn-sm">
+					<i class="fas fa-arrow-left me-1"></i> Volver
+				</a>
+			</div>
+			<div class="card-body">
+				<!-- Mensajes -->
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<!-- Información del Bien Inmueble -->
+				{% if registro %}
+				<div class="alert alert-info mb-3">
+					<h6 class="alert-heading">
+						<i class="fas fa-info-circle me-2"></i>Información del Bien Inmueble
+					</h6>
+					<hr>
+					<div class="row">
+						<div class="col-md-6">
+							<p class="mb-1"><strong>Clave Catastral:</strong> {{ registro.cocata1 }}</p>
+							<p class="mb-1"><strong>Propietario:</strong> {{ registro.nombres|default:"" }} {{ registro.apellidos|default:"" }}</p>
+						</div>
+						<div class="col-md-6">
+							<p class="mb-1"><strong>Identidad:</strong> {{ registro.identidad|default:"-" }}</p>
+							<p class="mb-0"><strong>Ubicación:</strong> {{ registro.ubicacion|default:"-" }}</p>
+						</div>
+					</div>
+				</div>
+				{% endif %}
+
+				<!-- Formulario -->
+				<form method="post" id="form-complemento">
+					{% csrf_token %}
+					
+					<!-- Sección 1: Información Básica -->
+					<h6 class="mt-4 mb-3 border-bottom pb-2">
+						<i class="fas fa-info-circle me-2 text-primary"></i>Información Básica
+					</h6>
+					<div class="row g-3 mb-4">
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.empresa.id_for_label }}">
+								<strong>{{ form.empresa.label }}</strong>
+							</label>
+							{{ form.empresa }}
+							{{ form.empresa.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.cocomple.id_for_label }}">
+								<strong>{{ form.cocomple.label }}</strong>
+							</label>
+							{{ form.cocomple }}
+							{{ form.cocomple.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.fechaadqui.id_for_label }}">
+								<strong>{{ form.fechaadqui.label }}</strong>
+							</label>
+							{{ form.fechaadqui }}
+							{{ form.fechaadqui.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.monto.id_for_label }}">
+								<strong>{{ form.monto.label }}</strong>
+							</label>
+							{{ form.monto }}
+							{{ form.monto.errors }}
+						</div>
+					</div>
+
+					<!-- Sección 2: Información Adicional -->
+					<h6 class="mt-4 mb-3 border-bottom pb-2">
+						<i class="fas fa-list-alt me-2 text-primary"></i>Información Adicional
+					</h6>
+					<div class="row g-3 mb-4">
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.clatra.id_for_label }}">
+								<strong>{{ form.clatra.label }}</strong>
+							</label>
+							{{ form.clatra }}
+							{{ form.clatra.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.maquinaria.id_for_label }}">
+								<strong>{{ form.maquinaria.label }}</strong>
+							</label>
+							{{ form.maquinaria }}
+							{{ form.maquinaria.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.delineador.id_for_label }}">
+								<strong>{{ form.delineador.label }}</strong>
+							</label>
+							{{ form.delineador }}
+							{{ form.delineador.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.fedeli.id_for_label }}">
+								<strong>{{ form.fedeli.label }}</strong>
+							</label>
+							{{ form.fedeli }}
+							{{ form.fedeli.errors }}
+						</div>
+						<div class="col-md-6">
+							<label class="form-label" for="{{ form.Bnocalcu.id_for_label }}">
+								<strong>{{ form.Bnocalcu.label }}</strong>
+							</label>
+							{{ form.Bnocalcu }}
+							{{ form.Bnocalcu.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.Bfecal.id_for_label }}">
+								<strong>{{ form.Bfecal.label }}</strong>
+							</label>
+							{{ form.Bfecal }}
+							{{ form.Bfecal.errors }}
+						</div>
+					</div>
+
+					<!-- Sección 3: Observación -->
+					<h6 class="mt-4 mb-3 border-bottom pb-2">
+						<i class="fas fa-comment-alt me-2 text-primary"></i>Observación
+					</h6>
+					<div class="row g-3 mb-4">
+						<div class="col-12">
+							<label class="form-label" for="{{ form.observacion.id_for_label }}">
+								<strong>{{ form.observacion.label }}</strong>
+							</label>
+							{{ form.observacion }}
+							{{ form.observacion.errors }}
+						</div>
+					</div>
+
+					<!-- Sección 4: SERVICIOS PUBLICOS (BS1 a BS8) -->
+					<h6 class="mt-4 mb-3 border-bottom pb-2">
+						<i class="fas fa-tags me-2 text-primary"></i>SERVICIOS PUBLICOS
+					</h6>
+					<div class="row g-3 mb-4">
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.bs1.id_for_label }}">
+								<strong>{{ form.bs1.label }}</strong>
+							</label>
+							{{ form.bs1 }}
+							{{ form.bs1.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.bs2.id_for_label }}">
+								<strong>{{ form.bs2.label }}</strong>
+							</label>
+							{{ form.bs2 }}
+							{{ form.bs2.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.bs3.id_for_label }}">
+								<strong>{{ form.bs3.label }}</strong>
+							</label>
+							{{ form.bs3 }}
+							{{ form.bs3.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.bs4.id_for_label }}">
+								<strong>{{ form.bs4.label }}</strong>
+							</label>
+							{{ form.bs4 }}
+							{{ form.bs4.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.bs5.id_for_label }}">
+								<strong>{{ form.bs5.label }}</strong>
+							</label>
+							{{ form.bs5 }}
+							{{ form.bs5.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.bs6.id_for_label }}">
+								<strong>{{ form.bs6.label }}</strong>
+							</label>
+							{{ form.bs6 }}
+							{{ form.bs6.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.bs7.id_for_label }}">
+								<strong>{{ form.bs7.label }}</strong>
+							</label>
+							{{ form.bs7 }}
+							{{ form.bs7.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.bs8.id_for_label }}">
+								<strong>{{ form.bs8.label }}</strong>
+							</label>
+							{{ form.bs8 }}
+							{{ form.bs8.errors }}
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.bs9.id_for_label }}">
+								<strong>{{ form.bs9.label }}</strong>
+							</label>
+							{{ form.bs9 }}
+							{{ form.bs9.errors }}
+						</div>
+					</div>
+
+					<!-- Sección 5: Ocupante y Renta -->
+					<h6 class="mt-4 mb-3 border-bottom pb-2">
+						<i class="fas fa-user-tie me-2 text-primary"></i>Ocupante y Renta
+					</h6>
+					<div class="row g-3 mb-4">
+						<div class="col-md-6">
+							<label class="form-label" for="{{ form.ocupante.id_for_label }}">
+								<strong>{{ form.ocupante.label }}</strong>
+							</label>
+							{{ form.ocupante }}
+							{{ form.ocupante.errors }}
+						</div>
+						<div class="col-md-6">
+							<label class="form-label" for="{{ form.renta.id_for_label }}">
+								<strong>{{ form.renta.label }}</strong>
+							</label>
+							{{ form.renta }}
+							{{ form.renta.errors }}
+						</div>
+						<div class="col-12">
+							<label class="form-label" for="{{ form.observ2.id_for_label }}">
+								<strong>{{ form.observ2.label }}</strong>
+							</label>
+							{{ form.observ2 }}
+							{{ form.observ2.errors }}
+						</div>
+					</div>
+
+					<!-- Sección 6: Información del Sistema -->
+					<h6 class="mt-4 mb-3 border-bottom pb-2">
+						<i class="fas fa-cog me-2 text-primary"></i>Información del Sistema
+					</h6>
+					<div class="row g-3 mb-4">
+						<div class="col-md-6">
+							<label class="form-label" for="{{ form.usuario.id_for_label }}">
+								<strong>{{ form.usuario.label }}</strong>
+							</label>
+							{{ form.usuario }}
+							{{ form.usuario.errors }}
+						</div>
+						<div class="col-md-6">
+							<label class="form-label" for="{{ form.fechasys.id_for_label }}">
+								<strong>{{ form.fechasys.label }}</strong>
+							</label>
+							{{ form.fechasys }}
+							{{ form.fechasys.errors }}
+						</div>
+					</div>
+
+					<!-- Botones -->
+					<div class="row mt-4">
+						<div class="col-12 d-flex justify-content-between">
+							<a href="{% if cocata1 %}{% url 'catastro:bienes_inmuebles_registrar' %}?cocata1={{ cocata1 }}{% else %}{% url 'catastro:catastro_configuracion' %}{% endif %}" class="btn btn-secondary">
+								<i class="fas fa-arrow-left me-1"></i> Volver
+							</a>
+							<div>
+								{% if complemento %}
+								<button type="button" class="btn btn-danger me-2" onclick="eliminarComplemento()">
+									<i class="fas fa-trash me-1"></i> Eliminar
+								</button>
+								{% endif %}
+								<button type="submit" class="btn btn-primary">
+									<i class="fas fa-save me-1"></i> Guardar
+								</button>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		(function() {
+			'use strict';
+			
+			// Prevenir errores de extensiones del navegador
+			if (typeof window.chrome !== 'undefined' && window.chrome.runtime) {
+				try {
+					window.addEventListener('error', function(e) {
+						if (e.message && e.message.includes('message channel closed')) {
+							e.preventDefault();
+							e.stopPropagation();
+							return false;
+						}
+					}, true);
+				} catch (err) {
+					// Ignorar errores de inicialización
+				}
+			}
+			
+			document.addEventListener('DOMContentLoaded', function() {
+				const form = document.getElementById('form-complemento');
+				const fechasysInput = document.getElementById('{{ form.fechasys.id_for_label }}');
+				
+				if (form && fechasysInput) {
+					form.addEventListener('submit', function(e) {
+						try {
+							if (e.submitter && e.submitter.value === 'eliminar') {
+								e.preventDefault();
+								e.stopPropagation();
+								return false;
+							}
+							
+							if (fechasysInput && !fechasysInput.value) {
+								const now = new Date();
+								const fechaStr = now.getFullYear() + '-' + 
+									String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+									String(now.getDate()).padStart(2, '0') + ' ' +
+									String(now.getHours()).padStart(2, '0') + ':' + 
+									String(now.getMinutes()).padStart(2, '0') + ':' +
+									String(now.getSeconds()).padStart(2, '0');
+								fechasysInput.value = fechaStr;
+							}
+						} catch (error) {
+							console.error('Error en submit handler:', error);
+						}
+					}, { passive: false });
+				}
+			});
+			
+			window.eliminarComplemento = function() {
+				try {
+					const confirmacion = confirm('¿Está seguro de que desea eliminar los datos complementarios del predio? Esta acción no se puede deshacer.');
+					if (confirmacion) {
+						const form = document.getElementById('form-complemento');
+						if (form) {
+							let actionInput = form.querySelector('input[name="action"][value="eliminar"]');
+							if (!actionInput) {
+								actionInput = document.createElement('input');
+								actionInput.type = 'hidden';
+								actionInput.name = 'action';
+								actionInput.value = 'eliminar';
+								form.appendChild(actionInput);
+							}
+							form.submit();
+						}
+					}
+				} catch (error) {
+					console.error('Error al eliminar datos complementarios:', error);
+					alert('Error al intentar eliminar los datos complementarios. Por favor, intente nuevamente.');
+				}
+			};
+		})();
+	</script>
+</body>
+</html>
+

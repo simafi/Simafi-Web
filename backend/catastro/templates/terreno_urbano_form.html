@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+	<style>
+		/* Campos calculados automáticamente (factores, topografía, esquina, valor del terreno) */
+		.campo-calculado {
+			background-color: #e9f7ff !important;
+			border-color: #0d6efd !important;
+			font-weight: 500;
+		}
+	</style>
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ usuario_nombre }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card">
+			<div class="card-header bg-primary text-white">
+				<h5 class="mb-0">
+					<i class="fas fa-mountain me-2"></i>{{ titulo }}
+				</h5>
+			</div>
+			<div class="card-body">
+			<div class="alert alert-info">
+				<i class="fas fa-info-circle me-2"></i>
+				<strong>Código Catastral:</strong> <span id="cocata1">{{ cocata1 }}</span>
+				{% if empresa %}
+				<span class="ms-3"><strong>Empresa:</strong> {{ empresa }}</span>
+				{% endif %}
+				{% if not es_urbano %}
+				<span class="badge bg-warning text-dark ms-2">Advertencia: la ficha actual no es 1 (urbano)</span>
+				{% endif %}
+			</div>
+				<form id="form-urbano" class="row g-3">
+					<input type="hidden" name="cocata1" value="{{ cocata1 }}">
+					{% if empresa %}
+					<input type="hidden" name="empresa" value="{{ empresa }}">
+					{% endif %}
+					<div class="col-lg-8">
+						<div class="row">
+							<div class="col-12">
+								<h6 class="text-primary">Fracción (1)</h6>
+							</div>
+							<div class="col-md-3"><label class="form-label">Valor básico (1)</label><input type="number" step="0.01" class="form-control" name="bvlbas1"></div>
+							<div class="col-md-3"><label class="form-label">Área m² (1)</label><input type="number" step="0.01" class="form-control" name="baream21"></div>
+							<div class="col-md-3"><label class="form-label">Típica (1)</label><input type="number" step="0.01" class="form-control" name="tipica1"></div>
+							<div class="col-md-3"><label class="form-label">Factor modificación (1)</label><input type="number" step="0.001" class="form-control campo-calculado" name="bfacmodi" readonly></div>
+							<div class="col-md-3"><label class="form-label">Frente (1)</label><input type="number" step="0.01" class="form-control" name="bfrente"></div>
+							<div class="col-md-3"><label class="form-label">Esquina (indicador)</label><input type="number" step="1" min="0" max="4" class="form-control" name="besqui"></div>
+							<div class="col-md-3"><label class="form-label">Factor Esquina</label><input type="number" step="0.01" class="form-control campo-calculado" name="esquina" readonly title="Campo calculado automáticamente cuando hay esquina"></div>
+							<div class="col-md-3">
+								<label class="form-label">Código topografía</label>
+								<select class="form-select" name="btopogra" id="btopogra">
+									<option value="">Seleccione</option>
+									{% for topo in terreno_topografias %}
+									<option value="{{ topo.cotopo }}" data-factopo="{{ topo.factopo_str }}">{{ topo.cotopo }} - {{ topo.descritopo }}</option>
+									{% endfor %}
+								</select>
+							</div>
+							<div class="col-md-3"><label class="form-label">Factor topografía</label><input type="number" step="0.01" class="form-control campo-calculado" name="bfactopo" id="bfactopo" readonly title="Campo calculado automáticamente desde el código de topografía"></div>
+						</div>
+						<hr class="my-3">
+						<div class="row">
+							<div class="col-12">
+								<h6 class="text-primary">Fracción (2)</h6>
+							</div>
+							<div class="col-md-3"><label class="form-label">Valor básico (2)</label><input type="number" step="0.01" class="form-control" name="bvlbas2"></div>
+							<div class="col-md-3"><label class="form-label">Área m² (2)</label><input type="number" step="0.01" class="form-control" name="baream22"></div>
+							<div class="col-md-3"><label class="form-label">Típica (2)</label><input type="number" step="0.01" class="form-control" name="tipica2"></div>
+							<div class="col-md-3"><label class="form-label">Factor modificación (2)</label><input type="number" step="0.001" class="form-control campo-calculado" name="bfacmod2" readonly></div>
+							<div class="col-md-3"><label class="form-label">Frente (2)</label><input type="number" step="0.01" class="form-control" name="bfrente2"></div>
+						</div>
+					</div>
+					<div class="col-lg-4">
+						<div class="card h-100">
+							<div class="card-body">
+								<h6 class="mb-3">Total avalúo terreno</h6>
+								<div class="d-flex justify-content-between mb-2">
+									<span>Usuario</span>
+									<strong id="res-usuario">{{ usuario_nombre|default:"" }}</strong>
+								</div>
+								<div class="d-flex justify-content-between small text-muted">
+									<span>Fecha registro / actualización</span>
+									<span id="res-fecha">-</span>
+								</div>
+								<hr>
+								<label class="form-label">Valor del Terreno</label>
+								<input type="number"
+									   step="0.01"
+									   class="form-control campo-calculado"
+									   name="valor_terreno"
+									   id="valor_terreno"
+									   readonly
+									   title="Campo calculado automáticamente a partir de los valores del terreno">
+							</div>
+						</div>
+					</div>
+					<div class="col-12 d-flex justify-content-end mt-3">
+						<a href="{% url 'catastro:bienes_inmuebles_registrar' %}?cocata1={{ cocata1 }}" class="btn btn-secondary me-2">
+							<i class="fas fa-chevron-left me-1"></i> Volver a Registrar Bien Inmueble
+						</a>
+						<button type="button" id="btn-eliminar" class="btn btn-outline-danger me-2">
+							<i class="fas fa-trash-alt me-1"></i> Eliminar avalúo
+						</button>
+						<button type="button" id="btn-guardar" class="btn btn-primary">
+							<i class="fas fa-save me-1"></i> Guardar
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+(function(){
+	const cocata = "{{ cocata1 }}";
+	const apiUrl = "{% url 'catastro:api_avaluo_terreno' %}";
+	function toFormData(form) { return new FormData(form); }
+	function loadData() {
+		const url = new URL(apiUrl, window.location.origin);
+		url.searchParams.set('cocata1', cocata);
+		fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+			.then(r => r.json())
+			.then(data => {
+				if (!data || !data.campos) return;
+				const campos = data.campos;
+				for (const [k, v] of Object.entries(campos)) {
+					const el = document.querySelector(`[name="${k}"]`);
+					if (el) el.value = v;
+				}
+				if (typeof campos.bvl2tie !== 'undefined') {
+					document.getElementById('valor_terreno').value = campos.bvl2tie;
+				}
+				// Recalcular factores y resumen con la lógica actualizada
+				recalcFactor1();
+				syncTipica2();
+				syncFactor2();
+				updateResumen();
+				// Usuario y fecha desde payload
+				if (data.campos && data.campos.usuario) {
+					const u = document.getElementById('res-usuario'); if (u) u.textContent = data.campos.usuario;
+				}
+				if (data.campos && data.campos.fechasys) {
+					const f = document.getElementById('res-fecha'); if (f) f.textContent = data.campos.fechasys.replace('T', ' ').slice(0, 19);
+				}
+			})
+			.catch(() => {});
+	}
+	function toNum(v){ const n=parseFloat((v??'').toString().replace(',','.')); return isNaN(n)?0:n; }
+	function round2(x){ return Math.round((x + Number.EPSILON) * 100) / 100; }
+	function recalcFactor1(){
+		const tip = toNum(document.querySelector('[name="tipica1"]')?.value);
+		const a1  = toNum(document.querySelector('[name="baream21"]')?.value);
+		const a2  = toNum(document.querySelector('[name="baream22"]')?.value);
+		const fac = document.querySelector('[name="bfacmodi"]');
+		if(!fac) return;
+		const denom = a1 + a2;
+		if (tip > 0 && denom > 0) {
+			const result = (tip / denom) * 0.30 + 0.70;
+			if (isFinite(result)) { fac.value = result.toFixed(3); }
+		} else {
+			fac.value = (0).toFixed(3);
+		}
+		// Cada vez que cambia Factor 1, sincronizar inmediatamente Factor 2
+		syncFactor2();
+	}
+	function syncTipica2(){
+		const vb2 = toNum(document.querySelector('[name="bvlbas2"]')?.value);
+		const tip1 = toNum(document.querySelector('[name="tipica1"]')?.value);
+		const tip2 = document.querySelector('[name="tipica2"]');
+		if (!tip2) return;
+		if (vb2 > 0) {
+			tip2.value = (isFinite(tip1) ? tip1 : 0).toFixed(2);
+			tip2.readOnly = true; tip2.classList.add('bg-light'); tip2.title = 'Campo calculado automáticamente (igual a Típica 1 si Valor básico 2 > 0)';
+		} else {
+			tip2.readOnly = false; tip2.classList.remove('bg-light'); tip2.title = '';
+		}
+	}
+	function syncFactor2(){
+		const vb2 = toNum(document.querySelector('[name="bvlbas2"]')?.value);
+		const fac1 = toNum(document.querySelector('[name="bfacmodi"]')?.value);
+		const fac2 = document.querySelector('[name="bfacmod2"]');
+		if (!fac2) return;
+		if (vb2 > 0) {
+			fac2.value = (isFinite(fac1) ? fac1 : 0).toFixed(3);
+		} else {
+			fac2.value = (0).toFixed(3);
+		}
+	}
+	function updateResumen(){
+		// Fracción (1)
+		const b1=toNum(document.querySelector('[name="bvlbas1"]')?.value);
+		const a21=toNum(document.querySelector('[name="baream21"]')?.value);
+		const fm1=toNum(document.querySelector('[name="bfacmodi"]')?.value);
+		const subtotal1 = b1 * a21 * fm1;
+		// Fracción (2)
+		const b2=toNum(document.querySelector('[name="bvlbas2"]')?.value);
+		const a22=toNum(document.querySelector('[name="baream22"]')?.value);
+		const fm2=toNum(document.querySelector('[name="bfacmod2"]')?.value);
+		const subtotal2 = b2 * a22 * fm2;
+		// Total base (sin factores de topografía ni esquina)
+		let total = subtotal1 + subtotal2;
+		// Aplicar factores de topografía y esquina según combinaciones indicadas
+		const factorTopo = toNum(document.querySelector('[name="bfactopo"]')?.value);
+		const factorEsq  = toNum(document.querySelector('[name="esquina"]')?.value);
+		let multiplicador = 1;
+		if (factorTopo > 0 && factorEsq > 0) {
+			multiplicador = factorTopo * factorEsq;
+		} else if (factorTopo > 0 && factorEsq <= 0) {
+			multiplicador = factorTopo;
+		} else if (factorTopo <= 0 && factorEsq > 0) {
+			multiplicador = factorEsq;
+		}
+		const totalAjustado = total * multiplicador;
+		const totalRounded = round2(totalAjustado);
+		// Mostrar en resumen
+		const el=document.getElementById('res-valor-tierra'); if(el) el.textContent=totalRounded.toFixed(2);
+		// Sincronizar con bvl2tie
+		const vTerreno = document.getElementById('valor_terreno'); if (vTerreno) vTerreno.value = totalRounded.toFixed(2);
+	}
+	function saveData() {
+		const form = document.getElementById('form-urbano');
+		const fd = toFormData(form);
+		fetch(apiUrl, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+			.then(r => r.json().then(j => ({ ok: r.ok, status: r.status, data: j })))
+			.then(({ ok, data }) => {
+				if (ok && data.exito) { alert('Guardado correctamente'); }
+				else { alert((data && data.mensaje) || 'Error al guardar'); }
+			})
+			.catch(() => alert('Error de red'));
+	}
+	function deleteData() {
+		if (!confirm('¿Está seguro de eliminar el avalúo de terreno para esta clave catastral?')) {
+			return;
+		}
+		// Obtener la clave catastral del elemento en el HTML o de la variable global
+		const cocata1Value = document.getElementById('cocata1')?.textContent?.trim() || cocata || '';
+		if (!cocata1Value) {
+			alert('Error: No se pudo obtener la clave catastral');
+			return;
+		}
+		const fd = new FormData();
+		fd.append('cocata1', cocata1Value);
+		fd.append('accion', 'eliminar');
+		fetch(apiUrl, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+			.then(r => r.json().then(j => ({ ok: r.ok, status: r.status, data: j })))
+			.then(({ ok, data }) => {
+				if (ok && data.exito) {
+					alert('Avalúo de terreno eliminado correctamente');
+					// Redirigir manteniendo la clave catastral
+					window.location.href = "{% url 'catastro:bienes_inmuebles_registrar' %}?cocata1=" + encodeURIComponent(cocata1Value);
+				} else {
+					alert((data && data.mensaje) || 'No se pudo eliminar el avalúo');
+				}
+			})
+			.catch(() => alert('Error de red al eliminar'));
+	}
+	document.addEventListener('DOMContentLoaded', function(){
+		loadData();
+		const btnGuardar = document.getElementById('btn-guardar');
+		if (btnGuardar) { btnGuardar.addEventListener('click', saveData); }
+		const btnEliminar = document.getElementById('btn-eliminar');
+		if (btnEliminar) { btnEliminar.addEventListener('click', deleteData); }
+		// Hacer campo de factor (1) de solo lectura y con estilo visual
+		const fac1 = document.querySelector('[name="bfacmodi"]');
+		if (fac1) { fac1.readOnly = true; fac1.classList.add('bg-light'); fac1.title = 'Campo calculado automáticamente'; }
+		// Hacer campo de factor (2) de solo lectura y con estilo visual
+		const fac2El = document.querySelector('[name="bfacmod2"]');
+		if (fac2El) { fac2El.readOnly = true; fac2El.classList.add('bg-light'); fac2El.title = 'Campo calculado automáticamente (igual a Factor 1 si Valor básico 2 > 0)'; }
+		// Disparadores de recálculo (según especificación)
+		['bvlbas1','baream21','bfacmodi','bvlbas2','baream22','bfacmod2'].forEach(n=>{
+			const el=document.querySelector(`[name="${n}"]`);
+			if(el){ el.addEventListener('input',updateResumen); el.addEventListener('change',updateResumen); }
+		});
+		// Recalcular factor (1) automáticamente cuando cambian Típica(1) o Áreas (1/2)
+		['tipica1','baream21','baream22'].forEach(n=>{
+			const el=document.querySelector(`[name="${n}"]`);
+			if(el){ el.addEventListener('input',()=>{ recalcFactor1(); syncTipica2(); updateResumen(); }); el.addEventListener('change',()=>{ recalcFactor1(); syncTipica2(); updateResumen(); }); }
+		});
+		// Sincronizar Factor (2) cuando cambia Valor básico (2) o el Factor (1)
+		['bvlbas2'].forEach(n=>{
+			const el=document.querySelector(`[name="${n}"]`);
+			if(el){ el.addEventListener('input',()=>{ syncFactor2(); syncTipica2(); updateResumen(); }); el.addEventListener('change',()=>{ syncFactor2(); syncTipica2(); updateResumen(); }); }
+		});
+		['bfacmodi'].forEach(n=>{
+			const el=document.querySelector(`[name="${n}"]`);
+			if(el){ el.addEventListener('input',()=>{ syncFactor2(); updateResumen(); }); el.addEventListener('change',()=>{ syncFactor2(); updateResumen(); }); }
+		});
+		// También si cambian tipología, esquina y topografía (en caso de que el usuario las integre manualmente en el factor)
+		['tipica1','tipica2','besqui','esquina','btopogra','bfactopo'].forEach(n=>{
+			const el=document.querySelector(`[name="${n}"]`);
+			if(el){ el.addEventListener('input',updateResumen); el.addEventListener('change',updateResumen); }
+		});
+		// Sincronizar factor de topografía cuando cambia el código de topografía
+		const btopograSel = document.getElementById('btopogra');
+		const facTopoEl = document.getElementById('bfactopo');
+		if (btopograSel && facTopoEl) {
+			const aplicarTopografia = () => {
+				const opt = btopograSel.options[btopograSel.selectedIndex];
+				const raw = opt ? opt.getAttribute('data-factopo') : '';
+				const val = toNum(raw);
+				if (isFinite(val) && val !== 0) {
+					facTopoEl.value = val.toFixed(2);
+				} else {
+					facTopoEl.value = (0).toFixed(2);
+				}
+				updateResumen();
+			};
+			btopograSel.addEventListener('change', aplicarTopografia);
+			btopograSel.addEventListener('input', aplicarTopografia);
+			// Aplicar una vez al cargar con el valor inicial del combo
+			aplicarTopografia();
+		}
+		// Factor de esquina: si Esquina (indicador) > 0, asignar automáticamente factor desde municipio.fesqui
+		const esquinaIndicadorEl = document.querySelector('[name="besqui"]');
+		const factorEsquinaEl = document.querySelector('[name="esquina"]');
+		const municipioFesqui = toNum('{{ municipio_fesqui_str|default:"0.00" }}');
+		if (esquinaIndicadorEl && factorEsquinaEl) {
+			const aplicarEsquina = () => {
+				const indicador = toNum(esquinaIndicadorEl.value);
+				if (indicador > 0 && municipioFesqui > 0) {
+					factorEsquinaEl.value = municipioFesqui.toFixed(2);
+				} else {
+					factorEsquinaEl.value = (0).toFixed(2);
+				}
+				updateResumen();
+			};
+			esquinaIndicadorEl.addEventListener('input', aplicarEsquina);
+			esquinaIndicadorEl.addEventListener('change', aplicarEsquina);
+			// Aplicar una vez al cargar con el valor inicial del indicador
+			aplicarEsquina();
+		}
+		// Recalcular una vez al cargar con los valores iniciales
+		recalcFactor1();
+		syncFactor2();
+		syncTipica2();
+	});
+})();
+	</script>
+</body>
+</html>
+

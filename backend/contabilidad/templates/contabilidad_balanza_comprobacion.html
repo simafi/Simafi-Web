@@ -1,0 +1,111 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}Balanza de Comprobación{% endblock %}
+
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:estados_financieros' %}">Estados Financieros</a></li>
+            <li class="breadcrumb-item active">Balanza de Comprobación</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-balance-scale-right me-2"></i>Balanza de Comprobación</h4>
+    </div>
+
+    <div class="cont-card mb-4">
+        <div class="card-body cont-form">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">Ejercicio Fiscal</label>
+                    <select name="ejercicio" class="form-control" onchange="this.form.submit()">
+                        <option value="">-- Seleccione ejercicio --</option>
+                        {% for e in ejercicios %}
+                        <option value="{{ e.pk }}" {% if ejercicio_id == e.pk|stringformat:"d" %}selected{% endif %}>
+                            {{ e.anio }} - {{ e.descripcion }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-cont-primary"><i class="fas fa-list me-1"></i> Generar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if ejercicio_id %}
+    {% if ejercicio_actual %}
+    <div class="cont-card mb-3 p-2" style="background:#f7fafc;">
+        <strong>Ejercicio:</strong> {{ ejercicio_actual.anio }} - {{ ejercicio_actual.descripcion }}
+    </div>
+    {% endif %}
+
+    <div class="cont-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table cont-table mb-0">
+                    <thead>
+                        <tr style="background:var(--cont-primary); color:#fff;">
+                            <th>Código</th>
+                            <th>Nombre de la cuenta</th>
+                            <th class="text-end">Débitos</th>
+                            <th class="text-end">Créditos</th>
+                            <th class="text-end">Saldo Deudor</th>
+                            <th class="text-end">Saldo Acreedor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in filas %}
+                        <tr>
+                            <td><code>{{ f.codigo }}</code></td>
+                            <td>{{ f.nombre }}</td>
+                            <td class="text-end">{{ f.debitos|floatformat:2 }}</td>
+                            <td class="text-end">{{ f.creditos|floatformat:2 }}</td>
+                            <td class="text-end">{{ f.saldo_deudor|floatformat:2 }}</td>
+                            <td class="text-end">{{ f.saldo_acreedor|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted py-4">No hay movimientos en el ejercicio seleccionado.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if filas %}
+                    <tfoot>
+                        <tr style="background:#2d3748; color:#fff; font-weight:700;">
+                            <td colspan="2" class="text-end">TOTALES</td>
+                            <td class="text-end">{{ total_debitos|floatformat:2 }}</td>
+                            <td class="text-end">{{ total_creditos|floatformat:2 }}</td>
+                            <td class="text-end">{{ total_saldo_deudor|floatformat:2 }}</td>
+                            <td class="text-end">{{ total_saldo_acreedor|floatformat:2 }}</td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if filas %}
+    <div class="mt-3 p-3 rounded {% if cuadra %}bg-success bg-opacity-10 text-success{% else %}bg-danger bg-opacity-10 text-danger{% endif %}">
+        {% if cuadra %}
+        <i class="fas fa-check-circle me-1"></i> La balanza cuadra: total débitos = total créditos y total saldos deudores = total saldos acreedores.
+        {% else %}
+        <i class="fas fa-exclamation-triangle me-1"></i> La balanza no cuadra. Revise que los asientos estén contabilizados y que el libro mayor esté actualizado.
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="cont-card p-5 text-center text-muted">
+        <i class="fas fa-balance-scale-right" style="font-size:3rem;"></i>
+        <p class="mt-3">Seleccione un ejercicio fiscal para generar la balanza de comprobación.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

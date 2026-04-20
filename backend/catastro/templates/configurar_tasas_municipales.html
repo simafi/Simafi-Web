@@ -1,0 +1,900 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Configurar Tasas Municipales</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Select2 CSS para búsqueda en combobox -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(90deg, #1e88e5 0%, #0d47a1 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        header:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #545b62 0%, #3d4449 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            background: white;
+        }
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+            display: block;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -15px;
+        }
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 0 15px;
+        }
+        .col-md-4 {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+            padding: 0 15px;
+        }
+        .col-md-3 {
+            flex: 0 0 25%;
+            max-width: 25%;
+            padding: 0 15px;
+        }
+        .col-md-12 {
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding: 0 15px;
+        }
+        .mensaje {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mensaje-exito {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .mensaje-error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .table th {
+            background: linear-gradient(135deg, #1e88e5 0%, #0d47a1 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .btn-action {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .bien-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 2px solid #2196f3;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .bien-info h4 {
+            color: #1976d2;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        .bien-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .bien-detail {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        .bien-detail strong {
+            color: #1976d2;
+        }
+        @media (max-width: 768px) {
+            .col-md-6, .col-md-4, .col-md-3 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+        
+        /* Estilos personalizados para Select2 */
+        .select2-container {
+            width: 100% !important;
+        }
+        .select2-container .select2-selection--single {
+            height: 40px !important;
+            border: 1px solid #d1d5da !important;
+            border-radius: 6px !important;
+            padding: 6px 12px !important;
+            background: #fff !important;
+            transition: all 0.3s ease !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 26px !important;
+            color: #333 !important;
+            padding-left: 0 !important;
+            font-size: 0.95rem !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 38px !important;
+            right: 8px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: #6c757d !important;
+        }
+        .select2-container--default.select2-container--open .select2-selection--single,
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #1e88e5 !important;
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1) !important;
+            outline: none !important;
+        }
+        .select2-dropdown {
+            border: 1px solid #1e88e5 !important;
+            border-radius: 6px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+        .select2-search--dropdown .select2-search__field {
+            border: 1px solid #d1d5da !important;
+            border-radius: 4px !important;
+            padding: 8px 12px !important;
+            font-size: 0.95rem !important;
+        }
+        .select2-search--dropdown .select2-search__field:focus {
+            border-color: #1e88e5 !important;
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.1) !important;
+            outline: none !important;
+        }
+        .select2-results__option {
+            padding: 10px 14px !important;
+            font-size: 0.95rem !important;
+        }
+        .select2-results__option--highlighted {
+            background-color: #1e88e5 !important;
+            color: white !important;
+        }
+        .select2-container--default .select2-results__option[aria-selected=true] {
+            background-color: #e3f2fd !important;
+            color: #1e88e5 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1><i class="fas fa-file-invoice-dollar"></i> Configurar Tasas Municipales</h1>
+            <p class="subtitle">Gestionar las tasas y tarifas aplicables a este bien inmueble específico</p>
+        </header>
+
+        <!-- Información del Bien Inmueble -->
+        {% if bien_inmueble %}
+        <div class="bien-info">
+            <h4><i class="fas fa-home"></i> Información del Bien Inmueble</h4>
+            <div class="bien-details">
+                <div class="bien-detail">
+                    <strong>Clave Catastral:</strong> {{ bien_inmueble.cocata1 }}
+                </div>
+                <div class="bien-detail">
+                    <strong>Propietario:</strong> {{ bien_inmueble.nombres|default:"" }} {{ bien_inmueble.apellidos|default:"" }}
+                </div>
+                <div class="bien-detail">
+                    <strong>Identidad:</strong> {{ bien_inmueble.identidad|default:"N/A" }}
+                </div>
+                <div class="bien-detail">
+                    <strong>Ubicación:</strong> {{ bien_inmueble.ubicacion|default:"N/A" }}
+                </div>
+                <div class="bien-detail">
+                    <strong>Uso:</strong> {{ bien_inmueble.uso|default:"N/A" }}
+                </div>
+                <div class="bien-detail">
+                    <strong>Ficha:</strong> {% if bien_inmueble.ficha == '1' %}Urbana{% elif bien_inmueble.ficha == '2' %}Rural{% else %}N/A{% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Mensajes -->
+        {% if mensaje %}
+            <div class="mensaje {% if exito %}mensaje-exito{% else %}mensaje-error{% endif %}">
+                <i class="fas {% if exito %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %}"></i>
+                {{ mensaje }}
+            </div>
+        {% endif %}
+
+        <!-- Formulario para Agregar Tarifa -->
+        {% if form %}
+        <div class="card">
+            <h5><i class="fas fa-plus-circle"></i> Agregar Nueva Tasa</h5>
+            <form method="post" id="formTasaMunicipal">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="agregar_tarifa">
+                
+                <!-- Campos ocultos del bien inmueble -->
+                <input type="hidden" name="clave" value="{{ bien_inmueble.cocata1|default:'' }}">
+                <input type="hidden" name="empresa" value="{{ municipio_codigo|default:'0301' }}">
+                
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="id_rubro" class="form-label">Rubro *</label>
+                        {{ form.rubro }}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="id_tarifa_rubro" class="form-label">Tarifa del Rubro *</label>
+                        {{ form.tarifa_rubro }}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="id_valor_personalizado" class="form-label">Valor *</label>
+                        {{ form.valor_personalizado }}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="id_cod_tarifa" class="form-label">Código Tarifa</label>
+                        <input type="text" class="form-control" id="id_cod_tarifa" name="cod_tarifa" maxlength="4" readonly style="background-color: #e9ecef;">
+                    </div>
+                </div>
+                
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-md-6">
+                        <label for="id_cuenta" class="form-label">Cuenta Contable</label>
+                        <input type="text" class="form-control" id="id_cuenta" name="cuenta" maxlength="20" placeholder="Cuenta contable">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_cuentarez" class="form-label">Cuenta Rezago</label>
+                        <input type="text" class="form-control" id="id_cuentarez" name="cuentarez" maxlength="20" placeholder="Cuenta rezago">
+                    </div>
+                </div>
+                
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-md-12">
+                        <!-- Campo oculto para almacenar el ID del registro en modo edición -->
+                        <input type="hidden" id="tasa_id_edicion" name="tasa_id" value="">
+                        
+                        <button type="submit" class="btn btn-success btn-action" id="btn-guardar-tasa">
+                            <i class="fas fa-plus"></i> <span id="btn-texto">Agregar Tasa</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-action" onclick="limpiarFormularioCompleto()">
+                            <i class="fas fa-eraser"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Lista de Tasas Configuradas -->
+        <div class="card">
+            <h5><i class="fas fa-list"></i> Tasas Configuradas</h5>
+            {% if tasas_municipales %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Rubro</th>
+                                <th>Código Tarifa</th>
+                                <th>Valor</th>
+                                <th>Cuenta</th>
+                                <th>Cuenta Rezago</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tasa in tasas_municipales %}
+                            <tr data-tasa-id="{{ tasa.id }}" 
+                                data-rubro="{{ tasa.rubro|default:'' }}" 
+                                data-cod-tarifa="{{ tasa.cod_tarifa|default:'' }}"
+                                data-valor="{{ tasa.valor }}"
+                                data-cuenta="{{ tasa.cuenta|default:'' }}"
+                                data-cuentarez="{{ tasa.cuentarez|default:'' }}">
+                                <td>
+                                    {% if tasa.rubro_descripcion %}
+                                        <strong>{{ tasa.rubro|default:"N/A" }}</strong> - {{ tasa.rubro_descripcion }}
+                                    {% else %}
+                                        {{ tasa.rubro|default:"N/A" }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ tasa.cod_tarifa|default:"N/A" }}</td>
+                                <td>{{ tasa.valor|floatformat:2 }}</td>
+                                <td>{{ tasa.cuenta|default:"" }}</td>
+                                <td>{{ tasa.cuentarez|default:"" }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" 
+                                            onclick="editarTasa('{{ tasa.id }}', '{{ tasa.rubro|default:'' }}', '{{ tasa.cod_tarifa|default:'' }}', '{{ tasa.valor }}', '{{ tasa.cuenta|default:'' }}', '{{ tasa.cuentarez|default:'' }}')">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" 
+                                            onclick="eliminarTasa('{{ tasa.id }}')">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 40px; color: #6c757d;">
+                    <i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                    <h4>No hay tasas configuradas</h4>
+                    <p>Use el formulario de arriba para agregar las primeras tasas a este bien inmueble.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Botón Volver -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{% url 'catastro:bienes_inmuebles_registrar' %}?cocata1={{ bien_inmueble.cocata1|default:'' }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Formulario de Bien Inmueble
+            </a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Función para mostrar mensaje
+        function mostrarMensaje(mensaje, exito) {
+            const mensajeDiv = document.createElement('div');
+            mensajeDiv.className = `mensaje ${exito ? 'mensaje-exito' : 'mensaje-error'}`;
+            mensajeDiv.innerHTML = `
+                <i class="fas ${exito ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+                ${mensaje}
+            `;
+            const container = document.querySelector('.container');
+            const header = document.querySelector('header');
+            container.insertBefore(mensajeDiv, header.nextSibling);
+            
+            setTimeout(() => {
+                mensajeDiv.remove();
+            }, 5000);
+        }
+        
+        // Función para cargar tarifas de un rubro
+        function cargarTarifasRubro() {
+            const rubroSelect = document.getElementById('id_rubro');
+            const tarifaSelect = document.getElementById('id_tarifa_rubro');
+            
+            if (!rubroSelect || !tarifaSelect) return;
+            
+            rubroSelect.addEventListener('change', function() {
+                const rubroCodigo = this.value;
+                
+                if (!rubroCodigo) {
+                    tarifaSelect.innerHTML = '<option value="">Seleccione primero un rubro</option>';
+                    return;
+                }
+                
+                // Verificar si ya existe una tasa para este rubro
+                verificarTasaExistente(rubroCodigo);
+                
+                // Mostrar loading
+                tarifaSelect.innerHTML = '<option value="">Cargando tarifas...</option>';
+                
+                // Hacer petición AJAX
+                console.log('🔍 Buscando tarifas para rubro:', rubroCodigo);
+                const url = '{% url "catastro:obtener_tarifas_rubro_bienes" %}';
+                console.log('📡 URL de búsqueda:', url);
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `rubro=${encodeURIComponent(rubroCodigo)}`
+                })
+                .then(response => {
+                    console.log('📥 Respuesta recibida, status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📦 Datos recibidos:', data);
+                    if (data.exito) {
+                        // Llenar campos de Cuenta Contable y Cuenta Rezago del rubro
+                        if (data.rubro) {
+                            const cuentaInput = document.getElementById('id_cuenta');
+                            const cuentarezInput = document.getElementById('id_cuentarez');
+                            
+                            if (cuentaInput && data.rubro.cuenta) {
+                                cuentaInput.value = data.rubro.cuenta;
+                                cuentaInput.style.backgroundColor = '#d4edda';
+                                cuentaInput.style.borderColor = '#28a745';
+                                console.log('✅ Cuenta Contable cargada:', data.rubro.cuenta);
+                            }
+                            
+                            if (cuentarezInput && data.rubro.cuentarez) {
+                                cuentarezInput.value = data.rubro.cuentarez;
+                                cuentarezInput.style.backgroundColor = '#d4edda';
+                                cuentarezInput.style.borderColor = '#28a745';
+                                console.log('✅ Cuenta Rezago cargada:', data.rubro.cuentarez);
+                            }
+                        }
+                        
+                        if (data.tarifas && data.tarifas.length > 0) {
+                            tarifaSelect.innerHTML = '<option value="">Seleccione una tarifa</option>';
+                            data.tarifas.forEach(tarifa => {
+                                const option = document.createElement('option');
+                                option.value = tarifa.cod_tarifa;
+                                const descripcion = tarifa.descripcion || 'Sin descripción';
+                                const valor = tarifa.valor || 0;
+                                option.textContent = `${tarifa.cod_tarifa} - ${descripcion} (L. ${valor.toFixed(2)})`;
+                                option.dataset.valor = valor;
+                                tarifaSelect.appendChild(option);
+                            });
+                            console.log('✅ Tarifas cargadas exitosamente:', data.tarifas.length, 'tarifas disponibles');
+                        } else {
+                            tarifaSelect.innerHTML = '<option value="">No hay tarifas disponibles para este rubro</option>';
+                            console.warn('⚠️ No se encontraron tarifas para el rubro:', rubroCodigo);
+                            mostrarMensaje('No se encontraron tarifas con tipomodulo="D" (doméstico) para este rubro. Verifique que existan tarifas configuradas.', false);
+                        }
+                    } else {
+                        tarifaSelect.innerHTML = '<option value="">Error al cargar tarifas</option>';
+                        console.error('❌ Error en respuesta:', data.mensaje);
+                        mostrarMensaje(data.mensaje || 'Error al cargar tarifas', false);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error en la petición AJAX:', error);
+                    tarifaSelect.innerHTML = '<option value="">Error al cargar tarifas</option>';
+                    mostrarMensaje('Error al cargar las tarifas: ' + error.message, false);
+                });
+            });
+        }
+        
+        // Función para actualizar valor personalizado y código de tarifa cuando se selecciona una tarifa
+        function actualizarValorPersonalizado() {
+            const tarifaSelect = document.getElementById('id_tarifa_rubro');
+            const valorPersonalizado = document.getElementById('id_valor_personalizado');
+            const codTarifaInput = document.getElementById('id_cod_tarifa');
+            
+            if (!tarifaSelect || !valorPersonalizado) return;
+            
+            tarifaSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const selectedValue = this.value;
+                
+                if (selectedOption && selectedOption.dataset.valor) {
+                    valorPersonalizado.value = selectedOption.dataset.valor;
+                    console.log('Valor de tarifa cargado automáticamente:', selectedOption.dataset.valor);
+                } else {
+                    valorPersonalizado.value = '';
+                }
+                
+                // Actualizar código de tarifa
+                if (codTarifaInput && selectedValue) {
+                    codTarifaInput.value = selectedValue;
+                    console.log('Código de tarifa actualizado:', selectedValue);
+                } else if (codTarifaInput) {
+                    codTarifaInput.value = '';
+                }
+            });
+        }
+        
+        // Función para eliminar tasa
+        function eliminarTasa(tasaId) {
+            if (!confirm('¿Está seguro de que desea eliminar esta tasa?')) {
+                return;
+            }
+            
+            console.log('🗑️ Eliminando tasa ID:', tasaId);
+            
+            // Crear FormData
+            const formData = new FormData();
+            formData.append('accion', 'eliminar_tarifa');
+            formData.append('tarifa_id', tasaId);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            formData.append('clave', '{{ bien_inmueble.cocata1|default:"" }}');
+            formData.append('empresa', '{{ municipio_codigo|default:"0301" }}');
+            
+            // Enviar petición
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log('📥 Respuesta recibida:', response.status);
+                if (response.headers.get('content-type')?.includes('application/json')) {
+                    return response.json();
+                } else {
+                    return response.text();
+                }
+            })
+            .then(data => {
+                console.log('📥 Datos de respuesta:', data);
+                
+                if (typeof data === 'object' && data.exito !== undefined) {
+                    if (data.exito) {
+                        mostrarMensaje(data.mensaje || 'Tasa eliminada exitosamente', true);
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        mostrarMensaje(data.mensaje || 'Error al eliminar la tasa', false);
+                    }
+                } else {
+                    console.log('📥 Respuesta HTML recibida, recargando página...');
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                mostrarMensaje('Error al eliminar la tasa: ' + error.message, false);
+            });
+        }
+        
+        // Función para verificar si ya existe una tasa para el rubro seleccionado
+        function verificarTasaExistente(rubroCodigo) {
+            console.log('🔍 Verificando si existe tasa para rubro:', rubroCodigo);
+            
+            const tabla = document.querySelector('.table tbody');
+            if (!tabla) {
+                console.log('ℹ️ No hay tabla de tasas');
+                ocultarMensajeEdicion();
+                return;
+            }
+            
+            const filas = tabla.querySelectorAll('tr[data-rubro]');
+            let tasaEncontrada = null;
+            
+            filas.forEach(fila => {
+                const rubroData = fila.getAttribute('data-rubro');
+                if (rubroData && rubroData === rubroCodigo) {
+                    tasaEncontrada = {
+                        id: fila.getAttribute('data-tasa-id'),
+                        rubro: rubroData,
+                        codTarifa: fila.getAttribute('data-cod-tarifa'),
+                        valor: fila.getAttribute('data-valor'),
+                        cuenta: fila.getAttribute('data-cuenta') || '',
+                        cuentarez: fila.getAttribute('data-cuentarez') || ''
+                    };
+                }
+            });
+            
+            if (tasaEncontrada) {
+                console.log('✅ Tasa existente encontrada:', tasaEncontrada);
+                mostrarMensajeEdicion(tasaEncontrada);
+                cargarDatosExistentes(tasaEncontrada);
+            } else {
+                console.log('ℹ️ No existe tasa para este rubro, se creará una nueva');
+                ocultarMensajeEdicion();
+            }
+        }
+        
+        // Función para mostrar mensaje de que se está editando
+        function mostrarMensajeEdicion(tasa) {
+            let mensajeDiv = document.getElementById('mensaje-edicion');
+            if (!mensajeDiv) {
+                mensajeDiv = document.createElement('div');
+                mensajeDiv.id = 'mensaje-edicion';
+                mensajeDiv.style.cssText = 'background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border: 2px solid #ffc107; border-radius: 8px; padding: 15px; margin: 15px 0; display: flex; align-items: center; gap: 10px;';
+                
+                const formulario = document.querySelector('form');
+                if (formulario) {
+                    formulario.insertBefore(mensajeDiv, formulario.firstChild);
+                }
+            }
+            
+            mensajeDiv.innerHTML = `
+                <i class="fas fa-edit" style="font-size: 1.5rem; color: #856404;"></i>
+                <div style="flex: 1;">
+                    <strong style="color: #856404;">MODO EDICIÓN</strong>
+                    <p style="margin: 5px 0 0 0; color: #856404;">
+                        Ya existe una configuración para el rubro <strong>${tasa.rubro}</strong>. 
+                        Los campos se han cargado con los datos actuales. Modifique lo necesario y presione "Agregar Tasa" para actualizar.
+                    </p>
+                </div>
+            `;
+            mensajeDiv.style.display = 'flex';
+        }
+        
+        // Función para ocultar mensaje de edición
+        function ocultarMensajeEdicion() {
+            const mensajeDiv = document.getElementById('mensaje-edicion');
+            if (mensajeDiv) {
+                mensajeDiv.style.display = 'none';
+            }
+        }
+        
+        // Función para cargar datos existentes en el formulario
+        function cargarDatosExistentes(tasa) {
+            setTimeout(() => {
+                const tarifaSelect = document.getElementById('id_tarifa_rubro');
+                const valorPersonalizado = document.getElementById('id_valor_personalizado');
+                const codTarifaInput = document.getElementById('id_cod_tarifa');
+                const cuentaInput = document.getElementById('id_cuenta');
+                const cuentarezInput = document.getElementById('id_cuentarez');
+                const tasaIdInput = document.getElementById('tasa_id_edicion');
+                const btnTexto = document.getElementById('btn-texto');
+                const btnIcon = document.querySelector('#btn-guardar-tasa i');
+                
+                if (tasaIdInput) {
+                    tasaIdInput.value = tasa.id;
+                }
+                
+                if (btnTexto) {
+                    btnTexto.textContent = 'Actualizar Tasa';
+                }
+                if (btnIcon) {
+                    btnIcon.className = 'fas fa-sync-alt';
+                }
+                
+                if (tarifaSelect && tasa.codTarifa) {
+                    for (let i = 0; i < tarifaSelect.options.length; i++) {
+                        const optionValue = tarifaSelect.options[i].value;
+                        if (optionValue === tasa.codTarifa || optionValue.split(' ')[0] === tasa.codTarifa) {
+                            tarifaSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                
+                if (codTarifaInput && tasa.codTarifa) {
+                    codTarifaInput.value = tasa.codTarifa;
+                }
+                
+                if (valorPersonalizado && tasa.valor) {
+                    const valorLimpio = String(tasa.valor).replace(/,/g, '');
+                    valorPersonalizado.value = parseFloat(valorLimpio);
+                }
+                
+                if (cuentaInput && tasa.cuenta) {
+                    cuentaInput.value = tasa.cuenta;
+                }
+                if (cuentarezInput && tasa.cuentarez) {
+                    cuentarezInput.value = tasa.cuentarez;
+                }
+                
+                console.log('📝 Datos cargados en el formulario para edición:', tasa);
+            }, 500);
+        }
+        
+        // Función para limpiar el formulario completamente
+        function limpiarFormularioCompleto() {
+            const rubroSelect = document.getElementById('id_rubro');
+            const tarifaSelect = document.getElementById('id_tarifa_rubro');
+            const valorPersonalizado = document.getElementById('id_valor_personalizado');
+            const codTarifaInput = document.getElementById('id_cod_tarifa');
+            const cuentaInput = document.getElementById('id_cuenta');
+            const cuentarezInput = document.getElementById('id_cuentarez');
+            const tasaIdInput = document.getElementById('tasa_id_edicion');
+            const btnTexto = document.getElementById('btn-texto');
+            const btnIcon = document.querySelector('#btn-guardar-tasa i');
+            
+            if (rubroSelect) rubroSelect.selectedIndex = 0;
+            if (tarifaSelect) {
+                tarifaSelect.innerHTML = '<option value="">Seleccione primero un rubro</option>';
+                tarifaSelect.selectedIndex = 0;
+            }
+            if (valorPersonalizado) valorPersonalizado.value = '';
+            if (codTarifaInput) codTarifaInput.value = '';
+            if (cuentaInput) {
+                cuentaInput.value = '';
+                cuentaInput.style.backgroundColor = '';
+                cuentaInput.style.borderColor = '';
+            }
+            if (cuentarezInput) {
+                cuentarezInput.value = '';
+                cuentarezInput.style.backgroundColor = '';
+                cuentarezInput.style.borderColor = '';
+            }
+            if (tasaIdInput) tasaIdInput.value = '';
+            
+            if (btnTexto) {
+                btnTexto.textContent = 'Agregar Tasa';
+            }
+            if (btnIcon) {
+                btnIcon.className = 'fas fa-plus';
+            }
+            
+            ocultarMensajeEdicion();
+            console.log('🧹 Formulario limpiado completamente');
+        }
+        
+        // Función para editar tasa desde la tabla
+        function editarTasa(id, rubro, codTarifa, valor, cuenta, cuentarez) {
+            console.log('✏️ Editando tasa:', {id, rubro, codTarifa, valor, cuenta, cuentarez});
+            
+            const rubroSelect = document.getElementById('id_rubro');
+            if (rubroSelect) {
+                rubroSelect.value = rubro;
+                rubroSelect.dispatchEvent(new Event('change'));
+            }
+            
+            const tasaObj = {
+                id: id,
+                rubro: rubro,
+                codTarifa: codTarifa,
+                valor: valor,
+                cuenta: cuenta || '',
+                cuentarez: cuentarez || ''
+            };
+            
+            mostrarMensajeEdicion(tasaObj);
+            cargarDatosExistentes(tasaObj);
+            
+            document.getElementById('formTasaMunicipal').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // Inicializar funciones cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarTarifasRubro();
+            actualizarValorPersonalizado();
+        });
+    </script>
+    
+    <!-- jQuery (requerido por Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</body>
+</html>
+
+

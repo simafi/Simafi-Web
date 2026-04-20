@@ -1,0 +1,100 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}Asiento {{ asiento.numero }}{% endblock %}
+
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:asientos_lista' %}">Asientos</a></li>
+            <li class="breadcrumb-item active">{{ asiento.numero }}</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-file-alt me-2"></i>Asiento No. {{ asiento.numero }}</h4>
+        <div class="d-flex gap-2">
+            {% if asiento.estado == 'BORRADOR' %}
+            <form method="post" action="{% url 'contabilidad:asiento_aprobar' asiento.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-cont-success"><i class="fas fa-check me-1"></i> Aprobar</button>
+            </form>
+            {% elif asiento.estado == 'APROBADO' %}
+            <form method="post" action="{% url 'contabilidad:asiento_contabilizar' asiento.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-cont-primary"><i class="fas fa-book me-1"></i> Contabilizar</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Datos del asiento -->
+    <div class="cont-card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3"><small class="text-muted">Tipo</small><div class="fw-bold">{{ asiento.tipo.nombre }}</div></div>
+                <div class="col-md-3"><small class="text-muted">Fecha</small><div class="fw-bold">{{ asiento.fecha|date:"d/m/Y" }}</div></div>
+                <div class="col-md-3"><small class="text-muted">Período</small><div class="fw-bold">{{ asiento.periodo }}</div></div>
+                <div class="col-md-3"><small class="text-muted">Estado</small><div><span class="badge badge-{{ asiento.estado|lower }}" style="font-size:0.9rem;">{{ asiento.get_estado_display }}</span></div></div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6"><small class="text-muted">Concepto</small><div>{{ asiento.concepto }}</div></div>
+                <div class="col-md-3"><small class="text-muted">Referencia</small><div>{{ asiento.referencia|default:"-" }}</div></div>
+                <div class="col-md-3"><small class="text-muted">Documento</small><div>{{ asiento.documento|default:"-" }}</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalle del asiento -->
+    <div class="cont-card mb-3">
+        <div class="card-header"><i class="fas fa-list me-1"></i> Líneas de Detalle</div>
+        <div class="card-body p-0">
+            <table class="table cont-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">#</th>
+                        <th style="width:120px;">Cuenta</th>
+                        <th>Nombre</th>
+                        <th>Concepto</th>
+                        <th class="text-end" style="width:140px;">Debe</th>
+                        <th class="text-end" style="width:140px;">Haber</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in detalles %}
+                    <tr>
+                        <td class="text-center">{{ d.linea }}</td>
+                        <td><code>{{ d.cuenta.codigo }}</code></td>
+                        <td>{{ d.cuenta.nombre }}</td>
+                        <td>{{ d.concepto|default:"-" }}</td>
+                        <td class="text-end">{% if d.debe > 0 %}{{ d.debe|floatformat:2 }}{% endif %}</td>
+                        <td class="text-end">{% if d.haber > 0 %}{{ d.haber|floatformat:2 }}{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background:#f7fafc; font-weight:700;">
+                        <td colspan="4" class="text-end">TOTALES:</td>
+                        <td class="text-end" style="color:var(--cont-accent);">{{ asiento.total_debe|floatformat:2 }}</td>
+                        <td class="text-end" style="color:var(--cont-success);">{{ asiento.total_haber|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Cuadre -->
+    <div class="cont-card p-3 {% if asiento.esta_cuadrado %}border-success{% else %}border-danger{% endif %}">
+        {% if asiento.esta_cuadrado %}
+        <i class="fas fa-check-circle text-success"></i> <strong class="text-success">Asiento cuadrado</strong>
+        {% else %}
+        <i class="fas fa-exclamation-triangle text-danger"></i> <strong class="text-danger">Asiento descuadrado</strong>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

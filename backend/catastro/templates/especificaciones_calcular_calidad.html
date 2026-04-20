@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_menu_principal' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ request.session.catastro_usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header bg-primary text-white">
+				<h5 class="mb-0">
+					<i class="fas fa-calculator me-2"></i>{{ titulo }}
+				</h5>
+			</div>
+			<div class="card-body">
+				<!-- Mensajes -->
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<!-- Información del registro -->
+				<div class="alert alert-info mb-4">
+					<div class="row">
+						<div class="col-md-3">
+							<strong>Clave Catastral:</strong> {{ clave }}
+						</div>
+						<div class="col-md-2">
+							<strong>No. Edif.:</strong> {{ edifino }}
+						</div>
+						<div class="col-md-2">
+							<strong>Piso:</strong> {{ piso|default:"-" }}
+						</div>
+						<div class="col-md-2">
+							<strong>Uso:</strong> {{ uso }}
+						</div>
+						<div class="col-md-2">
+							<strong>Clase:</strong> {{ clase }}
+						</div>
+					</div>
+				</div>
+
+				<!-- Formulario -->
+				<form method="post" id="form-especificaciones">
+					{% csrf_token %}
+					
+					<!-- Campos básicos ocultos -->
+					{{ form.clave }}
+					{{ form.usuario }}
+					{{ form.fechasys }}
+					
+					<div class="row g-3 mb-3">
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.edifino.id_for_label }}">
+								<strong>{{ form.edifino.label }}</strong>
+							</label>
+							{{ form.edifino }}
+							{{ form.edifino.errors }}
+						</div>
+						<div class="col-md-2">
+							<label class="form-label" for="{{ form.piso.id_for_label }}">
+								<strong>{{ form.piso.label }}</strong>
+							</label>
+							{{ form.piso }}
+							{{ form.piso.errors }}
+						</div>
+						<div class="col-md-2">
+							<label class="form-label" for="{{ form.uso.id_for_label }}">
+								<strong>{{ form.uso.label }}</strong>
+							</label>
+							{{ form.uso }}
+							{{ form.uso.errors }}
+						</div>
+						<div class="col-md-2">
+							<label class="form-label" for="{{ form.clase.id_for_label }}">
+								<strong>{{ form.clase.label }}</strong>
+							</label>
+							{{ form.clase }}
+							{{ form.clase.errors }}
+						</div>
+					</div>
+
+					<!-- SECCIÓN: FUNDICIONES (tipo=1) -->
+					<div class="card border-primary mb-3">
+						<div class="card-header bg-primary text-white">
+							<h6 class="mb-0"><i class="fas fa-building me-2"></i>FUNDICIONES</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<label class="form-label" for="{{ form.codfun.id_for_label }}">
+										<strong>{{ form.codfun.label }}</strong>
+									</label>
+									{{ form.codfun }}
+									{{ form.codfun.errors }}
+								</div>
+								<div class="col-md-5">
+									<label class="form-label" for="{{ form.descrifun.id_for_label }}">
+										<strong>{{ form.descrifun.label }}</strong>
+									</label>
+									{{ form.descrifun }}
+									{{ form.descrifun.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.pesofun.id_for_label }}">
+										<strong>{{ form.pesofun.label }}</strong>
+									</label>
+									{{ form.pesofun }}
+									{{ form.pesofun.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SECCIÓN: PISOS (tipo=2) -->
+					<div class="card border-info mb-3">
+						<div class="card-header bg-info text-white">
+							<h6 class="mb-0"><i class="fas fa-th me-2"></i>PISOS</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<label class="form-label" for="{{ form.codpiso.id_for_label }}">
+										<strong>{{ form.codpiso.label }}</strong>
+									</label>
+									{{ form.codpiso }}
+									{{ form.codpiso.errors }}
+								</div>
+								<div class="col-md-5">
+									<label class="form-label" for="{{ form.descripiso.id_for_label }}">
+										<strong>{{ form.descripiso.label }}</strong>
+									</label>
+									{{ form.descripiso }}
+									{{ form.descripiso.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.pesopiso.id_for_label }}">
+										<strong>{{ form.pesopiso.label }}</strong>
+									</label>
+									{{ form.pesopiso }}
+									{{ form.pesopiso.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SECCIÓN: PAREDES EXTERIORES (tipo=3) -->
+					<div class="card border-warning mb-3">
+						<div class="card-header bg-warning text-dark">
+							<h6 class="mb-0"><i class="fas fa-square me-2"></i>PAREDES EXTERIORES</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<label class="form-label" for="{{ form.codparext.id_for_label }}">
+										<strong>{{ form.codparext.label }}</strong>
+									</label>
+									{{ form.codparext }}
+									{{ form.codparext.errors }}
+								</div>
+								<div class="col-md-5">
+									<label class="form-label" for="{{ form.descriparext.id_for_label }}">
+										<strong>{{ form.descriparext.label }}</strong>
+									</label>
+									{{ form.descriparext }}
+									{{ form.descriparext.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.pesoparext.id_for_label }}">
+										<strong>{{ form.pesoparext.label }}</strong>
+									</label>
+									{{ form.pesoparext }}
+									{{ form.pesoparext.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SECCIÓN: TECHO (tipo=4) -->
+					<div class="card border-success mb-3">
+						<div class="card-header bg-success text-white">
+							<h6 class="mb-0"><i class="fas fa-home me-2"></i>TECHO</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<label class="form-label" for="{{ form.codtecho.id_for_label }}">
+										<strong>{{ form.codtecho.label }}</strong>
+									</label>
+									{{ form.codtecho }}
+									{{ form.codtecho.errors }}
+								</div>
+								<div class="col-md-5">
+									<label class="form-label" for="{{ form.descritecho.id_for_label }}">
+										<strong>{{ form.descritecho.label }}</strong>
+									</label>
+									{{ form.descritecho }}
+									{{ form.descritecho.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.pesotecho.id_for_label }}">
+										<strong>{{ form.pesotecho.label }}</strong>
+									</label>
+									{{ form.pesotecho }}
+									{{ form.pesotecho.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SECCIÓN: PAREDES INTERIORES (tipo=5) -->
+					<div class="card border-secondary mb-3">
+						<div class="card-header bg-secondary text-white">
+							<h6 class="mb-0"><i class="fas fa-border-all me-2"></i>PAREDES INTERIORES</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<label class="form-label" for="{{ form.codparint.id_for_label }}">
+										<strong>{{ form.codparint.label }}</strong>
+									</label>
+									{{ form.codparint }}
+									{{ form.codparint.errors }}
+								</div>
+								<div class="col-md-5">
+									<label class="form-label" for="{{ form.descriparint.id_for_label }}">
+										<strong>{{ form.descriparint.label }}</strong>
+									</label>
+									{{ form.descriparint }}
+									{{ form.descriparint.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.pesoparint.id_for_label }}">
+										<strong>{{ form.pesoparint.label }}</strong>
+									</label>
+									{{ form.pesoparint }}
+									{{ form.pesoparint.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SECCIÓN: CIELO FALSO (tipo=6) -->
+					<div class="card border-dark mb-3">
+						<div class="card-header bg-dark text-white">
+							<h6 class="mb-0"><i class="fas fa-cloud me-2"></i>CIELO FALSO</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<label class="form-label" for="{{ form.codcielo.id_for_label }}">
+										<strong>{{ form.codcielo.label }}</strong>
+									</label>
+									{{ form.codcielo }}
+									{{ form.codcielo.errors }}
+								</div>
+								<div class="col-md-5">
+									<label class="form-label" for="{{ form.descricielo.id_for_label }}">
+										<strong>{{ form.descricielo.label }}</strong>
+									</label>
+									{{ form.descricielo }}
+									{{ form.descricielo.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.pesocielo.id_for_label }}">
+										<strong>{{ form.pesocielo.label }}</strong>
+									</label>
+									{{ form.pesocielo }}
+									{{ form.pesocielo.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SECCIÓN: CARPINTERIA (tipo=7) -->
+					<div class="card border-danger mb-3">
+						<div class="card-header bg-danger text-white">
+							<h6 class="mb-0"><i class="fas fa-hammer me-2"></i>CARPINTERIA</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<label class="form-label" for="{{ form.codcarpenti.id_for_label }}">
+										<strong>{{ form.codcarpenti.label }}</strong>
+									</label>
+									{{ form.codcarpenti }}
+									{{ form.codcarpenti.errors }}
+								</div>
+								<div class="col-md-5">
+									<label class="form-label" for="{{ form.descricarpenti.id_for_label }}">
+										<strong>{{ form.descricarpenti.label }}</strong>
+									</label>
+									{{ form.descricarpenti }}
+									{{ form.descricarpenti.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.pesocarpini.id_for_label }}">
+										<strong>{{ form.pesocarpini.label }}</strong>
+									</label>
+									{{ form.pesocarpini }}
+									{{ form.pesocarpini.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SECCIÓN: ELECTRICIDAD (tipo=8) -->
+					<div class="card border-warning mb-3">
+						<div class="card-header bg-warning text-dark">
+							<h6 class="mb-0"><i class="fas fa-bolt me-2"></i>ELECTRICIDAD</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<label class="form-label" for="{{ form.codelectri.id_for_label }}">
+										<strong>{{ form.codelectri.label }}</strong>
+									</label>
+									{{ form.codelectri }}
+									{{ form.codelectri.errors }}
+								</div>
+								<div class="col-md-5">
+									<label class="form-label" for="{{ form.descrielectri.id_for_label }}">
+										<strong>{{ form.descrielectri.label }}</strong>
+									</label>
+									{{ form.descrielectri }}
+									{{ form.descrielectri.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.pesoelectri.id_for_label }}">
+										<strong>{{ form.pesoelectri.label }}</strong>
+									</label>
+									{{ form.pesoelectri }}
+									{{ form.pesoelectri.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SECCIÓN: PLOMERIA (tipo=9) -->
+					<div class="card border-primary mb-3">
+						<div class="card-header bg-primary text-white">
+							<h6 class="mb-0"><i class="fas fa-faucet me-2"></i>PLOMERIA</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<label class="form-label" for="{{ form.codplome.id_for_label }}">
+										<strong>{{ form.codplome.label }}</strong>
+									</label>
+									{{ form.codplome }}
+									{{ form.codplome.errors }}
+								</div>
+								<div class="col-md-5">
+									<label class="form-label" for="{{ form.descriplome.id_for_label }}">
+										<strong>{{ form.descriplome.label }}</strong>
+									</label>
+									{{ form.descriplome }}
+									{{ form.descriplome.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.pesoplome.id_for_label }}">
+										<strong>{{ form.pesoplome.label }}</strong>
+									</label>
+									{{ form.pesoplome }}
+									{{ form.pesoplome.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SECCIÓN: OTROS DETALLES (tipo=10) -->
+					<div class="card border-info mb-3">
+						<div class="card-header bg-info text-white">
+							<h6 class="mb-0"><i class="fas fa-list me-2"></i>OTROS DETALLES</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-4">
+									<label class="form-label" for="{{ form.codotros.id_for_label }}">
+										<strong>{{ form.codotros.label }}</strong>
+									</label>
+									{{ form.codotros }}
+									{{ form.codotros.errors }}
+								</div>
+								<div class="col-md-5">
+									<label class="form-label" for="{{ form.descriotros.id_for_label }}">
+										<strong>{{ form.descriotros.label }}</strong>
+									</label>
+									{{ form.descriotros }}
+									{{ form.descriotros.errors }}
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="{{ form.pesotros.id_for_label }}">
+										<strong>{{ form.pesotros.label }}</strong>
+									</label>
+									{{ form.pesotros }}
+									{{ form.pesotros.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Resumen y Calidad -->
+					<div class="card border-success mb-3">
+						<div class="card-header bg-success text-white">
+							<h6 class="mb-0"><i class="fas fa-calculator me-2"></i>RESUMEN</h6>
+						</div>
+						<div class="card-body">
+							<div class="row g-3">
+								<div class="col-md-6">
+									<label class="form-label" for="{{ form.pesos.id_for_label }}">
+										<strong>{{ form.pesos.label }}</strong>
+									</label>
+									{{ form.pesos }}
+									{{ form.pesos.errors }}
+								</div>
+								<div class="col-md-6">
+									<label class="form-label" for="{{ form.calidad.id_for_label }}">
+										<strong>{{ form.calidad.label }}</strong>
+									</label>
+									{{ form.calidad }}
+									{{ form.calidad.errors }}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Botones -->
+					<div class="d-flex justify-content-between mt-4">
+						<a href="{% url 'catastro:edificaciones_form' clave=clave %}" class="btn btn-secondary">
+							<i class="fas fa-arrow-left me-1"></i> Volver
+						</a>
+						<button type="submit" class="btn btn-primary">
+							<i class="fas fa-save me-1"></i> Guardar y Calcular Calidad
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// Mapeo de secciones con sus campos y endpoints
+			const secciones = {
+				'{{ form.codfun.id_for_label }}': {
+					descripcion: '{{ form.descrifun.id_for_label }}',
+					peso: '{{ form.pesofun.id_for_label }}',
+					endpoint: '{% url "catastro:api_listar_fundiciones" %}',
+					label: 'FUNDICIONES'
+				},
+				'{{ form.codpiso.id_for_label }}': {
+					descripcion: '{{ form.descripiso.id_for_label }}',
+					peso: '{{ form.pesopiso.id_for_label }}',
+					endpoint: '{% url "catastro:api_listar_pisos" %}',
+					label: 'PISOS'
+				},
+				'{{ form.codparext.id_for_label }}': {
+					descripcion: '{{ form.descriparext.id_for_label }}',
+					peso: '{{ form.pesoparext.id_for_label }}',
+					endpoint: '{% url "catastro:api_listar_paredes_exteriores" %}',
+					label: 'PAREDES EXTERIORES'
+				},
+				'{{ form.codtecho.id_for_label }}': {
+					descripcion: '{{ form.descritecho.id_for_label }}',
+					peso: '{{ form.pesotecho.id_for_label }}',
+					endpoint: '{% url "catastro:api_listar_techos" %}',
+					label: 'TECHO'
+				},
+				'{{ form.codparint.id_for_label }}': {
+					descripcion: '{{ form.descriparint.id_for_label }}',
+					peso: '{{ form.pesoparint.id_for_label }}',
+					endpoint: '{% url "catastro:api_listar_paredes_interiores" %}',
+					label: 'PAREDES INTERIORES'
+				},
+				'{{ form.codcielo.id_for_label }}': {
+					descripcion: '{{ form.descricielo.id_for_label }}',
+					peso: '{{ form.pesocielo.id_for_label }}',
+					endpoint: '{% url "catastro:api_listar_cielo_falso" %}',
+					label: 'CIELO FALSO'
+				},
+				'{{ form.codcarpenti.id_for_label }}': {
+					descripcion: '{{ form.descricarpenti.id_for_label }}',
+					peso: '{{ form.pesocarpini.id_for_label }}',
+					endpoint: '{% url "catastro:api_listar_carpinteria" %}',
+					label: 'CARPINTERIA'
+				},
+				'{{ form.codelectri.id_for_label }}': {
+					descripcion: '{{ form.descrielectri.id_for_label }}',
+					peso: '{{ form.pesoelectri.id_for_label }}',
+					endpoint: '{% url "catastro:api_listar_electricidad" %}',
+					label: 'ELECTRICIDAD'
+				},
+				'{{ form.codplome.id_for_label }}': {
+					descripcion: '{{ form.descriplome.id_for_label }}',
+					peso: '{{ form.pesoplome.id_for_label }}',
+					endpoint: '{% url "catastro:api_listar_plomeria" %}',
+					label: 'PLOMERIA'
+				},
+				'{{ form.codotros.id_for_label }}': {
+					descripcion: '{{ form.descriotros.id_for_label }}',
+					peso: '{{ form.pesotros.id_for_label }}',
+					endpoint: '{% url "catastro:api_listar_otros_detalles" %}',
+					label: 'OTROS DETALLES'
+				}
+			};
+
+			const usoInput = document.getElementById('{{ form.uso.id_for_label }}');
+			const claseInput = document.getElementById('{{ form.clase.id_for_label }}');
+			const pesosInput = document.getElementById('{{ form.pesos.id_for_label }}');
+			const calidadInput = document.getElementById('{{ form.calidad.id_for_label }}');
+
+			// Función para cargar combobox de una sección
+			function cargarCombobox(codigoField, seccion) {
+				const combobox = document.getElementById(codigoField);
+				if (!combobox) {
+					console.warn('Combobox no encontrado:', codigoField);
+					return;
+				}
+
+				const uso = usoInput ? usoInput.value.trim() : '';
+				const clase = claseInput ? claseInput.value.trim() : '';
+
+				if (!uso || !clase) {
+					combobox.innerHTML = '<option value="">Complete Uso y Clase primero</option>';
+					console.log('Esperando valores de Uso y Clase para cargar ' + seccion.label);
+					return;
+				}
+
+				// Guardar el valor inicial del combobox (valor guardado en la BD)
+				const valorInicial = combobox.value || combobox.getAttribute('data-initial-value') || '';
+
+				// Construir URL con filtros: uso=Uso, clase=Clase, tipo='1' (para fundiciones)
+				const url = seccion.endpoint + '?uso=' + encodeURIComponent(uso) + '&clase=' + encodeURIComponent(clase);
+				console.log('Cargando ' + seccion.label + ' con filtros: uso=' + uso + ', clase=' + clase + ', valor inicial=' + valorInicial);
+
+				fetch(url, {
+					credentials: 'include',
+					headers: {
+						'Accept': 'application/json',
+						'X-Requested-With': 'XMLHttpRequest'
+					}
+				})
+					.then(async response => {
+						const contentType = response.headers.get('content-type');
+						if (!contentType || !contentType.includes('application/json')) {
+							const text = await response.text();
+							console.error('Respuesta no es JSON:', text.substring(0, 200));
+							throw new Error('El servidor devolvió una respuesta no JSON');
+						}
+						return response.json();
+					})
+					.then(data => {
+						// Obtener el valor inicial guardado (del atributo data-initial-value o del value actual)
+						const valorInicial = combobox.getAttribute('data-initial-value') || combobox.value || '';
+						
+						combobox.innerHTML = '<option value="">Seleccione...</option>';
+						
+						if (data.items && data.items.length > 0) {
+							console.log('Cargadas ' + data.items.length + ' opciones para ' + seccion.label + ', valor inicial: ' + valorInicial);
+							
+							data.items.forEach(item => {
+								const option = document.createElement('option');
+								// El valor del combobox es la categoría (según SELECT categoria,descripcion)
+								const categoriaValue = item.categoria || item.codigo || '';
+								option.value = categoriaValue;
+								// Mostrar la descripción en el texto del option para que el usuario vea qué está seleccionando
+								option.textContent = item.descripcion || item.categoria || item.codigo || '';
+								// Guardar descripción y peso en data attributes para actualizar los campos automáticamente
+								option.dataset.descripcion = item.descripcion || '';
+								option.dataset.peso = item.peso || '0';
+								option.dataset.id = item.id || '';
+								option.dataset.categoria = item.categoria || '';
+								option.dataset.uso = item.uso || '';
+								option.dataset.clase = item.clase || '';
+								option.dataset.tipo = item.tipo || '';
+								combobox.appendChild(option);
+							});
+							
+							// Seleccionar el valor inicial si existe y coincide con alguna opción
+							const descripcionInput = document.getElementById(seccion.descripcion);
+							const pesoInput = document.getElementById(seccion.peso);
+							
+							// Obtener valores iniciales guardados
+							const descripcionInicial = descripcionInput ? descripcionInput.getAttribute('data-initial-descripcion') || descripcionInput.value : '';
+							const pesoInicial = pesoInput ? pesoInput.getAttribute('data-initial-peso') || pesoInput.value : '';
+							
+							let opcionEncontrada = null;
+							
+							if (valorInicial) {
+								// Buscar la opción que coincida con el valor inicial (categoría)
+								opcionEncontrada = Array.from(combobox.options).find(opt => opt.value === valorInicial);
+							}
+							
+							// Si no se encontró por valor y hay descripción inicial, buscar por descripción
+							if (!opcionEncontrada && descripcionInicial) {
+								opcionEncontrada = Array.from(combobox.options).find(opt => {
+									const descripcion = opt.dataset.descripcion || opt.textContent || '';
+									return descripcion.trim() === descripcionInicial.trim();
+								});
+								if (opcionEncontrada) {
+									console.log('Opción encontrada por descripción para ' + seccion.label + ': ' + opcionEncontrada.value);
+								}
+							}
+							
+							// Si encontramos una opción, seleccionarla y actualizar campos
+							if (opcionEncontrada) {
+								combobox.value = opcionEncontrada.value;
+								console.log('Valor seleccionado para ' + seccion.label + ': ' + opcionEncontrada.value);
+								
+								// Actualizar descripción y peso desde la opción encontrada
+								if (descripcionInput && pesoInput) {
+									descripcionInput.value = opcionEncontrada.dataset.descripcion || descripcionInicial || '';
+									pesoInput.value = opcionEncontrada.dataset.peso || pesoInicial || '0';
+								}
+								
+								// Disparar evento change para recalcular totales
+								setTimeout(function() {
+									combobox.dispatchEvent(new Event('change'));
+								}, 50);
+							} else {
+								// Si no se encontró la opción, restaurar descripción y peso desde los atributos data-initial
+								if (descripcionInput && pesoInput) {
+									if (descripcionInicial) {
+										descripcionInput.value = descripcionInicial;
+									}
+									if (pesoInicial) {
+										pesoInput.value = pesoInicial;
+									}
+									if (descripcionInicial || pesoInicial) {
+										console.log('Valores restaurados desde data-initial para ' + seccion.label + ' (opción no encontrada): descripcion=' + descripcionInicial + ', peso=' + pesoInicial);
+									}
+								}
+								
+								if (valorInicial) {
+									console.warn('Valor inicial ' + valorInicial + ' no encontrado en las opciones de ' + seccion.label);
+								}
+							}
+							
+							// Recalcular totales después de cargar todas las opciones
+							setTimeout(function() {
+								calcularPesosTotales();
+							}, 200);
+						} else {
+							console.warn('No se encontraron opciones para ' + seccion.label + ' con uso=' + uso + ', clase=' + clase);
+							const option = document.createElement('option');
+							option.value = '';
+							option.textContent = 'No hay opciones disponibles';
+							combobox.appendChild(option);
+						}
+					})
+					.catch(error => {
+						console.error('Error al cargar ' + seccion.label + ':', error);
+						combobox.innerHTML = '<option value="">Error al cargar opciones</option>';
+					});
+			}
+
+			// Función para actualizar descripción y peso cuando se selecciona un item
+			function actualizarDescripcionYPeso(codigoField, seccion) {
+				const combobox = document.getElementById(codigoField);
+				const descripcionInput = document.getElementById(seccion.descripcion);
+				const pesoInput = document.getElementById(seccion.peso);
+
+				if (!combobox || !descripcionInput || !pesoInput) {
+					console.warn('No se encontraron elementos para ' + seccion.label + ':', {
+						combobox: codigoField,
+						descripcion: seccion.descripcion,
+						peso: seccion.peso
+					});
+					return;
+				}
+
+				// Agregar event listener para cambios en el combobox
+				// Usar una función con nombre para poder removerla si es necesario
+				const handlerChange = function() {
+					const selectedOption = this.options[this.selectedIndex];
+					if (selectedOption && selectedOption.value && selectedOption.value !== '') {
+						// Obtener descripción y peso de los data attributes
+						const descripcion = selectedOption.dataset.descripcion || '';
+						const peso = selectedOption.dataset.peso || '0';
+						
+						// El valor del combobox (categoria) se guarda automáticamente en el campo codfun, codpiso, etc.
+						// Actualizar campos de descripción y peso
+						descripcionInput.value = descripcion;
+						pesoInput.value = peso;
+						
+						console.log('Actualizado ' + seccion.label + ':', {
+							codigo: selectedOption.value,  // Este es el valor que se guarda en codfun, codpiso, etc.
+							descripcion: descripcion,
+							peso: peso
+						});
+					} else {
+						// Limpiar campos si no hay selección
+						descripcionInput.value = '';
+						pesoInput.value = '0';
+					}
+					// Recalcular pesos totales y calidad después de actualizar
+					setTimeout(function() {
+						calcularPesosTotales();
+					}, 50);
+				};
+				
+				// Agregar el event listener
+				combobox.addEventListener('change', handlerChange);
+
+				// También agregar event listener para input directo en el campo de peso (por si se modifica manualmente)
+				pesoInput.addEventListener('input', function() {
+					console.log('Peso modificado manualmente en ' + seccion.label + ':', this.value);
+					setTimeout(function() {
+						calcularPesosTotales();
+					}, 100);
+				});
+
+				pesoInput.addEventListener('change', function() {
+					console.log('Peso cambiado en ' + seccion.label + ':', this.value);
+					calcularPesosTotales();
+				});
+			}
+
+			// Función para calcular pesos totales y calidad
+			// Pesos Totales = Peso FUNDICIONES + Peso Piso + Peso Pared Ext. + Peso Techo + 
+			//                 Peso Pared Int. + Peso Cielo + Peso Carpintería + Peso Eléctrica + 
+			//                 Peso Plomería + Peso Otros
+			function calcularPesosTotales() {
+				if (!pesosInput || !calidadInput) {
+					console.warn('No se encontraron campos de pesos o calidad');
+					return;
+				}
+
+				let total = 0;
+				// Sumar todos los pesos individuales
+				Object.keys(secciones).forEach(codigoField => {
+					const pesoInput = document.getElementById(secciones[codigoField].peso);
+					if (pesoInput) {
+						const peso = parseFloat(pesoInput.value) || 0;
+						total += peso;
+						console.log('Peso de ' + secciones[codigoField].label + ':', peso);
+					} else {
+						console.warn('No se encontró campo de peso para ' + secciones[codigoField].label);
+					}
+				});
+
+				// Guardar el total sin redondeo
+				pesosInput.value = Math.round(total);
+				console.log('Pesos Totales calculados:', total);
+
+				// Llamar al endpoint para calcular calidad desde la tabla costos
+				calcularCalidadDesdeCostos(total);
+			}
+
+			// Función para calcular calidad desde la tabla costos
+			function calcularCalidadDesdeCostos(pesosTotal) {
+				if (!calidadInput || !usoInput || !claseInput) {
+					console.warn('No se encontraron campos necesarios para calcular calidad');
+					return;
+				}
+
+				const uso = usoInput.value;
+				const clase = claseInput.value;
+
+				if (!uso || !clase) {
+					console.warn('Uso y Clase son requeridos para calcular calidad');
+					calidadInput.value = '';
+					return;
+				}
+
+				// Llamar al endpoint API
+				const url = `{% url 'catastro:api_calcular_calidad' %}?uso=${encodeURIComponent(uso)}&clase=${encodeURIComponent(clase)}&pesos_total=${encodeURIComponent(pesosTotal)}`;
+				
+				fetch(url)
+					.then(response => response.json())
+					.then(data => {
+						if (data.calidad) {
+							calidadInput.value = data.calidad;
+							console.log('Calidad calculada desde costos:', data.calidad);
+						} else {
+							calidadInput.value = '';
+							console.warn('No se encontró calidad en costos:', data.mensaje);
+						}
+					})
+					.catch(error => {
+						console.error('Error al calcular calidad:', error);
+						calidadInput.value = '';
+					});
+			}
+
+			// Cargar todos los comboboxes cuando cambian uso o clase
+			function cargarTodosLosComboboxes() {
+				Object.keys(secciones).forEach(codigoField => {
+					cargarCombobox(codigoField, secciones[codigoField]);
+				});
+			}
+
+			// Guardar valores iniciales de los comboboxes antes de cargar opciones
+			// Esto debe hacerse INMEDIATAMENTE después de que el DOM esté listo
+			Object.keys(secciones).forEach(codigoField => {
+				const combobox = document.getElementById(codigoField);
+				const seccion = secciones[codigoField];
+				
+				if (combobox && seccion) {
+					const descripcionInput = document.getElementById(seccion.descripcion);
+					const pesoInput = document.getElementById(seccion.peso);
+					
+					// SIEMPRE guardar los valores de descripción y peso si existen (estos campos SÍ tienen valores de Django)
+					if (descripcionInput && descripcionInput.value) {
+						descripcionInput.setAttribute('data-initial-descripcion', descripcionInput.value);
+						console.log('Descripción inicial guardada para ' + codigoField + ': ' + descripcionInput.value);
+					}
+					if (pesoInput && pesoInput.value) {
+						pesoInput.setAttribute('data-initial-peso', pesoInput.value);
+						console.log('Peso inicial guardado para ' + codigoField + ': ' + pesoInput.value);
+					}
+					
+					// Leer el valor inicial del combobox de varias formas posibles:
+					// 1. Del atributo value del select
+					// 2. De cualquier option seleccionado
+					// 3. Del atributo data-initial-value si ya existe
+					let valorInicial = combobox.getAttribute('data-initial-value') || '';
+					
+					// Si no hay valor en data-initial-value, intentar leerlo del select
+					if (!valorInicial) {
+						// Verificar si hay un option seleccionado
+						if (combobox.options && combobox.options.length > 0) {
+							const selectedOption = combobox.options[combobox.selectedIndex];
+							if (selectedOption && selectedOption.value && selectedOption.value !== '') {
+								valorInicial = selectedOption.value;
+							}
+						}
+						
+						// Si aún no hay valor, leer directamente del value del select
+						if (!valorInicial && combobox.value && combobox.value !== '') {
+							valorInicial = combobox.value;
+						}
+					}
+					
+					// Si encontramos un valor inicial, guardarlo
+					if (valorInicial) {
+						combobox.setAttribute('data-initial-value', valorInicial);
+						console.log('Valor inicial guardado para ' + codigoField + ': ' + valorInicial);
+					} else {
+						// Si no hay valor en el combobox pero hay descripción o peso, 
+						// significa que hay datos guardados pero el combobox está vacío
+						// En este caso, cuando se carguen las opciones, buscaremos por descripción
+						if ((descripcionInput && descripcionInput.value) || (pesoInput && pesoInput.value)) {
+							console.log('Combobox ' + codigoField + ' está vacío pero hay datos guardados (descripción o peso). Se buscará la opción al cargar.');
+						}
+					}
+				}
+			});
+
+			// Configurar event listeners
+			if (usoInput && claseInput) {
+				// Cargar comboboxes cuando cambian uso o clase
+				usoInput.addEventListener('change', function() {
+					cargarTodosLosComboboxes();
+				});
+				claseInput.addEventListener('change', function() {
+					cargarTodosLosComboboxes();
+				});
+				
+				// Cargar inicialmente si ya hay valores
+				if (usoInput.value && claseInput.value) {
+					setTimeout(function() {
+						cargarTodosLosComboboxes();
+					}, 500);
+				}
+			}
+
+			// Configurar actualización de descripción y peso para cada sección
+			// Esto debe hacerse ANTES de cargar los comboboxes para que los event listeners estén listos
+			Object.keys(secciones).forEach(codigoField => {
+				actualizarDescripcionYPeso(codigoField, secciones[codigoField]);
+			});
+
+			// Calcular inicialmente después de un delay para asegurar que todos los campos estén cargados
+			setTimeout(function() {
+				calcularPesosTotales();
+			}, 800);
+		});
+	</script>
+</body>
+</html>
+

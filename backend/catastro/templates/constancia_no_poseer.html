@@ -1,0 +1,30 @@
+{% extends "constancia_base_word.html" %}
+
+{% block title %}Constancia Catastral de No Poseer Bienes - {{ identidad }}{% endblock %}
+
+{% block paper_content %}
+    <span class="title">CONSTANCIA CATASTRAL DE NO POSEER BIENES</span>
+
+    <div class="content-para">
+        El suscrito Jefe del Departamento de Ordenamiento Territorial por medio de la Presente 
+        <span class="bold">HACE CONSTAR</span> que de acuerdo a los mapas Catastrales y a la base de Datos Catastral del Municipio de Puerto Cortés 
+        <span class="bold">NO EXISTE</span> propiedad registrada a nombre de : 
+        <span class="bold">{% if nombre_solicitado %}{{ nombre_solicitado|upper }}{% elif datos_bien %}{{ datos_bien.apellidos|upper }} / {{ datos_bien.nombres|upper }}{% else %}{{ identidad }}{% endif %}</span> con DNI No. 
+        <span class="bold">{{ identidad|default:"- &nbsp;&nbsp; - &nbsp;&nbsp; -" }}</span>
+    </div>
+
+    <div class="content-para" style="margin-top: 20px;">
+        <span class="bold">OBSERVACIONES :</span> N/A
+    </div>
+
+    <div class="content-para" style="margin-top: 40px;">
+        Y para los fines que el interesado convenga se le extiende la presente constancia en la ciudad de Puerto Cortés a los {{ dia }} días del mes de {{ mes_nombre }} de {{ ahora.year }} la cual tiene una vigencia de 6 meses 
+    </div>
+
+    <div class="signature-section">
+        <br><br><br>
+        <span class="bold">Ing. Melissa Gavarrete</span><br>
+        <span class="bold">Jefe Ordenamiento Territorial</span><br>
+        <span style="font-size: 8pt; margin-top: 10px; display: block;">EMITIDO : CATA</span>
+    </div>
+{% endblock %}

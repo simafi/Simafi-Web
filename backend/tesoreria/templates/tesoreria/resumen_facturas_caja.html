@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen Facturas Caja | SIMAFI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f6f8fc; }
+        .mod-header {
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+            color: #fff;
+            padding: 1.6rem 0;
+            border-radius: 0 0 18px 18px;
+        }
+        .card-simafi {
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,.04);
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="mod-header">
+        <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h3 class="mb-0"><i class="fas fa-receipt me-2"></i>Resumen de Facturas Emitidas desde Caja</h3>
+                <small>Empresa: {{ empresa }} | Usuario: {{ usuario }}</small>
+            </div>
+            {% if request.GET.origen == 'tributario' %}
+                <a class="btn btn-sm btn-outline-light" href="{% url 'tributario:tributario_menu_principal' %}">
+                    <i class="fas fa-arrow-left me-1"></i>Menú Tributario
+                </a>
+            {% else %}
+                <a class="btn btn-sm btn-outline-light" href="{% url 'tesoreria:tesoreria_menu_principal' %}">
+                    <i class="fas fa-arrow-left me-1"></i>Menú Tesorería
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container mt-4 pb-4">
+        <div class="card card-simafi mb-3">
+            <div class="card-body">
+                <form method="get" class="row g-2 align-items-end">
+                    {% if request.GET.origen == 'tributario' %}
+                        <input type="hidden" name="origen" value="tributario">
+                    {% endif %}
+                    <div class="col-md-2">
+                        <label class="form-label">Fecha desde</label>
+                        <input type="date" name="fecha_desde" class="form-control" value="{{ filtros.fecha_desde }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Fecha hasta</label>
+                        <input type="date" name="fecha_hasta" class="form-control" value="{{ filtros.fecha_hasta }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Cajero</label>
+                        <input type="text" name="cajero" class="form-control" value="{{ filtros.cajero }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Método</label>
+                        <select name="metodo" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="EFECTIVO" {% if filtros.metodo == 'EFECTIVO' %}selected{% endif %}>Efectivo</option>
+                            <option value="POS" {% if filtros.metodo == 'POS' %}selected{% endif %}>POS</option>
+                            <option value="CHEQUE" {% if filtros.metodo == 'CHEQUE' %}selected{% endif %}>Cheque</option>
+                            <option value="COMPENSACION" {% if filtros.metodo == 'COMPENSACION' %}selected{% endif %}>Compensación</option>
+                            <option value="MIXTO" {% if filtros.metodo == 'MIXTO' %}selected{% endif %}>Mixto</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex gap-2">
+                        <button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i>Filtrar</button>
+                        <button class="btn btn-outline-success" type="submit" name="exportar" value="csv">
+                            <i class="fas fa-file-csv me-1"></i>Exportar CSV
+                        </button>
+                        {% if request.GET.origen == 'tributario' %}
+                            <a class="btn btn-outline-secondary" href="{% url 'tesoreria:resumen_facturas_caja' %}?origen=tributario">Limpiar</a>
+                        {% else %}
+                            <a class="btn btn-outline-secondary" href="{% url 'tesoreria:resumen_facturas_caja' %}">Limpiar</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card card-simafi">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Recibo</th>
+                                <th>Empresa</th>
+                                <th>Nombre</th>
+                                <th>Método de Pago</th>
+                                <th class="text-end">Valor Pagado</th>
+                                <th>Descripción</th>
+                                <th>Comentario</th>
+                                <th>Fecha</th>
+                                <th>Cajero</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in rows %}
+                                <tr>
+                                    <td>{{ r.numero_recibo }}</td>
+                                    <td>{{ r.empresa }}</td>
+                                    <td>{{ r.nombre }}</td>
+                                    <td>{{ r.metodo_pago }}</td>
+                                    <td class="text-end">L. {{ r.valor_pagado|floatformat:2 }}</td>
+                                    <td>{{ r.descripcion }}</td>
+                                    <td>{{ r.comentario }}</td>
+                                    <td>{{ r.fecha }}</td>
+                                    <td>{{ r.cajero }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center py-4 text-muted">No hay registros para los filtros seleccionados.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light fw-bold">
+                            <tr>
+                                <td colspan="4" class="text-end">Total General</td>
+                                <td class="text-end">L. {{ total_general|floatformat:2 }}</td>
+                                <td colspan="4"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

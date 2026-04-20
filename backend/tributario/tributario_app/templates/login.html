@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Iniciar sesión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background: #fff;
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 350px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: #444;
+            font-weight: 500;
+        }
+        input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border 0.2s;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus, input[type="password"]:focus, select:focus {
+            border-color: #2563eb;
+            outline: none;
+        }
+        .field-error {
+            color: #e11d48;
+            font-size: 0.95em;
+            margin-top: 0.2rem;
+        }
+        button[type="submit"] {
+            background: #2563eb;
+            color: #fff;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 0.5rem;
+            transition: background 0.2s;
+        }
+        button[type="submit"]:hover {
+            background: #1e40af;
+        }
+        .error-message {
+            color: #e11d48;
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            padding: 0.5rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+        }
+        .logo {
+            max-width: 250px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .logos-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .logo-item {
+            text-align: center;
+        }
+        .logo-item img {
+            max-width: 200px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-container">
+            <img src="{% static 'imagenes/simafi.jpg' %}" alt="Logo Simafi" class="logo">
+        </div>
+        <h2>Iniciar sesión</h2>
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.usuario.id_for_label }}">Usuario</label>
+                {{ form.usuario }}
+                {% if form.usuario.errors %}
+                    <div class="field-error">{{ form.usuario.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">Contraseña</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="field-error">{{ form.password.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.municipio.id_for_label }}">Municipio</label>
+                {{ form.municipio }}
+                {% if form.municipio.errors %}
+                    <div class="field-error">{{ form.municipio.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+</body>
+</html>

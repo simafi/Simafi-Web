@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ modulo }}{% endblock %} | SIMAFI</title>
+    <!-- Frameworks -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --purchase-primary: #059669;
+            --purchase-secondary: #10b981;
+            --purchase-dark: #064e3b;
+            --purchase-bg: #f8fafc;
+            --sidebar-width: 280px;
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--purchase-bg);
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Style */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: linear-gradient(180deg, var(--purchase-dark) 0%, #065f46 100%);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--purchase-primary);
+            font-size: 1.2rem;
+        }
+
+        .nav-link {
+            padding: 0.8rem 1.5rem;
+            color: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+            font-weight: 500;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: var(--purchase-secondary);
+        }
+
+        .nav-link i { width: 22px; text-align: center; font-size: 1.1rem; }
+
+        /* Main Content area */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .top-header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+            margin: -2rem -2rem 2rem -2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        /* Cards and Elements */
+        .premium-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: var(--shadow-premium);
+            transition: transform 0.2s;
+        }
+
+        .premium-card:hover { transform: translateY(-3px); }
+
+        .stat-card {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        /* Buttons */
+        .btn-purchase {
+            background: var(--purchase-primary);
+            color: white;
+            border-radius: 10px;
+            padding: 0.6rem 1.2rem;
+            font-weight: 600;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-purchase:hover {
+            background: var(--purchase-dark);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-purchase-outline {
+            background: transparent;
+            color: var(--purchase-primary);
+            border: 2px solid var(--purchase-primary);
+            border-radius: 10px;
+            padding: 0.5rem 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo"><i class="fas fa-shopping-basket"></i></div>
+            <div>
+                <div class="fw-bold" style="font-size: 1.1rem;">SIMAFI</div>
+                <div class="small opacity-50">Compras y Suministros</div>
+            </div>
+        </div>
+        <nav class="mt-4">
+            <a href="{% url 'compras:compras_menu_principal' %}" class="nav-link {% block active_dashboard %}{% endblock %}">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <div class="small text-uppercase opacity-40 px-4 mt-4 mb-2" style="font-size:0.7rem; letter-spacing: 1px;">Suministros</div>
+            <a href="{% url 'compras:requisicion_list' %}" class="nav-link {% block active_req %}{% endblock %}">
+                <i class="fas fa-clipboard-list"></i> Requisiciones
+            </a>
+            <a href="{% url 'compras:solicitud_cotizacion_list' %}" class="nav-link {% block active_sc %}{% endblock %}">
+                <i class="fas fa-file-contract"></i> Cotizaciones
+            </a>
+            <a href="{% url 'compras:orden_compra_list' %}" class="nav-link {% block active_oc %}{% endblock %}">
+                <i class="fas fa-shopping-bag"></i> Órdenes de Compra
+            </a>
+            
+            <div class="small text-uppercase opacity-40 px-4 mt-4 mb-2" style="font-size:0.7rem; letter-spacing: 1px;">Inventario</div>
+            <a href="{% url 'compras:materiales_bodega_list' %}" class="nav-link {% block active_bodega %}{% endblock %}">
+                <i class="fas fa-warehouse"></i> Existencias
+            </a>
+            <a href="{% url 'compras:movimiento_bodega_list' %}" class="nav-link {% block active_kardex %}{% endblock %}">
+                <i class="fas fa-history"></i> Kardex / Movimientos
+            </a>
+
+            <div class="mt-auto px-4 py-4" style="position: absolute; bottom: 0; width: 100%;">
+                <a href="{% url 'modules_core:menu_principal' %}" class="btn w-100 text-white" style="background:rgba(255,255,255,0.1); border-radius: 10px;">
+                    <i class="fas fa-arrow-left me-2"></i> Menú Modular
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="d-flex align-items-center gap-3">
+                <h4 class="mb-0 fw-bold">{% block breadcrumb %}Panel de Control{% endblock %}</h4>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end d-none d-md-block">
+                    <div class="fw-bold">{{ usuario|default:"Usuario" }}</div>
+                    <div class="text-muted small">{{ empresa|default:"Sin Empresa" }}</div>
+                </div>
+                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; font-weight: 700;">
+                    {{ usuario|slice:":1"|upper }}
+                </div>
+            </div>
+        </header>
+
+        {% if messages %}
+            <div class="container-fluid px-0">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show premium-card border-0 mb-4" role="alert">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

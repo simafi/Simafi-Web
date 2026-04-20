@@ -1,0 +1,64 @@
+{% extends "ciudadano/base_ciudadano.html" %}
+{% block title %}Trámites{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <p class="text-muted mb-1">Usuario sistema: <strong>{{ usuario }}</strong> · Empresa: <strong>{{ empresa }}</strong></p>
+    <p class="small mb-1">
+        <a href="{% url 'ciudadano:gestion_bandeja' %}"><i class="fas fa-inbox me-1"></i>Bandeja municipal</a>
+        <span class="text-muted">— respuestas del ayuntamiento al contribuyente</span>
+    </p>
+    <a href="{% url 'ciudadano:salir_ciudadano' %}" class="small text-danger">Cerrar sesión de contribuyente en este portal</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+        <div class="card cdd-card h-100">
+            <div class="card-body">
+                <div class="text-primary mb-2"><i class="fas fa-file-signature fa-2x"></i></div>
+                <h2 class="h6">Nueva solicitud de trámite</h2>
+                <p class="small text-muted">Certificados, actualización de datos, PQRD, cita de orientación, etc.</p>
+                <a href="{% url 'ciudadano:nueva_solicitud' %}" class="btn btn-primary btn-sm">Iniciar</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card cdd-card h-100">
+            <div class="card-body">
+                <div class="text-success mb-2"><i class="fas fa-list-alt fa-2x"></i></div>
+                <h2 class="h6">Mis solicitudes</h2>
+                <p class="small text-muted">Consulte el estado de las solicitudes presentadas con su identificación.</p>
+                <a href="{% url 'ciudadano:mis_solicitudes' %}" class="btn btn-outline-success btn-sm">Ver listado</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card cdd-card h-100">
+            <div class="card-body">
+                <div class="text-info mb-2"><i class="fas fa-calculator fa-2x"></i></div>
+                <h2 class="h6">Módulo Tributario</h2>
+                <p class="small text-muted">Acceso al sistema de impuestos y tasas municipales (personal autorizado y flujos administrativos).</p>
+                <a href="/tributario/menu/" class="btn btn-outline-info btn-sm" target="_blank" rel="noopener">Abrir Tributario</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card cdd-card h-100">
+            <div class="card-body">
+                <div class="text-secondary mb-2"><i class="fas fa-balance-scale fa-2x"></i></div>
+                <h2 class="h6">Marco legal y derechos</h2>
+                <p class="small text-muted">Referencia normativa municipal y tributaria (Honduras).</p>
+                <a href="{% url 'ciudadano:marco_legal' %}" class="btn btn-outline-secondary btn-sm">Leer</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card cdd-card h-100 border-primary border-opacity-25">
+            <div class="card-body">
+                <div class="text-primary mb-2"><i class="fas fa-landmark fa-2x"></i></div>
+                <h2 class="h6">Transparencia</h2>
+                <p class="small text-muted">El municipio garantiza trato digno, igualdad y acceso a servicios conforme a la Ley de Municipalidades.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

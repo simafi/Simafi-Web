@@ -1,0 +1,59 @@
+{% extends "contabilidad_base.html" %}
+{% block title %}Inventarios{% endblock %}
+{% block breadcrumb %}
+<div class="cont-breadcrumb"><nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+    <li class="breadcrumb-item active">Inventarios</li>
+</ol></nav></div>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h4 class="mb-0"><i class="fas fa-boxes me-2"></i>Inventarios (NIC 2 - Valor Neto Realizable)</h4>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'contabilidad:tipo_inventario_list' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-tags me-1"></i> Tipos de inventario</a>
+            <a href="{% url 'contabilidad:inventario_crear' %}" class="btn btn-cont-primary btn-sm"><i class="fas fa-plus me-1"></i> Nuevo ítem / bodega</a>
+        </div>
+    </div>
+    <div class="cont-card">
+        <div class="card-body p-0">
+            <table class="table cont-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Tipo</th>
+                        <th>Nomenclatura</th>
+                        <th>Descripción</th>
+                        <th>U.M.</th>
+                        <th class="text-end">Cantidad</th>
+                        <th class="text-end">Costo Unit.</th>
+                        <th class="text-end">Costo Total</th>
+                        <th class="text-end">VNR</th>
+                        <th>Valoración</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in items %}
+                    <tr>
+                        <td><code>{{ i.codigo }}</code></td>
+                        <td><small>{% if i.tipo_inventario %}{{ i.tipo_inventario.nombre }}{% else %}<span class="text-muted">—</span>{% endif %}</small></td>
+                        <td>{% if i.nomenclatura %}<code class="small">{{ i.nomenclatura }}</code>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                        <td>{{ i.descripcion }}</td>
+                        <td>{{ i.unidad_medida }}</td>
+                        <td class="text-end">{{ i.cantidad|floatformat:2 }}</td>
+                        <td class="text-end">{{ i.costo_unitario|floatformat:4 }}</td>
+                        <td class="text-end">{{ i.costo_total|floatformat:2 }}</td>
+                        <td class="text-end">{{ i.valor_neto_realizable|floatformat:2 }}</td>
+                        <td><small>{{ i.get_metodo_valoracion_display }}</small></td>
+                        <td class="text-nowrap"><a href="{% url 'contabilidad:inventario_editar' i.pk %}" class="btn btn-sm btn-outline-secondary">Editar</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="11" class="text-center py-4 text-muted"><i class="fas fa-inbox" style="font-size:2rem;"></i><p class="mt-2 mb-0">No hay inventarios registrados. Use <strong>Nuevo ítem / bodega</strong> para dar de alta materiales con tipo y nomenclatura.</p></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

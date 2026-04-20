@@ -1,0 +1,43 @@
+{% extends "constancia_base_word.html" %}
+
+{% block title %}Constancia de Poseer Bienes - {{ identidad }}{% endblock %}
+
+{% block paper_content %}
+    <span class="title">CONSTANCIA CATASTRAL DE POSEER BIENES</span>
+
+    <div class="content-para">
+        El suscrito Jefe del Departamento de Ordenamiento Territorial por medio de la Presente 
+        <span class="bold">HACE CONSTAR</span> que de acuerdo a los mapas Catastrales y a la base de Datos Catastral del Municipio de Puerto Cortés 
+        <span class="bold">EXISTE</span> propiedad registrada a nombre de:
+    </div>
+
+    {% for bien in bienes_lista %}
+    <div class="content-para" style="margin-bottom: 30px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
+        <span class="bold">{% if bien.apellidos %}{{ bien.apellidos|upper }}{% endif %} / {% if bien.nombres %}{{ bien.nombres|upper }}{% endif %}</span> 
+        con DNI No. <span class="bold">{{ identidad }}</span> identificada con clave catastral 
+        <span class="bold">{{ bien.cocata1 }}</span> Matrícula No. 
+        <span class="bold">{{ bien.legales_numero|default:"N/A" }}</span> Tomo 
+        <span class="bold">{{ bien.tomo|default:"N/A" }}</span> Asiento 
+        <span class="bold">{{ bien.asiento|default:"N/A" }}</span> Ubicado en 
+        <span class="bold">{{ bien.ubicacion|default:bien.barrio|upper }}</span>.
+    </div>
+    {% empty %}
+    <div class="content-para" style="text-align: center; color: #ef4444;">
+        No se encontraron registros de propiedad para esta identificación.
+    </div>
+    {% endfor %}
+
+    <div class="content-para">
+        <span class="bold">OBSERVACIONES :</span> N/A
+    </div>
+
+    <div class="content-para" style="margin-top: 30px;">
+        Y para los fines que el interesado convenga se le extiende la presente constancia en la ciudad de Puerto Cortés a los {{ dia }} días del mes de {{ mes_nombre }} de {{ ano }} la cual tiene una vigencia de 6 meses.
+    </div>
+
+    <div class="signature-section">
+        <br><br><br>
+        <span class="bold" style="text-decoration: underline;">Ing. Melissa Gavarrete</span><br>
+        <span class="bold">Jefe Ordenamiento Territorial</span>
+    </div>
+{% endblock %}

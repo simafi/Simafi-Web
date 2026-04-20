@@ -1,0 +1,114 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}Menú Principal - Contabilidad{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header con estadísticas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="cont-card p-4" style="background: linear-gradient(135deg, #1a365d 0%, #2b4c7e 60%, #3182ce 100%); color: #fff;">
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <h3 class="mb-1" style="font-weight:700;"><i class="fas fa-book me-2"></i>Módulo de Contabilidad</h3>
+                        <p class="mb-0" style="opacity:0.85;">Sistema contable basado en Normas Internacionales de Contabilidad (NIC/IAS)</p>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div style="font-size:1.8rem; font-weight:700;">{{ total_cuentas }}</div>
+                                <small style="opacity:0.8;">Cuentas</small>
+                            </div>
+                            <div class="col-3">
+                                <div style="font-size:1.8rem; font-weight:700;">{{ total_asientos }}</div>
+                                <small style="opacity:0.8;">Asientos</small>
+                            </div>
+                            <div class="col-3">
+                                <div style="font-size:1.8rem; font-weight:700;">{{ asientos_borrador }}</div>
+                                <small style="opacity:0.8;">Borradores</small>
+                            </div>
+                            <div class="col-3">
+                                <div style="font-size:1.8rem; font-weight:700;">{{ total_activos_fijos }}</div>
+                                <small style="opacity:0.8;">Activos</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if ejercicio_activo %}
+    <div class="alert" style="background:#ebf8ff; border:1px solid #bee3f8; border-radius:10px; color:#2a4365;">
+        <i class="fas fa-calendar-check me-2"></i>
+        <strong>Ejercicio fiscal activo:</strong> {{ ejercicio_activo.anio }} — {{ ejercicio_activo.descripcion }}
+        ({{ ejercicio_activo.fecha_inicio|date:"d/m/Y" }} al {{ ejercicio_activo.fecha_fin|date:"d/m/Y" }})
+    </div>
+    {% else %}
+    <div class="alert" style="background:#fefcbf; border:1px solid #f6e05e; border-radius:10px; color:#744210;">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>No hay ejercicio fiscal abierto.</strong> Cree uno desde "Ejercicios Fiscales" para poder registrar asientos.
+    </div>
+    {% endif %}
+
+    <!-- Módulos del sistema contable -->
+    <div class="row g-4">
+        {% for opcion in opciones_menu %}
+        <div class="col-md-6 col-lg-3">
+            <a href="{% url opcion.url %}" class="text-decoration-none">
+                <div class="cont-card p-4 text-center h-100" style="cursor:pointer; position:relative; overflow:hidden;">
+                    <div style="width:64px; height:64px; border-radius:16px; background:{{ opcion.color }}15; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem;">
+                        <i class="{{ opcion.icono }}" style="font-size:1.5rem; color:{{ opcion.color }};"></i>
+                    </div>
+                    <h6 style="font-weight:700; color:var(--cont-primary); margin-bottom:0.5rem;">{{ opcion.nombre }}</h6>
+                    <p style="font-size:0.8rem; color:var(--cont-text-light); margin:0;">{{ opcion.descripcion }}</p>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Referencia NIC -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="cont-card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-2"></i>Normas Internacionales de Contabilidad Implementadas
+                </div>
+                <div class="card-body">
+                    <div class="row" style="font-size:0.82rem;">
+                        <div class="col-md-4">
+                            <ul class="list-unstyled">
+                                <li class="mb-1"><span class="badge bg-primary me-1">NIC 1</span> Presentación de Estados Financieros</li>
+                                <li class="mb-1"><span class="badge bg-primary me-1">NIC 2</span> Inventarios</li>
+                                <li class="mb-1"><span class="badge bg-primary me-1">NIC 7</span> Estado de Flujos de Efectivo</li>
+                                <li class="mb-1"><span class="badge bg-primary me-1">NIC 8</span> Políticas Contables</li>
+                                <li class="mb-1"><span class="badge bg-primary me-1">NIC 10</span> Hechos Posteriores</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <ul class="list-unstyled">
+                                <li class="mb-1"><span class="badge bg-success me-1">NIC 12</span> Impuesto a las Ganancias</li>
+                                <li class="mb-1"><span class="badge bg-success me-1">NIC 16</span> Propiedad, Planta y Equipo</li>
+                                <li class="mb-1"><span class="badge bg-success me-1">NIC 19</span> Beneficios a Empleados</li>
+                                <li class="mb-1"><span class="badge bg-success me-1">NIC 21</span> Variaciones en Tasas de Cambio</li>
+                                <li class="mb-1"><span class="badge bg-success me-1">NIC 23</span> Costos por Préstamos</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <ul class="list-unstyled">
+                                <li class="mb-1"><span class="badge bg-info me-1">NIC 32/39</span> Instrumentos Financieros</li>
+                                <li class="mb-1"><span class="badge bg-info me-1">NIC 36</span> Deterioro del Valor</li>
+                                <li class="mb-1"><span class="badge bg-info me-1">NIC 37</span> Provisiones y Contingentes</li>
+                                <li class="mb-1"><span class="badge bg-info me-1">NIC 38</span> Activos Intangibles</li>
+                                <li class="mb-1"><span class="badge bg-info me-1">NIC 40</span> Propiedades de Inversión</li>
+                                <li class="mb-1"><span class="badge bg-info me-1">NIC 41</span> Agricultura</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

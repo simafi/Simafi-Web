@@ -1,0 +1,145 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}{{ titulo }}{% endblock %}
+{% block nav_rubros %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)"><i class="fas fa-dollar-sign"></i></div>
+        <div>
+            <h1 class="page-title">{{ titulo }}</h1>
+            <p class="page-subtitle">Configuración de Precios y Parámetros - {{ empresa }}</p>
+        </div>
+    </div>
+    <a href="{% url 'servicios_publicos:rubros_lista' %}" class="btn-sp-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="form-panel">
+                <div class="form-panel-title"><i class="fas fa-cog"></i> Parámetros de la Tarifa</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Rubro *</label>
+                        <select name="rubro" class="form-select" required {% if instance %}disabled{% endif %}>
+                            <option value="">-- Seleccione rubro --</option>
+                            {% for r in rubros %}
+                            <option value="{{ r.codigo }}" data-tipo="{{ r.tipo_cobro }}" {% if instance.rubro == r.codigo %}selected{% endif %}>
+                                {{ r.codigo }} - {{ r.descripcion }} {% if r.tipo_cobro == 'F' %}(Fija){% elif r.tipo_cobro == 'M' %}(Medida){% elif r.tipo_cobro == 'A' %}(Anual){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if instance %}<input type="hidden" name="rubro" value="{{ instance.rubro }}">{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Año de Vigencia *</label>
+                        <input type="number" name="ano" class="form-control" value="{{ instance.ano|default:ano_actual }}" min="2000" max="2100" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Descripción / Nombre de la Tarifa</label>
+                        <input type="text" name="descripcion" class="form-control" value="{{ instance.descripcion|default:'' }}" placeholder="Ej: Tarifa Doméstica 2024">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" id="lbl_cargo_fijo">Cargo Fijo (L)</label>
+                        <input type="number" name="cargo_fijo" class="form-control" value="{{ instance.cargo_fijo|default:'0.00' }}" step="0.01" min="0">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" id="lbl_precio_m3">Precio por m³ (L)</label>
+                        <input type="number" name="precio_m3" class="form-control" value="{{ instance.precio_m3|default:'0.00' }}" step="0.0001" min="0">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Consumo Mínimo (m³)</label>
+                        <input type="number" name="minimo_m3" class="form-control" value="{{ instance.minimo_m3|default:'0.00' }}" step="0.01" min="0">
+                    </div>
+                    
+                    <div class="col-12" id="panel_tramos">
+                        <div class="form-panel" style="background:rgba(255,255,255,0.03); border:1px solid var(--sp-border)">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="usa_tramos" id="usa_tramos" value="1" 
+                                       {% if instance.usa_tramos %}checked{% endif %}>
+                                <label class="form-check-label fw-bold" for="usa_tramos">Usa Tarifas Escalonadas (Tramos)</label>
+                            </div>
+                            <p class="text-muted small mt-2 mb-0">
+                                <i class="fas fa-info-circle me-1"></i> Si activa esta opción, podrá configurar diferentes precios según el rango de consumo (ej: 0-10m³, 11-20m³, etc.) en el siguiente paso.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="activo" id="activo" value="1" 
+                                   {% if instance.activo or not instance %}checked{% endif %}>
+                            <label class="form-check-label" for="activo">Tarifa activa</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-end mt-4">
+                    <a href="{% url 'servicios_publicos:tarifas_lista' %}" class="btn-sp-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn-sp-primary">
+                        <i class="fas fa-save"></i> {% if instance %}Actualizar Tarifa{% else %}Continuar a Tramos{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function applyTipoRubro() {
+    const sel = document.querySelector('select[name="rubro"]');
+    const opt = sel ? sel.options[sel.selectedIndex] : null;
+    const tipo = opt ? (opt.getAttribute('data-tipo') || '') : '';
+
+    const cargo = document.querySelector('input[name="cargo_fijo"]');
+    const precio = document.querySelector('input[name="precio_m3"]');
+    const minimo = document.querySelector('input[name="minimo_m3"]');
+    const panelTramos = document.getElementById('panel_tramos');
+    const chkTramos = document.getElementById('usa_tramos');
+
+    // Defaults
+    cargo.required = false;
+    precio.required = false;
+    if (panelTramos) panelTramos.style.display = '';
+    if (minimo) minimo.disabled = false;
+    if (precio) precio.disabled = false;
+    if (chkTramos) chkTramos.disabled = false;
+
+    if (tipo === 'F' || tipo === 'A') {
+      // Fija/anual: solo cargo fijo
+      cargo.required = true;
+      precio.value = '0';
+      if (precio) precio.disabled = true;
+      if (minimo) { minimo.value = '0'; minimo.disabled = true; }
+      if (chkTramos) { chkTramos.checked = false; chkTramos.disabled = true; }
+      if (panelTramos) panelTramos.style.display = 'none';
+    } else if (tipo === 'M') {
+      // Medida: precio_m3 obligatorio si no usa tramos
+      if (chkTramos && chkTramos.checked) {
+        // tramos: precio/minimo se ignoran
+        if (precio) precio.value = '0';
+        if (minimo) minimo.value = '0';
+      } else {
+        precio.required = true;
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const sel = document.querySelector('select[name="rubro"]');
+    const chk = document.getElementById('usa_tramos');
+    if (sel) sel.addEventListener('change', applyTipoRubro);
+    if (chk) chk.addEventListener('change', applyTipoRubro);
+    applyTipoRubro();
+  });
+</script>
+{% endblock %}

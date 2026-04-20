@@ -1,0 +1,31 @@
+{% extends "constancia_base_word.html" %}
+
+{% block title %}Constancia para Escalafón - {{ cocata1 }}{% endblock %}
+
+{% block paper_content %}
+    <span class="title">CONSTANCIA CATASTRAL PARA ESCALAFON</span>
+
+    <div class="content-para">
+        El suscrito Jefe del Departamento de Ordenamiento Territorial por medio de la Presente 
+        <span class="bold">HACE CONSTAR</span> que de acuerdo a los mapas Catastrales y a la base de Datos Catastral del Municipio de Puerto Cortés, se encuentra el predio identificado con clave Catastral 
+        <span class="bold">{{ cocata1 }}</span> Ubicado en 
+        <span class="bold">{{ datos_bien.ubicacion|upper }}</span> registrada a nombre de 
+        <span class="bold">{% if datos_bien.apellidos %}{{ datos_bien.apellidos|upper }}{% endif %} / {% if datos_bien.nombres %}{{ datos_bien.nombres|upper }}{% endif %}</span> con DNI No. 
+        <span class="bold">{{ datos_bien.identidad|default:"- &nbsp;&nbsp; - &nbsp;&nbsp; -" }}</span> dentro del 
+        <span class="bold">LIMITE ({% if datos_bien.clatra == '1' %}URBANO{% else %}RURAL{% endif %}) DEL MUNICIPIO DE PUERTO CORTES</span>
+    </div>
+
+    <div class="content-para" style="margin-top: 20px;">
+        <span class="bold">OBSERVACIONES :</span> N/A
+    </div>
+
+    <div class="content-para" style="margin-top: 40px;">
+        Y para los fines que el interesado convenga se le extiende la presente constancia en la ciudad de Puerto Cortés a los {{ dia }} días del mes de {{ mes_nombre }} de {{ ano }} la cual tiene una vigencia de 6 meses 
+    </div>
+
+    <div class="signature-section">
+        <br><br><br>
+        <span class="bold">Ing. Melissa Gavarrete</span><br>
+        <span class="bold">Jefe Ordenamiento Territorial</span>
+    </div>
+{% endblock %}

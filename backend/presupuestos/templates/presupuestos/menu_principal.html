@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuestos - SIMAFI Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f6f8fc;
+        }
+        .presu-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 2rem 0;
+            border-radius: 0 0 18px 18px;
+        }
+        .presu-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+        }
+        .presu-tile {
+            min-height: 120px;
+        }
+        .presu-tile i {
+            font-size: 2rem;
+            color: #667eea;
+        }
+        .tile-disabled {
+            opacity: .55;
+        }
+    </style>
+</head>
+<body>
+    <div class="presu-header">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h3 class="mb-0"><i class="fas fa-chart-pie me-2"></i>{{ modulo|default:"Presupuestos" }}</h3>
+                    <p class="mb-0" style="opacity:.9">{{ descripcion }}</p>
+                </div>
+                <div>
+                    <a class="btn btn-sm btn-outline-light" href="{% url 'modules_core:menu_principal' %}">
+                        <i class="fas fa-th-large me-1"></i>Menú Principal
+                    </a>
+                    <a class="btn btn-sm btn-outline-light ms-2" href="{% url 'presupuestos:presupuestos_logout' %}">
+                        <i class="fas fa-sign-out-alt me-1"></i>Salir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block content %}
+    <div class="container mt-4 pb-5">
+        {% if migracion_pendiente %}
+        <div class="alert alert-warning">
+            <strong>Atención:</strong> El módulo tiene migraciones pendientes.
+        </div>
+        {% endif %}
+
+        <!-- SECCION INGRESOS -->
+        <h4 class="mb-3 text-success"><i class="fas fa-arrow-circle-down me-2"></i>PRESUPUESTO DE INGRESOS</h4>
+        <div class="row g-4 mb-5">
+            <div class="col-md-6 col-lg-3">
+                <div class="presu-card p-4 h-100">
+                    <i class="fas fa-calendar-alt text-success"></i>
+                    <h6 class="mt-3">Ingreso Presupuesto</h6>
+                    <p class="text-muted tiny mb-3">Asignación anual de ingresos.</p>
+                    <a href="{% url 'presupuestos:presupuesto_anual' %}?tipo=INGRESO" class="btn btn-sm btn-outline-success w-100">Acceder</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="presu-card p-4 h-100">
+                    <i class="fas fa-edit text-success"></i>
+                    <h6 class="mt-3">Reformas y Traspasos</h6>
+                    <p class="text-muted tiny mb-3">Modificaciones al ingreso.</p>
+                    <a href="{% url 'presupuestos:reformas_listado' %}?tipo=INGRESO" class="btn btn-sm btn-outline-success w-100">Acceder</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="presu-card p-4 h-100">
+                    <i class="fas fa-file-invoice text-success"></i>
+                    <h6 class="mt-3">Registro de Ingresos</h6>
+                    <p class="text-muted tiny mb-3">Afectación manual de cuentas.</p>
+                    <a href="{% url 'presupuestos:gestionar_operacion_manual' %}?tipo=INGRESO" class="btn btn-sm btn-outline-success w-100">Acceder</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="presu-card p-4 h-100">
+                    <i class="fas fa-chart-bar text-success"></i>
+                    <h6 class="mt-3">Informes</h6>
+                    <p class="text-muted tiny mb-3">Reportes de recaudación.</p>
+                    <a href="{% url 'presupuestos:informes_ingresos_hub' %}" class="btn btn-sm btn-outline-success w-100">Acceder</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCION EGRESOS -->
+        <h4 class="mb-3 text-danger"><i class="fas fa-arrow-circle-up me-2"></i>PRESUPUESTO DE EGRESOS</h4>
+        <div class="row g-4 mb-5">
+            <div class="col-md-6 col-lg-4">
+                <div class="presu-card p-4 h-100">
+                    <i class="fas fa-exchange-alt text-danger"></i>
+                    <h6 class="mt-3">Reforma y Traspasos</h6>
+                    <p class="text-muted tiny mb-3">Modificaciones al gasto.</p>
+                    <a href="{% url 'presupuestos:reformas_listado' %}?tipo=EGRESO" class="btn btn-sm btn-outline-danger w-100">Acceder</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="presu-card p-4 h-100">
+                    <i class="fas fa-project-diagram text-danger"></i>
+                    <h6 class="mt-3">Plan de Inversión</h6>
+                    <p class="text-muted tiny mb-3">Proyectos y obras.</p>
+                    <a href="{% url 'presupuestos:proyectos_inversion' %}" class="btn btn-sm btn-outline-danger w-100">Acceder</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="presu-card p-4 h-100">
+                    <i class="fas fa-hand-holding-usd text-danger"></i>
+                    <h6 class="mt-3">Compromisos (Reserva)</h6>
+                    <p class="text-muted tiny mb-3">Reserva de fondos previa al pago.</p>
+                    <a href="{% url 'presupuestos:gestionar_compromisos' %}" class="btn btn-sm btn-outline-danger w-100">Acceder</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="presu-card p-4 h-100">
+                    <i class="fas fa-coins text-danger"></i>
+                    <h6 class="mt-3">Gastos Manuales</h6>
+                    <p class="text-muted tiny mb-3">Afectación directa de gasto.</p>
+                    <a href="{% url 'presupuestos:gestionar_operacion_manual' %}?tipo=EGRESO" class="btn btn-sm btn-outline-danger w-100">Acceder</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="presu-card p-4 h-100">
+                    <i class="fas fa-chart-line text-danger"></i>
+                    <h6 class="mt-3">Informes</h6>
+                    <p class="text-muted tiny mb-3">Reportes de ejecución.</p>
+                    <a href="{% url 'presupuestos:informes_presupuestarios' %}?tipo=EGRESO" class="btn btn-sm btn-outline-danger w-100">Acceder</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-12">
+                <div class="presu-card p-4 border-info" style="border-width: 2px;">
+                    <h5 class="mb-2"><i class="fas fa-file-contract me-2 text-info"></i>Rendición TSC / IAIP</h5>
+                    <p class="text-muted small mb-3">Formas F-01 a F-14 y transparencia IAIP. Los informes CGR están en el módulo Contabilidad.</p>
+                    <a href="{% url 'presupuestos:rendicion_cuentas_hub' %}" class="btn btn-sm btn-info text-white">
+                        <i class="fas fa-table me-1"></i>Abrir hub de formatos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-12">
+                <div class="presu-card p-4 bg-white border-primary">
+                    <h5 class="mb-2"><i class="fas fa-cog me-2 text-primary"></i>Configuración de Catálogos</h5>
+                    <div class="d-flex gap-3 mt-3">
+                        <a href="{% url 'presupuestos:cuentas_ingresos' %}" class="btn btn-sm btn-link text-decoration-none p-0"><i class="fas fa-list me-1"></i>Catálogo Ingresos</a>
+                        <a href="{% url 'presupuestos:cuentas_egresos' %}" class="btn btn-sm btn-link text-decoration-none p-0"><i class="fas fa-list me-1"></i>Catálogo Egresos</a>
+                        <a href="{% url 'presupuestos:fondos' %}" class="btn btn-sm btn-link text-decoration-none p-0"><i class="fas fa-database me-1"></i>Fuentes de Financiamiento (Fondos)</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

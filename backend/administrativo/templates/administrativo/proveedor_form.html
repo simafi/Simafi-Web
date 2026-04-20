@@ -1,0 +1,26 @@
+{% extends "administrativo/base.html" %}
+{% block content %}
+<h1 class="h4 mb-3">{{ titulo }}</h1>
+<form method="post" class="card shadow-sm" enctype="multipart/form-data" novalidate>
+	{% csrf_token %}
+	<div class="card-body row g-3">
+		{% for field in form %}
+		<div class="{% if field.name == 'documentacion' or field.name == 'notas' or field.name == 'documentacion_descripcion' %}col-12{% else %}col-md-6{% endif %}">
+			<label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+			{{ field }}
+			{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+			{% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+		</div>
+		{% endfor %}
+	</div>
+	<div class="card-footer bg-white d-flex flex-wrap gap-2 align-items-center">
+		<button type="submit" class="btn btn-primary">Guardar</button>
+		<a href="{% url 'administrativo:proveedor_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+		{% if object and object.documentacion_cargada %}
+		<a href="{% url 'administrativo:proveedor_documentacion_descargar' object.pk %}" class="btn btn-outline-primary btn-sm ms-auto">
+			<i class="fas fa-download me-1"></i>Descargar documentación actual
+		</a>
+		{% endif %}
+	</div>
+</form>
+{% endblock %}

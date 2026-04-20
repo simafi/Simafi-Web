@@ -1,0 +1,81 @@
+{% extends "ciudadano/base_ciudadano.html" %}
+{% block title %}Gestionar {{ s.referencia }}{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'ciudadano:gestion_bandeja' %}" class="small">← Volver a la bandeja</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card cdd-card">
+            <div class="card-header bg-light"><strong>Datos de la solicitud (solo lectura)</strong></div>
+            <div class="card-body small">
+                <p class="mb-1"><strong>Folio:</strong> {{ s.referencia }}</p>
+                <p class="mb-1"><strong>Tipo:</strong> {{ s.get_tipo_tramite_display }}</p>
+                <p class="mb-1"><strong>RTN/ID:</strong> {{ s.identificacion }}</p>
+                <p class="mb-1"><strong>Nombre:</strong> {{ s.nombre_completo }}</p>
+                {% if s.telefono %}<p class="mb-1"><strong>Tel.:</strong> {{ s.telefono }}</p>{% endif %}
+                {% if s.email %}<p class="mb-1"><strong>Email:</strong> {{ s.email }}</p>{% endif %}
+                {% if s.numero_expediente_negocio %}<p class="mb-1"><strong>Expediente:</strong> {{ s.numero_expediente_negocio }}</p>{% endif %}
+                <hr>
+                <p class="mb-0"><strong>Detalle del ciudadano:</strong></p>
+                <p class="text-muted">{{ s.detalle|linebreaks }}</p>
+                <p class="mb-0 text-muted">Registro: {{ s.created_at|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card cdd-card">
+            <div class="card-header bg-primary text-white"><strong>Respuesta municipal</strong></div>
+            <div class="card-body">
+                <p class="small text-muted">
+                    Al guardar un texto en «Respuesta oficial», se registra fecha y su nombre como funcionario.
+                    Puede adjuntar una constancia (PDF u ofimática) y notificar por correo o preparar un mensaje para WhatsApp.
+                    Use «Nota interna» para anotaciones que no se publican.
+                </p>
+                {% if link_whatsapp %}
+                <div class="alert alert-success small">
+                    <strong>WhatsApp:</strong> abra el enlace en el mismo equipo donde use WhatsApp Web o en el móvil.
+                    <a href="{{ link_whatsapp }}" target="_blank" rel="noopener noreferrer" class="alert-link">Abrir WhatsApp con el mensaje sugerido</a>
+                </div>
+                {% elif request.GET.wa == '1' %}
+                <div class="alert alert-warning small">
+                    No se pudo generar el enlace de WhatsApp. Verifique que la solicitud tenga un <strong>teléfono</strong> válido (idealmente móvil hondureño con prefijo 504 o 8 dígitos locales).
+                </div>
+                {% endif %}
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+                {% if s.archivo_respuesta %}
+                <p class="small mt-3 mb-0">
+                    <strong>Archivo actual:</strong>
+                    <a href="{% url 'ciudadano:descargar_adjunto_respuesta' s.pk %}">Descargar</a>
+                    (también disponible para el ciudadano en su detalle de solicitud).
+                </p>
+                {% endif %}
+                {% if s.fecha_envio_correo %}
+                <p class="small text-muted mt-2 mb-0">Último envío por correo: {{ s.fecha_envio_correo|date:"d/m/Y H:i" }}</p>
+                {% endif %}
+                {% if s.fecha_envio_whatsapp %}
+                <p class="small text-muted mt-1 mb-0">Última notificación WhatsApp registrada: {{ s.fecha_envio_whatsapp|date:"d/m/Y H:i" }}</p>
+                {% endif %}
+                {% if s.fecha_respuesta %}
+                <p class="small text-muted mt-3 mb-0">
+                    Última respuesta registrada: {{ s.fecha_respuesta|date:"d/m/Y H:i" }}
+                    {% if s.funcionario_respuesta %}· {{ s.funcionario_respuesta }}{% endif %}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

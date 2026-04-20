@@ -1,0 +1,235 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Dashboard - Servicios Públicos{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon"><i class="fas fa-tint"></i></div>
+        <div>
+            <h1 class="page-title">Servicios Públicos</h1>
+            <p class="page-subtitle">Facturación de Agua Potable, Alcantarillado y Servicios Municipales</p>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card stat-blue">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-body">
+            <div class="stat-value">{{ total_abonados }}</div>
+            <div class="stat-label">Total Abonados</div>
+            <div class="stat-sub">{{ abonados_activos }} activos</div>
+        </div>
+    </div>
+    <div class="stat-card stat-yellow">
+        <div class="stat-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div class="stat-body">
+            <div class="stat-value">{{ facturas_pendientes }}</div>
+            <div class="stat-label">Facturas Pendientes</div>
+        </div>
+    </div>
+    <div class="stat-card stat-red">
+        <div class="stat-icon"><i class="fas fa-tachometer-alt"></i></div>
+        <div class="stat-body">
+            <div class="stat-value">{{ lecturas_pendientes }}</div>
+            <div class="stat-label">Lecturas Pendientes</div>
+        </div>
+    </div>
+    <div class="stat-card stat-orange">
+        <div class="stat-icon"><i class="fas fa-tools"></i></div>
+        <div class="stat-body">
+            <div class="stat-value">{{ ordenes_pendientes }}</div>
+            <div class="stat-label">Órdenes de Trabajo</div>
+        </div>
+    </div>
+    <div class="stat-card stat-green">
+        <div class="stat-icon"><i class="fas fa-coins"></i></div>
+        <div class="stat-body">
+            <div class="stat-value">L {{ recaudacion_mes|floatformat:2 }}</div>
+            <div class="stat-label">Recaudación del Mes</div>
+        </div>
+    </div>
+</div>
+
+<!-- Módulos de acceso rápido -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <h2 class="section-title"><i class="fas fa-th-large me-2"></i>Módulos del Sistema</h2>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:catastro_lista' %}" class="module-card module-blue">
+            <div class="module-icon"><i class="fas fa-address-book"></i></div>
+            <div class="module-body">
+                <h3>Catastro de Abonados</h3>
+                <p>Registro de usuarios: doméstico, comercial, industrial, gubernamental. Vinculación a barrios y ciclos.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:rubros_lista' %}" class="module-card module-purple">
+            <div class="module-icon"><i class="fas fa-list-alt"></i></div>
+            <div class="module-body">
+                <h3>Rubros y Tarifas</h3>
+                <p>Configure T0001 Agua Potable y otros rubros. Tarifas fijas o por tramos de consumo.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:medidores_lista' %}" class="module-card module-teal">
+            <div class="module-icon"><i class="fas fa-tachometer-alt"></i></div>
+            <div class="module-body">
+                <h3>Medidores</h3>
+                <p>Inventario de medidores instalados por abonado. Control de marca, serie y estado.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:lecturas_lista' %}" class="module-card module-cyan">
+            <div class="module-icon"><i class="fas fa-camera"></i></div>
+            <div class="module-body">
+                <h3>Lecturas de Medidores</h3>
+                <p>Registro de lecturas por período con foto del medidor. Detección de anomalías.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:facturacion_lista' %}" class="module-card module-green">
+            <div class="module-icon"><i class="fas fa-file-invoice"></i></div>
+            <div class="module-body">
+                <h3>Facturación</h3>
+                <p>Generación de facturas por ciclo. Estado de cuenta por abonado. Control de pagos.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:ordenes_lista' %}" class="module-card module-orange">
+            <div class="module-icon"><i class="fas fa-clipboard-list"></i></div>
+            <div class="module-body">
+                <h3>Órdenes de Trabajo</h3>
+                <p>Gestión de instalaciones, reparaciones, cortes y reconexiones con seguimiento de insumos.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:ciclos_lista' %}" class="module-card module-indigo">
+            <div class="module-icon"><i class="fas fa-route"></i></div>
+            <div class="module-body">
+                <h3>Ciclos y Rutas</h3>
+                <p>Configure ciclos de facturación, rutas y secuencias de lectura por lector responsable.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:cortes_lista' %}" class="module-card module-red">
+            <div class="module-icon"><i class="fas fa-times-circle"></i></div>
+            <div class="module-body">
+                <h3>Cortes y Reconexiones</h3>
+                <p>Registro de cortes por mora y reconexiones. Actualiza estado del abonado automáticamente.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'servicios_publicos:reportes' %}" class="module-card module-gray">
+            <div class="module-icon"><i class="fas fa-chart-bar"></i></div>
+            <div class="module-body">
+                <h3>Reportes</h3>
+                <p>Morosos, consumos por período, facturación por ciclo y estadísticas del servicio.</p>
+            </div>
+            <div class="module-arrow"><i class="fas fa-arrow-right"></i></div>
+        </a>
+    </div>
+</div>
+
+<!-- Tablas recientes -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h4><i class="fas fa-file-invoice me-2"></i>Últimas Facturas</h4>
+                <a href="{% url 'servicios_publicos:facturacion_lista' %}" class="btn-link">Ver todas</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>#</th><th>Abonado</th><th>Período</th><th>Total</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for f in ultimas_facturas %}
+                        <tr>
+                            <td><a href="{% url 'servicios_publicos:factura_detalle' f.pk %}">#{{ f.numero_factura }}</a></td>
+                            <td>{{ f.abonado.nombre|truncatechars:25 }}</td>
+                            <td>{{ f.periodo_mes|stringformat:"02d" }}/{{ f.periodo_ano }}</td>
+                            <td>L {{ f.total|floatformat:2 }}</td>
+                            <td>
+                                {% if f.estado == 'E' %}<span class="badge bg-warning">Emitida</span>
+                                {% elif f.estado == 'P' %}<span class="badge bg-success">Pagada</span>
+                                {% elif f.estado == 'V' %}<span class="badge bg-danger">Vencida</span>
+                                {% elif f.estado == 'A' %}<span class="badge bg-secondary">Anulada</span>
+                                {% else %}<span class="badge bg-info">{{ f.estado }}</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">No hay facturas registradas</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h4><i class="fas fa-hard-hat me-2"></i>Órdenes de Trabajo Recientes</h4>
+                <a href="{% url 'servicios_publicos:ordenes_lista' %}" class="btn-link">Ver todas</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>#</th><th>Tipo</th><th>Abonado</th><th>Prioridad</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for ot in ultimas_ordenes %}
+                        <tr>
+                            <td><a href="{% url 'servicios_publicos:orden_detalle' ot.pk %}">#{{ ot.numero_ot }}</a></td>
+                            <td>{{ ot.get_tipo_display }}</td>
+                            <td>{{ ot.abonado.nombre|truncatechars:20|default:"-" }}</td>
+                            <td>
+                                {% if ot.prioridad == 'A' %}<span class="badge bg-danger">Alta</span>
+                                {% elif ot.prioridad == 'M' %}<span class="badge bg-warning">Media</span>
+                                {% else %}<span class="badge bg-secondary">Baja</span>{% endif %}
+                            </td>
+                            <td>
+                                {% if ot.estado == 'P' %}<span class="badge bg-secondary">Pendiente</span>
+                                {% elif ot.estado == 'E' %}<span class="badge bg-primary">En ejecución</span>
+                                {% elif ot.estado == 'C' %}<span class="badge bg-success">Completada</span>
+                                {% else %}<span class="badge bg-info">{{ ot.estado }}</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">No hay órdenes registradas</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

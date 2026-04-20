@@ -1,0 +1,89 @@
+{% extends "contabilidad_base.html" %}
+{% block title %}Tipos de inventario{% endblock %}
+{% block breadcrumb %}
+<div class="cont-breadcrumb"><nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:inventarios' %}">Inventarios</a></li>
+    <li class="breadcrumb-item active">Tipos de inventario</li>
+</ol></nav></div>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h4 class="mb-0"><i class="fas fa-tags me-2"></i>Catálogo de tipos (por empresa)</h4>
+        <div class="d-flex flex-wrap gap-2">
+            <form method="post" action="{% url 'contabilidad:tipo_inventario_referencias_cargar' %}" class="d-inline" onsubmit="return confirm('¿Cargar los tipos del listado estándar que falten? No borra los existentes.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="fas fa-book me-1"></i>Cargar referencias estándar</button>
+            </form>
+            <a href="{% url 'contabilidad:tipo_inventario_crear' %}" class="btn btn-cont-primary btn-sm"><i class="fas fa-plus me-1"></i>Nuevo tipo</a>
+            <a href="{% url 'contabilidad:inventarios' %}" class="btn btn-outline-secondary btn-sm">Volver a inventarios</a>
+        </div>
+    </div>
+    <p class="small text-muted mb-2">Use la <strong>tabla de referencia inicial</strong> para ver el significado de cada clave y el orden sugerido. En <strong>su catálogo</strong> puede mantener esos nombres, adaptarlos (p. ej. municipal o empresa de agua) o desactivar los que no apliquen.</p>
+
+    <div class="cont-card mb-4">
+        <div class="card-header bg-light py-2">
+            <strong><i class="fas fa-book-open me-1 text-secondary"></i> Referencia inicial — tipos estándar</strong>
+            <span class="small text-muted ms-2">Guía al configurar: clave interna, nombre y uso típico.</span>
+        </div>
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-sm mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" style="width:11rem;">Código (ref.)</th>
+                        <th scope="col" style="width:5rem;">Orden</th>
+                        <th scope="col">Nombre de referencia</th>
+                        <th scope="col">Cómo configurarlo / ámbito</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ref in referencia_inicial %}
+                    <tr>
+                        <td><code class="small">{{ ref.clave }}</code></td>
+                        <td class="text-muted">{{ ref.orden }}</td>
+                        <td>{{ ref.nombre }}</td>
+                        <td class="small text-body">{{ ref.guia }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer small text-muted py-2">
+            Al pulsar <strong>Cargar referencias estándar</strong> se crean filas en su catálogo con estos nombres y el campo «código heredado» igual al código de la primera columna.
+        </div>
+    </div>
+
+    <h5 class="mb-2"><i class="fas fa-warehouse me-1"></i> Catálogo de su empresa / municipio</h5>
+    <div class="cont-card">
+        <div class="card-body p-0 table-responsive">
+            <table class="table cont-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Orden</th>
+                        <th>Nombre</th>
+                        <th>Ref. heredada</th>
+                        <th>Activo</th>
+                        <th>Notas</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tipos %}
+                    <tr class="{% if not t.is_active %}table-secondary text-muted{% endif %}">
+                        <td>{{ t.orden }}</td>
+                        <td>{{ t.nombre }}</td>
+                        <td>{% if t.codigo_legacy %}<code class="small">{{ t.codigo_legacy }}</code>{% else %}—{% endif %}</td>
+                        <td>{% if t.is_active %}Sí{% else %}No{% endif %}</td>
+                        <td class="small">{{ t.notas|truncatechars:60 }}</td>
+                        <td><a class="btn btn-sm btn-outline-secondary" href="{% url 'contabilidad:tipo_inventario_editar' t.pk %}">Editar</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">Sin tipos en su catálogo. Use «Cargar referencias estándar» para traer la referencia inicial arriba, o «Nuevo tipo».</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ titulo }}</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+	<nav class="navbar navbar-expand-lg navbar-light" style="background: rgba(255,255,255,0.95) !important;">
+		<div class="container">
+			<a class="navbar-brand" href="{% url 'catastro:catastro_configuracion' %}">
+				<i class="fas fa-map-marked-alt"></i> Sistema Catastro
+			</a>
+			<div class="navbar-nav ms-auto">
+				<span class="navbar-text me-3">
+					<i class="fas fa-user"></i> {{ request.session.catastro_usuario_nombre|default:"Usuario" }}
+				</span>
+				<a href="{% url 'catastro:catastro_logout' %}" class="btn btn-outline-danger btn-sm">
+					<i class="fas fa-sign-out-alt"></i> Salir
+				</a>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+		<div class="card shadow-lg">
+			<div class="card-header {% if factor %}bg-warning text-dark{% else %}bg-info text-white{% endif %}">
+				<h5 class="mb-0">
+					<i class="fas {% if factor %}fa-edit{% else %}fa-plus-circle{% endif %} me-2"></i>{{ titulo }}
+				</h5>
+			</div>
+			<div class="card-body">
+				<!-- Mensajes -->
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+						</div>
+					{% endfor %}
+				{% endif %}
+
+				<!-- Información del Cultivo (solo si existe) -->
+				{% if valor_arbol %}
+				<div class="alert alert-info">
+					<h6 class="alert-heading">
+						<i class="fas fa-info-circle me-2"></i>Información del Cultivo
+					</h6>
+					<hr>
+					<p class="mb-1"><strong>Código:</strong> {{ valor_arbol.codigo }}</p>
+					<p class="mb-1"><strong>Descripción:</strong> {{ valor_arbol.descripcion|default:"-" }}</p>
+					<p class="mb-0"><strong>Valor:</strong> L. {{ valor_arbol.valor|floatformat:2 }}</p>
+				</div>
+				{% endif %}
+
+				<!-- Formulario -->
+				<form method="post" id="form-factor-cultivo">
+					{% csrf_token %}
+					<div class="row g-3">
+						<!-- Empresa -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.empresa.id_for_label }}">
+								<strong>{{ form.empresa.label }}</strong>
+							</label>
+							{{ form.empresa }}
+							{{ form.empresa.errors }}
+							<small class="form-text text-muted">Se asigna automáticamente</small>
+						</div>
+
+						<!-- Código Cultivo -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.codigo.id_for_label }}">
+								<strong>{{ form.codigo.label }}</strong>
+							</label>
+							{{ form.codigo }}
+							{{ form.codigo.errors }}
+							<small class="form-text text-muted">Se asigna automáticamente desde el formulario anterior</small>
+						</div>
+
+						<!-- Descripción del Cultivo (solo lectura) -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.descripcion_cultivo.id_for_label }}">
+								<strong>{{ form.descripcion_cultivo.label }}</strong>
+							</label>
+							{{ form.descripcion_cultivo }}
+							{{ form.descripcion_cultivo.errors }}
+							<small class="form-text text-muted">Se completa automáticamente</small>
+						</div>
+
+						<!-- Valor del Cultivo (solo lectura) -->
+						<div class="col-md-3">
+							<label class="form-label" for="{{ form.valor_cultivo.id_for_label }}">
+								<strong>{{ form.valor_cultivo.label }}</strong>
+							</label>
+							{{ form.valor_cultivo }}
+							{{ form.valor_cultivo.errors }}
+							<small class="form-text text-muted">Se completa automáticamente</small>
+						</div>
+
+						<!-- Rango 1 -->
+						<div class="col-md-4">
+							<label class="form-label" for="{{ form.rango1.id_for_label }}">
+								<strong>{{ form.rango1.label }}</strong>
+							</label>
+							{{ form.rango1 }}
+							{{ form.rango1.errors }}
+							<small class="form-text text-muted">Valor numérico entero</small>
+						</div>
+
+						<!-- Rango 2 -->
+						<div class="col-md-4">
+							<label class="form-label" for="{{ form.rango2.id_for_label }}">
+								<strong>{{ form.rango2.label }}</strong>
+							</label>
+							{{ form.rango2 }}
+							{{ form.rango2.errors }}
+							<small class="form-text text-muted">Debe ser mayor o igual al Rango 1</small>
+						</div>
+
+						<!-- Factor -->
+						<div class="col-md-4">
+							<label class="form-label" for="{{ form.factor.id_for_label }}">
+								<strong>{{ form.factor.label }}</strong>
+							</label>
+							{{ form.factor }}
+							{{ form.factor.errors }}
+							<small class="form-text text-muted">Valor decimal (ej: 1.250)</small>
+						</div>
+					</div>
+
+					<!-- Botones -->
+					<div class="mt-4 d-flex justify-content-between">
+						{% if codigo %}
+						<a href="{% url 'catastro:factor_cultivo' empresa=empresa codigo=codigo %}" class="btn btn-secondary">
+							<i class="fas fa-arrow-left me-1"></i> Volver
+						</a>
+						{% else %}
+						<a href="{% url 'catastro:valor_arbol_list' %}" class="btn btn-secondary">
+							<i class="fas fa-arrow-left me-1"></i> Volver
+						</a>
+						{% endif %}
+						<button type="submit" class="btn btn-primary">
+							<i class="fas fa-save me-1"></i> Guardar
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const codigoInput = document.getElementById('id_codigo_cultivo');
+			const descripcionInput = document.getElementById('id_descripcion_cultivo');
+			const valorInput = document.getElementById('id_valor_cultivo');
+			const loadingSpinner = document.getElementById('codigo-loading');
+			const empresaInput = document.getElementById('id_empresa');
+			
+			// Asegurar que el campo empresa tenga el valor correcto si está vacío
+			if (empresaInput && !empresaInput.value.trim() && '{{ empresa }}') {
+				empresaInput.value = '{{ empresa }}';
+			}
+			
+			// Cargar información del cultivo automáticamente al cargar la página si hay código
+			if (codigoInput && empresaInput && codigoInput.value.trim()) {
+				const empresa = empresaInput.value.trim();
+				const codigo = codigoInput.value.trim();
+				
+				if (empresa && codigo) {
+					// Buscar información del cultivo al cargar
+					const url = '{% url "catastro:buscar_valor_arbol_ajax" %}?empresa=' + encodeURIComponent(empresa) + '&codigo=' + encodeURIComponent(codigo);
+					fetch(url)
+						.then(response => response.json())
+						.then(data => {
+							if (data.existe) {
+								// Llenar campos con los datos encontrados
+								if (descripcionInput) descripcionInput.value = data.descripcion || '';
+								if (valorInput) valorInput.value = data.valor || '';
+							}
+						})
+						.catch(error => {
+							console.error('Error al cargar información del cultivo:', error);
+						});
+				}
+			}
+			
+			// Búsqueda automática de factor de cultivo por rango1
+			// Usar los IDs correctos generados por Django
+			const rango1Input = document.getElementById('{{ form.rango1.id_for_label }}');
+			const rango2Input = document.getElementById('{{ form.rango2.id_for_label }}');
+			const factorInput = document.getElementById('{{ form.factor.id_for_label }}');
+			
+			if (rango1Input && empresaInput && codigoInput) {
+				let rango1SearchTimeout;
+				
+				function buscarFactorCultivo() {
+					const empresa = empresaInput.value.trim();
+					const codigo = codigoInput.value.trim();
+					const rango1 = rango1Input.value.trim();
+					
+					if (!empresa || !codigo || !rango1 || rango1.length < 1) {
+						// Limpiar campos si el rango1 está vacío
+						if (rango2Input) rango2Input.value = '';
+						if (factorInput) factorInput.value = '';
+						return;
+					}
+					
+					// Realizar petición AJAX usando empresa, codigo y rango1
+					const url = '{% url "catastro:buscar_factor_cultivo_ajax" %}?empresa=' + encodeURIComponent(empresa) + '&codigo=' + encodeURIComponent(codigo) + '&rango1=' + encodeURIComponent(rango1);
+					fetch(url)
+						.then(response => response.json())
+						.then(data => {
+							if (data.existe) {
+								// Llenar campos con los datos encontrados
+								if (rango2Input) rango2Input.value = data.rango2 || '';
+								if (factorInput) factorInput.value = data.factor || '';
+							} else {
+								// Si no existe, limpiar rango2 y factor para permitir entrada manual
+								if (rango2Input) rango2Input.value = '';
+								if (factorInput) factorInput.value = '';
+							}
+						})
+						.catch(error => {
+							console.error('Error al buscar factor de cultivo:', error);
+						});
+				}
+				
+				// Búsqueda automática al ingresar valor en Rango 1
+				rango1Input.addEventListener('input', function() {
+					clearTimeout(rango1SearchTimeout);
+					const rango1 = this.value.trim();
+					
+					if (rango1.length >= 1) {
+						// Buscar automáticamente después de 500ms de que el usuario deje de escribir
+						rango1SearchTimeout = setTimeout(buscarFactorCultivo, 500);
+					} else {
+						// Limpiar campos si el rango1 está vacío
+						if (rango2Input) rango2Input.value = '';
+						if (factorInput) factorInput.value = '';
+					}
+				});
+				
+				// Búsqueda al perder el foco del campo Rango 1
+				rango1Input.addEventListener('blur', function() {
+					clearTimeout(rango1SearchTimeout);
+					buscarFactorCultivo();
+				});
+				
+				// Búsqueda al presionar Enter en Rango 1
+				rango1Input.addEventListener('keypress', function(e) {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+						clearTimeout(rango1SearchTimeout);
+						buscarFactorCultivo();
+						// Mover el foco al siguiente campo
+						if (rango2Input) {
+							setTimeout(() => rango2Input.focus(), 100);
+						}
+					}
+				});
+			}
+		});
+	</script>
+</body>
+</html>
+
+

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test de Validaciones Simplificadas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test de Validaciones Simplificadas</h1>
+        <p class="info test-result">
+            <strong>Instrucciones:</strong> Abre esta página en el mismo navegador donde tienes el formulario de declaración.
+            Ejecuta los tests para verificar que las validaciones funcionen correctamente.
+        </p>
+        
+        <button onclick="testCamposBasicos()">1️⃣ Test Campos Básicos</button>
+        <button onclick="testCamposVentas()">2️⃣ Test Campos de Ventas</button>
+        <button onclick="testValidacionesCompletas()">3️⃣ Test Validaciones Completas</button>
+        
+        <div id="resultados" style="margin-top: 20px;"></div>
+    </div>
+    
+    <script>
+        function mostrarResultado(mensaje, tipo = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${tipo}`;
+            div.innerHTML = mensaje;
+            document.getElementById('resultados').appendChild(div);
+        }
+        
+        function testCamposBasicos() {
+            document.getElementById('resultados').innerHTML = '<h2>1️⃣ Test de Campos Básicos:</h2>';
+            
+            // Test 1: Campos obligatorios básicos
+            const camposBasicos = [
+                { id: 'empresa_field', nombre: 'Empresa' },
+                { id: 'rtm_field', nombre: 'RTM' },
+                { id: 'expe_field', nombre: 'Expediente' },
+                { id: 'id_ano', nombre: 'Año' }
+            ];
+            
+            let todosExisten = true;
+            
+            camposBasicos.forEach(campo => {
+                const elemento = document.getElementById(campo.id);
+                if (elemento) {
+                    mostrarResultado(`✅ <strong>${campo.nombre}</strong> (${campo.id}): Campo encontrado${elemento.value ? ` | Valor: "${elemento.value}"` : ''}`, 'success');
+                } else {
+                    mostrarResultado(`❌ <strong>${campo.nombre}</strong> (${campo.id}): NO ENCONTRADO`, 'error');
+                    todosExisten = false;
+                }
+            });
+            
+            if (todosExisten) {
+                mostrarResultado('🎉 <strong>¡Todos los campos básicos existen! Las validaciones básicas deberían funcionar.</strong>', 'success');
+            } else {
+                mostrarResultado('⚠️ <strong>ATENCIÓN: Hay campos básicos faltantes. Las validaciones fallarán.</strong>', 'error');
+            }
+        }
+        
+        function testCamposVentas() {
+            document.getElementById('resultados').innerHTML = '<h2>2️⃣ Test de Campos de Ventas:</h2>';
+            
+            // Test 2: Campos de ventas por name attribute
+            const camposVentas = ['ventai', 'ventac', 'ventas', 'valorexcento', 'controlado'];
+            
+            let totalVentas = 0;
+            let camposEncontrados = 0;
+            
+            camposVentas.forEach(name => {
+                const campo = document.querySelector(`input[name="${name}"]`);
+                if (campo) {
+                    const valor = parseFloat(campo.value) || 0;
+                    totalVentas += valor;
+                    camposEncontrados++;
+                    mostrarResultado(`✅ <strong>${name}</strong>: Campo encontrado${campo.value ? ` | Valor: ${campo.value}` : ' | Vacío'}`, 'success');
+                } else {
+                    mostrarResultado(`❌ <strong>${name}</strong>: NO ENCONTRADO`, 'error');
+                }
+            });
+            
+            mostrarResultado(`📊 <strong>Total de ventas calculado:</strong> ${totalVentas.toFixed(2)}`, totalVentas > 0 ? 'success' : 'info');
+            
+            if (camposEncontrados === camposVentas.length) {
+                mostrarResultado('🎉 <strong>¡Todos los campos de ventas existen! La validación de ventas debería funcionar.</strong>', 'success');
+            } else {
+                mostrarResultado('⚠️ <strong>ATENCIÓN: Algunos campos de ventas faltan.</strong>', 'error');
+            }
+        }
+        
+        function testValidacionesCompletas() {
+            document.getElementById('resultados').innerHTML = '<h2>3️⃣ Test de Validaciones Completas:</h2>';
+            
+            // Simular las validaciones del formulario
+            let errores = [];
+            
+            // 1. Validar empresa
+            const empresa = document.getElementById('empresa_field');
+            if (!empresa || !empresa.value || empresa.value.trim() === '') {
+                errores.push('❌ Empresa: Campo vacío o no encontrado');
+            } else {
+                mostrarResultado('✅ Empresa: Validación pasaría', 'success');
+            }
+            
+            // 2. Validar RTM
+            const rtm = document.getElementById('rtm_field');
+            if (!rtm || !rtm.value || rtm.value.trim() === '') {
+                errores.push('❌ RTM: Campo vacío o no encontrado');
+            } else {
+                mostrarResultado('✅ RTM: Validación pasaría', 'success');
+            }
+            
+            // 3. Validar Expediente
+            const expe = document.getElementById('expe_field');
+            if (!expe || !expe.value || expe.value.trim() === '') {
+                errores.push('❌ Expediente: Campo vacío o no encontrado');
+            } else {
+                mostrarResultado('✅ Expediente: Validación pasaría', 'success');
+            }
+            
+            // 4. Validar Año
+            const ano = document.getElementById('id_ano');
+            if (!ano || !ano.value) {
+                errores.push('❌ Año: No seleccionado o no encontrado');
+            } else {
+                mostrarResultado('✅ Año: Validación pasaría', 'success');
+            }
+            
+            // 5. Validar Ventas (NO validar mes como solicitado)
+            let totalVentas = 0;
+            const camposVentas = ['ventai', 'ventac', 'ventas', 'valorexcento', 'controlado'];
+            
+            camposVentas.forEach(name => {
+                const campo = document.querySelector(`input[name="${name}"]`);
+                if (campo && campo.value) {
+                    totalVentas += parseFloat(campo.value) || 0;
+                }
+            });
+            
+            if (totalVentas <= 0) {
+                errores.push('❌ Ventas: Total de ventas debe ser mayor a 0');
+            } else {
+                mostrarResultado(`✅ Ventas: Total ${totalVentas.toFixed(2)} - Validación pasaría`, 'success');
+            }
+            
+            // Mostrar resumen
+            if (errores.length === 0) {
+                mostrarResultado('🎉 <strong>¡TODAS LAS VALIDACIONES PASARÍAN! El formulario se enviaría correctamente.</strong>', 'success');
+            } else {
+                mostrarResultado('⚠️ <strong>ERRORES ENCONTRADOS:</strong>', 'error');
+                errores.forEach(error => {
+                    mostrarResultado(error, 'error');
+                });
+            }
+            
+            // Mostrar código de validación actual
+            mostrarResultado(`
+                <h3>📝 Código de Validación Actual:</h3>
+                <pre><code>// Validaciones simplificadas:
+1. ✅ Empresa (empresa_field) - NO vacío
+2. ✅ RTM (rtm_field) - NO vacío  
+3. ✅ Expediente (expe_field) - NO vacío
+4. ✅ Año (id_ano) - Seleccionado
+5. ❌ Mes - ELIMINADO (como solicitado)
+6. ✅ Ventas (total) - Mayor a 0</code></pre>
+            `, 'info');
+        }
+        
+        // Mostrar instrucciones al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('='.repeat(80));
+            console.log('INSTRUCCIONES PARA DEBUGGING:');
+            console.log('');
+            console.log('1. Abre el formulario de declaración en otra pestaña');
+            console.log('2. Abre la consola del navegador (F12)');
+            console.log('3. Ejecuta este código para verificar campos:');
+            console.log('');
+            console.log('// Verificar campos básicos:');
+            console.log('const campos = ["empresa_field", "rtm_field", "expe_field", "id_ano"];');
+            console.log('campos.forEach(id => {');
+            console.log('    const el = document.getElementById(id);');
+            console.log('    console.log(id + ":", el ? "✅" : "❌", el?.value || "vacío");');
+            console.log('});');
+            console.log('');
+            console.log('// Verificar campos de ventas:');
+            console.log('["ventai", "ventac", "ventas", "valorexcento", "controlado"].forEach(name => {');
+            console.log('    const el = document.querySelector(`input[name="${name}"]`);');
+            console.log('    console.log(name + ":", el ? "✅" : "❌", el?.value || "vacío");');
+            console.log('});');
+            console.log('='.repeat(80));
+        });
+    </script>
+</body>
+</html>
+

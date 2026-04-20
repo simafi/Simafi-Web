@@ -1,0 +1,160 @@
+{% extends "compras/base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}{{ titulo }}{% endblock %}
+{% block active_req %}active{% endblock %}
+
+{% block content %}
+<form method="post" novalidate>
+    {% csrf_token %}
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 animate-in">
+        <a href="{% url 'compras:requisicion_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Listado
+        </a>
+        <div class="d-flex gap-2">
+            {% if requisicion.pk %}
+                {% if requisicion.estado == 'BORRADOR' %}
+                    <a href="{% url 'compras:requisicion_cambiar_estado' requisicion.pk 'ENVIADA' %}" class="btn btn-warning">
+                        <i class="fas fa-paper-plane me-2"></i>Enviar para Aprobación
+                    </a>
+                {% elif requisicion.estado == 'ENVIADA' %}
+                    <a href="{% url 'compras:requisicion_cambiar_estado' requisicion.pk 'APROBADA' %}" class="btn btn-success">
+                        <i class="fas fa-check me-2"></i>Aprobar Requisición
+                    </a>
+                    <a href="{% url 'compras:requisicion_cambiar_estado' requisicion.pk 'RECHAZADA' %}" class="btn btn-danger">
+                        <i class="fas fa-times me-2"></i>Rechazar
+                    </a>
+                {% elif requisicion.estado == 'APROBADA' %}
+                    <a href="{% url 'compras:solicitud_cotizacion_create' %}?req={{ requisicion.pk }}" class="btn btn-info text-white">
+                        <i class="fas fa-bullhorn me-2"></i>Generar Cotización
+                    </a>
+                {% endif %}
+{% endif %}
+            <button type="submit" class="btn-purchase">
+                <i class="fas fa-save me-2"></i>Guardar Requisición
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Data Panel -->
+        <div class="col-lg-12 animate-in" style="animation-delay: 0.1s;">
+            <div class="premium-card p-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Número de Requisición</label>
+                        {{ form.numero }}
+                        {% if form.numero.errors %}<div class="text-danger small">{{ form.numero.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Fecha</label>
+                        {{ form.fecha }}
+                        {% if form.fecha.errors %}<div class="text-danger small">{{ form.fecha.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Estado Actual</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                {% if requisicion.estado == 'BORRADOR' %}<i class="fas fa-edit text-muted"></i>
+                                {% elif requisicion.estado == 'ENVIADA' %}<i class="fas fa-paper-plane text-warning"></i>
+                                {% elif requisicion.estado == 'APROBADA' %}<i class="fas fa-check-circle text-success"></i>
+                                {% elif requisicion.estado == 'RECHAZADA' %}<i class="fas fa-times-circle text-danger"></i>
+                                {% endif %}
+                            </span>
+                            <input type="text" class="form-control" value="{{ requisicion.get_estado_display|default:'Borrador' }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Ejercicio Fiscal</label>
+                        <input type="text" class="form-control bg-light" value="{{ requisicion.ejercicio.anio|default:'' }}" readonly title="{{ requisicion.ejercicio.descripcion }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Solicitante / Departamento</label>
+                        {{ form.solicitante }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Observaciones Generales</label>
+                        {{ form.observaciones }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Panel -->
+        <div class="col-lg-12 animate-in" style="animation-delay: 0.2s;">
+            <div class="premium-card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-list text-success me-2"></i>Líneas de Requisición (Bodega/Inventario NIC 2)</h5>
+                </div>
+                <div class="p-4">
+                    {{ formset.management_form }}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="40">#</th>
+                                    <th>Material (Catálogo de Bodega)</th>
+                                    <th>Descripción específica / Notas</th>
+                                    <th width="120">Cantidad</th>
+                                    <th width="100">Unidad</th>
+                                    <th class="text-end">Stock Actual</th>
+                                    <th class="text-end">Faltante</th>
+                                    {% if requisicion.pk %}<th>Acción</th>{% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for f, stock in detalle_lineas %}
+                                <tr class="detalle-fila">
+                                    <td>{{ f.id }}{{ f.nro_linea }}</td>
+                                    <td>{{ f.inventario }}</td>
+                                    <td>{{ f.descripcion }}</td>
+                                    <td>{{ f.cantidad }}</td>
+                                    <td>{{ f.unidad }}</td>
+                                    <td class="text-end">
+                                        {% if stock.existencia is not None %}
+                                            <span class="badge {% if stock.existencia > 0 %}bg-light text-dark{% else %}bg-light text-danger{% endif %} border">
+                                                {{ stock.existencia|floatformat:2 }}
+                                            </span>
+                                        {% else %}-{% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if stock.faltante > 0 %}
+                                            <span class="badge bg-danger-soft text-danger fw-bold">{{ stock.faltante|floatformat:2 }}</span>
+                                        {% elif stock.faltante == 0 %}
+                                            <span class="badge bg-success-soft text-success">Cubierto</span>
+                                        {% else %}-{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if f.instance.pk %}
+                                            <div class="form-check">{{ f.DELETE }}</div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-info mt-3 small mb-0">
+                        <i class="fas fa-info-circle me-2"></i> Cada línea debe estar vinculada a un ítem del catálogo de inventario. El sistema calcula automáticamente el faltante basado en las existencias actuales de bodega.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<style>
+    .bg-danger-soft { background-color: rgba(239, 68, 68, 0.1); }
+    .bg-success-soft { background-color: rgba(16, 185, 129, 0.1); }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--purchase-secondary);
+        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+    }
+    .table input, .table select {
+        border-radius: 6px;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}

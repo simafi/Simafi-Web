@@ -1,0 +1,32 @@
+{% extends "contabilidad_base.html" %}
+{% block title %}Centros de Costo{% endblock %}
+{% block breadcrumb %}
+<div class="cont-breadcrumb"><nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+    <li class="breadcrumb-item active">Centros de Costo</li>
+</ol></nav></div>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-project-diagram me-2"></i>Centros de Costo</h4>
+    </div>
+    <div class="cont-card">
+        <div class="card-body p-0">
+            <table class="table cont-table mb-0">
+                <thead><tr><th>Código</th><th>Nombre</th><th>Responsable</th><th>Centro Padre</th></tr></thead>
+                <tbody>
+                    {% for c in centros %}
+                    <tr>
+                        <td><code>{{ c.codigo }}</code></td><td>{{ c.nombre }}</td>
+                        <td>{{ c.responsable|default:"-" }}</td><td>{{ c.centro_padre|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-4 text-muted"><i class="fas fa-inbox" style="font-size:2rem;"></i><p class="mt-2 mb-0">No hay centros de costo registrados.</p></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

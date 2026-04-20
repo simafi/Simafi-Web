@@ -1,0 +1,46 @@
+{% extends "contabilidad_base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}
+<div class="cont-breadcrumb"><nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'contabilidad:activos_fijos' %}">Activos Fijos</a></li>
+    <li class="breadcrumb-item active">{{ titulo }}</li>
+</ol></nav></div>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="cont-card">
+                <div class="card-header"><i class="fas fa-industry me-2"></i>{{ titulo }}</div>
+                <div class="card-body cont-form">
+                    <form method="post">{% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label">Código</label>{{ form.codigo }}</div>
+                            <div class="col-md-8"><label class="form-label">Descripción</label>{{ form.descripcion }}</div>
+                            <div class="col-md-4"><label class="form-label">Cuenta Activo</label>{{ form.cuenta_activo }}</div>
+                            <div class="col-md-4"><label class="form-label">Cuenta Depr. Acum.</label>{{ form.cuenta_depreciacion }}</div>
+                            <div class="col-md-4"><label class="form-label">Cuenta Gasto Depr.</label>{{ form.cuenta_gasto_depreciacion }}</div>
+                            <div class="col-md-3"><label class="form-label">Fecha Adquisición</label>{{ form.fecha_adquisicion }}</div>
+                            <div class="col-md-3"><label class="form-label">Costo Adquisición</label>{{ form.costo_adquisicion }}</div>
+                            <div class="col-md-3"><label class="form-label">Valor Residual</label>{{ form.valor_residual }}</div>
+                            <div class="col-md-3"><label class="form-label">Vida Útil (meses)</label>{{ form.vida_util_meses }}</div>
+                            <div class="col-md-4"><label class="form-label">Método Depreciación</label>{{ form.metodo_depreciacion }}</div>
+                            <div class="col-md-4"><label class="form-label">Ubicación</label>{{ form.ubicacion }}</div>
+                            <div class="col-md-4"><label class="form-label">Responsable</label>{{ form.responsable }}</div>
+                            <div class="col-md-4"><label class="form-label">No. Serie</label>{{ form.numero_serie }}</div>
+                            <div class="col-md-4"><label class="form-label">Estado</label>{{ form.estado }}</div>
+                        </div>
+                        {{ form.empresa }}
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'contabilidad:activos_fijos' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Cancelar</a>
+                            <button type="submit" class="btn btn-cont-primary"><i class="fas fa-save me-1"></i> Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

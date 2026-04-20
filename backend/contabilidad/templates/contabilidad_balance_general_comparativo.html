@@ -1,0 +1,186 @@
+{% extends "contabilidad_base.html" %}
+
+{% block title %}Balance General Comparativo{% endblock %}
+
+{% block breadcrumb %}
+<div class="cont-breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:contabilidad_menu_principal' %}">Contabilidad</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'contabilidad:estados_financieros' %}">Estados Financieros</a></li>
+            <li class="breadcrumb-item active">Balance General Comparativo</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="cont-page-header">
+        <h4><i class="fas fa-balance-scale me-2"></i>Balance General Comparativo</h4>
+        <div class="text-muted">Actual vs anterior a la misma fecha</div>
+    </div>
+
+    <div class="cont-card mb-4">
+        <div class="card-body cont-form">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Ejercicio Fiscal (Actual)</label>
+                    <select name="ejercicio" class="form-control" onchange="this.form.submit()">
+                        <option value="">-- Seleccione ejercicio --</option>
+                        {% for e in ejercicios %}
+                        <option value="{{ e.pk }}" {% if ejercicio_id == e.pk|stringformat:"d" %}selected{% endif %}>
+                            {{ e.anio }} - {{ e.descripcion }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Fecha de corte (Hasta)</label>
+                    <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+                    <small class="text-muted d-block mt-1">
+                        Comparará contra: {{ fecha_hasta_anterior|default:"" }}
+                    </small>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-cont-primary">
+                        <i class="fas fa-columns me-1"></i> Generar comparativo
+                    </button>
+                    <a class="btn btn-outline-secondary ms-2" href="{% url 'contabilidad:estados_financieros' %}?ejercicio={{ ejercicio_id }}&fecha_hasta={{ fecha_hasta }}">
+                        Volver
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if ejercicio_actual %}
+    <div class="cont-card mb-3 p-3" style="background:#f7fafc;">
+        <div><strong>Actual:</strong> {{ ejercicio_actual.anio }} ({{ fecha_hasta }})</div>
+        <div><strong>Anterior:</strong>
+            {% if ejercicio_anterior %}{{ ejercicio_anterior.anio }} ({{ fecha_hasta_anterior }}){% else %}<span class="text-muted">No existe ejercicio anterior</span>{% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="cont-card">
+                <div class="card-header" style="background:var(--cont-primary); color:#fff; border-radius:12px 12px 0 0;">
+                    <i class="fas fa-balance-scale me-2"></i>BALANCE GENERAL (Comparativo)
+                </div>
+                <div class="card-body p-0">
+
+                    <div style="background:#ebf8ff; padding:0.5rem 1rem; font-weight:700; color:#2a4365; border-bottom:1px solid #bee3f8;">
+                        <i class="fas fa-arrow-up me-1"></i> ACTIVOS
+                    </div>
+                    <table class="table cont-table mb-0">
+                        <thead>
+                            <tr style="background:#f7fafc;">
+                                <th style="width:110px;">Cuenta</th>
+                                <th>Nombre</th>
+                                <th class="text-end">Actual</th>
+                                <th class="text-end">Anterior</th>
+                                <th class="text-end">Variación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in comparativo.activos %}
+                            <tr>
+                                <td><code>{{ r.cuenta__codigo }}</code></td>
+                                <td>{{ r.cuenta__nombre }}</td>
+                                <td class="text-end">{{ r.saldo_actual|floatformat:2 }}</td>
+                                <td class="text-end">{{ r.saldo_anterior|floatformat:2 }}</td>
+                                <td class="text-end">{{ r.variacion|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-2">Sin datos</td></tr>
+                            {% endfor %}
+                            <tr style="background:#f7fafc; font-weight:700;">
+                                <td colspan="2" class="text-end">Total Activos:</td>
+                                <td class="text-end" style="color:var(--cont-accent);">{{ totales.actual.activos|floatformat:2 }}</td>
+                                <td class="text-end">{{ totales.anterior.activos|floatformat:2 }}</td>
+                                <td class="text-end">{{ totales.variacion.activos|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="background:#fed7d7; padding:0.5rem 1rem; font-weight:700; color:#9b2c2c; border-bottom:1px solid #feb2b2;">
+                        <i class="fas fa-arrow-down me-1"></i> PASIVOS
+                    </div>
+                    <table class="table cont-table mb-0">
+                        <thead>
+                            <tr style="background:#f7fafc;">
+                                <th style="width:110px;">Cuenta</th>
+                                <th>Nombre</th>
+                                <th class="text-end">Actual</th>
+                                <th class="text-end">Anterior</th>
+                                <th class="text-end">Variación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in comparativo.pasivos %}
+                            <tr>
+                                <td><code>{{ r.cuenta__codigo }}</code></td>
+                                <td>{{ r.cuenta__nombre }}</td>
+                                <td class="text-end">{{ r.saldo_actual|floatformat:2 }}</td>
+                                <td class="text-end">{{ r.saldo_anterior|floatformat:2 }}</td>
+                                <td class="text-end">{{ r.variacion|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-2">Sin datos</td></tr>
+                            {% endfor %}
+                            <tr style="background:#f7fafc; font-weight:700;">
+                                <td colspan="2" class="text-end">Total Pasivos:</td>
+                                <td class="text-end" style="color:var(--cont-danger);">{{ totales.actual.pasivos|floatformat:2 }}</td>
+                                <td class="text-end">{{ totales.anterior.pasivos|floatformat:2 }}</td>
+                                <td class="text-end">{{ totales.variacion.pasivos|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="background:#c6f6d5; padding:0.5rem 1rem; font-weight:700; color:#276749; border-bottom:1px solid #9ae6b4;">
+                        <i class="fas fa-landmark me-1"></i> PATRIMONIO
+                    </div>
+                    <table class="table cont-table mb-0">
+                        <thead>
+                            <tr style="background:#f7fafc;">
+                                <th style="width:110px;">Cuenta</th>
+                                <th>Nombre</th>
+                                <th class="text-end">Actual</th>
+                                <th class="text-end">Anterior</th>
+                                <th class="text-end">Variación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in comparativo.patrimonio %}
+                            <tr>
+                                <td><code>{{ r.cuenta__codigo }}</code></td>
+                                <td>{{ r.cuenta__nombre }}</td>
+                                <td class="text-end">{{ r.saldo_actual|floatformat:2 }}</td>
+                                <td class="text-end">{{ r.saldo_anterior|floatformat:2 }}</td>
+                                <td class="text-end">{{ r.variacion|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-2">Sin datos</td></tr>
+                            {% endfor %}
+                            <tr style="background:#f7fafc; font-weight:700;">
+                                <td colspan="2" class="text-end">Total Patrimonio:</td>
+                                <td class="text-end" style="color:var(--cont-success);">{{ totales.actual.patrimonio|floatformat:2 }}</td>
+                                <td class="text-end">{{ totales.anterior.patrimonio|floatformat:2 }}</td>
+                                <td class="text-end">{{ totales.variacion.patrimonio|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="cont-card p-5 text-center text-muted">
+        <i class="fas fa-chart-bar" style="font-size:3rem;"></i>
+        <p class="mt-3">Seleccione un ejercicio fiscal para generar el Balance General comparativo.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

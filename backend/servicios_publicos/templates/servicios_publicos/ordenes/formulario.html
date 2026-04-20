@@ -1,0 +1,143 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}{{ titulo }}{% endblock %}
+{% block nav_ordenes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#ea580c,#f97316)"><i class="fas fa-clipboard-list"></i></div>
+        <div>
+            <h1 class="page-title">{{ titulo }}</h1>
+            <p class="page-subtitle">Gestión de órdenes de campo y mantenimiento</p>
+        </div>
+    </div>
+    <a href="{% url 'servicios_publicos:ordenes_lista' %}" class="btn-sp-secondary">
+        <i class="fas fa-arrow-left"></i> Volver a Lista
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row g-4">
+                <!-- Columna Izquierda: Abonado y Tipo -->
+                <div class="col-lg-6">
+                    <div class="form-panel h-100 animate-in">
+                        <div class="form-panel-title"><i class="fas fa-user-tag"></i> Datos de la Solicitud</div>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Abonado *</label>
+                                <select name="abonado" class="form-select" id="abonado_select">
+                                    <option value="">-- Orden sin abonado vinculado --</option>
+                                    {% for ab in abonados %}
+                                    <option value="{{ ab.pk }}" 
+                                        {% if instance.abonado_id == ab.pk or request.GET.abonado == ab.pk|stringformat:"s" %}selected{% endif %}>
+                                        {{ ab.codigo_abonado }} - {{ ab.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Si es para mantenimiento general, puede dejarlo vacío.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo de Orden *</label>
+                                <select name="tipo" class="form-select" required>
+                                    {% for val, label in TIPO_CHOICES %}
+                                    <option value="{{ val }}" {% if instance.tipo == val %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Concepto / Tipo de Reclamo</label>
+                                <select name="concepto" class="form-select">
+                                    <option value="">-- Sin clasificar --</option>
+                                    {% for c in conceptos %}
+                                      <option value="{{ c.pk }}" {% if instance.concepto_id == c.pk %}selected{% endif %}>
+                                        {{ c.codigo }} - {{ c.descripcion }}
+                                      </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Sirve para estadísticas: atendidas vs pendientes por concepto.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Prioridad *</label>
+                                <select name="prioridad" class="form-select" required>
+                                    {% for val, label in PRIORIDAD_CHOICES %}
+                                    <option value="{{ val }}" {% if instance.prioridad == val or not instance and val == 'M' %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Descripción del Trabajo / Problema *</label>
+                                <textarea name="descripcion" class="form-control" rows="4" required placeholder="Escriba detalladamente el trabajo a realizar o el problema reportado...">{{ instance.descripcion|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Asignación -->
+                <div class="col-lg-6">
+                    <div class="form-panel h-100 animate-in" style="animation-delay:0.1s">
+                        <div class="form-panel-title"><i class="fas fa-user-cog"></i> Planificación y Asignación</div>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Técnico / Cuadrilla Asignada</label>
+                                <input type="text" name="tecnico_asignado" class="form-control" value="{{ instance.tecnico_asignado|default:'' }}" placeholder="Nombre del responsable en campo">
+                                <small class="text-muted">Legacy: si usas el catálogo de responsables, puedes dejar este campo vacío.</small>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Responsable (por código)</label>
+                                <input type="text" name="responsable_asignado_codigo" class="form-control"
+                                       value="{% if instance.responsable_asignado %}{{ instance.responsable_asignado.codigo }}{% endif %}"
+                                       placeholder="Ej: FNT-001" list="dl_responsables">
+                                <datalist id="dl_responsables">
+                                  {% for r in responsables %}
+                                    <option value="{{ r.codigo }}">{{ r.nombre }}</option>
+                                  {% endfor %}
+                                </datalist>
+                                <small class="text-muted">Toma el responsable desde el catálogo Fontaneros/Responsables.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Fecha Programada</label>
+                                <input type="date" name="fecha_programada" id="fecha_programada" class="form-control" value="{{ instance.fecha_programada|date:'Y-m-d'|default:'' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Niv. de Urgencia</label>
+                                <div class="p-2 border rounded" style="background:var(--sp-surface2); border-color:var(--sp-border) !important">
+                                    <i class="fas fa-info-circle me-2 text-info"></i>
+                                    <span class="small" style="color:var(--sp-text-muted)">Afecta tiempos de respuesta</span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Observaciones Internas</label>
+                                <textarea name="observacion" class="form-control" rows="4" placeholder="Notas para el administrativo o histórico...">{{ instance.observacion|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 d-flex gap-2 justify-content-end mt-4 mb-5">
+                    <a href="{% url 'servicios_publicos:ordenes_lista' %}" class="btn-sp-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn-sp-primary" style="background:linear-gradient(135deg,#ea580c,#f97316)">
+                        <i class="fas fa-save"></i> {% if instance %}Actualizar Orden{% else %}Generar Orden de Trabajo{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('fecha_programada');
+    if (!dateInput.value) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

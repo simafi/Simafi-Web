@@ -1,0 +1,1446 @@
+{% extends "presupuestos/menu_principal.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container-fluid mt-4 pb-5 px-3">
+    <div class="d-print-none mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'presupuestos:presupuestos_menu_principal' %}">Presupuestos</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'presupuestos:rendicion_cuentas_hub' %}?ejercicio={{ ejercicio.id }}">Rendición</a></li>
+                <li class="breadcrumb-item active">{{ forma.codigo }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'presupuestos:rendicion_cuentas_hub' %}?ejercicio={{ ejercicio.id }}">
+                <i class="fas fa-arrow-left me-1"></i>Volver
+            </a>
+            <button type="button" class="btn btn-outline-dark btn-sm" onclick="window.print()">
+                <i class="fas fa-print me-1"></i>Imprimir
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="text-center border-bottom pb-3 mb-4">
+                <h5 class="fw-bold mb-1">{{ empresa_label|default:empresa }}</h5>
+                <h6 class="text-muted mb-1">{{ forma.codigo }} — {{ forma.titulo }}</h6>
+                <p class="small text-muted mb-0">Ejercicio fiscal {{ ejercicio.anio }} · Generado {{ hoy }}</p>
+                <p class="small fst-italic mt-2 mb-0">{{ forma.normativa }}</p>
+            </div>
+
+            {% if pendiente_manual %}
+            <div class="alert alert-warning small mb-0">
+                Este formato está definido por el Manual del TSC, pero en SIMAFI aún no existe un módulo de captura/conciliación
+                para generar automáticamente esta forma. Se puede implementar la pantalla y los campos requeridos del manual para llenado.
+            </div>
+
+            {% elif forma_num == 1 %}
+            <p class="small text-muted mb-2">
+                Liquidación del presupuesto de ingresos por cuenta. <strong>Modificaciones aprobadas</strong> desglosadas en ampliaciones, disminuciones y traspasos (neto).
+                <strong>Ingresos devengados</strong> = movimientos en ejecución presupuestaria; <strong>ingresos recaudados</strong> = devengados más operaciones manuales de ingreso.
+            </p>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered align-middle text-center">
+                    <thead class="table-light small fw-bold">
+                        <tr>
+                            <th rowspan="2" class="align-middle" style="width: 90px;">Código</th>
+                            <th rowspan="2" class="align-middle text-start">Descripción</th>
+                            <th rowspan="2" class="align-middle text-end">Presupuesto<br>ingresos<br>inicial</th>
+                            <th colspan="3">Modificaciones aprobadas</th>
+                            <th rowspan="2" class="align-middle text-end">Presupuesto<br>definitivo</th>
+                            <th rowspan="2" class="align-middle text-end">Ingresos<br>devengados</th>
+                            <th rowspan="2" class="align-middle text-end">Ingresos<br>recaudados</th>
+                            <th rowspan="2" class="align-middle text-end">Ingresos<br>pendientes</th>
+                            <th rowspan="2" class="align-middle">%</th>
+                        </tr>
+                        <tr>
+                            <th class="text-end">Ampliaciones</th>
+                            <th class="text-end">Disminuciones</th>
+                            <th class="text-end">Traspasos<br>(neto)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for row in forma01.filas %}
+                        <tr class="{% if row.nivel == 1 %}table-secondary fw-bold{% elif row.nivel == 2 %}fw-bold bg-light{% endif %}">
+                            <td class="text-nowrap font-monospace">{{ row.codigo }}</td>
+                            <td class="text-start {% if row.nivel <= 1 %}ps-2{% elif row.nivel == 2 %}ps-3{% elif row.nivel == 3 %}ps-4{% else %}ps-5{% endif %}">{{ row.nombre }}</td>
+                            <td class="text-end font-monospace">{{ row.presupuesto_inicial|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.ampliacion|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.disminucion|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.traspasos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace fw-bold">{{ row.presupuesto_definitivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.ingresos_devengados|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-primary">{{ row.ingresos_recaudados|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-danger">{{ row.ingresos_pendientes|floatformat:2|intcomma }}</td>
+                            <td><span class="badge {% if row.porcentaje > 90 %}bg-success{% elif row.porcentaje > 50 %}bg-info{% else %}bg-warning text-dark{% endif %}">{{ row.porcentaje|floatformat:1 }}%</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="11" class="text-center py-4">Sin cuentas de ingreso para este ejercicio.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if forma01.filas %}
+                    <tfoot class="table-secondary small fw-bold">
+                        <tr>
+                            <td colspan="2" class="text-end">Totales</td>
+                            <td class="text-end font-monospace">{{ forma01.totales.presupuesto_inicial|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma01.totales.ampliacion|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma01.totales.disminucion|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma01.totales.traspasos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma01.totales.presupuesto_definitivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma01.totales.ingresos_devengados|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma01.totales.ingresos_recaudados|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma01.totales.ingresos_pendientes|floatformat:2|intcomma }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+
+            {% elif forma_num == 2 %}
+            <p class="small text-muted mb-2">
+                Por programa (nivel 1). <strong>Funcionamiento / Inversión</strong> según prefijo de código (1… funcionamiento, 2…/3… inversión).
+                <strong>Fondos 11 y 12</strong> se reconocen por código de fondo; el resto va en «Otros».
+            </p>
+            <div class="table-responsive" style="max-width: 100%; overflow-x: auto;">
+                <table class="table table-sm table-bordered align-middle text-center" style="min-width: 1400px;">
+                    <thead class="table-light small">
+                        <tr>
+                            <th rowspan="2" class="align-middle">Func.</th>
+                            <th rowspan="2" class="align-middle">Inv.</th>
+                            <th rowspan="2" class="align-middle">Código</th>
+                            <th rowspan="2" class="align-middle text-start">Descripción</th>
+                            <th rowspan="2" class="align-middle text-end">Ppto.<br>inicial</th>
+                            <th rowspan="2" class="align-middle text-end">Modif.<br>aprobadas</th>
+                            <th rowspan="2" class="align-middle text-end">Traspa-<br>sos (neto)</th>
+                            <th rowspan="2" class="align-middle text-end">Ampl.</th>
+                            <th rowspan="2" class="align-middle text-end">Dismin.</th>
+                            <th rowspan="2" class="align-middle text-end">Ppto.<br>definitivo</th>
+                            <th colspan="5" class="text-center">Obligaciones contraídas en el año</th>
+                            <th colspan="3" class="text-center">Obligaciones pagadas</th>
+                            <th colspan="3" class="text-center">Obligaciones pendientes de pago</th>
+                            <th rowspan="2" class="align-middle text-end">Ejecutado<br>(ref.)</th>
+                            <th rowspan="2" class="align-middle">%</th>
+                        </tr>
+                        <tr>
+                            <th class="text-end small">De más</th>
+                            <th class="text-end small">De menos</th>
+                            <th class="text-end small">F.11</th>
+                            <th class="text-end small">F.12</th>
+                            <th class="text-end small">Otros</th>
+                            <th class="text-end small">F.11</th>
+                            <th class="text-end small">F.12</th>
+                            <th class="text-end small">Otros</th>
+                            <th class="text-end small">F.11</th>
+                            <th class="text-end small">F.12</th>
+                            <th class="text-end small">Otros</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for row in forma02.filas %}
+                        <tr>
+                            <td>{% if row.es_funcionamiento %}•{% endif %}</td>
+                            <td>{% if row.es_inversion %}•{% endif %}</td>
+                            <td class="text-nowrap font-monospace">{{ row.codigo }}</td>
+                            <td class="text-start">{{ row.descripcion }}</td>
+                            <td class="text-end font-monospace">{{ row.presupuesto_inicial|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.modificaciones_aprobadas|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.traspasos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.ampliacion|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.disminucion|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace fw-bold">{{ row.presupuesto_definitivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-muted">{{ row.obl_contraidas.de_mas|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-muted">{{ row.obl_contraidas.de_menos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.obl_contraidas.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.obl_contraidas.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.obl_contraidas.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.obl_pagadas.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.obl_pagadas.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.obl_pagadas.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.obl_pendientes.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.obl_pendientes.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ row.obl_pendientes.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-primary">{{ row.ejecutado_op|floatformat:2|intcomma }}</td>
+                            <td>{{ row.porcentaje_ejec|floatformat:1 }}%</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="23" class="text-center py-4">Sin programas de egreso (nivel 1).</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if forma02.filas %}
+                    <tfoot class="table-secondary small fw-bold">
+                        <tr>
+                            <td colspan="4" class="text-end">Totales</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.presupuesto_inicial|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.modificaciones_aprobadas|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.traspasos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.ampliacion|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.disminucion|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.presupuesto_definitivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">—</td>
+                            <td class="text-end font-monospace">—</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.obl_contraidas.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.obl_contraidas.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.obl_contraidas.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.obl_pagadas.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.obl_pagadas.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.obl_pagadas.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.obl_pendientes.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.obl_pendientes.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma02.totales.obl_pendientes.otros|floatformat:2|intcomma }}</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+
+            {% elif forma_num == 3 %}
+            <div class="border rounded p-3 mb-3 small text-start">
+                <div class="fw-bold text-center mb-2">Forma 03 — Liquidación del Presupuesto de Egresos Consolidado</div>
+                <div class="row g-2 align-items-baseline">
+                    <div class="col-lg-7">
+                        Código:
+                        <span class="d-inline-block border-bottom px-2" style="min-width:2.5rem;">{{ forma03_codigo_partes.0 }}</span>
+                        <span class="d-inline-block border-bottom px-2" style="min-width:2.5rem;">{{ forma03_codigo_partes.1 }}</span>
+                    </div>
+                    <div class="col-lg-5 text-lg-end text-muted">Ejercicio fiscal {{ ejercicio.anio }}</div>
+                    <div class="col-md-6">Departamento de: <span class="border-bottom d-inline-block" style="min-width:12rem;">&nbsp;</span></div>
+                    <div class="col-md-6">Municipio de: {{ empresa_label|default:empresa }}</div>
+                    <div class="col-12">
+                        Período: del {{ ejercicio.fecha_inicio|date:"d/m/Y" }} al {{ ejercicio.fecha_fin|date:"d/m/Y" }}
+                    </div>
+                </div>
+            </div>
+            <p class="small text-muted mb-2">
+                Consolidado por grupos 100, 200, 300 y otros. <strong>Fondo 11 / 12 / ERP / Otros</strong> según código de fondo
+                (ERP: código o nombre con «ERP», o código 13). <strong>De más / De menos</strong> en obligaciones contraídas quedan en 0 salvo ajustes manuales futuros.
+            </p>
+            <div class="table-responsive" style="overflow-x:auto;">
+                <table class="table table-sm table-bordered align-middle text-center" style="min-width: 1280px;">
+                    <thead class="table-light small">
+                        <tr>
+                            <th rowspan="2" class="align-middle" style="width:72px;">Código</th>
+                            <th rowspan="2" class="align-middle text-start">Descripción</th>
+                            <th colspan="4">Presupuesto vigente</th>
+                            <th colspan="4">Ejecutado</th>
+                            <th rowspan="2" class="align-middle text-end">Saldo</th>
+                            <th rowspan="2" class="align-middle">%</th>
+                            <th colspan="6">Obligaciones contraídas en el año</th>
+                            <th colspan="4">Obligaciones pagadas</th>
+                            <th colspan="4">Obligaciones pendientes de pago</th>
+                        </tr>
+                        <tr>
+                            <th class="text-end small">F.11</th>
+                            <th class="text-end small">F.12</th>
+                            <th class="text-end small">ERP</th>
+                            <th class="text-end small">Otros</th>
+                            <th class="text-end small">F.11</th>
+                            <th class="text-end small">F.12</th>
+                            <th class="text-end small">ERP</th>
+                            <th class="text-end small">Otros</th>
+                            <th class="text-end small">De más</th>
+                            <th class="text-end small">De menos</th>
+                            <th class="text-end small">F.11</th>
+                            <th class="text-end small">F.12</th>
+                            <th class="text-end small">ERP</th>
+                            <th class="text-end small">Otros</th>
+                            <th class="text-end small">F.11</th>
+                            <th class="text-end small">F.12</th>
+                            <th class="text-end small">ERP</th>
+                            <th class="text-end small">Otros</th>
+                            <th class="text-end small">F.11</th>
+                            <th class="text-end small">F.12</th>
+                            <th class="text-end small">ERP</th>
+                            <th class="text-end small">Otros</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for g in forma03.filas %}
+                        <tr class="fw-bold">
+                            <td class="text-nowrap">{{ g.grupo }}</td>
+                            <td class="text-start">{{ g.nombre }}</td>
+                            <td class="text-end font-monospace">{{ g.vigente_por_fondo.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.vigente_por_fondo.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.vigente_por_fondo.erp|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.vigente_por_fondo.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-primary">{{ g.ejecutado_por_fondo.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-primary">{{ g.ejecutado_por_fondo.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-primary">{{ g.ejecutado_por_fondo.erp|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-primary">{{ g.ejecutado_por_fondo.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-danger">{{ g.saldo|floatformat:2|intcomma }}</td>
+                            <td>{{ g.porcentaje|floatformat:1 }}%</td>
+                            <td class="text-end font-monospace text-muted">{{ g.obl_contraidas.de_mas|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace text-muted">{{ g.obl_contraidas.de_menos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_contraidas.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_contraidas.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_contraidas.erp|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_contraidas.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_pagadas.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_pagadas.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_pagadas.erp|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_pagadas.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_pendientes.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_pendientes.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_pendientes.erp|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ g.obl_pendientes.otros|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="26" class="text-center py-3">Sin datos.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if forma03.filas %}
+                    <tfoot class="table-secondary small fw-bold">
+                        <tr>
+                            <td colspan="2" class="text-end">Totales</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.vigente.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.vigente.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.vigente.erp|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.vigente.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.ejecutado_por_fondo.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.ejecutado_por_fondo.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.ejecutado_por_fondo.erp|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.ejecutado_por_fondo.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.saldo|floatformat:2|intcomma }}</td>
+                            <td></td>
+                            <td class="text-end font-monospace">—</td>
+                            <td class="text-end font-monospace">—</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_contraidas.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_contraidas.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_contraidas.erp|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_contraidas.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_pagadas.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_pagadas.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_pagadas.erp|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_pagadas.otros|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_pendientes.f11|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_pendientes.f12|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_pendientes.erp|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma03.totales.obl_pendientes.otros|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+
+            {% elif forma_num == 4 %}
+            <div class="border rounded p-3 mb-3 small text-start">
+                <div class="fw-bold text-center mb-2">Forma 04 — Liquidación del Presupuesto</div>
+                <div class="row g-2 align-items-baseline">
+                    <div class="col-lg-7">
+                        Código:
+                        <span class="d-inline-block border-bottom px-2" style="min-width:2.5rem;">{{ forma04_codigo_partes.0 }}</span>
+                        <span class="d-inline-block border-bottom px-2" style="min-width:2.5rem;">{{ forma04_codigo_partes.1 }}</span>
+                    </div>
+                    <div class="col-lg-5 text-lg-end text-muted">Ejercicio fiscal {{ ejercicio.anio }}</div>
+                    <div class="col-md-6">Departamento de: <span class="border-bottom d-inline-block" style="min-width:12rem;">&nbsp;</span></div>
+                    <div class="col-md-6">Municipio de: {{ empresa_label|default:empresa }}</div>
+                    <div class="col-12">
+                        Período: del {{ ejercicio.fecha_inicio|date:"d/m/Y" }} al {{ ejercicio.fecha_fin|date:"d/m/Y" }}
+                    </div>
+                </div>
+            </div>
+            <p class="small text-muted mb-2">
+                <strong>Ingresos devengados</strong> = ejecución presupuestaria de ingreso + operaciones manuales de ingreso.
+                <strong>Obligaciones contraídas en el año</strong> = suma de órdenes de pago aprobadas y pagadas (detalle).
+                Referencia: egresos ejecutados en presupuesto L. {{ forma04.egresos_ejecutados_presupuesto_referencia|floatformat:2|intcomma }} (distinto criterio).
+            </p>
+
+            <div class="table-responsive mb-3">
+                <table class="table table-sm table-bordered">
+                    <tbody class="small">
+                        <tr>
+                            <th class="table-light" style="width:50%;">Ingresos devengados</th>
+                            <td class="text-end font-monospace fw-bold text-success">{{ forma04.ingresos_devengados|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Menos (Obligaciones contraídas en el año)</th>
+                            <td class="text-end font-monospace fw-bold text-danger">{{ forma04.obligaciones_contraidas_anio|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr class="table-light fw-bold">
+                            <th>Resultado presupuestario (Superávit o Déficit)</th>
+                            <td class="text-end font-monospace {% if forma04.resultado_presupuestario >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ forma04.resultado_presupuestario|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h6 class="fw-bold small mb-2">Ajustes</h6>
+            <form method="post" action="{% url 'presupuestos:rendicion_forma' 4 %}?ejercicio={{ ejercicio.id }}" class="border rounded p-3 mb-4 small">
+                {% csrf_token %}
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label text-muted mb-0">Por ingreso</label>
+                        <input type="text" name="ajuste_por_ingreso" class="form-control form-control-sm font-monospace" value="{% if ajustes_f04 %}{{ ajustes_f04.ajuste_por_ingreso }}{% else %}0.00{% endif %}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted mb-0">Por egreso</label>
+                        <input type="text" name="ajuste_por_egreso" class="form-control form-control-sm font-monospace" value="{% if ajustes_f04 %}{{ ajustes_f04.ajuste_por_egreso }}{% else %}0.00{% endif %}">
+                    </div>
+                    <div class="col-md-4 d-print-none">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Guardar ajustes</button>
+                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-md-4">
+                        <label class="form-label text-muted mb-0">Alcalde (sa) — nombre (opcional)</label>
+                        <input type="text" name="alcalde_nombre" class="form-control form-control-sm" value="{% if ajustes_f04 %}{{ ajustes_f04.alcalde_nombre|default:'' }}{% endif %}" maxlength="200" placeholder="Opcional: sustituye al alcalde en tabla Municipio">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted mb-0">Tesorero(a) — nombre (opcional)</label>
+                        <input type="text" name="tesorero_nombre" class="form-control form-control-sm" value="{% if ajustes_f04 %}{{ ajustes_f04.tesorero_nombre|default:'' }}{% endif %}" maxlength="200" placeholder="Opcional: sustituye tesorero/tesorera en Municipio">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted mb-0">Contador(a) — nombre (opcional)</label>
+                        <input type="text" name="contador_nombre" class="form-control form-control-sm" value="{% if ajustes_f04 %}{{ ajustes_f04.contador_nombre|default:'' }}{% endif %}" maxlength="200" placeholder="Opcional: sustituye contador en Municipio">
+                    </div>
+                </div>
+            </form>
+
+            <div class="table-responsive mb-4">
+                <table class="table table-sm table-bordered">
+                    <tbody class="small">
+                        <tr>
+                            <th class="table-light" style="width:50%;">Ajuste por ingreso</th>
+                            <td class="text-end font-monospace">{{ forma04.ajuste_por_ingreso|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Ajuste por egreso</th>
+                            <td class="text-end font-monospace">{{ forma04.ajuste_por_egreso|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr class="table-light fw-bold">
+                            <th>Resultado presupuestario ajustado</th>
+                            <td class="text-end font-monospace {% if forma04.resultado_presupuestario_ajustado >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ forma04.resultado_presupuestario_ajustado|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row mt-5 pt-3 border-top small text-center">
+                <div class="col-12 mb-3 text-start">
+                    <span class="border-bottom d-inline-block" style="min-width:14rem;">&nbsp;</span>
+                    <span class="text-muted">, {{ hoy|date:"d/m/Y" }}</span>
+                    <div class="text-muted fst-italic">Lugar y Fecha</div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="fw-bold mb-5 pb-3 border-bottom">Firma y sello</div>
+                    <div class="text-muted small mb-1">Alcalde (sa) Municipal</div>
+                    <div class="fw-bold">{{ forma04_firmas.alcalde|default:"—" }}</div>
+                    <div class="text-muted small mt-1">Nombre completo</div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="fw-bold mb-5 pb-3 border-bottom">Firma y sello</div>
+                    <div class="text-muted small mb-1">Tesorero(a) Municipal</div>
+                    <div class="fw-bold">{{ forma04_firmas.tesorero|default:"—" }}</div>
+                    <div class="text-muted small mt-1">Nombre completo</div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="fw-bold mb-5 pb-3 border-bottom">Firma y sello</div>
+                    <div class="text-muted small mb-1">Contador (a) Municipal</div>
+                    <div class="fw-bold">{{ forma04_firmas.contador|default:"—" }}</div>
+                    <div class="text-muted small mt-1">Nombre completo</div>
+                </div>
+            </div>
+
+            {% elif forma_num == 5 %}
+            <div class="border rounded p-3 mb-3 small text-start">
+                <div class="fw-bold text-center mb-2">Forma 05 — Arqueo de Caja General</div>
+                <div class="row g-2 align-items-baseline">
+                    <div class="col-lg-7">
+                        Código:
+                        <span class="d-inline-block border-bottom px-2" style="min-width:2.5rem;">{{ forma05_codigo_partes.0 }}</span>
+                        <span class="d-inline-block border-bottom px-2" style="min-width:2.5rem;">{{ forma05_codigo_partes.1 }}</span>
+                    </div>
+                    <div class="col-lg-5 text-lg-end text-muted">Ejercicio fiscal {{ ejercicio.anio }}</div>
+                    <div class="col-md-6">Departamento de: <span class="border-bottom d-inline-block" style="min-width:12rem;">&nbsp;</span></div>
+                    <div class="col-md-6">Municipio de: {{ empresa_label|default:empresa }}</div>
+                    <div class="col-12">
+                        Período reportado: del {{ forma05.fecha_inicio|date:"d/m/Y" }} al {{ forma05.fecha_fin|date:"d/m/Y" }}
+                    </div>
+                </div>
+            </div>
+            <div class="d-print-none mb-2">
+                <form method="get" class="row g-2 align-items-end">
+                    <input type="hidden" name="ejercicio" value="{{ ejercicio.id }}">
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Fecha de corte (hasta)</label>
+                        <input type="date" name="fecha_hasta" class="form-control form-control-sm" value="{{ fecha_hasta|date:'Y-m-d' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Aplicar corte</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card border-primary mb-4 d-print-none">
+                <div class="card-header py-2 small fw-bold text-primary">Captura para alimentar el informe (Forma 05)</div>
+                <div class="card-body small">
+                    <p class="text-muted mb-3">
+                        Los datos de <strong>Tesorería</strong> se traen automáticamente. Use esta sección para
+                        <strong>ajustes globales</strong> y <strong>salidas de efectivo manuales</strong> (documentos no registrados en el módulo).
+                        Las líneas manuales solo se suman si su <strong>fecha</strong> está entre el inicio del ejercicio y la fecha de corte.
+                    </p>
+                    <form method="post" action="{% url 'presupuestos:rendicion_forma' 5 %}?ejercicio={{ ejercicio.id }}&fecha_hasta={{ fecha_hasta|date:'Y-m-d' }}" class="border rounded p-3 mb-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="save_f05_ajustes">
+                        <input type="hidden" name="fecha_hasta_redirect" value="{{ fecha_hasta|date:'Y-m-d' }}">
+                        <h6 class="fw-bold">Ajustes globales (se suman a los totales del sistema)</h6>
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted mb-0">+ Entradas efectivo (Lempiras)</label>
+                                <input type="text" name="extra_entradas_efectivo" class="form-control form-control-sm font-monospace"
+                                       value="{% if ajustes_f05 %}{{ ajustes_f05.extra_entradas_efectivo }}{% else %}0.00{% endif %}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted mb-0">+ Salidas efectivo (sumatoria)</label>
+                                <input type="text" name="extra_salidas_efectivo" class="form-control form-control-sm font-monospace"
+                                       value="{% if ajustes_f05 %}{{ ajustes_f05.extra_salidas_efectivo }}{% else %}0.00{% endif %}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted mb-0">+ Sumatoria cheques</label>
+                                <input type="text" name="extra_cheques" class="form-control form-control-sm font-monospace"
+                                       value="{% if ajustes_f05 %}{{ ajustes_f05.extra_cheques }}{% else %}0.00{% endif %}">
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted mb-0">Alcalde (sa) — nombre (opcional)</label>
+                                <input type="text" name="alcalde_nombre" class="form-control form-control-sm" maxlength="200"
+                                       value="{% if ajustes_f05 %}{{ ajustes_f05.alcalde_nombre|default:'' }}{% endif %}"
+                                       placeholder="Opcional: sustituye al alcalde en tabla Municipio">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted mb-0">Tesorero(a) — nombre (opcional)</label>
+                                <input type="text" name="tesorero_nombre" class="form-control form-control-sm" maxlength="200"
+                                       value="{% if ajustes_f05 %}{{ ajustes_f05.tesorero_nombre|default:'' }}{% endif %}"
+                                       placeholder="Opcional: sustituye tesorero/tesorera en Municipio">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted mb-0">Contador(a) — nombre (opcional)</label>
+                                <input type="text" name="contador_nombre" class="form-control form-control-sm" maxlength="200"
+                                       value="{% if ajustes_f05 %}{{ ajustes_f05.contador_nombre|default:'' }}{% endif %}"
+                                       placeholder="Opcional: sustituye contador en Municipio">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary">Guardar ajustes y firmas</button>
+                    </form>
+
+                    <form method="post" action="{% url 'presupuestos:rendicion_forma' 5 %}?ejercicio={{ ejercicio.id }}&fecha_hasta={{ fecha_hasta|date:'Y-m-d' }}" class="border rounded p-3 mb-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add_f05_linea">
+                        <input type="hidden" name="fecha_hasta_redirect" value="{{ fecha_hasta|date:'Y-m-d' }}">
+                        <h6 class="fw-bold">Agregar salida de efectivo (línea manual)</h6>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-2">
+                                <label class="form-label text-muted mb-0">Fecha</label>
+                                <input type="date" name="linea_fecha" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted mb-0">Descripción</label>
+                                <input type="text" name="linea_descripcion" class="form-control form-control-sm" maxlength="500" required placeholder="Ej. Comprobante de compra menor">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label text-muted mb-0">Documento</label>
+                                <input type="text" name="linea_documento" class="form-control form-control-sm" maxlength="80">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label text-muted mb-0">Valor</label>
+                                <input type="text" name="linea_monto" class="form-control form-control-sm font-monospace" placeholder="0.00" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-sm btn-outline-primary w-100">Agregar línea</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if f05_salidas_manuales_todas %}
+                    <h6 class="fw-bold mt-3 mb-2">Líneas manuales registradas (ejercicio)</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th class="text-center">Doc.</th>
+                                    <th class="text-end">Monto</th>
+                                    <th class="text-center d-print-none" style="width:5rem;">—</th>
+                                </tr>
+                            </thead>
+                            <tbody class="small">
+                                {% for lm in f05_salidas_manuales_todas %}
+                                <tr>
+                                    <td class="text-nowrap">{{ lm.fecha|date:"d/m/Y" }}</td>
+                                    <td>{{ lm.descripcion }}</td>
+                                    <td class="text-center font-monospace">{{ lm.documento|default:"—" }}</td>
+                                    <td class="text-end font-monospace">{{ lm.monto|floatformat:2|intcomma }}</td>
+                                    <td class="text-center d-print-none">
+                                        <form method="post" action="{% url 'presupuestos:rendicion_forma' 5 %}?ejercicio={{ ejercicio.id }}&fecha_hasta={{ fecha_hasta|date:'Y-m-d' }}" class="d-inline"
+                                              onsubmit="return confirm('¿Eliminar esta línea?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="delete_f05_linea">
+                                            <input type="hidden" name="line_id" value="{{ lm.id }}">
+                                            <input type="hidden" name="fecha_hasta_redirect" value="{{ fecha_hasta|date:'Y-m-d' }}">
+                                            <button type="submit" class="btn btn-link btn-sm text-danger p-0">Eliminar</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="small text-muted mt-2 mb-0">Solo las fechas dentro del periodo del informe (arriba) se incluyen en la tabla principal.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if forma05.warnings %}
+            <div class="alert alert-warning small">
+                <strong>Observaciones:</strong>
+                <ul class="mb-0">
+                    {% for w in forma05.warnings %}<li>{{ w }}</li>{% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            <p class="small text-muted mb-2">
+                <strong>Salidas de efectivo según documentos</strong> listadas desde tesorería (preferencia: cuenta «Caja General»).
+                <strong>Sumatoria de cheques</strong> según pagos tipo cheque en el mismo periodo.
+                <strong>Disponibilidad estimada</strong> = entradas en efectivo (cobros en caja) − sumatoria de salidas en efectivo.
+            </p>
+
+            <h6 class="fw-bold small mb-2">Salidas de efectivo según documentos</h6>
+            <div class="table-responsive mb-3">
+                <table class="table table-sm table-bordered align-middle">
+                    <thead class="table-light small text-center">
+                        <tr>
+                            <th class="text-start">Descripción</th>
+                            <th class="text-end" style="width:9rem;">Valor</th>
+                            <th class="text-start">Valor en letras</th>
+                            <th class="text-center text-nowrap" style="width:7rem;">Fecha</th>
+                            <th class="text-center" style="width:7rem;">Documento</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for row in forma05.salidas_efectivo %}
+                        <tr>
+                            <td class="text-start">{% if row.es_manual %}<span class="badge bg-info text-dark me-1">Manual</span>{% endif %}{{ row.descripcion }}</td>
+                            <td class="text-end font-monospace">{{ row.valor|floatformat:2|intcomma }}</td>
+                            <td class="text-start">{{ row.valor_en_letras }}</td>
+                            <td class="text-center text-nowrap">{{ row.fecha|date:"d/m/Y" }}</td>
+                            <td class="text-center font-monospace">{{ row.documento|default:"—" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted py-3">No hay salidas de efectivo en el periodo seleccionado.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if forma05.salidas_efectivo %}
+                    <tfoot class="table-secondary small">
+                        <tr class="fw-bold">
+                            <td class="text-end">Sumatoria salidas (líneas en tabla)</td>
+                            <td class="text-end font-monospace">{{ forma05.sumatoria_salidas_solo_lineas|default:0|floatformat:2|intcomma }}</td>
+                            <td colspan="3"></td>
+                        </tr>
+                        {% if forma05.extras and forma05.extras.salidas %}
+                        <tr>
+                            <td class="text-end text-muted">+ Ajuste global salidas</td>
+                            <td class="text-end font-monospace text-muted">{{ forma05.extras.salidas|floatformat:2|intcomma }}</td>
+                            <td colspan="3"></td>
+                        </tr>
+                        {% endif %}
+                        <tr class="fw-bold">
+                            <td class="text-end">Total salidas de efectivo</td>
+                            <td class="text-end font-monospace">{{ forma05.sumatoria_salidas_efectivo|floatformat:2|intcomma }}</td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+
+            <div class="table-responsive mb-3">
+                <table class="table table-sm table-bordered">
+                    <tbody class="small">
+                        <tr>
+                            <th class="table-light" style="width:50%;">Entradas en efectivo — sistema (cobros caja)</th>
+                            <td class="text-end font-monospace">{{ forma05.entradas_efectivo_sistema|default:0|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% if forma05.extras and forma05.extras.entradas %}
+                        <tr>
+                            <th class="table-light">+ Ajuste declarado (captura)</th>
+                            <td class="text-end font-monospace">{{ forma05.extras.entradas|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="fw-bold">
+                            <th>Total entradas en efectivo</th>
+                            <td class="text-end font-monospace">{{ forma05.entradas_efectivo_caja|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Sumatoria cheques — sistema</th>
+                            <td class="text-end font-monospace">{{ forma05.sumatoria_cheques_sistema|default:0|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% if forma05.extras and forma05.extras.cheques %}
+                        <tr>
+                            <th class="table-light">+ Ajuste declarado (captura)</th>
+                            <td class="text-end font-monospace">{{ forma05.extras.cheques|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="fw-bold">
+                            <th>Total sumatoria de cheques</th>
+                            <td class="text-end font-monospace">{{ forma05.sumatoria_cheques|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr class="table-light fw-bold">
+                            <th>Disponibilidad estimada (total entradas efectivo − total salidas efectivo)</th>
+                            <td class="text-end font-monospace {% if forma05.disponibilidad_estimada >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ forma05.disponibilidad_estimada|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row mt-4 pt-3 border-top small text-center d-print-block">
+                <div class="col-md-4 mb-4">
+                    <div class="fw-bold mb-5 pb-3 border-bottom">Firma y sello</div>
+                    <div class="text-muted small mb-1">Alcalde (sa) Municipal</div>
+                    <div class="fw-bold">{{ forma05_firmas.alcalde|default:"—" }}</div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="fw-bold mb-5 pb-3 border-bottom">Firma y sello</div>
+                    <div class="text-muted small mb-1">Tesorero(a) Municipal</div>
+                    <div class="fw-bold">{{ forma05_firmas.tesorero|default:"—" }}</div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="fw-bold mb-5 pb-3 border-bottom">Firma y sello</div>
+                    <div class="text-muted small mb-1">Contador (a) Municipal</div>
+                    <div class="fw-bold">{{ forma05_firmas.contador|default:"—" }}</div>
+                </div>
+            </div>
+
+            {% elif forma_num == 6 %}
+            <div class="border rounded p-3 mb-3 small text-start">
+                <div class="fw-bold text-center mb-2">Forma 06 — Arqueo de Caja Chica o Fondo Rotatorio</div>
+                <div class="row g-2 align-items-baseline">
+                    <div class="col-lg-7">
+                        Código:
+                        <span class="d-inline-block border-bottom px-2" style="min-width:2.5rem;">{{ forma06_codigo_partes.0 }}</span>
+                        <span class="d-inline-block border-bottom px-2" style="min-width:2.5rem;">{{ forma06_codigo_partes.1 }}</span>
+                    </div>
+                    <div class="col-lg-5 text-lg-end text-muted">Ejercicio fiscal {{ ejercicio.anio }}</div>
+                    <div class="col-md-6">Departamento de: <span class="border-bottom d-inline-block" style="min-width:12rem;">&nbsp;</span></div>
+                    <div class="col-md-6">Municipio de: {{ empresa_label|default:empresa }}</div>
+                    <div class="col-12">
+                        Período de liquidación: del {{ ejercicio.fecha_inicio|date:"d/m/Y" }} al {{ ejercicio.fecha_fin|date:"d/m/Y" }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-secondary mb-4">
+                <div class="card-body small">
+                    <p class="text-justify mb-3 lh-base">
+                        Certifico que los fondos en <strong>caja chica / fondo rotatorio</strong> a mi cargo se encuentran
+                        <strong>nuevamente disponibles bajo mi responsabilidad</strong>, conforme al saldo y documentos de respaldo;
+                        por lo cual <strong>firmo(amos) por duplicado</strong> el presente arqueo.
+                    </p>
+                    <p class="text-muted small mb-0">
+                        Presenta el saldo del efectivo existente y de los gastos menores al cierre del ejercicio que se liquida,
+                        según Manual del TSC.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card mb-4 d-print-none border-primary">
+                <div class="card-header py-2 small fw-bold text-primary">Captura para el informe</div>
+                <div class="card-body small">
+                    <form method="post" action="{% url 'presupuestos:rendicion_forma' 6 %}?ejercicio={{ ejercicio.id }}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="save_f06_captura">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-3">
+                                <label class="form-label text-muted mb-0">No. arqueo / acta (opcional)</label>
+                                <input type="text" name="numero_arqueo" class="form-control form-control-sm" maxlength="50"
+                                       value="{% if forma06_captura %}{{ forma06_captura.numero_arqueo|default:'' }}{% endif %}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted mb-0">Fecha del arqueo (opcional)</label>
+                                <input type="date" name="fecha_arqueo" class="form-control form-control-sm"
+                                       value="{% if forma06_captura and forma06_captura.fecha_arqueo %}{{ forma06_captura.fecha_arqueo|date:'Y-m-d' }}{% endif %}">
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label text-muted mb-0 fw-bold">Municipal que realiza el arqueo — nombre completo</label>
+                            <input type="text" name="municipal_arqueo_nombre" class="form-control form-control-sm" maxlength="200"
+                                   value="{% if forma06_captura %}{{ forma06_captura.municipal_arqueo_nombre }}{% endif %}"
+                                   placeholder="Nombre completo">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label text-muted mb-0 fw-bold">Empleado(a) Municipal que realiza el arqueo</label>
+                            <input type="text" name="empleado_municipal_nombre" class="form-control form-control-sm" maxlength="200"
+                                   value="{% if forma06_captura %}{{ forma06_captura.empleado_municipal_nombre }}{% endif %}"
+                                   placeholder="Nombre completo">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted mb-0 fw-bold">Responsable</label>
+                            <input type="text" name="responsable_nombre" class="form-control form-control-sm" maxlength="200"
+                                   value="{% if forma06_captura %}{{ forma06_captura.responsable_nombre }}{% endif %}"
+                                   placeholder="Nombre completo del responsable">
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if forma06_captura %}
+            {% if forma06_captura.numero_arqueo or forma06_captura.fecha_arqueo %}
+            <p class="small mb-2">
+                {% if forma06_captura.numero_arqueo %}<strong>Arqueo / acta:</strong> {{ forma06_captura.numero_arqueo }}{% endif %}
+                {% if forma06_captura.fecha_arqueo %}
+                    {% if forma06_captura.numero_arqueo %} · {% endif %}
+                    <strong>Fecha:</strong> {{ forma06_captura.fecha_arqueo|date:"d/m/Y" }}
+                {% endif %}
+            </p>
+            {% endif %}
+            {% endif %}
+
+            <h6 class="fw-bold small mb-3">Firma por duplicado</h6>
+            <div class="row g-3 small">
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-center border-bottom pb-2 mb-3 fw-bold">Ejemplar A</div>
+                        <div class="mb-4" style="min-height:4rem;">
+                            <span class="text-muted">Firma y sello</span>
+                            <div class="border-bottom mt-5" style="min-height:1.5rem;">&nbsp;</div>
+                        </div>
+                        <p class="mb-2"><span class="text-muted">Municipal que realiza el arqueo (nombre completo)</span></p>
+                        <p class="fw-bold border-bottom pb-1 mb-3">{% if forma06_captura %}{{ forma06_captura.municipal_arqueo_nombre|default:"—" }}{% else %}—{% endif %}</p>
+                        <p class="mb-2"><span class="text-muted">Empleado(a) Municipal que realiza el arqueo</span></p>
+                        <p class="fw-bold border-bottom pb-1 mb-3">{% if forma06_captura %}{{ forma06_captura.empleado_municipal_nombre|default:"—" }}{% else %}—{% endif %}</p>
+                        <p class="mb-1"><span class="text-muted">Responsable</span></p>
+                        <p class="fw-bold border-bottom pb-1">{% if forma06_captura %}{{ forma06_captura.responsable_nombre|default:"—" }}{% else %}—{% endif %}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-center border-bottom pb-2 mb-3 fw-bold">Ejemplar B</div>
+                        <div class="mb-4" style="min-height:4rem;">
+                            <span class="text-muted">Firma y sello</span>
+                            <div class="border-bottom mt-5" style="min-height:1.5rem;">&nbsp;</div>
+                        </div>
+                        <p class="mb-2"><span class="text-muted">Municipal que realiza el arqueo (nombre completo)</span></p>
+                        <p class="fw-bold border-bottom pb-1 mb-3">{% if forma06_captura %}{{ forma06_captura.municipal_arqueo_nombre|default:"—" }}{% else %}—{% endif %}</p>
+                        <p class="mb-2"><span class="text-muted">Empleado(a) Municipal que realiza el arqueo</span></p>
+                        <p class="fw-bold border-bottom pb-1 mb-3">{% if forma06_captura %}{{ forma06_captura.empleado_municipal_nombre|default:"—" }}{% else %}—{% endif %}</p>
+                        <p class="mb-1"><span class="text-muted">Responsable</span></p>
+                        <p class="fw-bold border-bottom pb-1">{% if forma06_captura %}{{ forma06_captura.responsable_nombre|default:"—" }}{% else %}—{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+            <p class="small text-muted mt-3 mb-0 d-print-none">Imprima dos copias; una corresponde al Ejemplar A y otra al Ejemplar B.</p>
+
+            {% elif forma_num == 7 %}
+            <div class="mb-3">
+                <h6 class="fw-bold mb-2">Cuenta de Tesorería <span class="text-muted fw-normal">— Forma 07</span></h6>
+                <p class="small text-secondary mb-0 lh-base">
+                    Este documento refleja el movimiento del <strong>efectivo</strong> y los <strong>bancos</strong> realizados durante un período fiscal.
+                    La forma comprende los grupos <strong>A. Efectivo y Bancos</strong>, <strong>B. Existencias en Caja</strong>, <strong>C. Saldo de bancos según constancias</strong>,
+                    <strong>D. Conciliación bancaria consolidada</strong>, y los <strong>anexos</strong> (depósitos en tránsito y cheques emitidos y no cobrados), más la referencia normativa a <strong>valores por recuperar</strong>.
+                </p>
+            </div>
+            <div class="d-print-none mb-2">
+                <form method="get" class="row g-2 align-items-end">
+                    <input type="hidden" name="ejercicio" value="{{ ejercicio.id }}">
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Fecha de corte (hasta)</label>
+                        <input type="date" name="fecha_hasta" class="form-control form-control-sm" value="{{ fecha_hasta|date:'Y-m-d' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Aplicar corte</button>
+                    </div>
+                </form>
+                <div class="small text-muted mt-1">Ejemplo de cortes: 31/03, 30/06, 30/09, 31/12 (o cierre de ejercicio).</div>
+            </div>
+            {% if forma07.warnings %}
+            <div class="alert alert-warning small">
+                <strong>Observaciones:</strong>
+                <ul class="mb-0">
+                    {% for w in forma07.warnings %}<li>{{ w }}</li>{% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="accordion d-print-none mb-4 small" id="f07CriteriosTSC">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#f07CritA" aria-expanded="false">
+                            A. Efectivo y Bancos — criterios (columnas Detalle, Efectivo, Bancos, Total)
+                        </button>
+                    </h2>
+                    <div id="f07CritA" class="accordion-collapse collapse" data-bs-parent="#f07CriteriosTSC">
+                        <div class="accordion-body">
+                            <p class="mb-2"><strong>Detalle:</strong> describe el saldo inicial al 1 de enero, entradas de efectivo del año, disponible total, pagos del período y saldo final del ejercicio.</p>
+                            <ul class="mb-2">
+                                <li><strong>Saldo inicial al 1 de enero:</strong> saldo final de efectivo y bancos al 31 de diciembre del ejercicio anterior.</li>
+                                <li><strong>Entradas — Presupuestarios:</strong> fondos recaudados en el año por ingresos corrientes y de capital.</li>
+                                <li><strong>Entradas — Extrapresupuestarios:</strong> fondos recaudados por retenciones a terceros (no son propios de la municipalidad). Ejemplos: ISR, IHSS, embargos, bomberos, retenciones de caución, reparo, etc.</li>
+                                <li><strong>Disponible total:</strong> saldo inicial más ingresos presupuestarios y extrapresupuestarios.</li>
+                                <li><strong>Pagos — Presupuestarios:</strong> pagos a obligaciones contraídas y respaldadas por órdenes de pago.</li>
+                                <li><strong>Pagos — Extrapresupuestarios:</strong> pagos a terceros de retenciones efectuadas en el período.</li>
+                                <li><strong>Saldo final del ejercicio:</strong> disponible total menos pagos del período.</li>
+                            </ul>
+                            <p class="mb-1"><strong>Efectivo:</strong> saldo inicial en efectivo, más ingresos presupuestarios en efectivo, menos pagos del período en efectivo; resultado = saldo final en efectivo.</p>
+                            <p class="mb-1"><strong>Bancos:</strong> saldo en bancos al inicio del ejercicio, más ingresos presupuestarios en bancos, menos egresos por cheques o retiros; resultado = saldo final en bancos.</p>
+                            <p class="mb-0"><strong>Total:</strong> sumatoria de efectivo y bancos por línea.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#f07CritB" aria-expanded="false">
+                            B. Existencias en Caja
+                        </button>
+                    </h2>
+                    <div id="f07CritB" class="accordion-collapse collapse" data-bs-parent="#f07CriteriosTSC">
+                        <div class="accordion-body">
+                            <p class="mb-2">Efectivo en tesorería al <strong>31 de diciembre</strong> según arqueo. El valor procede de las <strong>Formas 05 y 06</strong>. Si no hay efectivo, deben adjuntarse las hojas de arqueo firmadas y selladas por responsables de cada fondo y quien realiza el arqueo; el acta debe certificarse por el/la Secretario(a) Municipal.</p>
+                            <p class="mb-0 text-muted">En SIMAFI el monto consolidado se muestra debajo; verifique concordancia con arqueos archivados.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#f07CritC" aria-expanded="false">
+                            C. Saldo de bancos según constancia
+                        </button>
+                    </h2>
+                    <div id="f07CritC" class="accordion-collapse collapse" data-bs-parent="#f07CriteriosTSC">
+                        <div class="accordion-body">
+                            <p class="mb-2">Por cada institución financiera: <strong>Banco</strong>, <strong>número de cuenta</strong>, <strong>tipo de cuenta</strong> (ahorros, cheques, moneda nacional o extranjera, etc.), <strong>fondo</strong> o procedencia de ingresos (11, 12, 26, etc.) y <strong>saldo</strong>, respaldado en la constancia solicitada al banco.</p>
+                            <p class="mb-0 text-muted">Los saldos en pantalla provienen de conciliaciones <strong>FINALIZADAS</strong> por cuenta hasta el mes de corte.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#f07CritD" aria-expanded="false">
+                            D. Conciliación bancaria consolidada
+                        </button>
+                    </h2>
+                    <div id="f07CritD" class="accordion-collapse collapse" data-bs-parent="#f07CriteriosTSC">
+                        <div class="accordion-body">
+                            <p class="mb-2">Confronta los saldos registrados por la municipalidad con la información bancaria (estado de cuenta, usualmente mensual).</p>
+                            <p class="fw-bold mb-1">Saldo en libros de la municipalidad</p>
+                            <ul class="mb-2"><li>Saldo al 31 de diciembre; (+) notas de crédito sin contabilizar; (−) notas de débito sin contabilizar; (+/−) error en libros → saldo conciliado en libros.</li></ul>
+                            <p class="small mb-2 text-muted">Notas de crédito sin contabilizar: depósitos directos al banco no registrados (contribuyentes, desembolsos de préstamo, transferencias externas, transferencias gubernamentales, etc.). Notas de débito sin contabilizar: cargos del banco no registrados (chequera, cuotas de préstamo, comisiones, sobregiros, devoluciones de cheques, etc.). Error en libros: registros incorrectos en el auxiliar de bancos.</p>
+                            <p class="fw-bold mb-1">Saldo en bancos según constancias</p>
+                            <ul class="mb-2"><li>Saldo al 31 de diciembre; (−) cheques emitidos y no cobrados; (+) depósitos en tránsito; (+/−) error en bancos → saldo conciliado según banco.</li></ul>
+                            <p class="small mb-2"><strong>Cheques emitidos y no cobrados:</strong> emitidos y registrados en el auxiliar que el beneficiario aún no cobra, según estado de cuenta.</p>
+                            <p class="small mb-2"><strong>Depósitos en tránsito:</strong> depósitos registrados por la municipalidad que el banco aún no contabiliza en el estado de cuenta.</p>
+                            <p class="small mb-0"><strong>Nota TSC:</strong> ambos saldos conciliados al final deben reflejar el <strong>mismo resultado</strong>. <strong>Error en bancos:</strong> diferencias por registros incorrectos del banco en las cuentas municipales.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#f07CritE" aria-expanded="false">
+                            Anexos y valores por recuperar (referencia normativa)
+                        </button>
+                    </h2>
+                    <div id="f07CritE" class="accordion-collapse collapse" data-bs-parent="#f07CriteriosTSC">
+                        <div class="accordion-body">
+                            <p class="fw-bold mb-1">Anexos</p>
+                            <p class="small mb-2">Los <strong>depósitos en tránsito</strong> y los <strong>cheques emitidos y no cobrados</strong> deben informarse en anexo con: fecha, institución financiera, referencia/número de cheque, beneficiario (cheques), valor; los <strong>totales</strong> deben coincidir con los renglones homónimos en la conciliación.</p>
+                            <p class="fw-bold mb-1">Valores por recuperar (saldo al 31 de diciembre)</p>
+                            <p class="small mb-2">Detallar al inicio del año, según aplique: recaudaciones pendientes de acreditar por el banco; préstamos y anticipos a instituciones; depósitos en garantía; inversiones a corto y largo plazo; reparos a funcionarios y empleados.</p>
+                            <ul class="small mb-0">
+                                <li><strong>Recaudaciones pendientes de acreditar:</strong> montos captados por el banco para la municipalidad, liberados en plazo negociado.</li>
+                                <li><strong>Préstamos y anticipos a instituciones:</strong> recuperables en plazo determinado.</li>
+                                <li><strong>Depósitos en garantía:</strong> garantía de cumplimiento, pueden remunerarse a tasa de mercado.</li>
+                                <li><strong>Inversiones corto/largo plazo:</strong> instrumentos temporales vs. colocaciones &gt; un año o ciclo de operaciones.</li>
+                                <li><strong>Reparos a funcionarios/empleados:</strong> por extravío, pérdida, faltantes de dinero o bienes.</li>
+                            </ul>
+                            <p class="small text-muted mt-2 mb-0">La captura detallada de «valores por recuperar» puede mantenerse en anexos manuales o módulos complementarios; esta pantalla prioriza conciliación y anexos operativos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="fw-bold mt-3">A. Efectivo y Bancos</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light small text-center">
+                        <tr>
+                            <th class="text-start">Detalle</th>
+                            <th>Efectivo</th>
+                            <th>Bancos</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        <tr>
+                            <td>1. Saldo inicial al 1 de enero del ejercicio</td>
+                            <td class="text-end font-monospace">{{ forma07.a.saldo_inicial.efectivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.saldo_inicial.bancos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.saldo_inicial.efectivo|add:forma07.a.saldo_inicial.bancos|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr class="table-light fw-bold">
+                            <td>2. Entradas de efectivo del año</td>
+                            <td class="text-end font-monospace"></td>
+                            <td class="text-end font-monospace"></td>
+                            <td class="text-end font-monospace"></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">* Presupuestario</td>
+                            <td class="text-end font-monospace">{{ forma07.a.entradas.presupuestario.efectivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.entradas.presupuestario.bancos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.entradas.presupuestario.efectivo|add:forma07.a.entradas.presupuestario.bancos|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">* Extrapresupuestario</td>
+                            <td class="text-end font-monospace">{{ forma07.a.entradas.extrapresupuestario.efectivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.entradas.extrapresupuestario.bancos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.entradas.extrapresupuestario.efectivo|add:forma07.a.entradas.extrapresupuestario.bancos|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td>3. Disponible total</td>
+                            <td class="text-end font-monospace">{{ forma07.a.disponible.efectivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.disponible.bancos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.disponible.total|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr class="table-light fw-bold">
+                            <td>4. Pagos del período</td>
+                            <td class="text-end font-monospace"></td>
+                            <td class="text-end font-monospace"></td>
+                            <td class="text-end font-monospace"></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">* Presupuestarios</td>
+                            <td class="text-end font-monospace">{{ forma07.a.pagos.presupuestario.efectivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.pagos.presupuestario.bancos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.pagos.presupuestario.efectivo|add:forma07.a.pagos.presupuestario.bancos|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">* Extrapresupuestario</td>
+                            <td class="text-end font-monospace">{{ forma07.a.pagos.extrapresupuestario.efectivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.pagos.extrapresupuestario.bancos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.pagos.extrapresupuestario.efectivo|add:forma07.a.pagos.extrapresupuestario.bancos|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td>5. Saldo final del ejercicio</td>
+                            <td class="text-end font-monospace">{{ forma07.a.saldo_final.efectivo|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.saldo_final.bancos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ forma07.a.saldo_final.total|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h6 class="fw-bold mt-3">B. Existencias en Caja</h6>
+            <p class="small text-muted mb-2">Efectivo en tesorería al cierre según arqueo (Formas 05 y 06). Si no hay efectivo, adjunte arqueos firmados y sellados; el acta debe certificarse por el/la Secretario(a) Municipal.</p>
+            <div class="small text-muted mb-2">Acta de arqueo N° ____ al 31 de diciembre (referencia).</div>
+            <table class="table table-sm table-bordered">
+                <tr>
+                    <th class="table-light">Existencia en caja (según arqueos)</th>
+                    <td class="text-end font-monospace">{{ forma07.b.existencia_caja|floatformat:2|intcomma }}</td>
+                </tr>
+            </table>
+
+            <h6 class="fw-bold mt-3">C. Saldo de Bancos según constancia</h6>
+            <p class="small text-muted mb-2">Cinco columnas según manual TSC: banco, cuenta, tipo, procedencia de fondos (11, 12, 26, etc.) y saldo respaldado en constancia.</p>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Banco (institución)</th>
+                            <th>Cuenta número</th>
+                            <th>Tipo de cuenta</th>
+                            <th>Fondo / procedencia</th>
+                            <th class="text-end">Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for r in forma07.c.constancias %}
+                        <tr>
+                            <td>{{ r.banco }}</td>
+                            <td class="text-nowrap">{{ r.cuenta_numero }}</td>
+                            <td>{{ r.tipo_cuenta }}</td>
+                            <td class="text-muted">{{ r.fondo_display|default:"—" }}</td>
+                            <td class="text-end font-monospace">{{ r.saldo|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center">Sin constancias (requiere conciliación FINALIZADA de diciembre por cuenta).</td></tr>
+                        {% endfor %}
+                        <tr class="table-light fw-bold">
+                            <td colspan="4" class="text-end">Total</td>
+                            <td class="text-end font-monospace">{{ forma07.c.total|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h6 class="fw-bold mt-3">D. Conciliación Bancaria Consolidada</h6>
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light small"><tr><th colspan="2">Saldo en Libros de la Municipalidad</th></tr></thead>
+                        <tbody class="small">
+                            <tr><td>Al 31 de diciembre</td><td class="text-end font-monospace">{{ forma07.d.saldo_libros|floatformat:2|intcomma }}</td></tr>
+                            <tr><td>(+) Notas de crédito</td><td class="text-end font-monospace">{{ forma07.d.notas_credito|floatformat:2|intcomma }}</td></tr>
+                            <tr><td>(-) Notas de débito</td><td class="text-end font-monospace">{{ forma07.d.notas_debito|floatformat:2|intcomma }}</td></tr>
+                            <tr><td>(+/-) Error en libros</td><td class="text-end font-monospace">{{ forma07.d.error_libros|floatformat:2|intcomma }}</td></tr>
+                            <tr class="table-light fw-bold"><td>Saldos conciliados</td><td class="text-end font-monospace">{{ forma07.d.saldo_conciliado_libros|floatformat:2|intcomma }}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-lg-6">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light small"><tr><th colspan="2">Saldo en Bancos según constancias</th></tr></thead>
+                        <tbody class="small">
+                            <tr><td>Al 31 de diciembre</td><td class="text-end font-monospace">{{ forma07.d.saldo_bancos|floatformat:2|intcomma }}</td></tr>
+                            <tr><td>(-) Cheques emitidos y no cobrados</td><td class="text-end font-monospace">{{ forma07.d.cheques_no_cobrados_total|floatformat:2|intcomma }}</td></tr>
+                            <tr><td>(+) Depósitos en tránsito</td><td class="text-end font-monospace">{{ forma07.d.depositos_transito_total|floatformat:2|intcomma }}</td></tr>
+                            <tr><td>(+/-) Error en bancos</td><td class="text-end font-monospace">{{ forma07.d.error_bancos|floatformat:2|intcomma }}</td></tr>
+                            <tr class="table-light fw-bold"><td>Saldos conciliados</td><td class="text-end font-monospace">{{ forma07.d.saldo_conciliado_bancos|floatformat:2|intcomma }}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <p class="small mb-0 mt-2"><strong>Conciliación:</strong> el saldo conciliado en libros y el saldo conciliado según bancos deben coincidir (mismo balance), salvo diferencias documentadas.</p>
+
+            <div class="mt-3">
+                <h6 class="fw-bold">Anexos a la Forma 07</h6>
+                <p class="small text-muted mb-2">Los totales de estos anexos deben coincidir con los renglones de <strong>depósitos en tránsito</strong> y <strong>cheques emitidos y no cobrados</strong> en el cuadro D.</p>
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="small fw-bold mb-1">Depósitos en tránsito</div>
+                        <div class="small text-muted mb-1">Fecha de depósito · referencia / institución · valor (total = renglón en conciliación).</div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light small"><tr><th>Fecha</th><th>Referencia</th><th class="text-end">Valor</th></tr></thead>
+                                <tbody class="small">
+                                    {% for r in forma07.d.anexos.depositos_transito %}
+                                    <tr>
+                                        <td>{{ r.fecha|date:"d/m/Y" }}</td>
+                                        <td class="text-nowrap">{{ r.numero_referencia }}</td>
+                                        <td class="text-end font-monospace">{{ r.monto|floatformat:2|intcomma }}</td>
+                                    </tr>
+                                    {% empty %}<tr><td colspan="3" class="text-center">—</td></tr>{% endfor %}
+                                    <tr class="table-light fw-bold">
+                                        <td colspan="2" class="text-end">Total</td>
+                                        <td class="text-end font-monospace">{{ forma07.d.depositos_transito_total|floatformat:2|intcomma }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="small fw-bold mb-1">Cheques emitidos y no cobrados</div>
+                        <div class="small text-muted mb-1">Fecha de emisión · No. de cheque · beneficiario · valor (total = renglón en conciliación).</div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light small"><tr><th>Fecha emisión</th><th>No. cheque</th><th>Beneficiario</th><th class="text-end">Valor</th></tr></thead>
+                                <tbody class="small">
+                                    {% for r in forma07.d.anexos.cheques_no_cobrados %}
+                                    <tr>
+                                        <td>{{ r.fecha|date:"d/m/Y" }}</td>
+                                        <td class="text-nowrap">{{ r.numero_referencia }}</td>
+                                        <td>{{ r.beneficiario|default:"—" }}</td>
+                                        <td class="text-end font-monospace">{{ r.monto_total|floatformat:2|intcomma }}</td>
+                                    </tr>
+                                    {% empty %}<tr><td colspan="4" class="text-center">—</td></tr>{% endfor %}
+                                    <tr class="table-light fw-bold">
+                                        <td colspan="3" class="text-end">Total</td>
+                                        <td class="text-end font-monospace">{{ forma07.d.cheques_no_cobrados_total|floatformat:2|intcomma }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top">
+                <div class="row g-3">
+                    <div class="col-md-4 text-center">
+                        <div class="small fw-bold">Alcalde(sa) Municipal</div>
+                        <div class="small">{{ forma07.firmas.alcalde_nombre|default:"—" }}</div>
+                        <div class="border-top mt-4 pt-2 small">Firma y sello</div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="small fw-bold">Tesorero(a) Municipal</div>
+                        <div class="small">{{ forma07.firmas.tesorero_nombre|default:"—" }}</div>
+                        <div class="border-top mt-4 pt-2 small">Firma y sello</div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="small fw-bold">Contador(a) Municipal</div>
+                        <div class="small">{{ forma07.firmas.contador_nombre|default:"—" }}</div>
+                        <div class="border-top mt-4 pt-2 small">Firma y sello</div>
+                    </div>
+                </div>
+            </div>
+
+            {% elif forma_num == 8 %}
+            {% for bloque in ordenes %}
+            <div class="mb-4 border rounded p-3">
+                <div class="d-flex flex-wrap justify-content-between small mb-2">
+                    <div><strong>OP {{ bloque.orden.numero }}</strong> · {{ bloque.orden.fecha|date:"d/m/Y" }} · <span class="badge bg-secondary">{{ bloque.orden.get_estado_display }}</span></div>
+                    <div class="font-monospace fw-bold">Total L. {{ bloque.orden.total|floatformat:2|intcomma }}</div>
+                </div>
+                <p class="small mb-1"><strong>Favorecido:</strong> {{ bloque.orden.favorecido }}</p>
+                <p class="small text-muted mb-2">{{ bloque.orden.concepto|truncatechars:200 }}</p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light"><tr><th>Cuenta</th><th>Fondo</th><th>Proyecto</th><th class="text-end">Monto</th></tr></thead>
+                        <tbody>
+                            {% for det in bloque.detalles %}
+                            <tr>
+                                <td class="small">{{ det.cuenta_presupuestaria.codigo }} {{ det.cuenta_presupuestaria.nombre|truncatechars:40 }}</td>
+                                <td class="small">{{ det.fondo.codigo }}</td>
+                                <td class="small">{% if det.proyecto %}{{ det.proyecto.codigo }}{% else %}—{% endif %}</td>
+                                <td class="text-end font-monospace small">{{ det.monto|floatformat:2|intcomma }}</td>
+                            </tr>
+                            {% empty %}<tr><td colspan="4">Sin líneas de detalle.</td></tr>{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center text-muted py-4">No hay órdenes de pago en el ejercicio.</p>
+            {% endfor %}
+
+            {% elif forma_num == 9 %}
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light small"><tr><th>Código</th><th>Proyecto</th><th>Descripción</th></tr></thead>
+                    <tbody class="small">
+                        {% for p in proyectos %}
+                        <tr>
+                            <td>{{ p.codigo }}</td>
+                            <td>{{ p.nombre }}</td>
+                            <td>{{ p.descripcion|default:"—"|truncatechars:120 }}</td>
+                        </tr>
+                        {% empty %}<tr><td colspan="3" class="text-center py-3">Sin proyectos de inversión.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% elif forma_num == 10 %}
+            <div class="table-responsive" style="overflow-x: auto;">
+                <table class="table table-sm table-bordered text-nowrap">
+                    <thead class="table-light small text-center">
+                        <tr>
+                            <th>Código</th><th>Cuenta (nivel ≤2)</th>
+                            {% for m in meses_nombres %}<th>{{ m }}</th>{% endfor %}
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        {% for fila in tabla_mensual %}
+                        <tr class="{% if fila.nivel == 1 %}fw-bold table-secondary{% endif %}">
+                            <td>{{ fila.codigo }}</td>
+                            <td>{{ fila.nombre }}</td>
+                            {% for m in fila.meses %}<td class="text-end font-monospace">{{ m|floatformat:2|intcomma }}</td>{% endfor %}
+                            <td class="text-end font-monospace fw-bold">{{ fila.total|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}<tr><td colspan="15" class="text-center">Sin datos.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% elif forma_num == 11 %}
+            <div class="row g-3">
+                <div class="col-lg-8">
+                    <h6 class="fw-bold">Totales del ejercicio</h6>
+                    <table class="table table-sm table-bordered">
+                        <tr>
+                            <th class="table-light" style="width:55%;">Ingresos recaudados</th>
+                            <td class="text-end font-monospace fw-bold text-success">{{ estado_ie.ingresos_recaudados|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Egresos ejecutados</th>
+                            <td class="text-end font-monospace fw-bold text-danger">{{ estado_ie.egresos_ejecutados|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <th class="table-light">Superávit / (Déficit)</th>
+                            <td class="text-end font-monospace fw-bold {% if estado_ie.superavit_deficit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ estado_ie.superavit_deficit|floatformat:2|intcomma }}
+                            </td>
+                        </tr>
+                    </table>
+                    <p class="small text-muted mb-0">
+                        Este estado representa la diferencia entre ingresos recaudados y egresos ejecutados del ejercicio,
+                        sin considerar saldos efectivos del año anterior ni préstamos, entre otros (según definición oficial).
+                    </p>
+                </div>
+            </div>
+
+            {% elif forma_num == 12 %}
+            <h6 class="fw-bold mb-2">Balance General (al {{ fecha_corte|date:"d/m/Y" }})</h6>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h6 class="fw-bold text-primary">Activos</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light small"><tr><th>Cód.</th><th>Cuenta</th><th class="text-end">Saldo</th></tr></thead>
+                            <tbody class="small">
+                                {% for r in balance.activos %}
+                                <tr>
+                                    <td class="text-nowrap">{{ r.codigo }}</td>
+                                    <td>{{ r.nombre }}</td>
+                                    <td class="text-end font-monospace">{{ r.saldo|floatformat:2|intcomma }}</td>
+                                </tr>
+                                {% empty %}<tr><td colspan="3" class="text-center">Sin datos.</td></tr>{% endfor %}
+                                <tr class="table-light fw-bold">
+                                    <td colspan="2" class="text-end">Total Activos</td>
+                                    <td class="text-end font-monospace">{{ balance.totales.activos|floatformat:2|intcomma }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <h6 class="fw-bold text-danger">Pasivos</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light small"><tr><th>Cód.</th><th>Cuenta</th><th class="text-end">Saldo</th></tr></thead>
+                            <tbody class="small">
+                                {% for r in balance.pasivos %}
+                                <tr>
+                                    <td class="text-nowrap">{{ r.codigo }}</td>
+                                    <td>{{ r.nombre }}</td>
+                                    <td class="text-end font-monospace">{{ r.saldo|floatformat:2|intcomma }}</td>
+                                </tr>
+                                {% empty %}<tr><td colspan="3" class="text-center">Sin datos.</td></tr>{% endfor %}
+                                <tr class="table-light fw-bold">
+                                    <td colspan="2" class="text-end">Total Pasivos</td>
+                                    <td class="text-end font-monospace">{{ balance.totales.pasivos|floatformat:2|intcomma }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <h6 class="fw-bold text-success">Patrimonio</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light small"><tr><th>Cód.</th><th>Cuenta</th><th class="text-end">Saldo</th></tr></thead>
+                            <tbody class="small">
+                                {% for r in balance.patrimonio %}
+                                <tr>
+                                    <td class="text-nowrap">{{ r.codigo }}</td>
+                                    <td>{{ r.nombre }}</td>
+                                    <td class="text-end font-monospace">{{ r.saldo|floatformat:2|intcomma }}</td>
+                                </tr>
+                                {% empty %}<tr><td colspan="3" class="text-center">Sin datos.</td></tr>{% endfor %}
+                                <tr class="table-light fw-bold">
+                                    <td colspan="2" class="text-end">Total Patrimonio</td>
+                                    <td class="text-end font-monospace">{{ balance.totales.patrimonio|floatformat:2|intcomma }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% elif forma_num == 13 %}
+            <h6 class="fw-bold mb-2">Estados de Ingresos y Egresos Comparativos</h6>
+            <p class="small text-muted mb-3">Comparación del ejercicio {{ ejercicio.anio }} vs {% if ejercicio_anterior %}{{ ejercicio_anterior.anio }}{% else %}año anterior{% endif %}.</p>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Concepto</th>
+                            <th class="text-end">Actual</th>
+                            <th class="text-end">Anterior</th>
+                            <th class="text-end">Variación</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        <tr>
+                            <td>Ingresos recaudados</td>
+                            <td class="text-end font-monospace text-success fw-bold">{{ comparativo_ie.actual.ingresos_recaudados|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ comparativo_ie.anterior.ingresos_recaudados|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ comparativo_ie.variacion.ingresos|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <td>Egresos ejecutados</td>
+                            <td class="text-end font-monospace text-danger fw-bold">{{ comparativo_ie.actual.egresos_ejecutados|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ comparativo_ie.anterior.egresos_ejecutados|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ comparativo_ie.variacion.egresos|floatformat:2|intcomma }}</td>
+                        </tr>
+                        <tr class="table-light fw-bold">
+                            <td>Superávit / (Déficit)</td>
+                            <td class="text-end font-monospace {% if comparativo_ie.actual.superavit_deficit >= 0 %}text-success{% else %}text-danger{% endif %}">{{ comparativo_ie.actual.superavit_deficit|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace {% if comparativo_ie.anterior.superavit_deficit >= 0 %}text-success{% else %}text-danger{% endif %}">{{ comparativo_ie.anterior.superavit_deficit|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ comparativo_ie.variacion.neto|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {% elif forma_num == 14 %}
+            <h6 class="fw-bold mb-2">Balances Generales Comparativos</h6>
+            {% if balance_comp %}
+            <p class="small text-muted mb-3">
+                Comparación al {{ fecha_corte|date:"d/m/Y" }} ({{ ejercicio.anio }}) vs {{ fecha_corte_anterior|date:"d/m/Y" }} ({{ ejercicio_anterior.anio }}).
+            </p>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Rubro</th>
+                            <th class="text-end">Actual</th>
+                            <th class="text-end">Anterior</th>
+                            <th class="text-end">Variación</th>
+                            <th class="text-end">Variación %</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        <tr>
+                            <td>Activos</td>
+                            <td class="text-end font-monospace">{{ balance_comp.totales.actual.activos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ balance_comp.totales.anterior.activos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ balance_comp.totales.variacion.activos|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ balance_comp.totales.variacion_pct.activos|floatformat:2 }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Pasivos</td>
+                            <td class="text-end font-monospace">{{ balance_comp.totales.actual.pasivos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ balance_comp.totales.anterior.pasivos|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ balance_comp.totales.variacion.pasivos|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ balance_comp.totales.variacion_pct.pasivos|floatformat:2 }}%</td>
+                        </tr>
+                        <tr class="table-light fw-bold">
+                            <td>Patrimonio</td>
+                            <td class="text-end font-monospace">{{ balance_comp.totales.actual.patrimonio|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ balance_comp.totales.anterior.patrimonio|floatformat:2|intcomma }}</td>
+                            <td class="text-end font-monospace">{{ balance_comp.totales.variacion.patrimonio|floatformat:2|intcomma }}</td>
+                            <td class="text-end">{{ balance_comp.totales.variacion_pct.patrimonio|floatformat:2 }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-warning small mb-0">No se pudo generar el comparativo (verifique que exista el ejercicio anterior).</div>
+            {% endif %}
+
+            {% endif %}
+
+            <div class="mt-4 pt-3 border-top small text-muted d-flex justify-content-between d-print-none">
+                <span>Usuario: {{ usuario|default:"—" }}</span>
+                <span>SIMAFI Web — Presupuestos</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .breadcrumb, .d-print-none { display: none !important; }
+    body { background: #fff !important; }
+    .card { box-shadow: none !important; border: none !important; }
+}
+</style>
+{% endblock %}

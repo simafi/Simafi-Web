@@ -1,0 +1,345 @@
+{% extends "servicios_publicos/base.html" %}
+{% block title %}Perfil de Abonado - {{ abonado.nombre }}{% endblock %}
+{% block breadcrumb %}Abonado: {{ abonado.codigo_abonado }}{% endblock %}
+{% block nav_catastro %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-icon" style="background:linear-gradient(135deg,#0369a1,#0ea5e9)"><i class="fas fa-user"></i></div>
+        <div>
+            <h1 class="page-title">{{ abonado.nombre }}</h1>
+            <p class="page-subtitle">Código: {{ abonado.codigo_abonado }} | Categoría: {{ abonado.get_categoria_display }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'servicios_publicos:catastro_lista' %}" class="btn-sp-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a Lista
+        </a>
+        <a href="{% url 'servicios_publicos:catastro_editar' abonado.pk %}" class="btn-sp-secondary">
+            <i class="fas fa-edit"></i> Editar Perfil
+        </a>
+        <a href="{% url 'servicios_publicos:lectura_nueva' %}?abonado_id={{ abonado.pk }}" class="btn-sp-primary" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">
+            <i class="fas fa-camera"></i> Nueva Lectura
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Panel Izquierdo: Información -->
+    <div class="col-lg-4">
+        <div class="data-card mb-4 animate-in">
+            <div class="data-card-header"><h4><i class="fas fa-info-circle me-2"></i>Información General</h4></div>
+            <div class="p-2" style="font-size:0.875rem">
+                <div class="d-flex justify-content-between mb-3 pb-2 border-bottom" style="border-color:var(--sp-border) !important">
+                    <span class="text-muted">Estado del Servicio:</span>
+                    <span>
+                        {% if abonado.estado == 'A' %}<span class="badge bg-success">ACTIVO</span>
+                        {% elif abonado.estado == 'S' %}<span class="badge bg-warning text-dark">SUSPENDIDO</span>
+                        {% elif abonado.estado == 'C' %}<span class="badge bg-secondary">CANCELADO</span>
+                        {% elif abonado.estado == 'M' %}<span class="badge bg-danger">MOROSO</span>{% endif %}
+                    </span>
+                </div>
+                <div class="mb-3">
+                    <div class="text-muted mb-1">Dirección:</div>
+                    <div class="fw-bold">{{ abonado.direccion|default:"No especificada" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="text-muted mb-1">Barrio:</div>
+                        <div class="fw-bold">{{ abonado.barrio|default:"-" }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted mb-1">Ciclo/Ruta:</div>
+                        <div class="fw-bold">{{ abonado.ciclo|default:"-" }} / {{ abonado.ruta|default:"-" }}</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="text-muted mb-1">Identidad/RTN:</div>
+                        <div class="fw-bold">{{ abonado.identidad|default:"-" }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted mb-1">Secuencia:</div>
+                        <div class="fw-bold">#{{ abonado.secuencia }}</div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-muted mb-1">Fecha Conexión:</div>
+                    <div class="fw-bold">{{ abonado.fecha_conexion|date:"d/m/Y"|default:"-" }}</div>
+                </div>
+                <hr style="border-color:var(--sp-border)">
+                <div class="mb-2"><i class="fas fa-phone me-2 text-muted"></i>{{ abonado.telefono|default:abonado.celular|default:"Sin teléfono" }}</div>
+                <div class="mb-0"><i class="fas fa-envelope me-2 text-muted"></i>{{ abonado.correo|default:"Sin correo electrónico" }}</div>
+            </div>
+        </div>
+
+        <div class="stat-card stat-red animate-in">
+            <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+            <div class="stat-body">
+                <div class="stat-value">L {{ saldo_pendiente|floatformat:2 }}</div>
+                <div class="stat-label">Saldo Pendiente Acumulado</div>
+                <div class="stat-sub">{{ facturas.count }} facturas registradas</div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="{% url 'servicios_publicos:orden_nueva' %}?abonado={{ abonado.pk }}" class="btn-sp-secondary w-100 mb-2">
+                <i class="fas fa-tools"></i> Crear Orden de Trabajo
+            </a>
+            <a href="{% url 'servicios_publicos:cortes_nuevo' %}?abonado={{ abonado.pk }}" class="btn-sp-danger w-100">
+                <i class="fas fa-times-circle"></i> Registrar Corte/Mora
+            </a>
+        </div>
+    </div>
+
+    <!-- Panel Derecho: Actividad -->
+    <div class="col-lg-8">
+        <!-- Pestañas -->
+        <ul class="nav nav-tabs mb-4 px-2" id="abonadoTabs" role="tablist" style="border-bottom:1px solid var(--sp-border)">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="facturas-tab" data-bs-toggle="tab" data-bs-target="#facturas" type="button" role="tab" style="color:var(--sp-text);border:none;background:transparent;padding:0.75rem 1.25rem;font-weight:600">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Facturación
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="lecturas-tab" data-bs-toggle="tab" data-bs-target="#lecturas" type="button" role="tab" style="color:var(--sp-text);border:none;background:transparent;padding:0.75rem 1.25rem;font-weight:600">
+                    <i class="fas fa-tachometer-alt me-2"></i>Lecturas
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="medidores-tab" data-bs-toggle="tab" data-bs-target="#medidores" type="button" role="tab" style="color:var(--sp-text);border:none;background:transparent;padding:0.75rem 1.25rem;font-weight:600">
+                    <i class="fas fa-plug me-2"></i>Medidores
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="ordenes-tab" data-bs-toggle="tab" data-bs-target="#ordenes" type="button" role="tab" style="color:var(--sp-text);border:none;background:transparent;padding:0.75rem 1.25rem;font-weight:600">
+                    <i class="fas fa-clipboard-list me-2"></i>Órdenes
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="abonadoTabsContent">
+            <!-- Facturas -->
+            <div class="tab-pane fade show active" id="facturas" role="tabpanel">
+                <div class="data-card">
+                    <div class="table-responsive">
+                        <table class="table" id="tablaFacturasAbonado">
+                            <thead>
+                                <tr>
+                                    <th style="width:40px"><input type="checkbox" id="checkAllFacturas" class="form-check-input"></th>
+                                    <th># Factura</th><th>Período</th><th>Total</th><th>Saldo</th><th>Estado</th><th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for f in facturas %}
+                                <tr>
+                                    <td>
+                                        {% if f.estado != 'P' and f.estado != 'A' %}
+                                        <input type="checkbox" class="factura-checkbox form-check-input" value="{{ f.id }}">
+                                        {% endif %}
+                                    </td>
+                                    <td><a href="{% url 'servicios_publicos:factura_detalle' f.pk %}">#{{ f.numero_factura }}</a></td>
+                                    <td>{{ f.periodo_mes|stringformat:"02d" }}/{{ f.periodo_ano }}</td>
+                                    <td>L {{ f.total|floatformat:2 }}</td>
+                                    <td class="{% if f.saldo_pendiente > 0 %}text-danger fw-bold{% endif %}">L {{ f.saldo_pendiente|floatformat:2 }}</td>
+                                    <td>
+                                        {% if f.estado == 'E' %}<span class="badge bg-warning text-dark">Emitida</span>
+                                        {% elif f.estado == 'P' %}<span class="badge bg-success">Pagada</span>
+                                        {% elif f.estado == 'V' %}<span class="badge bg-danger">Vencida</span>{% endif %}
+                                    </td>
+                                    <td><a href="{% url 'servicios_publicos:factura_detalle' f.pk %}" class="btn-link"><i class="fas fa-eye"></i></a></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">No hay historial de facturación</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-3 border-top d-flex justify-content-between align-items-center" style="border-color:var(--sp-border) !important; background:rgba(255,255,255,0.02)">
+                        <span class="text-muted small" id="selectedCount">0 facturas seleccionadas</span>
+                        <button type="button" id="btnEnviarCaja" class="btn-sp-primary btn-sm" disabled style="background:linear-gradient(135deg,#059669,#10b981)">
+                            <i class="fas fa-cash-register me-2"></i>Enviar seleccionadas a Caja
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lecturas -->
+            <div class="tab-pane fade" id="lecturas" role="tabpanel">
+                <div class="data-card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr><th>Período</th><th>Anterior</th><th>Actual</th><th>Consumo m³</th><th>Fecha</th><th>Foto</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for l in ultimas_lecturas %}
+                                <tr>
+                                    <td>{{ l.periodo_mes|stringformat:"02d" }}/{{ l.periodo_ano }}</td>
+                                    <td>{{ l.lectura_anterior|floatformat:2 }}</td>
+                                    <td>{{ l.lectura_actual|floatformat:2 }}</td>
+                                    <td class="fw-bold" style="color:var(--sp-secondary)">{{ l.consumo_m3|floatformat:2 }}</td>
+                                    <td>{{ l.fecha_lectura|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if l.foto_medidor %}
+                                        <a href="{{ l.foto_medidor.url }}" target="_blank" style="color:var(--sp-success)"><i class="fas fa-image"></i></a>
+                                        {% else %}-{% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">No se han registrado lecturas</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medidores -->
+            <div class="tab-pane fade" id="medidores" role="tabpanel">
+                <div class="data-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="section-title mb-0">Medidores Vinculados</h5>
+                        <a href="{% url 'servicios_publicos:medidor_nuevo' %}?abonado_id={{ abonado.pk }}" class="btn-sp-secondary btn-sm">
+                            <i class="fas fa-plus"></i> Instalar Nuevo
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr><th>N. Serie</th><th>Marca</th><th>Diámetro</th><th>Instalado</th><th>Estado</th><th>Lec. Inicial</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for m in medidores %}
+                                <tr>
+                                    <td><strong>{{ m.numero_serie }}</strong></td>
+                                    <td>{{ m.marca|default:"-" }}</td>
+                                    <td>{{ m.diametro|default:"-" }}</td>
+                                    <td>{{ m.fecha_instalacion|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if m.estado == 'A' %}<span class="text-success"><i class="fas fa-check-circle me-1"></i>Activo</span>
+                                        {% else %}<span class="text-muted"><i class="fas fa-times-circle me-1"></i>Retirado</span>{% endif %}
+                                    </td>
+                                    <td>{{ m.lectura_inicial|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">No tiene medidores registrados</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Órdenes -->
+            <div class="tab-pane fade" id="ordenes" role="tabpanel">
+                <div class="data-card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr><th># OT</th><th>Tipo</th><th>Fecha</th><th>Prioridad</th><th>Estado</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for o in ordenes %}
+                                <tr>
+                                    <td><a href="{% url 'servicios_publicos:orden_detalle' o.pk %}">#{{ o.numero_ot }}</a></td>
+                                    <td>{{ o.get_tipo_display }}</td>
+                                    <td>{{ o.fecha_emision|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if o.prioridad == 'A' %}<span class="text-danger">Alta</span>
+                                        {% elif o.prioridad == 'M' %}<span class="text-warning">Media</span>
+                                        {% else %}Baja{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if o.estado == 'C' %}<span class="badge bg-success">Completada</span>
+                                        {% elif o.estado == 'X' %}<span class="badge bg-danger">Cancelada</span>
+                                        {% else %}<span class="badge bg-info">En proceso</span>{% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-center py-4 text-muted">No hay órdenes de trabajo registradas</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+#abonadoTabs .nav-link:hover { border-bottom: 2px solid rgba(6,182,212,0.3) !important; }
+#abonadoTabs .nav-link.active { border-bottom: 2px solid var(--sp-secondary) !important; color: white !important; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkAll = document.getElementById('checkAllFacturas');
+    const checkboxes = document.querySelectorAll('.factura-checkbox');
+    const btnSend = document.getElementById('btnEnviarCaja');
+    const selectedCountSpan = document.getElementById('selectedCount');
+
+    function updateUI() {
+        const count = document.querySelectorAll('.factura-checkbox:checked').length;
+        selectedCountSpan.innerText = `${count} facturas seleccionadas`;
+        btnSend.disabled = count === 0;
+    }
+
+    if (checkAll) {
+        checkAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => {
+                cb.checked = checkAll.checked;
+            });
+            updateUI();
+        });
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateUI);
+    });
+
+    btnSend.addEventListener('click', async function() {
+        const selectedIds = Array.from(document.querySelectorAll('.factura-checkbox:checked')).map(cb => cb.value);
+        if (selectedIds.length === 0) return;
+
+        if (!confirm(`¿Está seguro de enviar ${selectedIds.length} facturas al módulo de Caja?`)) return;
+
+        btnSend.disabled = true;
+        btnSend.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+
+        try {
+            const response = await fetch("{% url 'servicios_publicos:facturacion_enviar_a_caja' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    factura_ids: selectedIds,
+                    identidad_pago: "{{ abonado.identidad }}",
+                    nombre_pago: "{{ abonado.nombre }}",
+                    comentario: "PAGO AGUA POTABLE - {{ abonado.codigo_abonado }}"
+                })
+            });
+
+            const result = await response.json();
+            if (result.ok) {
+                alert(`¡Éxito! Registros enviados a Caja.\nNúmero de Recibo: ${result.recibo}\n${result.mensaje}`);
+                location.reload();
+            } else {
+                alert("Error: " + result.error);
+                btnSend.disabled = false;
+                btnSend.innerHTML = '<i class="fas fa-cash-register me-2"></i>Enviar seleccionadas a Caja';
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Ocurrió un error al intentar enviar a caja.");
+            btnSend.disabled = false;
+            btnSend.innerHTML = '<i class="fas fa-cash-register me-2"></i>Enviar seleccionadas a Caja';
+        }
+    });
+});
+</script>
+{% endblock %}

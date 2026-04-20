@@ -1,0 +1,51 @@
+{% extends "presupuestos/menu_principal.html" %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="mb-4">
+        <i class="fas fa-chart-pie fa-5x text-success"></i>
+    </div>
+    <h2 class="fw-bold">Informes Presupuestarios</h2>
+    <p class="text-muted mb-5">Seleccione el tipo de presupuesto que desea consultar para acceder a los informes de ejecución y liquidación.</p>
+
+    <div class="row justify-content-center g-4">
+        <div class="col-md-5 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 hover-lift">
+                <div class="card-body p-4">
+                    <div class="bg-success bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                        <i class="fas fa-hand-holding-usd fa-2x text-success"></i>
+                    </div>
+                    <h4 class="fw-bold">Ingresos</h4>
+                    <p class="small text-muted mb-4">Ejecución rentística, resúmenes mensuales, reformas y liquidación de recaudación municipal.</p>
+                    <a href="?tipo=INGRESO" class="btn btn-success w-100">
+                        Acceder a Informes <i class="fas fa-chevron-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 opacity-75">
+                <div class="card-body p-4">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                        <i class="fas fa-file-invoice fa-2x text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold">Egresos</h4>
+                    <p class="small text-muted mb-4">Control de gastos, compromisos, devengados y liquidación de egresos (Disponible próximamente).</p>
+                    <button class="btn btn-outline-primary w-100 disabled">
+                        En Desarrollo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+</style>
+{% endblock %}
