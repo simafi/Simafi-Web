@@ -45,7 +45,13 @@ def _env_bool(key, default=False):
     return default
 
 
-DEBUG = _env_bool('DJANGO_DEBUG', True)
+# En Vercel es común olvidar `DJANGO_DEBUG`; si queda en True por defecto, Django cae en
+# configuración "dev" y termina intentando DB con `DJANGO_DB_*` vacíos.
+_default_debug = True
+if _env_bool('VERCEL', False) or _env_bool('DJANGO_VERCEL', False):
+    _default_debug = False
+
+DEBUG = _env_bool('DJANGO_DEBUG', _default_debug)
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '').strip()
 if not SECRET_KEY:
