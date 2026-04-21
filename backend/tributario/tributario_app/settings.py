@@ -193,8 +193,10 @@ def _parse_database_url(url: str) -> dict:
     from urllib.parse import urlparse, parse_qs, unquote
 
     parsed = urlparse(url)
-    if parsed.scheme not in ("postgres", "postgresql"):
-        raise ImproperlyConfigured("DATABASE_URL debe ser postgres/postgresql")
+    # Algunos clientes generan `postgresql+psycopg://` u otras variantes con driver.
+    scheme = (parsed.scheme or "").lower()
+    if not scheme.startswith("postgres"):
+        raise ImproperlyConfigured("DATABASE_URL debe ser postgres/postgresql (o variantes postgres+*)")
 
     qs = parse_qs(parsed.query or "")
     dbname = unquote((parsed.path or "").lstrip("/")).strip()
@@ -244,13 +246,27 @@ def _first_nonempty_env(*keys: str) -> str:
     return ""
 
 
-_database_url = _first_nonempty_env(
+def _first_nonempty_env_with_key(keys: tuple[str, ...]) -> tuple[str, str]:
+    for key in keys:
+        val = (os.environ.get(key) or "").strip().strip('"').strip("'")
+        if val:
+            return val, key
+    return "", ""
+
+
+_DATABASE_URL_KEYS = (
     "DJANGO_DATABASE_URL",
     "DATABASE_URL",
+    # Supabase / tooling común
+    "SUPABASE_DB_URL",
+    "SUPABASE_DATABASE_URL",
+    "DIRECT_URL",
     # Vercel Postgres / integraciones comunes
     "POSTGRES_URL",
     "PRISMA_DATABASE_URL",
 )
+
+_database_url, DATABASE_URL_SOURCE = _first_nonempty_env_with_key(_DATABASE_URL_KEYS)
 
 if _database_url:
     DATABASES = {"default": _parse_database_url(_database_url)}

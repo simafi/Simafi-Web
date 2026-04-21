@@ -9,6 +9,8 @@ from django.urls import path, include
 from django.http import HttpResponse, FileResponse, JsonResponse
 from django.conf import settings
 from django.conf.urls.static import static
+from django.db import connection
+from django.db.utils import DatabaseError, OperationalError
 import os
 
 def serve_favicon(request):
@@ -47,12 +49,15 @@ def healthz(request):
     db_host = (db.get("HOST") or "").strip()
     db_user = (db.get("USER") or "").strip()
     db_port = str(db.get("PORT") or "").strip()
+    db_url_source = getattr(settings, "DATABASE_URL_SOURCE", "") or None
 
     return JsonResponse(
         {
             "ok": True,
             "debug": bool(settings.DEBUG),
             "allowed_hosts_configured": bool(getattr(settings, "ALLOWED_HOSTS", [])),
+            "session_engine": getattr(settings, "SESSION_ENGINE", None),
+            "database_url_source": db_url_source,
             "database": {
                 "engine": db.get("ENGINE"),
                 "name_set": bool(db_name),
@@ -64,8 +69,35 @@ def healthz(request):
     )
 
 
+def dbcheck(request):
+    """
+    Prueba real de conectividad a Postgres (SELECT 1).
+    No expone passwords ni URLs completas.
+    """
+    db = getattr(settings, "DATABASES", {}).get("default", {})
+    info = {
+        "ok": False,
+        "database_url_source": getattr(settings, "DATABASE_URL_SOURCE", "") or None,
+        "host": (db.get("HOST") or None),
+        "port": str(db.get("PORT") or "") or None,
+        "name": (db.get("NAME") or None),
+        "user": (db.get("USER") or None),
+        "sslmode": (db.get("OPTIONS") or {}).get("sslmode"),
+    }
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            one = cursor.fetchone()
+        info["ok"] = bool(one and one[0] == 1)
+        return JsonResponse(info)
+    except (OperationalError, DatabaseError) as exc:
+        info["error"] = str(exc)
+        return JsonResponse(info, status=500)
+
+
 urlpatterns = [
     path("__healthz", healthz, name="healthz"),
+    path("__dbcheck", dbcheck, name="dbcheck"),
     # Favicon - debe estar antes de otras rutas para evitar 404
     path('favicon.ico', serve_favicon, name='favicon'),
     
