@@ -56,6 +56,12 @@ if _allowed:
 else:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver', '0.0.0.0']
 
+# Vercel: el subdominio cambia por proyecto/preview; el prefijo "." acepta cualquier `*.vercel.app`.
+# Esto evita `DisallowedHost` cuando aún no se ha configurado `DJANGO_ALLOWED_HOSTS`.
+if _env_bool('VERCEL', False) or _env_bool('DJANGO_VERCEL', False):
+    if '.vercel.app' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append('.vercel.app')
+
 # Túneles (ngrok, localtunnel): el subdominio gratuito cambia; el prefijo "." acepta cualquier subdominio.
 if DEBUG:
     ALLOWED_HOSTS.extend(
@@ -334,6 +340,16 @@ if not DEBUG:
         CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
     else:
         CSRF_TRUSTED_ORIGINS = []
+
+    # Vercel: si no se definió CSRF explícitamente, intentar inferir el origen HTTPS desde VERCEL_URL.
+    if not CSRF_TRUSTED_ORIGINS and (_env_bool('VERCEL', False) or _env_bool('DJANGO_VERCEL', False)):
+        from urllib.parse import urlparse
+
+        _vercel_url = (os.environ.get('VERCEL_URL') or os.environ.get('DJANGO_VERCEL_URL') or '').strip()
+        if _vercel_url:
+            parsed = urlparse(_vercel_url if '://' in _vercel_url else f'https://{_vercel_url}')
+            if parsed.scheme and parsed.netloc:
+                CSRF_TRUSTED_ORIGINS = [f'{parsed.scheme}://{parsed.netloc}']
 
 # filepath: tu_proyecto/settings.py
 LOGGING = {
