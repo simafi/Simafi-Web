@@ -36,7 +36,13 @@ def _env_bool(key, default=False):
     v = os.environ.get(key)
     if v is None:
         return default
-    return v.strip().lower() in ('1', 'true', 'yes', 'on')
+    s = v.strip().lower()
+    if s in ('1', 'true', 'yes', 'on'):
+        return True
+    if s in ('0', 'false', 'no', 'off', ''):
+        return False
+    # Valores no reconocidos: no forzar True/False equivocado.
+    return default
 
 
 DEBUG = _env_bool('DJANGO_DEBUG', True)
@@ -219,12 +225,25 @@ def _parse_database_url(url: str) -> dict:
     }
     if options:
         cfg["OPTIONS"] = options
+    if not (cfg.get("NAME") or "").strip():
+        raise ImproperlyConfigured("DATABASE_URL inválida: no se pudo determinar el nombre de la base (NAME).")
     return cfg
 
 
-_database_url = (
-    (os.environ.get("DJANGO_DATABASE_URL") or "").strip().strip('"').strip("'")
-    or (os.environ.get("DATABASE_URL") or "").strip().strip('"').strip("'")
+def _first_nonempty_env(*keys: str) -> str:
+    for key in keys:
+        val = (os.environ.get(key) or "").strip().strip('"').strip("'")
+        if val:
+            return val
+    return ""
+
+
+_database_url = _first_nonempty_env(
+    "DJANGO_DATABASE_URL",
+    "DATABASE_URL",
+    # Vercel Postgres / integraciones comunes
+    "POSTGRES_URL",
+    "PRISMA_DATABASE_URL",
 )
 
 if _database_url:
@@ -248,6 +267,15 @@ if not DEBUG:
         if missing:
             raise ImproperlyConfigured(
                 'Faltan variables de entorno de base de datos para producción: ' + ', '.join(missing)
+            )
+    else:
+        # Si existe DATABASE_URL pero quedó mal parseada, fallar con un mensaje accionable.
+        _dbcfg = DATABASES.get("default", {})
+        if not (str(_dbcfg.get("NAME") or "")).strip():
+            raise ImproperlyConfigured(
+                "DATABASE_URL está definida pero no pudo interpretarse correctamente. "
+                "Verifica que incluya el nombre de la base (p.ej. termine en `/postgres`) "
+                "o define `DJANGO_DB_NAME`/`DJANGO_DB_USER`/`DJANGO_DB_PASSWORD`/`DJANGO_DB_HOST`."
             )
 
 
