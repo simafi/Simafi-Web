@@ -1,4 +1,5 @@
 {
+  "buildCommand": "python api/collectstatic.py",
   "builds": [
     { "src": "api/index.py", "use": "@vercel/python" }
   ],

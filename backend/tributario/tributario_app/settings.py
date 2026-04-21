@@ -167,16 +167,46 @@ WSGI_APPLICATION = 'tributario_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DJANGO_DB_NAME', '').strip(),
-        'USER': os.environ.get('DJANGO_DB_USER', '').strip(),
-        'PASSWORD': os.environ.get('DJANGO_DB_PASSWORD', ''),
-        'HOST': os.environ.get('DJANGO_DB_HOST', '').strip(),
-        'PORT': os.environ.get('DJANGO_DB_PORT', '5432').strip() or '5432',
+def _parse_database_url(url: str) -> dict:
+    """
+    Soporte simple para DATABASE_URL estilo Supabase/Heroku.
+    Evita dependencia extra (dj-database-url).
+    """
+    from urllib.parse import urlparse, parse_qs, unquote
+
+    parsed = urlparse(url)
+    if parsed.scheme not in ("postgres", "postgresql"):
+        raise ImproperlyConfigured("DATABASE_URL debe ser postgres/postgresql")
+
+    qs = parse_qs(parsed.query or "")
+    return {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": unquote((parsed.path or "").lstrip("/")),
+        "USER": unquote(parsed.username or ""),
+        "PASSWORD": unquote(parsed.password or ""),
+        "HOST": parsed.hostname or "",
+        "PORT": str(parsed.port or 5432),
+        # Si se usa pgbouncer, conviene no reusar conexiones mucho tiempo.
+        "CONN_MAX_AGE": 0 if (qs.get("pgbouncer", ["false"])[0].lower() in ("1", "true", "yes", "on")) else 60,
     }
-}
+
+
+_database_url = (os.environ.get("DATABASE_URL") or "").strip().strip('"').strip("'")
+
+if _database_url:
+    DATABASES = {"default": _parse_database_url(_database_url)}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DJANGO_DB_NAME", "").strip(),
+            "USER": os.environ.get("DJANGO_DB_USER", "").strip(),
+            "PASSWORD": os.environ.get("DJANGO_DB_PASSWORD", ""),
+            "HOST": os.environ.get("DJANGO_DB_HOST", "").strip(),
+            "PORT": os.environ.get("DJANGO_DB_PORT", "5432").strip() or "5432",
+            "CONN_MAX_AGE": int(os.environ.get("DJANGO_CONN_MAX_AGE", "60")),
+        }
+    }
 
 if not DEBUG:
     missing = [k for k in ('DJANGO_DB_NAME', 'DJANGO_DB_USER', 'DJANGO_DB_PASSWORD', 'DJANGO_DB_HOST') if not (os.environ.get(k) or '').strip()]
@@ -294,7 +324,9 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = False
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_REFERRER_POLICY = 'same-origin'
+    # Para tiles (OSM) y recursos cross-origin, no bloquear el Referer completamente.
+    # OSM bloquea tráfico sin Referer; esta política envía el origen en requests cross-origin.
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
     X_FRAME_OPTIONS = 'DENY'
 
     _csrf_origins = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').strip()
