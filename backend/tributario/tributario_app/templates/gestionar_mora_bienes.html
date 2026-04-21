@@ -578,7 +578,7 @@
                                         {% if t.estado == 'A' %}
                                             <input type="number" class="form-control form-control-sm text-end input-monto-pagar" 
                                                    step="0.01" min="0.01" max="{{ t.monto }}" value="{{ t.monto|floatformat:2 }}" 
-                                                   data-id="{{ t.id }}" style="font-weight: bold; color: #28a745; border-color: #28a745;" disabled>
+                                                   data-id="{{ t.id }}" style="font-weight: bold; color: #28a745; border-color: #28a745;">
                                         {% endif %}
                                     {% else %}
                                         -
@@ -932,7 +932,7 @@
                     const data = itemMap[id];
                     if (item.checked) {
                         count++;
-                        data.input.disabled = false;
+                        data.input.classList.remove('text-muted');
                         
                         // Asegurar que tenga valor si está seleccionado
                         if (!data.input.value || parseFloat(data.input.value) === 0) {
@@ -943,9 +943,7 @@
                         total += monto;
                         payloadItems.push({ id: id, monto_pagar: monto });
                     } else {
-                        data.input.disabled = true;
-                        // Opcional: sombrear o atenuar el valor si no está seleccionado
-                        data.input.style.opacity = "0.5";
+                        data.input.classList.add('text-muted');
                     }
                 });
 

@@ -502,6 +502,11 @@ def enviar_a_caja_bienes(request):
 
                 # 1) Ítem base (positivo)
                 key_base = (t.rubro, codigo_contable, 'BASE')
+                # Detectar si es pago parcial (Abono)
+                monto_original = Decimal(str(t.monto)).quantize(Decimal('0.01'))
+                monto_a_pagar = Decimal(str(monto_pagar)).quantize(Decimal('0.01'))
+                es_abono = monto_a_pagar < monto_original
+                
                 if key_base not in grupos:
                     grupos[key_base] = {
                         'rubro': t.rubro,
@@ -509,9 +514,12 @@ def enviar_a_caja_bienes(request):
                         'descripcion': (rubro_obj.descripcion if rubro_obj else t.rubro),
                         'monto': Decimal('0.00'),
                         'periodos': [],
+                        'es_abono': False
                     }
-                grupos[key_base]['monto'] += Decimal(str(monto_pagar))
+                grupos[key_base]['monto'] += monto_a_pagar
                 grupos[key_base]['periodos'].append(periodo_str)
+                if es_abono:
+                    grupos[key_base]['es_abono'] = True
 
                 # 2) Descuento pago anual (DPA) por año objetivo = t.ano
                 try:
@@ -724,7 +732,8 @@ def enviar_a_caja_bienes(request):
                     continue
 
                 periodos = ', '.join(g['periodos'][:6]) + ('…' if len(g['periodos']) > 6 else '')
-                descripcion_final = f"{g['descripcion']} ({periodos})"
+                prefix = "(Abono) " if g.get('es_abono') else ""
+                descripcion_final = f"{prefix}{g['descripcion']} ({periodos})"
 
                 PagoVariosTemp.objects.create(
                     empresa=empresa,

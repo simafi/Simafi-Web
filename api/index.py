@@ -1,19 +1,26 @@
 import os
 import sys
 import logging
+import traceback
 from pathlib import Path
 
 
 # Repo root: .../api/index.py -> repo/
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BACKEND_DIR = REPO_ROOT / "backend"
-TRIBUTARIO_DIR = BACKEND_DIR / "tributario"
 
 # Django necesita encontrar:
 # - `urls.py` (ROOT_URLCONF='urls') dentro de backend/
 # - paquete `tributario` dentro de backend/
-sys.path.insert(0, str(BACKEND_DIR))
-sys.path.insert(0, str(TRIBUTARIO_DIR))
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+# Importar tributario_app requiere que su padre esté en el path
+# BACKEND_DIR ya contiene a tributario/ y tributario/ contiene tributario_app/
+# Por seguridad, nos aseguramos que el directorio de la app específica esté disponible
+TRIBUTARIO_DIR = BACKEND_DIR / "tributario"
+if str(TRIBUTARIO_DIR) not in sys.path:
+    sys.path.insert(0, str(TRIBUTARIO_DIR))
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tributario.tributario_app.settings")
 
@@ -54,7 +61,14 @@ _log_startup_context()
 
 from django.core.wsgi import get_wsgi_application  # noqa: E402
 
-# Vercel's static analyzer expects a top-level binding like `app = ...` (not only inside try/if).
-app = get_wsgi_application()
-application = app
+# Vercel's static analyzer expects a top-level binding like `app = ...`
+# Keep imports outside try/except; only wrap initialization for stderr diagnostics.
+try:
+    app = get_wsgi_application()
+    application = app
+except Exception:
+    print("--- VERCEL STARTUP ERROR ---", file=sys.stderr)
+    traceback.print_exc(file=sys.stderr)
+    print("----------------------------", file=sys.stderr)
+    raise
 
