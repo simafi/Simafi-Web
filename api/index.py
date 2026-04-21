@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 from pathlib import Path
 
 
@@ -18,5 +19,44 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tributario.tributario_app.setti
 
 from django.core.wsgi import get_wsgi_application  # noqa: E402
 
-app = get_wsgi_application()
+logger = logging.getLogger("vercel.entrypoint")
+
+if not logging.getLogger().handlers:
+    logging.basicConfig(
+        level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+        format="%(levelname)s %(name)s: %(message)s",
+    )
+
+
+def _log_startup_context() -> None:
+    """
+    Logs non-secret hints to help diagnose Vercel cold-start crashes.
+    Never log full connection strings.
+    """
+    keys = [
+        "VERCEL",
+        "DJANGO_VERCEL",
+        "DJANGO_DEBUG",
+        "DJANGO_SETTINGS_MODULE",
+        "DJANGO_DATABASE_URL",
+        "DATABASE_URL",
+        "POSTGRES_URL",
+        "PRISMA_DATABASE_URL",
+        "DJANGO_DB_HOST",
+        "DJANGO_DB_NAME",
+        "DJANGO_DB_USER",
+    ]
+    present = {k: ("set" if (os.environ.get(k) or "").strip() else "missing") for k in keys}
+    sk = (os.environ.get("DJANGO_SECRET_KEY") or "").strip()
+    present["DJANGO_SECRET_KEY"] = f"len={len(sk)}" if sk else "missing"
+    logger.warning("Vercel Django startup context: %s", present)
+
+
+try:
+    _log_startup_context()
+    app = get_wsgi_application()
+except Exception:
+    # Vercel surfaces stderr in Function logs; this makes 500s actionable.
+    logger.exception("Failed to initialize Django WSGI application")
+    raise
 
