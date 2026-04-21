@@ -54,9 +54,7 @@ _log_startup_context()
 
 from django.core.wsgi import get_wsgi_application  # noqa: E402
 
-try:
-    app = get_wsgi_application()
-except Exception:
-    logger.exception("Failed to initialize Django WSGI application")
-    raise
+# Vercel's static analyzer expects a top-level binding like `app = ...` (not only inside try/if).
+app = get_wsgi_application()
+application = app
 
