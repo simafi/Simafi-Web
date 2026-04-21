@@ -120,17 +120,16 @@ def login_principal(request):
                     request.session['usuario'] = user.usuario
                     request.session['empresa'] = user.empresa or ''
                     request.session['municipio_id'] = user.municipio_id
-                    request.session['nombre'] = user.nombre or user.usuario
-                    request.session['es_superusuario'] = bool(getattr(user, 'es_superusuario', False))
-                    limpiar_accesos_modulo_en_sesion(request)
-
                     try:
                         user.record_successful_login()
                     except Exception:
                         pass
 
-                    messages.success(request, f'Bienvenido {user.nombre or user.usuario}')
                     dest = _siguiente_seguro(next_raw)
+                    if dest and dest.startswith('/catastro/'):
+                        sincronizar_sesion_catastro(request)
+
+                    messages.success(request, f'Bienvenido {user.nombre or user.usuario}')
                     if dest:
                         return redirect(dest)
                     return redirect('modules_core:menu_principal')
