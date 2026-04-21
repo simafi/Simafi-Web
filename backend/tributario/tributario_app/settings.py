@@ -433,7 +433,14 @@ LOGGING = {
 }
 
 # Configuración de sesiones
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+#
+# En Vercel + Postgres "nuevo", es común desplegar antes de correr migraciones.
+# Si `SESSION_ENGINE` es DB, Django intentará leer/escribir `django_session` y puede tumbar
+# cualquier request que toque sesión (incluido el menú principal).
+if _env_bool('VERCEL', False) or _env_bool('DJANGO_VERCEL', False):
+    SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+else:
+    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'simafiweb_sessionid'
 SESSION_COOKIE_AGE = 3600  # 1 hora
 SESSION_SAVE_EVERY_REQUEST = True
