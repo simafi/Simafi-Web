@@ -17,8 +17,6 @@ sys.path.insert(0, str(TRIBUTARIO_DIR))
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tributario.tributario_app.settings")
 
-from django.core.wsgi import get_wsgi_application  # noqa: E402
-
 logger = logging.getLogger("vercel.entrypoint")
 
 if not logging.getLogger().handlers:
@@ -52,11 +50,9 @@ def _log_startup_context() -> None:
     logger.warning("Vercel Django startup context: %s", present)
 
 
-try:
-    _log_startup_context()
-    app = get_wsgi_application()
-except Exception:
-    # Vercel surfaces stderr in Function logs; this makes 500s actionable.
-    logger.exception("Failed to initialize Django WSGI application")
-    raise
+_log_startup_context()
+
+from django.core.wsgi import get_wsgi_application  # noqa: E402
+
+app = get_wsgi_application()
 
