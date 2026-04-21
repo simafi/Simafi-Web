@@ -18,8 +18,56 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
+from django.http import HttpResponse, FileResponse, JsonResponse
+from django.db import connection
+from django.db.utils import DatabaseError, OperationalError
+import os
+
+def serve_favicon(request):
+    """Servir el favicon desde los archivos estáticos"""
+    favicon_path = None
+    possible_paths = [
+        os.path.join(settings.BASE_DIR, 'venv', 'Scripts', 'core', 'static', 'favicon.ico'),
+        os.path.join(settings.BASE_DIR, 'modules', 'core', 'static', 'favicon.ico'),
+        os.path.join(settings.BASE_DIR, 'static', 'favicon.ico'),
+    ]
+    for path_option in possible_paths:
+        if os.path.exists(path_option):
+            favicon_path = path_option
+            break
+    if favicon_path and os.path.exists(favicon_path):
+        try:
+            return FileResponse(open(favicon_path, 'rb'), content_type='image/x-icon')
+        except Exception:
+            pass
+    return HttpResponse(status=204)
+
+def healthz(request):
+    """Endpoint liviano para validar despliegues en Vercel"""
+    db = getattr(settings, "DATABASES", {}).get("default", {})
+    return JsonResponse({
+        "ok": True,
+        "debug": bool(settings.DEBUG),
+        "database": {"engine": db.get("ENGINE"), "host": db.get("HOST")},
+    })
+
+def dbcheck(request):
+    """Prueba real de conectividad a Postgres (SELECT 1)"""
+    info = {"ok": False}
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            one = cursor.fetchone()
+        info["ok"] = bool(one and one[0] == 1)
+        return JsonResponse(info)
+    except Exception as exc:
+        info["error"] = str(exc)
+        return JsonResponse(info, status=500)
 
 urlpatterns = [
+    path("__healthz", healthz, name="healthz"),
+    path("__dbcheck", dbcheck, name="dbcheck"),
+    path('favicon.ico', serve_favicon, name='favicon'),
     path('admin/', admin.site.urls),
     
     # Sistema modular - Ruta raíz
