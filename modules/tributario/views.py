@@ -145,7 +145,7 @@ def maestro_negocios(request):
     # Si hay parámetros de regreso, cargar el negocio completo
     if rtm_regreso and expe_regreso:
         try:
-            from tributario_app.models import Negocio
+            from tributario.models import Negocio
             negocio_existente = Negocio.objects.get(
                 empresa=empresa_regreso,
                 rtm=rtm_regreso,
@@ -188,7 +188,7 @@ def maestro_negocios(request):
     
     # Obtener actividades económicas desde la tabla actividad
     try:
-        from tributario_app.models import Actividad
+        from tributario.models import Actividad
         actividades = Actividad.objects.filter(empresa=municipio_codigo).order_by('codigo')
         actividades_list = [
             {'codigo': act.codigo, 'descripcion': act.descripcion}
@@ -216,7 +216,7 @@ def maestro_negocios(request):
 def handle_salvar_negocio(request, data):
     """Maneja el guardado de un negocio"""
     try:
-        from tributario_app.models import Negocio
+        from tributario.models import Negocio
         
         # Función auxiliar para truncar campos según max_length
         def truncar_campo(valor, max_length):
@@ -306,7 +306,7 @@ def handle_salvar_negocio(request, data):
 def handle_eliminar_negocio(request, data):
     """Maneja la eliminación de un negocio"""
     try:
-        from tributario_app.models import Negocio
+        from tributario.models import Negocio
         
         # Obtener datos del negocio
         negocio_data = data.get('negocio', {})
@@ -355,7 +355,7 @@ def oficina_crud(request):
     
     if request.method == 'POST':
         try:
-            from tributario_app.models import Oficina
+            from tributario.models import Oficina
             
             accion = request.POST.get('accion')
             empresa = request.POST.get('empresa', '')
@@ -414,7 +414,7 @@ def oficina_crud(request):
     # Cargar oficinas si hay un municipio seleccionado
     if municipio_codigo:
         try:
-            from tributario_app.models import Oficina
+            from tributario.models import Oficina
             oficinas = Oficina.objects.filter(empresa=municipio_codigo).order_by('codigo')
             empresa_filtro = municipio_codigo
         except Exception as e:
@@ -643,7 +643,7 @@ def rubros_crud(request):
     
     if request.method == 'POST':
         try:
-            from tributario_app.models import Rubro, Actividad
+            from tributario.models import Rubro, Actividad
             
             action = request.POST.get('action')
             empresa = request.POST.get('empresa', '')
@@ -719,7 +719,7 @@ def rubros_crud(request):
     # Cargar rubros si hay un municipio seleccionado
     if municipio_codigo:
         try:
-            from tributario_app.models import Rubro, Actividad
+            from tributario.models import Rubro, Actividad
             rubros = Rubro.objects.filter(empresa=municipio_codigo).order_by('codigo')
             actividades = Actividad.objects.filter(empresa=municipio_codigo).order_by('codigo')
             empresa_filtro = municipio_codigo
@@ -768,7 +768,7 @@ def buscar_negocio_ajax(request):
         print(f"🔍 Buscando negocio: empre={municipio_codigo}, rtm={rtm}, expe={expe}")
         
         if rtm and expe:
-            from tributario_app.models import Negocio
+            from tributario.models import Negocio
             try:
                 negocio = Negocio.objects.get(
                     empre=municipio_codigo,

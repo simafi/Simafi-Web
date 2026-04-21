@@ -66,7 +66,7 @@ def simple_render(request):
 def declaracion_volumen(request):
     """Vista para declaración de volumen de ventas"""
     from tributario_app.forms import DeclaracionVolumenForm
-    from tributario_app.models import DeclaracionVolumen, Negocio, TarifasICS, TasasDecla, Anos
+    from tributario.models import DeclaracionVolumen, Negocio, TarifasICS, TasasDecla, Anos
     from django.http import JsonResponse
     import json
     
@@ -118,7 +118,7 @@ def declaracion_volumen(request):
             
             # Obtener tasas de declaración vinculadas al negocio
             try:
-                from tributario_app.models import Rubro
+                from tributario.models import Rubro
                 # Filtrar por empresa, rtm, expe y año (si está disponible)
                 filtros_tasas = {
                     'empresa': municipio_codigo,
@@ -273,7 +273,7 @@ def declaracion_volumen(request):
 def configurar_tasas_negocio(request):
     """Vista para configurar las tasas de un negocio específico"""
     # Importar modelos necesarios
-    from tributario_app.models import Negocio, TarifasICS, Rubro, Tarifas
+    from tributario.models import Negocio, TarifasICS, Rubro, Tarifas
     from tributario_app.forms import TarifasICSForm
     
     # Obtener el municipio del usuario desde la sesión
@@ -465,7 +465,7 @@ def obtener_tarifas_rubro(request):
             })
         
         # Buscar tarifas del rubro
-        from tributario_app.models import Tarifas
+        from tributario.models import Tarifas
         from datetime import datetime
         
         ano_vigente = datetime.now().year
@@ -512,7 +512,7 @@ def validar_plan_arbitrio(request):
     try:
         import json
         from django.http import JsonResponse
-        from tributario_app.models import PlanArbitrio
+        from tributario.models import PlanArbitrio
         
         # Obtener datos del request
         data = json.loads(request.body)

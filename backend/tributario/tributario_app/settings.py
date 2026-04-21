@@ -149,6 +149,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'tributario_app.middleware.SessionSyncMiddleware',
     'core.middleware.ModuloAccesoMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

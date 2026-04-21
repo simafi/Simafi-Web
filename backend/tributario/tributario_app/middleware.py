@@ -27,3 +27,35 @@ class NgrokCsrfTrustMiddleware:
                     if origin not in settings.CSRF_TRUSTED_ORIGINS:
                         settings.CSRF_TRUSTED_ORIGINS.append(origin)
         return self.get_response(request)
+
+
+class SessionSyncMiddleware:
+    """
+    Middleware para sincronizar claves de sesión de multitenencia.
+    Asegura que 'empresa', 'municipio_codigo' y 'catastro_empresa' tengan el mismo valor.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if not hasattr(request, 'session'):
+            return self.get_response(request)
+
+        # Buscar el código de empresa en las distintas claves posibles
+        empresa = request.session.get('empresa') or \
+                  request.session.get('municipio_codigo') or \
+                  request.session.get('catastro_empresa')
+
+        if empresa:
+            # Sincronizar todas las claves para que todas las vistas vean lo mismo
+            modified = False
+            for key in ['empresa', 'municipio_codigo', 'catastro_empresa']:
+                if request.session.get(key) != empresa:
+                    request.session[key] = empresa
+                    modified = True
+            
+            # Si se modificó la sesión, asegurar que se guarde
+            if modified:
+                request.session.modified = True
+
+        return self.get_response(request)

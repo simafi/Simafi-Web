@@ -6,7 +6,7 @@ def buscar_actividad_ajax(request):
     """Vista AJAX para buscar actividad por empresa y código (cuenta)"""
     # Importar el modelo al inicio para evitar problemas de scope
     try:
-        from tributario_app.models import Actividad
+        from tributario.models import Actividad
     except ImportError:
         try:
             from tributario.models import Actividad
@@ -984,7 +984,7 @@ def buscar_actividades_por_descripcion_ajax(request):
             try:
                 # Intentar importar desde diferentes ubicaciones
                 try:
-                    from tributario_app.models import Actividad
+                    from tributario.models import Actividad
                 except ImportError:
                     try:
                         from tributario.models import Actividad

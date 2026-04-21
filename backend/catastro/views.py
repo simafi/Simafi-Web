@@ -279,7 +279,7 @@ def actualizar_impuesto_tasas_municipales(bdcata1, impuesto_valor, empresa_codig
                 from tributario.models import Rubro
             except ImportError:
                 try:
-                    from tributario_app.models import Rubro
+                    from tributario.models import Rubro
                 except ImportError:
                     Rubro = None
             
@@ -343,7 +343,7 @@ def calcular_tasas_municipales_automatico(bdcata1, empresa_codigo):
             from tributario.models import Tarifas, PlanArbitrio
         except ImportError:
             try:
-                from tributario_app.models import Tarifas, PlanArbitrio
+                from tributario.models import Tarifas, PlanArbitrio
             except ImportError:
                 logger.warning("No se pudieron importar Tarifas y PlanArbitrio")
                 return {'calculadas': 0, 'errores': ['No se pudieron importar Tarifas y PlanArbitrio']}
@@ -7460,7 +7460,7 @@ def registrar_bien_inmueble(request):
                         except ImportError:
                             # Intentar alternativa
                             try:
-                                from tributario_app.models import Rubro
+                                from tributario.models import Rubro
                             except ImportError:
                                 raise ImportError("No se pudo importar Rubro")
                         

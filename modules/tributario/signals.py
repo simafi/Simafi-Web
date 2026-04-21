@@ -16,7 +16,7 @@ def register_signals():
         from tributario.models import TransaccionesIcs
     except ImportError:
         try:
-            from tributario_app.models import TransaccionesIcs
+            from tributario.models import TransaccionesIcs
         except ImportError:
             # No se puede importar el modelo, no registrar signals
             return

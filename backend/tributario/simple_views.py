@@ -458,7 +458,7 @@ def declaracion_volumen(request):
                             try:
                                 # Importar modelos necesarios - ESTOS DEBEN ESTAR DISPONIBLES
                                 from tributario.models import TasasDecla, Tarifas, PlanArbitrio, Rubro
-                                from tributario_app.models import TarifasICS
+                                from tributario.models import TarifasICS
                                 from decimal import Decimal
                                 
                                 print(f"[CREAR Y CALCULAR TASAS] ✅ Modelos importados correctamente")

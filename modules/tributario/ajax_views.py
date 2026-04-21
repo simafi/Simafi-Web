@@ -53,7 +53,7 @@ def buscar_actividad_ajax(request):
         from tributario.models import Actividad
     except ImportError:
         try:
-            from tributario_app.models import Actividad
+            from tributario.models import Actividad
         except ImportError:
             return JsonResponse({
                 'exito': False,
@@ -125,7 +125,7 @@ def buscar_oficina_ajax(request):
             
             # Buscar en la tabla oficina
             try:
-                from tributario_app.models import Oficina
+                from tributario.models import Oficina
                 oficina = Oficina.objects.get(empresa=empresa, codigo=codigo)
                 
                 return JsonResponse({
@@ -171,7 +171,7 @@ def buscar_rubro_ajax(request):
     if request.method == 'POST':
         try:
             # Importar el modelo al inicio
-            from tributario_app.models import Rubro
+            from tributario.models import Rubro
             
             empresa = request.POST.get('empresa', '').strip()
             codigo = request.POST.get('codigo', '').strip()
@@ -274,7 +274,7 @@ def buscar_actividades_por_descripcion_ajax(request):
             try:
                 # Intentar importar desde diferentes ubicaciones
                 try:
-                    from tributario_app.models import Actividad
+                    from tributario.models import Actividad
                 except ImportError:
                     try:
                         from tributario.models import Actividad
@@ -356,7 +356,7 @@ def calcular_tasas_plan_arbitrio(request):
     """
     if request.method == 'POST':
         try:
-            from tributario_app.models import TasasDecla, Tarifas, PlanArbitrio, DeclaracionVolumen
+            from tributario.models import TasasDecla, Tarifas, PlanArbitrio, DeclaracionVolumen
             from decimal import Decimal
             
             data = request.POST if request.POST else {}
