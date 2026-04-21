@@ -54,5 +54,9 @@ _log_startup_context()
 
 from django.core.wsgi import get_wsgi_application  # noqa: E402
 
-app = get_wsgi_application()
+try:
+    app = get_wsgi_application()
+except Exception:
+    logger.exception("Failed to initialize Django WSGI application")
+    raise
 

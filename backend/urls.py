@@ -6,7 +6,7 @@ The `urlpatterns` list routes URLs to views. For more information please see:
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.http import HttpResponse, FileResponse
+from django.http import HttpResponse, FileResponse, JsonResponse
 from django.conf import settings
 from django.conf.urls.static import static
 import os
@@ -36,7 +36,36 @@ def serve_favicon(request):
     # Si no se encuentra, retornar respuesta vacía (204 No Content)
     return HttpResponse(status=204)
 
+
+def healthz(request):
+    """
+    Endpoint liviano para validar despliegues en Vercel sin depender del menú principal
+    (que puede tocar DB/sesiones y ocultar el error real detrás de FUNCTION_INVOCATION_FAILED).
+    """
+    db = getattr(settings, "DATABASES", {}).get("default", {})
+    db_name = (db.get("NAME") or "").strip()
+    db_host = (db.get("HOST") or "").strip()
+    db_user = (db.get("USER") or "").strip()
+    db_port = str(db.get("PORT") or "").strip()
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "debug": bool(settings.DEBUG),
+            "allowed_hosts_configured": bool(getattr(settings, "ALLOWED_HOSTS", [])),
+            "database": {
+                "engine": db.get("ENGINE"),
+                "name_set": bool(db_name),
+                "host_set": bool(db_host),
+                "user_set": bool(db_user),
+                "port": db_port or None,
+            },
+        }
+    )
+
+
 urlpatterns = [
+    path("__healthz", healthz, name="healthz"),
     # Favicon - debe estar antes de otras rutas para evitar 404
     path('favicon.ico', serve_favicon, name='favicon'),
     
