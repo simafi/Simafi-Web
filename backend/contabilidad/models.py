@@ -47,7 +47,7 @@ class EjercicioFiscal(ContabilidadBaseModel):
         ('EN_CIERRE', 'En proceso de cierre'),
     ]
 
-    anio = models.IntegerField(unique=True, verbose_name="Año fiscal")
+    anio = models.IntegerField(verbose_name="Año fiscal")
     descripcion = models.CharField(max_length=100, verbose_name="Descripción")
     fecha_inicio = models.DateField(verbose_name="Fecha de inicio")
     fecha_fin = models.DateField(verbose_name="Fecha de fin")
@@ -62,6 +62,7 @@ class EjercicioFiscal(ContabilidadBaseModel):
         verbose_name = "Ejercicio Fiscal"
         verbose_name_plural = "Ejercicios Fiscales"
         ordering = ['-anio']
+        unique_together = ('anio', 'empresa')
 
 
 class PeriodoContable(ContabilidadBaseModel):

@@ -30,4 +30,6 @@ def apply_sql(sql_file):
         print(f"ERROR: {e}")
 
 if __name__ == "__main__":
-    apply_sql(r'c:\simafiweb\scratch\contabilidad_schema.sql')
+    import sys
+    sql_file = sys.argv[1] if len(sys.argv) > 1 else r'c:\simafiweb\scratch\contabilidad_schema.sql'
+    apply_sql(sql_file)

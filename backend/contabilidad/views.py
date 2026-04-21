@@ -1611,14 +1611,18 @@ def ejercicio_crear(request):
             ejercicio.created_by = request.session.get('usuario', '')
             ejercicio.save()
 
-            # Crear 12 períodos mensuales automáticamente
+            # Crear 12 períodos mensuales automáticamente (Nombres en español garantizados)
+            MESES_ES = [
+                '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ]
             import calendar
             for mes in range(1, 13):
                 ultimo_dia = calendar.monthrange(ejercicio.anio, mes)[1]
                 PeriodoContable.objects.create(
                     ejercicio=ejercicio,
                     numero=mes,
-                    nombre=f'{calendar.month_name[mes]} {ejercicio.anio}',
+                    nombre=f'{MESES_ES[mes]} {ejercicio.anio}',
                     fecha_inicio=f'{ejercicio.anio}-{mes:02d}-01',
                     fecha_fin=f'{ejercicio.anio}-{mes:02d}-{ultimo_dia:02d}',
                     estado='ABIERTO',
