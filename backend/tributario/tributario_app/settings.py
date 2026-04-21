@@ -185,19 +185,47 @@ def _parse_database_url(url: str) -> dict:
         raise ImproperlyConfigured("DATABASE_URL debe ser postgres/postgresql")
 
     qs = parse_qs(parsed.query or "")
-    return {
+    dbname = unquote((parsed.path or "").lstrip("/")).strip()
+    if not dbname:
+        # Algunos proveedores omiten el path o dejan "/" (dbname vacío).
+        dbname = (qs.get("dbname", [""])[0] or qs.get("database", [""])[0] or "").strip()
+    if not dbname:
+        dbname = "postgres"
+
+    host = (parsed.hostname or "").strip()
+    port = str(parsed.port or 5432)
+    if not host:
+        raise ImproperlyConfigured("DATABASE_URL inválida: falta el host.")
+
+    options = {}
+    # Supabase/Vercel Postgres suelen requerir SSL.
+    if host.endswith("supabase.com") or host.endswith("supabase.co"):
+        options["sslmode"] = "require"
+
+    pgbouncer = qs.get("pgbouncer", ["false"])[0].lower() in ("1", "true", "yes", "on")
+    # Pooler de Supabase (puerto 6543) normalmente implica transaction pooling.
+    if (not pgbouncer) and ("pooler.supabase.com" in host) and port == "6543":
+        pgbouncer = True
+
+    cfg = {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": unquote((parsed.path or "").lstrip("/")),
+        "NAME": dbname,
         "USER": unquote(parsed.username or ""),
         "PASSWORD": unquote(parsed.password or ""),
-        "HOST": parsed.hostname or "",
-        "PORT": str(parsed.port or 5432),
+        "HOST": host,
+        "PORT": port,
         # Si se usa pgbouncer, conviene no reusar conexiones mucho tiempo.
-        "CONN_MAX_AGE": 0 if (qs.get("pgbouncer", ["false"])[0].lower() in ("1", "true", "yes", "on")) else 60,
+        "CONN_MAX_AGE": 0 if pgbouncer else 60,
     }
+    if options:
+        cfg["OPTIONS"] = options
+    return cfg
 
 
-_database_url = (os.environ.get("DATABASE_URL") or "").strip().strip('"').strip("'")
+_database_url = (
+    (os.environ.get("DJANGO_DATABASE_URL") or "").strip().strip('"').strip("'")
+    or (os.environ.get("DATABASE_URL") or "").strip().strip('"').strip("'")
+)
 
 if _database_url:
     DATABASES = {"default": _parse_database_url(_database_url)}
@@ -215,11 +243,12 @@ else:
     }
 
 if not DEBUG:
-    missing = [k for k in ('DJANGO_DB_NAME', 'DJANGO_DB_USER', 'DJANGO_DB_PASSWORD', 'DJANGO_DB_HOST') if not (os.environ.get(k) or '').strip()]
-    if missing:
-        raise ImproperlyConfigured(
-            'Faltan variables de entorno de base de datos para producción: ' + ', '.join(missing)
-        )
+    if not _database_url:
+        missing = [k for k in ('DJANGO_DB_NAME', 'DJANGO_DB_USER', 'DJANGO_DB_PASSWORD', 'DJANGO_DB_HOST') if not (os.environ.get(k) or '').strip()]
+        if missing:
+            raise ImproperlyConfigured(
+                'Faltan variables de entorno de base de datos para producción: ' + ', '.join(missing)
+            )
 
 
 # Password validation
