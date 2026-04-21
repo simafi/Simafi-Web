@@ -444,3 +444,30 @@ CREATE TABLE IF NOT EXISTS "bitacoracatastro" (
     "valorantes" DECIMAL(20,4),
     "valoractual" DECIMAL(20,4)
 );
+
+-- =====================================================
+-- 8. PRESUPUESTOS MODULE
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS "mod_presupuestos_partida" (
+    "id" SERIAL PRIMARY KEY,
+    "codigo" VARCHAR(20) NOT NULL,
+    "nombre" VARCHAR(200) NOT NULL,
+    "presupuesto_inicial" DECIMAL(18,2) DEFAULT 0.00,
+    "modificaciones" DECIMAL(18,2) DEFAULT 0.00,
+    "presupuesto_vigente" DECIMAL(18,2) DEFAULT 0.00,
+    "ejecutado" DECIMAL(18,2) DEFAULT 0.00,
+    "disponible" DECIMAL(18,2) DEFAULT 0.00
+);
+
+-- =====================================================
+-- 9. TESORERIA MODULE
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS "mod_tesoreria_caja" (
+    "id" SERIAL PRIMARY KEY,
+    "cod_caja" VARCHAR(10) NOT NULL,
+    "nombre" VARCHAR(100) NOT NULL,
+    "responsable" VARCHAR(100),
+    "estado" VARCHAR(1) DEFAULT 'A'
+);

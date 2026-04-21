@@ -1,22 +1,16 @@
 import os
 import sys
 import logging
+import traceback
 from pathlib import Path
-
 
 # Repo root: .../api/index.py -> repo/
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BACKEND_DIR = REPO_ROOT / "backend"
 
-# Django necesita encontrar:
-# - `urls.py` (ROOT_URLCONF='urls') dentro de backend/
-# - paquete `tributario` dentro de backend/
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-# Importar tributario_app requiere que su padre esté en el path
-# BACKEND_DIR ya contiene a tributario/ y tributario/ contiene tributario_app/
-# Por seguridad, nos aseguramos que el directorio de la app específica esté disponible
 TRIBUTARIO_DIR = BACKEND_DIR / "tributario"
 if str(TRIBUTARIO_DIR) not in sys.path:
     sys.path.insert(0, str(TRIBUTARIO_DIR))
@@ -31,38 +25,32 @@ if not logging.getLogger().handlers:
         format="%(levelname)s %(name)s: %(message)s",
     )
 
-
 def _log_startup_context() -> None:
-    """
-    Logs non-secret hints to help diagnose Vercel cold-start crashes.
-    Never log full connection strings.
-    """
     keys = [
-        "VERCEL",
-        "DJANGO_VERCEL",
-        "DJANGO_DEBUG",
-        "DJANGO_SETTINGS_MODULE",
-        "DJANGO_DATABASE_URL",
-        "DATABASE_URL",
-        "POSTGRES_URL",
-        "PRISMA_DATABASE_URL",
-        "DJANGO_DB_HOST",
-        "DJANGO_DB_NAME",
-        "DJANGO_DB_USER",
+        "VERCEL", "DJANGO_VERCEL", "DJANGO_DEBUG", "DJANGO_SETTINGS_MODULE",
+        "DATABASE_URL", "POSTGRES_URL", "DJANGO_DB_HOST"
     ]
     present = {k: ("set" if (os.environ.get(k) or "").strip() else "missing") for k in keys}
     sk = (os.environ.get("DJANGO_SECRET_KEY") or "").strip()
     present["DJANGO_SECRET_KEY"] = f"len={len(sk)}" if sk else "missing"
     logger.warning("Vercel Django startup context: %s", present)
 
-
 _log_startup_context()
 
-from django.core.wsgi import get_wsgi_application  # noqa: E402
+def _create_error_handler(error_msg: str):
+    def error_handler(environ, start_response):
+        status = '500 Internal Server Error'
+        headers = [('Content-type', 'text/plain; charset=utf-8')]
+        start_response(status, headers)
+        return [error_msg.encode('utf-8')]
+    return error_handler
 
-# Vercel's static analyzer expects a top-level binding like `app = ...`
-# IMPORTANT: keep this assignment at module scope (not inside try/if), otherwise Vercel
-# build fails with: "Could not find a top-level app/application/handler".
-app = get_wsgi_application()
+try:
+    from django.core.wsgi import get_wsgi_application
+    app = get_wsgi_application()
+except Exception:
+    error_traceback = traceback.format_exc()
+    print(f"CRITICAL: Django initialization failed:\n{error_traceback}", file=sys.stderr)
+    app = _create_error_handler(f"SIMAFI Startup Error\n\n{error_traceback}")
+
 application = app
-

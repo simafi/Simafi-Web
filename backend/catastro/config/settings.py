@@ -99,20 +99,51 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bdsimafipy',
-        'USER': 'root',        # Cambia por tu usuario de MySQL
-        'PASSWORD': 'sandres', # Cambia por tu contraseña de MySQL
-        'HOST': 'localhost',
-        'PORT': '3307',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'charset': 'latin1',
-        },
+def _parse_database_url(url: str) -> dict:
+    from urllib.parse import urlparse, parse_qs, unquote
+    from django.core.exceptions import ImproperlyConfigured
+    parsed = urlparse(url)
+    if not (parsed.scheme or "").lower().startswith("postgres"):
+        raise ImproperlyConfigured("DATABASE_URL debe ser postgresql.")
+    qs = parse_qs(parsed.query or "")
+    dbname = unquote((parsed.path or "").lstrip("/")).strip() or "postgres"
+    host = (parsed.hostname or "").strip()
+    port = str(parsed.port or 5432)
+    options = {}
+    if host.endswith("supabase.com") or host.endswith("supabase.co"):
+        options["sslmode"] = "require"
+    pgbouncer = qs.get("pgbouncer", ["false"])[0].lower() in ("1", "true", "yes", "on")
+    cfg = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": dbname,
+        "USER": unquote(parsed.username or ""),
+        "PASSWORD": unquote(parsed.password or ""),
+        "HOST": host,
+        "PORT": port,
+        "CONN_MAX_AGE": 0 if pgbouncer else 60,
     }
-}
+    if options:
+        cfg["OPTIONS"] = options
+    return cfg
+
+_db_url = os.environ.get('DATABASE_URL', '').strip()
+if _db_url:
+    DATABASES = {'default': _parse_database_url(_db_url)}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'bdsimafipy',
+            'USER': 'root',
+            'PASSWORD': 'sandres',
+            'HOST': 'localhost',
+            'PORT': '3307',
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                'charset': 'latin1',
+            },
+        }
+    }
 
 
 # Password validation
