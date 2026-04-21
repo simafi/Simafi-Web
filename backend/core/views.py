@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from urllib.parse import quote
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -7,6 +8,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib import messages
 from django.http import JsonResponse, Http404
 from django.urls import reverse
+from django.db import DatabaseError, OperationalError, ProgrammingError
 from django.db.models import Prefetch
 
 from core.models import Municipio
@@ -20,6 +22,8 @@ from core.module_access import (
 
 from core.forms_modular import UsuarioSistemaForm, RolForm
 from usuarios.models import Usuario, UsuarioRol, Rol
+
+logger = logging.getLogger(__name__)
 
 
 def _password_login_valida(plain: str, stored: str) -> bool:
@@ -161,7 +165,15 @@ def acceso_modulo(request, codigo):
 
 
 def _hay_superusuario_en_bd():
-    return Usuario.objects.filter(es_superusuario=True, is_active=True).exists()
+    """
+    En despliegues nuevos (p.ej. Supabase sin migraciones) la tabla puede no existir aún.
+    No debe tumbar el menú principal ni la función serverless.
+    """
+    try:
+        return Usuario.objects.filter(es_superusuario=True, is_active=True).exists()
+    except (ProgrammingError, OperationalError, DatabaseError) as exc:
+        logger.warning("No se pudo consultar superusuarios en BD (¿migraciones pendientes?): %s", exc)
+        return False
 
 
 def _requiere_acceso_admin_usuarios(request):

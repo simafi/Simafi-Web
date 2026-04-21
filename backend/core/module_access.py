@@ -2,10 +2,15 @@
 """
 Control de acceso por módulo: prefijos URL, sesión y sincronización con Catastro.
 """
+import logging
 from django.contrib.auth.hashers import check_password
 from urllib.parse import quote
 
+from django.db import DatabaseError, OperationalError, ProgrammingError
+
 from usuarios.models import Usuario, UsuarioAccesoModulo
+
+logger = logging.getLogger(__name__)
 
 # Orden mostrado en formularios de administración
 MODULOS_SISTEMA = (
@@ -32,7 +37,12 @@ def sincronizar_privilegios_modular_desde_bd(request):
     uid = request.session.get('user_id')
     if not uid:
         return True
-    user = Usuario.objects.filter(pk=uid, is_active=True).first()
+    try:
+        user = Usuario.objects.filter(pk=uid, is_active=True).first()
+    except (ProgrammingError, OperationalError, DatabaseError) as exc:
+        logger.warning("No se pudo sincronizar privilegios (¿migraciones pendientes?): %s", exc)
+        request.session.flush()
+        return False
     if not user:
         request.session.flush()
         return False
@@ -83,11 +93,15 @@ def usuario_puede_acceso_modulo(request, codigo):
         return False
     if request.session.get('es_superusuario'):
         return True
-    return UsuarioAccesoModulo.objects.filter(
-        usuario_id=uid,
-        codigo_modulo=codigo,
-        is_active=True,
-    ).exists()
+    try:
+        return UsuarioAccesoModulo.objects.filter(
+            usuario_id=uid,
+            codigo_modulo=codigo,
+            is_active=True,
+        ).exists()
+    except (ProgrammingError, OperationalError, DatabaseError) as exc:
+        logger.warning("No se pudo verificar acceso al módulo (¿migraciones pendientes?): %s", exc)
+        return False
 
 
 def session_key_modulo(codigo):
