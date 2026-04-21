@@ -72,15 +72,24 @@ def login_principal(request):
                 except Municipio.DoesNotExist:
                     err = 'Municipio no válido'
                 else:
-                    user = Usuario.objects.filter(
-                        usuario=usuario,
-                        empresa=municipio.codigo,
-                        is_active=True,
-                    ).first()
+                    codigo_mun = (municipio.codigo or '').strip()
+                    # Compatibilidad Postgres/MySQL: algunos códigos vienen sin ceros a la izquierda
+                    # pero el usuario se guardó con 4 dígitos (p.ej. "301" vs "0301").
+                    codigo_candidates = {codigo_mun}
+                    if codigo_mun.isdigit():
+                        codigo_candidates.add(codigo_mun.zfill(4))
+
+                    user = (
+                        Usuario.objects.filter(
+                            usuario__iexact=usuario,
+                            empresa__in=list(codigo_candidates),
+                            is_active=True,
+                        ).first()
+                    )
                     if not user:
                         err = 'Credenciales incorrectas o usuario no pertenece a ese municipio.'
             else:
-                sup = Usuario.objects.filter(usuario=usuario, es_superusuario=True, is_active=True)
+                sup = Usuario.objects.filter(usuario__iexact=usuario, es_superusuario=True, is_active=True)
                 n = sup.count()
                 if n == 1:
                     user = sup.first()

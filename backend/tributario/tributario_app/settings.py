@@ -412,13 +412,14 @@ if not DEBUG:
     # Para tiles (OSM) y recursos cross-origin, no bloquear el Referer completamente.
     # OSM bloquea tráfico sin Referer; esta política envía el origen en requests cross-origin.
     SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
-    X_FRAME_OPTIONS = 'DENY'
+    X_FRAME_OPTIONS = 'SAMEORIGIN'
 
     _csrf_origins = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').strip()
     if _csrf_origins:
         CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
     else:
-        CSRF_TRUSTED_ORIGINS = []
+        # Vercel: Aceptar todos los subdominios de .vercel.app por defecto en producción
+        CSRF_TRUSTED_ORIGINS = ['https://*.vercel.app']
 
     # Vercel: si no se definió CSRF explícitamente, intentar inferir el origen HTTPS desde VERCEL_URL.
     if not CSRF_TRUSTED_ORIGINS and (_env_bool('VERCEL', False) or _env_bool('DJANGO_VERCEL', False)):
