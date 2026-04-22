@@ -130,9 +130,22 @@ def gestionar_mora_bienes(request):
     from django.contrib import messages
     from django.db.models import Sum
     from tributario.models import TransaccionesBienesInmuebles, Rubro
-    from catastro.models import BDCata1, TasasMunicipales
     from calendar import monthrange
     import datetime
+
+    try:
+        from catastro.models import BDCata1, TasasMunicipales
+    except Exception as e:
+        # En producción (Vercel/Supabase) puede fallar si el módulo `catastro` no está
+        # disponible/cargado o si hay conflictos de registro de apps.
+        BDCata1 = None
+        TasasMunicipales = None
+        logger.exception("Error importando modelos de catastro para BI: %s", e)
+        messages.error(
+            request,
+            "❌ No se pudo cargar el módulo de Catastro requerido para Bienes Inmuebles. "
+            "En producción verifique que `catastro` esté desplegado y que las tablas existan en Supabase.",
+        )
 
     # En producción pueden existir distintas llaves de sesión según el flujo/login.
     # Normalizamos aquí para evitar usar un municipio incorrecto (o caer a un default).
@@ -166,7 +179,7 @@ def gestionar_mora_bienes(request):
     # Lista de rubros disponibles para la propiedad (sumando Impuesto + Tasas)
     rubros_disponibles = []
 
-    if cocata1 and empresa_filtro:
+    if cocata1 and empresa_filtro and BDCata1 and TasasMunicipales:
         try:
             # Nota: en Supabase/Postgres es común que falten tablas si no se aplicaron migraciones.
             # Capturamos ese caso para devolver un error entendible (en vez de 500).
@@ -362,7 +375,14 @@ def enviar_a_caja_bienes(request):
             from decimal import Decimal
             from django.utils import timezone
             from tributario.models import NoRecibos, PagoVariosTemp, TransaccionesBienesInmuebles, Rubro, ParametrosTributarios
-            from catastro.models import BDCata1
+            try:
+                from catastro.models import BDCata1
+            except Exception as e:
+                logger.exception("Error importando BDCata1 (catastro) en enviar_a_caja_bienes: %s", e)
+                return JsonResponse({
+                    'exito': False,
+                    'mensaje': 'No se pudo cargar Catastro (BDCata1). Verifique despliegue/tablas en producción.'
+                })
             from tributario_app.utils_cedula import info_cedula, calcular_edad
             import datetime
             
