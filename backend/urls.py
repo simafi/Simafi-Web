@@ -132,7 +132,7 @@ urlpatterns = [
     path('tributario/', include('tributario.tributario_urls', namespace='tributario')),
     
     # Aplicaciones legacy dentro de tributario - Habilitado para compatibilidad
-    path('tributario/', include('tributario.tributario_app.urls', namespace='tributario_app')),
+    path('tributario-legacy/', include('tributario.tributario_app.urls', namespace='tributario_app')),
     
     # Módulos principales (ubicados en C:\simafiweb\venv\Scripts\)
     path('catastro/', include('catastro.urls', namespace='catastro')),
