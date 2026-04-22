@@ -65,6 +65,8 @@ urlpatterns = [
     path('ajax/buscar-identificacion/', views.buscar_identificacion, name='buscar_identificacion'),
     path('ajax/enviar-a-caja/', views.enviar_a_caja, name='enviar_a_caja'),
     path('enviar-a-caja-bienes/', views.enviar_a_caja_bienes, name='enviar_a_caja_bienes'),
+    # Diagnóstico rápido (producción): Bienes Inmuebles / Supabase
+    path('__diag/bienes-inmuebles/', views.diag_bienes_inmuebles, name='diag_bienes_inmuebles'),
     path('ajax/generar-soporte-transaccion/', views.generar_soporte_transaccion, name='generar_soporte_transaccion'),
     path('soporte-transaccion/', views.generar_soporte_transaccion, name='soporte_transaccion_directo'),
     path('actividad/', views.actividad_crud, name='actividad_crud'),

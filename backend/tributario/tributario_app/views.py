@@ -54,6 +54,81 @@ from django.views.decorators.http import require_GET
 
 logger = logging.getLogger(__name__)
 
+def diag_bienes_inmuebles(request):
+    """
+    Diagnóstico liviano para producción (Vercel/Supabase):
+    - Verifica si `catastro.models` puede importarse
+    - Verifica existencia de tablas críticas en Postgres
+    No expone credenciales.
+    """
+    from django.conf import settings
+    from django.db import connection
+    from django.db.utils import DatabaseError, OperationalError, ProgrammingError
+
+    # Session keys (sincrónicas para multi-tenant)
+    empresa_sesion = (
+        request.session.get('municipio_codigo')
+        or request.session.get('catastro_empresa')
+        or request.session.get('empresa')
+        or None
+    )
+    empresa_sesion = (str(empresa_sesion).strip() if empresa_sesion is not None else None)
+
+    catastro_ok = False
+    catastro_error = None
+    try:
+        from catastro.models import BDCata1 as _BDCata1, TasasMunicipales as _TasasMunicipales  # noqa: F401
+        catastro_ok = True
+    except Exception as e:
+        catastro_error = f"{type(e).__name__}: {e}"
+
+    tables = [
+        # Catastro
+        "bdcata1",
+        "tasassmunicipales",
+        # Tributario BI
+        "transaccionesbienesinmuebles",
+        "rubros",
+        "norecibos",
+        "pagovariostemp",
+        # Django session (si no está usando signed cookies)
+        "django_session",
+    ]
+
+    regclass = {}
+    db_error = None
+    try:
+        with connection.cursor() as cur:
+            # `to_regclass` existe en Postgres y retorna NULL si no existe la relación
+            for t in tables:
+                cur.execute("SELECT to_regclass(%s)", [t])
+                regclass[t] = cur.fetchone()[0]
+    except (OperationalError, DatabaseError, ProgrammingError) as e:
+        db_error = f"{type(e).__name__}: {e}"
+
+    db = getattr(settings, "DATABASES", {}).get("default", {})
+    return JsonResponse(
+        {
+            "ok": True,
+            "debug": bool(getattr(settings, "DEBUG", False)),
+            "session_engine": getattr(settings, "SESSION_ENGINE", None),
+            "empresa_sesion": empresa_sesion,
+            "catastro_import": {
+                "ok": catastro_ok,
+                "error": catastro_error,
+            },
+            "db": {
+                "database_url_source": getattr(settings, "DATABASE_URL_SOURCE", "") or None,
+                "host_set": bool((db.get("HOST") or "").strip()),
+                "name_set": bool((db.get("NAME") or "").strip()),
+                "user_set": bool((db.get("USER") or "").strip()),
+                "sslmode": (db.get("OPTIONS") or {}).get("sslmode"),
+                "table_regclass": regclass,
+                "error": db_error,
+            },
+        }
+    )
+
 def login_view(request):
     error = None
     
