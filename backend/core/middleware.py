@@ -43,6 +43,10 @@ class ModuloAccesoMiddleware:
         core_ok = (
             path in ('/', '/login/', '/menu/', '/logout/', '/verificar-sesion/')
             or path.startswith('/acceso-modulo/')
+            # Diagnósticos / healthchecks (no requieren sesión)
+            or path.startswith('/__healthz')
+            or path.startswith('/__dbcheck')
+            or path.startswith('/tributario/__diag/')
         )
         if core_ok:
             return self.get_response(request)
