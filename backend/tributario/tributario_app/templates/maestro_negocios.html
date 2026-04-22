@@ -9,8 +9,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet CSS for maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Configuración del cursor de IA en español -->
-    <script src="{% static 'js/cursor_ai_config.js' %}"></script>
+    <!-- Configuración del cursor de IA en español (inline).
+         En Vercel, el manifest de estáticos puede no incluir `js/cursor_ai_config.js` y causa 500. -->
+    <script>
+      window.CURSOR_AI_CONFIG = window.CURSOR_AI_CONFIG || {
+        language: 'es',
+        locale: 'es_ES',
+        timezone: 'America/Tegucigalpa'
+      };
+    </script>
     <style>
         * {
             box-sizing: border-box;
