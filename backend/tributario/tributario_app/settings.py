@@ -376,6 +376,11 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
+# En Vercel es común tener deploys donde `collectstatic` no incluyó algún asset (p.ej. cambios recientes
+# o rutas distintas de build). Con ManifestStrict=True, Django lanza 500 al intentar resolver el asset.
+# Desactivamos "strict" para evitar caída total y poder diagnosticar/operar mientras se corrige el build.
+WHITENOISE_MANIFEST_STRICT = _env_bool("WHITENOISE_MANIFEST_STRICT", False)
+
 # Archivos subidos (constancias, PDFs, documentación proveedores). En VPS: ruta absoluta persistente.
 MEDIA_URL = os.environ.get('DJANGO_MEDIA_URL', '/media/').strip() or '/media/'
 _media_root = os.environ.get('DJANGO_MEDIA_ROOT', '').strip()
