@@ -4,6 +4,20 @@ from . import views
 from tributario_app import views as tributario_app_views
 from . import simple_views
 from . import ajax_views
+import traceback
+from django.http import HttpResponse
+
+def debug_maestro_negocios(request):
+    try:
+        return views.maestro_negocios(request)
+    except Exception as e:
+        return HttpResponse(f"<h1>SIMAFI VERCEL DEBUG ERROR</h1><pre>{traceback.format_exc()}</pre>", status=500)
+
+def debug_gestionar_mora_bienes(request):
+    try:
+        return tributario_app_views.gestionar_mora_bienes(request)
+    except Exception as e:
+        return HttpResponse(f"<h1>SIMAFI VERCEL DEBUG ERROR</h1><pre>{traceback.format_exc()}</pre>", status=500)
 
 app_name = 'tributario'
 
@@ -19,7 +33,7 @@ urlpatterns = [
     path('logout/', views.tributario_logout, name='tributario_logout'),
     
     # Vistas del sistema tributario
-    path('maestro-negocios/', views.maestro_negocios, name='maestro_negocios'),
+    path('maestro-negocios/', debug_maestro_negocios, name='maestro_negocios'),
     path('buscar-negocio-ajax/', views.buscar_negocio_ajax, name='buscar_negocio_ajax'),
     path('buscar-identificacion-ajax/', views.buscar_identificacion, name='buscar_identificacion_ajax'),
     path('tarifas/', views.tarifas_crud, name='tarifas'),
@@ -98,7 +112,7 @@ urlpatterns = [
     path('guardar-transaccion-pago/', views.guardar_transaccion_pago, name='guardar_transaccion_pago'),
     
     # Bienes Inmuebles - Gestión de Mora
-    path('gestionar-mora-bienes/', tributario_app_views.gestionar_mora_bienes, name='gestionar_mora_bienes'),
+    path('gestionar-mora-bienes/', debug_gestionar_mora_bienes, name='gestionar_mora_bienes'),
     path('enviar-a-caja-bienes/', tributario_app_views.enviar_a_caja_bienes, name='enviar_a_caja_bienes'),
     
     # Configuración de Parámetros Tributarios (Amnistías, Descuentos, etc)
