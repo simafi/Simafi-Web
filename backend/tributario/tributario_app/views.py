@@ -134,7 +134,15 @@ def gestionar_mora_bienes(request):
     from calendar import monthrange
     import datetime
 
-    empresa = request.session.get('municipio_codigo', '0301')
+    # En producción pueden existir distintas llaves de sesión según el flujo/login.
+    # Normalizamos aquí para evitar usar un municipio incorrecto (o caer a un default).
+    empresa = (
+        request.session.get('municipio_codigo')
+        or request.session.get('catastro_empresa')
+        or request.session.get('empresa')
+        or '0301'
+    )
+    empresa = str(empresa).strip() or '0301'
     empresa_get = request.GET.get('empresa', '').strip()
     if empresa_get and empresa_get != empresa:
         messages.error(request, f'⚠️ Error de seguridad: La empresa ({empresa_get}) no coincide.')
@@ -160,6 +168,8 @@ def gestionar_mora_bienes(request):
 
     if cocata1 and empresa_filtro:
         try:
+            # Nota: en Supabase/Postgres es común que falten tablas si no se aplicaron migraciones.
+            # Capturamos ese caso para devolver un error entendible (en vez de 500).
             propiedad = BDCata1.objects.filter(empresa=empresa_filtro, cocata1=cocata1).first()
             if not propiedad:
                 error_mensaje = f'❌ No se encontró la propiedad con Clave Catastral {cocata1}.'
@@ -309,7 +319,18 @@ def gestionar_mora_bienes(request):
             totales['mora_total'] = totales['saldo_final'] # Simple, pending payments
 
         except Exception as e:
-            error_mensaje = f'❌ Error al consultar transacciones: {str(e)}'
+            # Para diagnósticos rápidos en producción (p.ej. relación/tabla inexistente en Supabase)
+            from django.db.utils import ProgrammingError, OperationalError
+
+            if isinstance(e, (ProgrammingError, OperationalError)):
+                error_mensaje = (
+                    '❌ Error de base de datos al consultar Bienes Inmuebles. '
+                    'Verifique que existan las tablas requeridas (catastro: bdcata1, tasassmunicipales; '
+                    'tributario: transaccionesbienesinmuebles, rubros, norecibos, pagovariostemp) y que las migraciones estén aplicadas.'
+                )
+            else:
+                error_mensaje = f'❌ Error al consultar transacciones: {str(e)}'
+
             messages.error(request, error_mensaje)
 
     identidad = request.GET.get('identidad', '').strip()
@@ -395,6 +416,19 @@ def enviar_a_caja_bienes(request):
                         'mensaje': f'Regla FIFO: No puede pagar el periodo {int(max_t.ano)}-{int(max_t.mes):02} si aún debe el periodo {int(p.ano)}-{int(p.mes):02}'
                     })
 
+            # Validación básica de empresa (evita enviar pagos a un municipio distinto al de sesión)
+            empresa_sesion = (
+                request.session.get('municipio_codigo')
+                or request.session.get('catastro_empresa')
+                or request.session.get('empresa')
+            )
+            empresa_sesion = (str(empresa_sesion).strip() if empresa_sesion is not None else '')
+            if empresa_sesion and empresa and empresa != empresa_sesion:
+                return JsonResponse({
+                    'exito': False,
+                    'mensaje': f'Empresa inválida: request={empresa} no coincide con sesión={empresa_sesion}'
+                })
+
             # Generar número de recibo
             numero_recibo = NoRecibos.obtener_siguiente_numero_por_empresa(empresa)
             numero_recibo_decimal = Decimal(str(numero_recibo))
@@ -403,7 +437,12 @@ def enviar_a_caja_bienes(request):
             total_enviado = Decimal('0.00')
             ahora = timezone.now()
             current_year = ahora.year
-            usuario = request.session.get('usuario', 'SISTEMA')
+            usuario = (
+                request.session.get('usuario')
+                or request.session.get('username')
+                or (request.user.username if getattr(request, 'user', None) and request.user.is_authenticated else None)
+                or 'SISTEMA'
+            )
             
             # Cache de rubros para evitar múltiples queries
             rubros_query = Rubro.objects.filter(empresa=empresa)
