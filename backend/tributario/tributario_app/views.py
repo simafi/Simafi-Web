@@ -939,10 +939,19 @@ def parse_fecha(fecha_str):
         return None
 
 def maestro_negocios(request):
-    # Obtener el código de municipio de la sesión
-    empresa = request.session.get('empresa')
-    if not empresa:
-        return redirect('tributario:tributario_login')
+    # En producción pueden existir distintas llaves de sesión según el flujo/login.
+    # Normalizamos para evitar que falle por faltar `empresa` (signed cookies / middleware / redirects).
+    empresa_sesion = (
+        request.session.get('municipio_codigo')
+        or request.session.get('catastro_empresa')
+        or request.session.get('empresa')
+        or ''
+    )
+    empresa_sesion = str(empresa_sesion).strip()
+    if not empresa_sesion:
+        return redirect('tributario_app:login')
+
+    empresa = empresa_sesion
     
     mensaje = None
     exito = False
@@ -963,6 +972,17 @@ def maestro_negocios(request):
             rtm = request.POST.get('rtm', '').strip()
             expe = request.POST.get('expe', '').strip()
             confirmar_actualizacion = request.POST.get('confirmar_actualizacion')
+
+            # Refuerzo multi-tenant: no permitir que el POST fuerce otra empresa (solo en sesión válida)
+            if empresa_sesion and empresa and empresa != empresa_sesion:
+                mensaje = f"⚠️ Error de seguridad: La empresa ({empresa}) no coincide con su sesión ({empresa_sesion})."
+                exito = False
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'exito': False, 'mensaje': mensaje})
+                # Para render normal, forzar la empresa de sesión para evitar inconsistencias
+                empresa = empresa_sesion
+            elif not empresa and empresa_sesion:
+                empresa = empresa_sesion
             
             # Log para debugging mejorado
             logger.info(f"Procesando salvar - Empresa: '{empresa}', RTM: '{rtm}', Expediente: '{expe}'")
