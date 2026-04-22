@@ -15,6 +15,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tributario.tributario_app.setti
 
 
 def main() -> None:
+    import django
+    django.setup()
     from django.core.management import call_command
 
     call_command("collectstatic", "--noinput")
