@@ -602,12 +602,48 @@ def asiento_contabilizar(request, pk):
     if asiento.estado == 'APROBADO':
         # Actualizar libro mayor por cada línea
         for detalle in asiento.detalles.all():
-            libro, created = LibroMayor.objects.get_or_create(
+            # Buscar si ya existe el registro para este periodo
+            libro = LibroMayor.objects.filter(
                 cuenta=detalle.cuenta,
                 periodo=asiento.periodo,
-                empresa=empresa,
-                defaults={'saldo_anterior': Decimal('0.00')}
-            )
+                empresa=empresa
+            ).first()
+
+            if not libro:
+                # Si no existe, buscar el saldo final del periodo anterior
+                saldo_ant = Decimal('0.00')
+                periodo = asiento.periodo
+                
+                # Buscar el periodo cronológicamente anterior para esta empresa
+                from django.db.models import Q
+                prev_periodo = PeriodoContable.objects.filter(
+                    ejercicio__empresa=empresa
+                ).filter(
+                    Q(ejercicio__anio=periodo.ejercicio.anio, numero__lt=periodo.numero) |
+                    Q(ejercicio__anio__lt=periodo.ejercicio.anio)
+                ).order_by('-ejercicio__anio', '-numero').first()
+
+                if prev_periodo:
+                    prev_libro = LibroMayor.objects.filter(
+                        cuenta=detalle.cuenta,
+                        periodo=prev_periodo,
+                        empresa=empresa
+                    ).first()
+                    if prev_libro:
+                        saldo_ant = prev_libro.saldo_final
+                
+                # Crear el nuevo registro con el saldo anterior heredado
+                libro = LibroMayor.objects.create(
+                    cuenta=detalle.cuenta,
+                    periodo=asiento.periodo,
+                    empresa=empresa,
+                    saldo_anterior=saldo_ant,
+                    debitos=Decimal('0.00'),
+                    creditos=Decimal('0.00'),
+                    saldo_final=saldo_ant
+                )
+
+            # Actualizar débitos/créditos
             libro.debitos += detalle.debe
             libro.creditos += detalle.haber
             libro.calcular_saldo_final()

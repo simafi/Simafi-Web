@@ -174,9 +174,13 @@ def gestionar_mora_bienes(request):
                     for r in rubros_objs:
                         rubros_disponibles.append({'codigo': r.codigo, 'descripcion': r.descripcion, 'tipo': r.tipo})
                 
-                # Siempre añadir un rubro para el Impuesto de Bienes Inmuebles si no está (por convención, asumiendo que debe poder cobrarse)
-                if not any(r['codigo'] == 'IMPUBI' for r in rubros_disponibles):
-                     rubros_disponibles.append({'codigo': 'IMPUBI', 'descripcion': 'Impuesto de Bienes Inmuebles', 'tipo': 'A'})
+                # Siempre añadir un rubro para el Impuesto de Bienes Inmuebles si no está
+                # B0001 = Urbano, B0002 = Rural
+                rubro_impto = 'B0001' if getattr(propiedad, 'tipopropiedad', 1) == 1 else 'B0002'
+                desc_impto = 'Impuesto de Bienes Inmuebles (Urbano)' if rubro_impto == 'B0001' else 'Impuesto de Bienes Inmuebles (Rural)'
+                
+                if not any(r['codigo'] == rubro_impto for r in rubros_disponibles):
+                     rubros_disponibles.append({'codigo': rubro_impto, 'descripcion': desc_impto, 'tipo': 'A'})
 
             # --- LÓGICA DE GENERACIÓN DE MORA (POST) ---
             if request.method == 'POST' and request.POST.get('accion') == 'generar_mora' and propiedad:
@@ -210,40 +214,17 @@ def gestionar_mora_bienes(request):
                                         monto = 0
                                         tipo_cobro = 'M' # Por defecto mensual
                                         
-                                        if rubro_codigo == 'IMPUBI': # Impuesto Bienes Inmuebles
+                                        # Standard Rubros for BI: B0001 (Urban), B0002 (Rural)
+                                        # Legacy: IMPUBI
+                                        if rubro_codigo in ('B0001', 'B0002', 'IMPUBI'):
                                             # El impuesto se cobra anualmente en el mes 8
                                             if month == 8:
                                                 monto = propiedad.impuesto or 0
                                                 tipo_cobro = 'A'
                                                 
-                                                # --- Descuento Tercera/Cuarta Edad (OBLIGATORIO) ---
-                                                # Regla: SOLO aplica si el predio tiene exención en el avalúo catastral,
-                                                # lo que indica que es la vivienda donde habita el contribuyente.
-                                                tiene_exencion = False
-                                                try:
-                                                    # Regla negocio: aplicar SOLO si la exención del avalúo es > 0
-                                                    # (indica vivienda donde habita / predio con exención aplicada).
-                                                    ex_val = float(propiedad.exencion or 0)
-                                                    tiene_exencion = ex_val > 0
-                                                except Exception:
-                                                    tiene_exencion = False
-
-                                                if tiene_exencion:
-                                                    descuento_porcentaje = 0.0
-                                                    try:
-                                                        from tributario_app.utils_cedula import info_cedula
-                                                        info = info_cedula(propiedad.identidad) if propiedad.identidad else None
-                                                        if info:
-                                                            if info.get('aplica_cuarta_edad'):
-                                                                descuento_porcentaje = 0.35
-                                                            elif info.get('aplica_tercera_edad'):
-                                                                descuento_porcentaje = 0.25
-                                                    except Exception:
-                                                        descuento_porcentaje = 0.0
-
-                                                    if descuento_porcentaje > 0:
-                                                        monto_descuento = float(monto) * float(descuento_porcentaje)
-                                                        monto = float(monto) - monto_descuento
+                                                # NOTA: No aplicamos el descuento aquí (Senior Citizen).
+                                                # Se aplicará en enviar_a_caja_bienes para que el recibo muestre
+                                                # el desglose (Monto Bruto - Descuento = Monto Neto).
                                             else:
                                                 continue # Solo se cobra en agosto
                                         else:
@@ -593,10 +574,11 @@ def enviar_a_caja_bienes(request):
                 #   - B0001 (BI Urbano)
                 #   - B0002 (BI Rural)
                 #   - T0001 (Agua Potable)
+                #   - IMPUBI (Legacy BI)
                 # - Aplica desde el momento en que cumple 60/80: si debe años anteriores,
                 #   solo se descuenta en los periodos cuyo vencimiento ocurre DESPUÉS de cumplir la edad.
                 rubro_norm = str(t.rubro or '').strip().upper()
-                if exencion_activa and rubro_norm in ('B0001', 'B0002', 'T0001'):
+                if exencion_activa and rubro_norm in ('B0001', 'B0002', 'T0001', 'IMPUBI'):
                     ced = identidad_pago or (propiedad.identidad if propiedad else '')
                     info = info_cedula(ced, None)
 
@@ -1580,8 +1562,8 @@ def enviar_a_caja(request):
                     'mensaje': 'Formato de fecha inválido. Use YYYY-MM-DD'
                 })
             
-            # Generar número de recibo usando la secuencia de norecibos
-            numero_recibo_decimal = NoRecibos.obtener_siguiente_numero()
+            # Generar número de recibo usando la secuencia de norecibos por empresa
+            numero_recibo_decimal = NoRecibos.obtener_siguiente_numero_por_empresa(empresa)
             numero_recibo = f"REC-{numero_recibo_decimal}"
             
             # Log para debug
