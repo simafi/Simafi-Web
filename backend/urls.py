@@ -88,7 +88,29 @@ def dbcheck(request):
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             one = cursor.fetchone()
-        info["ok"] = bool(one and one[0] == 1)
+            info["ok"] = bool(one and one[0] == 1)
+
+            # Opcional: verificar existencia de tablas (Postgres) sin exponer datos.
+            # Uso: /__dbcheck?tables=1
+            if (request.GET.get("tables") or "").strip() in ("1", "true", "yes", "on"):
+                tables = [
+                    # Catastro
+                    "bdcata1",
+                    "tasassmunicipales",
+                    # Tributario BI
+                    "transaccionesbienesinmuebles",
+                    "rubros",
+                    "norecibos",
+                    "pagovariostemp",
+                    # Django session (si se usa DB sessions)
+                    "django_session",
+                ]
+                regclass = {}
+                for t in tables:
+                    cursor.execute("SELECT to_regclass(%s)", [t])
+                    regclass[t] = cursor.fetchone()[0]
+                info["table_regclass"] = regclass
+
         return JsonResponse(info)
     except (OperationalError, DatabaseError) as exc:
         info["error"] = str(exc)
