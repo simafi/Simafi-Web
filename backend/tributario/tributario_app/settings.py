@@ -186,6 +186,13 @@ WSGI_APPLICATION = 'tributario_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+def _env_str(key: str, default: str = "") -> str:
+    v = os.environ.get(key)
+    if v is None:
+        return default
+    return v.strip().strip('"').strip("'")
+
+
 def _parse_database_url(url: str) -> dict:
     """
     Soporte simple para DATABASE_URL estilo Supabase/Heroku.
@@ -269,7 +276,34 @@ _DATABASE_URL_KEYS = (
 
 _database_url, DATABASE_URL_SOURCE = _first_nonempty_env_with_key(_DATABASE_URL_KEYS)
 
-if _database_url:
+_db_engine = (_env_str("DJANGO_DB_ENGINE") or "").lower()
+_use_mysql = _db_engine in ("mysql", "mariadb") or _env_bool("DJANGO_USE_MYSQL", False)
+
+if _use_mysql:
+    try:
+        import pymysql  # type: ignore
+
+        pymysql.install_as_MySQLdb()
+    except Exception as exc:
+        raise ImproperlyConfigured(
+            "Configuraste MySQL (DJANGO_DB_ENGINE=mysql o DJANGO_USE_MYSQL=1) "
+            "pero falta el driver. Instala dependencias (`pip install -r requirements.txt`)."
+        ) from exc
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": _env_str("DJANGO_MYSQL_DB_NAME", _env_str("DJANGO_DB_NAME", "bdsimafipy")),
+            "USER": _env_str("DJANGO_MYSQL_DB_USER", _env_str("DJANGO_DB_USER", "root")),
+            "PASSWORD": _env_str("DJANGO_MYSQL_DB_PASSWORD", _env_str("DJANGO_DB_PASSWORD", "")),
+            "HOST": _env_str("DJANGO_MYSQL_DB_HOST", _env_str("DJANGO_DB_HOST", "localhost")),
+            "PORT": _env_str("DJANGO_MYSQL_DB_PORT", _env_str("DJANGO_DB_PORT", "3306")) or "3306",
+            "OPTIONS": {
+                "charset": _env_str("DJANGO_MYSQL_CHARSET", "latin1"),
+            },
+        }
+    }
+elif _database_url:
     DATABASES = {"default": _parse_database_url(_database_url)}
 else:
     DATABASES = {
@@ -373,6 +407,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # WhiteNoise (Vercel / serverless): servir estáticos empaquetados con la app.
 STORAGES = {
+    # Storage por defecto para FileField (ciudadano adjuntos, etc.)
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
@@ -436,6 +472,12 @@ if not DEBUG:
             parsed = urlparse(_vercel_url if '://' in _vercel_url else f'https://{_vercel_url}')
             if parsed.scheme and parsed.netloc:
                 CSRF_TRUSTED_ORIGINS = [f'{parsed.scheme}://{parsed.netloc}']
+
+# --- Override local: forzar HTTP aunque DEBUG quede mal detectado ---
+# En Windows/navegadores es común que quede cacheado HSTS o existan variables heredadas de deploy.
+# Si se define `DJANGO_LOCAL_HTTP=1`, desactivamos redirección a HTTPS explícitamente.
+if _env_bool("DJANGO_LOCAL_HTTP", False):
+    SECURE_SSL_REDIRECT = False
 
 # filepath: tu_proyecto/settings.py
 LOGGING = {

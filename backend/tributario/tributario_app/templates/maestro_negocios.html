@@ -2234,6 +2234,21 @@
                 console.log(`ℹ️ Botón no configurado: ${botonValue} - Permitiendo envío normal`);
                 return true; // Permitir envío normal
             }
+
+            // "Nuevo" es una acción 100% cliente: limpia el formulario y habilita RTM/Expediente.
+            // No debe enviar POST al backend (evita que se muestre JSON).
+            if (botonValue === 'nuevo') {
+                console.log('🆕 Botón NUEVO: limpiando formulario (sin POST)');
+                event.preventDefault();
+                try {
+                    limpiarFormulario();
+                    mostrarMensaje('Formulario listo para nuevo registro.', true);
+                } catch (error) {
+                    console.error('❌ Error al ejecutar Nuevo:', error);
+                    mostrarMensaje('Error al limpiar el formulario para nuevo registro.', false);
+                }
+                return false;
+            }
             
             console.log(`✅ Configuración encontrada para ${botonValue}: ${config.descripcion}`);
             console.log(`🔍 Tipo de botón: ${config.tipo}`);

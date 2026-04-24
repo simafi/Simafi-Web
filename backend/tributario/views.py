@@ -327,6 +327,13 @@ def maestro_negocios(request):
                 logger.error("🚀 Llamando a handle_salvar_negocio")
                 print("🚀 Llamando a handle_salvar_negocio", file=sys.stderr)
                 return handle_salvar_negocio(request, data)
+            elif accion == 'nuevo':
+                # El botón "Nuevo" limpia el formulario en el frontend.
+                # En backend solo devolvemos OK para evitar "Acción no válida".
+                return JsonResponse({
+                    'exito': True,
+                    'mensaje': 'OK',
+                })
             elif accion == 'eliminar':
                 return handle_eliminar_negocio(request, data)
             elif accion == 'configuracion':
@@ -622,7 +629,8 @@ def buscar_negocio_ajax(request):
         if request.method == 'GET':
             rtm = request.GET.get('rtm', '')
             expe = request.GET.get('expe', '')
-            empresa = request.GET.get('empre', '0301')
+            # Compatibilidad: el frontend usa `empresa`, pero algunos flujos legacy usan `empre`.
+            empresa = request.GET.get('empresa') or request.GET.get('empre') or '0301'
         elif request.method == 'POST':
             try:
                 data = json.loads(request.body)
@@ -633,7 +641,7 @@ def buscar_negocio_ajax(request):
                 # Si no es JSON, intentar con form data
                 rtm = request.POST.get('rtm', '')
                 expe = request.POST.get('expe', '')
-                empresa = request.POST.get('empre', '0301')
+                empresa = request.POST.get('empresa') or request.POST.get('empre') or '0301'
         else:
             return JsonResponse({
                 'exito': False,
@@ -652,36 +660,40 @@ def buscar_negocio_ajax(request):
                 )
                 
                 print(f"[OK] Negocio encontrado: {negocio.nombrenego}")
-                
+
+                negocio_data = {
+                    'empresa': negocio.empresa,
+                    'rtm': negocio.rtm,
+                    'expe': negocio.expe,
+                    'fecha_ini': negocio.fecha_ini.strftime('%Y-%m-%d') if negocio.fecha_ini else None,
+                    'fecha_can': negocio.fecha_can.strftime('%Y-%m-%d') if negocio.fecha_can else None,
+                    'identidad': negocio.identidad,
+                    'rtnpersonal': negocio.rtnpersonal,
+                    'comerciante': negocio.comerciante,
+                    'rtnnego': negocio.rtnnego,
+                    'nombrenego': negocio.nombrenego,
+                    'actividad': negocio.actividad,
+                    'identidadrep': negocio.identidadrep,
+                    'representante': negocio.representante,
+                    'estatus': negocio.estatus,
+                    'catastral': negocio.catastral,
+                    'cx': str(negocio.cx) if negocio.cx else '0.0000000',
+                    'cy': str(negocio.cy) if negocio.cy else '',
+                    'direccion': negocio.direccion,
+                    'telefono': negocio.telefono,
+                    'celular': negocio.celular,
+                    'correo': negocio.correo,
+                    'pagweb': negocio.pagweb,
+                    'socios': negocio.socios,
+                    'comentario': negocio.comentario,
+                    'fecha_nacimiento': negocio.fecha_nacimiento.strftime('%Y-%m-%d') if negocio.fecha_nacimiento else None
+                }
+
+                # Compatibilidad con frontend actual: devolver campos también a nivel raíz
                 return JsonResponse({
                     'exito': True,
-                    'negocio': {
-                        'empresa': negocio.empresa,
-                        'rtm': negocio.rtm,
-                        'expe': negocio.expe,
-                        'fecha_ini': negocio.fecha_ini.strftime('%Y-%m-%d') if negocio.fecha_ini else None,
-                        'fecha_can': negocio.fecha_can.strftime('%Y-%m-%d') if negocio.fecha_can else None,
-                        'identidad': negocio.identidad,
-                        'rtnpersonal': negocio.rtnpersonal,
-                        'comerciante': negocio.comerciante,
-                        'rtnnego': negocio.rtnnego,
-                        'nombrenego': negocio.nombrenego,
-                        'actividad': negocio.actividad,
-                        'identidadrep': negocio.identidadrep,
-                        'representante': negocio.representante,
-                        'estatus': negocio.estatus,
-                        'catastral': negocio.catastral,
-                        'cx': str(negocio.cx) if negocio.cx else '0.0000000',
-                        'cy': str(negocio.cy) if negocio.cy else '',
-                        'direccion': negocio.direccion,
-                        'telefono': negocio.telefono,
-                        'celular': negocio.celular,
-                        'correo': negocio.correo,
-                        'pagweb': negocio.pagweb,
-                        'socios': negocio.socios,
-                        'comentario': negocio.comentario,
-                        'fecha_nacimiento': negocio.fecha_nacimiento.strftime('%Y-%m-%d') if negocio.fecha_nacimiento else None
-                    }
+                    **negocio_data,
+                    'negocio': negocio_data,
                 })
             except Negocio.DoesNotExist:
                 print(f"[ERROR] Negocio no encontrado: empresa={empresa}, rtm={rtm}, expe={expe}")

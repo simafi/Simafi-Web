@@ -19,6 +19,13 @@ def main() -> None:
     django.setup()
     from django.core.management import call_command
 
+    run_migrations = (
+        (os.environ.get("VERCEL_ENV") or "").strip().lower() == "production"
+        or (os.environ.get("DJANGO_RUN_MIGRATIONS") or "").strip().lower() in ("1", "true", "yes", "on")
+    )
+    if run_migrations:
+        call_command("migrate", "--noinput")
+
     call_command("collectstatic", "--noinput")
 
 

@@ -3,21 +3,21 @@
 import os
 import sys
 
-# Asegurar que se use el entorno virtual: agregar venv/Lib/site-packages al path
-_script_dir = os.path.dirname(os.path.abspath(__file__))
-_venv_root = os.path.dirname(_script_dir)
-_site_packages = os.path.join(_venv_root, 'Lib', 'site-packages')
-if os.path.isdir(_site_packages) and _site_packages not in sys.path:
-    sys.path.insert(0, _site_packages)
+# Este `manage.py` se ejecuta desde `backend/` como raíz del sistema modular.
+# Ajusta `sys.path` para que Django pueda importar los módulos (core, usuarios, etc.)
+# y el proyecto `tributario_app` que vive en `backend/tributario/`.
+_BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+_REPO_ROOT = os.path.dirname(_BACKEND_DIR)
+_TRIBUTARIO_DIR = os.path.join(_BACKEND_DIR, "tributario")
+
+for p in (_BACKEND_DIR, _TRIBUTARIO_DIR):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 def main():
     """Run administrative tasks."""
-    # Agregar el directorio tributario al path de Python
-    tributario_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tributario')
-    if tributario_path not in sys.path:
-        sys.path.insert(0, tributario_path)
-    
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tributario.tributario_app.settings')
+    # Proyecto principal del repo (settings en `backend/tributario/tributario_app/settings.py`)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tributario_app.settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

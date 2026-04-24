@@ -8,6 +8,7 @@ django-widget-tweaks>=1.5
 python-dotenv>=1.0
 gunicorn>=22.0
 whitenoise>=6.7
+PyMySQL>=1.1
 
 # Exportaciones e informes (administrativo, configuración)
 openpyxl>=3.1
