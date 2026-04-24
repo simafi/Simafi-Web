@@ -11,7 +11,7 @@ TRIBUTARIO_DIR = BACKEND_DIR / "tributario"
 sys.path.insert(0, str(BACKEND_DIR))
 sys.path.insert(0, str(TRIBUTARIO_DIR))
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tributario.tributario_app.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tributario_app.settings")
 
 
 def main() -> None:
@@ -20,11 +20,16 @@ def main() -> None:
     from django.core.management import call_command
 
     run_migrations = (
-        (os.environ.get("VERCEL_ENV") or "").strip().lower() == "production"
+        (os.environ.get("VERCEL") or "").strip().lower() in ("1", "true", "yes", "on")
+        or (os.environ.get("DJANGO_VERCEL") or "").strip().lower() in ("1", "true", "yes", "on")
+        or (os.environ.get("VERCEL_ENV") or "").strip().lower() == "production"
         or (os.environ.get("DJANGO_RUN_MIGRATIONS") or "").strip().lower() in ("1", "true", "yes", "on")
     )
     if run_migrations:
+        print("Vercel build: running migrate --noinput")
         call_command("migrate", "--noinput")
+    else:
+        print("Vercel build: skipping migrate (set DJANGO_RUN_MIGRATIONS=1 to force)")
 
     call_command("collectstatic", "--noinput")
 

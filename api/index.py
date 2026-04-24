@@ -15,7 +15,7 @@ TRIBUTARIO_DIR = BACKEND_DIR / "tributario"
 if str(TRIBUTARIO_DIR) not in sys.path:
     sys.path.insert(0, str(TRIBUTARIO_DIR))
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tributario.tributario_app.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tributario_app.settings")
 
 logger = logging.getLogger("vercel.entrypoint")
 
