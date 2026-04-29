@@ -3,6 +3,16 @@
 import os
 import sys
 
+# Windows: evitar errores 'charmap' al imprimir tildes/íconos en consola.
+# Esto aplica incluso si se arranca sin scripts .ps1/.bat.
+os.environ.setdefault("PYTHONUTF8", "1")
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # py>=3.7
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 # Este `manage.py` se ejecuta desde `backend/` como raíz del sistema modular.
 # Ajusta `sys.path` para que Django pueda importar los módulos (core, usuarios, etc.)
 # y el proyecto `tributario_app` que vive en `backend/tributario/`.

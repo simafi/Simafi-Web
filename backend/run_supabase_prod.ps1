@@ -1,22 +1,10 @@
 param(
   [int]$Port = 8010,
-  # Pega aquí tu URL de Supabase SOLO cuando ejecutes el script (o pásala por parámetro).
-  # Ejemplo:
-  #   postgresql://postgres:PASS@db.xxxxx.supabase.co:5432/postgres?sslmode=require
+  # Pasa la URL de Supabase PROD explícitamente (o por variable de entorno).
   [string]$DatabaseUrl = ""
 )
 
 $ErrorActionPreference = "Stop"
-
-function Read-PlainPassword([string]$Prompt) {
-  $secure = Read-Host $Prompt -AsSecureString
-  $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-  try {
-    return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
-  } finally {
-    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
-  }
-}
 
 # Ejecutar desde backend/
 Set-Location $PSScriptRoot
@@ -34,15 +22,15 @@ if (-not $DatabaseUrl) {
 }
 if (-not $DatabaseUrl) {
   Write-Host "Falta DatabaseUrl. Pásala como -DatabaseUrl o define DATABASE_URL." -ForegroundColor Yellow
-  Write-Host "Ejemplo: .\\run_supabase_dev.ps1 -DatabaseUrl 'postgresql://user:pass@host:5432/db?sslmode=require'" -ForegroundColor Yellow
   exit 1
 }
 
+# Forzar entorno dev local pero con BD remota
 $env:DJANGO_DEBUG = "1"
 $env:DJANGO_ALLOWED_HOSTS = "localhost,127.0.0.1"
 $env:DJANGO_LOCAL_HTTP = "1"
 $env:DJANGO_SECURE_SSL_REDIRECT = "0"
-$env:DJANGO_ENV = "supabase_dev"
+$env:DJANGO_ENV = "supabase_prod"
 
 # Evitar que el entorno se comporte como Vercel en local
 $env:VERCEL = ""
@@ -53,15 +41,15 @@ $env:DJANGO_VERCEL_URL = ""
 $env:DJANGO_DB_ENGINE = ""
 $env:DJANGO_USE_MYSQL = "0"
 
-# Usar Supabase Postgres
+# Usar Supabase Postgres (PROD)
 $env:DATABASE_URL = $DatabaseUrl
 
 # Evitar errores "charmap" en Windows al imprimir tildes/íconos
 $env:PYTHONUTF8 = "1"
 $env:PYTHONIOENCODING = "utf-8"
 
-Write-Host "Conectando a Supabase Postgres via DATABASE_URL (dev)..." -ForegroundColor Cyan
-Write-Host "NOTA: este script NO ejecuta migrate automáticamente (para evitar tocar producción por accidente)." -ForegroundColor Yellow
+Write-Host "Conectando a Supabase Postgres (PROD) via DATABASE_URL (dev)..." -ForegroundColor Cyan
+Write-Host "NOTA: este script NO ejecuta migrate automáticamente." -ForegroundColor Yellow
 
 Write-Host "Arrancando servidor en http://127.0.0.1:$Port/ ..." -ForegroundColor Green
 & $py .\manage.py runserver 127.0.0.1:$Port

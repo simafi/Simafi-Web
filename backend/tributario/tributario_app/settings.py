@@ -24,7 +24,35 @@ REPO_ROOT = SCRIPTS_DIR.parent
 try:
     from dotenv import load_dotenv
 
-    for _env_path in (REPO_ROOT / '.env', SCRIPTS_DIR / '.env', BASE_DIR / '.env'):
+    # Selección explícita de entorno para evitar mezclar Supabase/local por accidente.
+    #
+    # Valores sugeridos:
+    # - DJANGO_ENV=local            -> Postgres local (sin URLs remotas)
+    # - DJANGO_ENV=supabase_dev     -> Supabase dev
+    # - DJANGO_ENV=supabase_prod    -> Supabase prod (solo cuando se necesite)
+    #
+    # Si no se define, cae al comportamiento histórico de cargar `.env` si existe.
+    _django_env = (os.environ.get("DJANGO_ENV") or "").strip().lower()
+
+    _candidate_env_files = []
+    if _django_env:
+        _candidate_env_files.extend(
+            [
+                REPO_ROOT / f".env.{_django_env}",
+                SCRIPTS_DIR / f".env.{_django_env}",
+                BASE_DIR / f".env.{_django_env}",
+            ]
+        )
+
+    _candidate_env_files.extend(
+        [
+            REPO_ROOT / ".env",
+            SCRIPTS_DIR / ".env",
+            BASE_DIR / ".env",
+        ]
+    )
+
+    for _env_path in _candidate_env_files:
         if _env_path.is_file():
             load_dotenv(_env_path)
             break

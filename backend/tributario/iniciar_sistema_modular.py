@@ -61,7 +61,7 @@ def iniciar_sistema_modular():
             print(f"❌ Error en módulo {modulo}: {e}")
     
     print("\n=== INICIANDO SERVIDOR ===")
-    print("URL de acceso: http://127.0.0.1:8080")
+    print("URL de acceso: http://127.0.0.1:8010")
     print("Presiona Ctrl+C para detener el servidor")
     print("\nCredenciales de prueba:")
     print("- Usuario: catastro, Contraseña: admin123, Municipio: 0301")
@@ -71,7 +71,7 @@ def iniciar_sistema_modular():
     
     try:
         # Iniciar servidor
-        subprocess.run([sys.executable, 'manage.py', 'runserver', '8080'])
+        subprocess.run([sys.executable, 'manage.py', 'runserver', '127.0.0.1:8010'])
     except KeyboardInterrupt:
         print("\n\n🛑 Servidor detenido por el usuario")
     except Exception as e:
