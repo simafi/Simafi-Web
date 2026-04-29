@@ -1,6 +1,35 @@
-from django.db import models
+from django.db import models, connection
 from core.models import BaseModel
 from contabilidad.models import CuentaContable
+
+
+def _pg_assign_next_pk_if_no_serial(table_name, instance):
+    """
+    Supabase/Postgres: si `id` no tiene DEFAULT nextval (p. ej. tabla importada sin secuencia),
+    asigna MAX(id)+1 antes del INSERT para evitar violación NOT NULL.
+    """
+    if connection.vendor != "postgresql":
+        return
+    if not instance._state.adding or instance.pk is not None:
+        return
+    qtable = connection.ops.quote_name(table_name)
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT COALESCE(column_default, '')
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = %s
+              AND column_name = 'id'
+            """,
+            [table_name],
+        )
+        row = cursor.fetchone()
+        default = (row[0] or "") if row else ""
+        if "nextval" in default.lower():
+            return
+        cursor.execute(f"SELECT COALESCE(MAX(id), 0) + 1 FROM {qtable}")
+        instance.pk = int(cursor.fetchone()[0])
 
 
 class CuentaTesoreria(BaseModel):
@@ -179,6 +208,10 @@ class CobroCaja(BaseModel):
     def __str__(self):
         return f"{self.empresa} | {self.fecha} | {self.total_cobrado}"
 
+    def save(self, *args, **kwargs):
+        _pg_assign_next_pk_if_no_serial("teso_cobro_caja", self)
+        super().save(*args, **kwargs)
+
 
 class CobroCajaMetodo(BaseModel):
     FORMA_CHOICES = [
@@ -198,4 +231,8 @@ class CobroCajaMetodo(BaseModel):
         verbose_name = "Detalle de Forma de Pago"
         verbose_name_plural = "Detalles de Formas de Pago"
         ordering = ["id"]
+
+    def save(self, *args, **kwargs):
+        _pg_assign_next_pk_if_no_serial("teso_cobro_caja_metodo", self)
+        super().save(*args, **kwargs)
 
