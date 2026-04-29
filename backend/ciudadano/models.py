@@ -3,6 +3,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 
 from core.models import BaseModel
+from core.pg_sequence import assign_pk_if_postgres_serial_missing
 
 
 class SolicitudTramite(BaseModel):
@@ -90,6 +91,10 @@ class SolicitudTramite(BaseModel):
         verbose_name = "Solicitud de trámite (ciudadano)"
         verbose_name_plural = "Solicitudes de trámites"
         ordering = ["-created_at"]
+
+    def save(self, *args, **kwargs):
+        assign_pk_if_postgres_serial_missing("cdd_solicitud_tramite", self)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.referencia} — {self.get_tipo_tramite_display()}"

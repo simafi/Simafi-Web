@@ -1,35 +1,7 @@
-from django.db import models, connection
+from django.db import models
 from core.models import BaseModel
+from core.pg_sequence import assign_pk_if_postgres_serial_missing as _pg_assign_next_pk_if_no_serial
 from contabilidad.models import CuentaContable
-
-
-def _pg_assign_next_pk_if_no_serial(table_name, instance):
-    """
-    Supabase/Postgres: si `id` no tiene DEFAULT nextval (p. ej. tabla importada sin secuencia),
-    asigna MAX(id)+1 antes del INSERT para evitar violación NOT NULL.
-    """
-    if connection.vendor != "postgresql":
-        return
-    if not instance._state.adding or instance.pk is not None:
-        return
-    qtable = connection.ops.quote_name(table_name)
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            SELECT COALESCE(column_default, '')
-            FROM information_schema.columns
-            WHERE table_schema = 'public'
-              AND table_name = %s
-              AND column_name = 'id'
-            """,
-            [table_name],
-        )
-        row = cursor.fetchone()
-        default = (row[0] or "") if row else ""
-        if "nextval" in default.lower():
-            return
-        cursor.execute(f"SELECT COALESCE(MAX(id), 0) + 1 FROM {qtable}")
-        instance.pk = int(cursor.fetchone()[0])
 
 
 class CuentaTesoreria(BaseModel):
