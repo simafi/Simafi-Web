@@ -10,6 +10,7 @@ import base64
 import logging
 from django.db.models import Q
 from django.db.models import Sum
+from django.db.models.functions import Trim
 from django.db import transaction, connection
 
 from contabilidad.models import CuentaContable
@@ -38,6 +39,16 @@ def _safe_decimal(value, default="0.00"):
         return Decimal(str(value))
     except Exception:
         return Decimal(default)
+
+
+def _empresa_codigo_transacciones(empresa: str) -> str:
+    """`transaccionesics` y `transaccionesbienesinmuebles` almacenan empresa en 4 chars; sesión/pagovariostemp puede traer más."""
+    e = (empresa or "").strip()
+    return e[:4] if e else ""
+
+
+def _norm_rubro_caja(rubro: str) -> str:
+    return (rubro or "").strip().upper()[:6]
 
 
 def _table_exists(table_name):
@@ -534,7 +545,7 @@ def caja_cobros(request):
             for pago in pagos_lista:
                 tipofa = (pago.Tipofa or "").strip().upper()
                 valor_pago = _safe_decimal(pago.valor)
-                rubro = (pago.rubro or "")[:6]
+                rubro = _norm_rubro_caja(pago.rubro or "")
                 rtm = (pago.Rtm or "").strip()
                 expe = (str(pago.expe or "")).strip()
                 fecha_mov = date.today()
@@ -632,18 +643,24 @@ def caja_cobros(request):
                 pass
 
             # Reflejar cobro en Control Tributario: rebajar saldo en `transaccionesics` (monto__gt=0)
-            if es_recibo_negocio and negocio_rtm and negocio_expe and ics_por_rubro:
+            emp_trib = _empresa_codigo_transacciones(empresa)
+            if es_recibo_negocio and negocio_rtm and negocio_expe and ics_por_rubro and emp_trib:
                 for rubro_codigo, monto_rubro in ics_por_rubro.items():
                     restante = (monto_rubro or Decimal("0.00")).quantize(Decimal("0.01"))
                     if restante <= 0:
                         continue
 
                     trans_qs = (
-                        TransaccionesIcs.objects.filter(
-                            empresa=empresa,
-                            rtm=negocio_rtm[:16],
-                            expe=str(negocio_expe)[:12],
-                            rubro=rubro_codigo[:6],
+                        TransaccionesIcs.objects.annotate(
+                            _rtm_t=Trim("rtm"),
+                            _ex_t=Trim("expe"),
+                            _rb_t=Trim("rubro"),
+                        )
+                        .filter(
+                            empresa=emp_trib,
+                            _rtm_t=negocio_rtm[:16].strip(),
+                            _ex_t=str(negocio_expe)[:12].strip(),
+                            _rb_t=_norm_rubro_caja(rubro_codigo),
                             monto__gt=0,
                         )
                         .order_by("ano", "mes", "id")
@@ -668,18 +685,23 @@ def caja_cobros(request):
 
             # Reflejar cobro en Bienes Inmuebles: rebajar cuotas reales en `transaccionesbienesinmuebles`
             # La pantalla de BI lista `estado='A'`, así que si una cuota queda en 0 se marca como pagada.
-            if es_recibo_bienes and clave_catastral and bienes_por_rubro:
+            if es_recibo_bienes and clave_catastral and bienes_por_rubro and emp_trib:
+                norm_cc = str(clave_catastral).strip()[:20]
                 for rubro_codigo, monto_rubro in bienes_por_rubro.items():
                     restante = (monto_rubro or Decimal("0.00")).quantize(Decimal("0.01"))
                     if restante <= 0:
                         continue
 
                     qs_bi = (
-                        TransaccionesBienesInmuebles.objects.filter(
-                            empresa=empresa,
-                            cocata1=str(clave_catastral)[:20],
-                            rubro=rubro_codigo[:6],
-                            estado="A",
+                        TransaccionesBienesInmuebles.objects.annotate(
+                            _cc_t=Trim("cocata1"),
+                            _rb_t=Trim("rubro"),
+                        )
+                        .filter(
+                            empresa=emp_trib,
+                            _cc_t=norm_cc,
+                            _rb_t=_norm_rubro_caja(rubro_codigo),
+                            estado__iexact="A",
                         )
                         .order_by("ano", "mes", "id")
                     )
