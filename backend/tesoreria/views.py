@@ -27,6 +27,7 @@ from .models import (
 from .forms import CuentaTesoreriaForm, PagoTesoreriaForm, DepositoTesoreriaForm, NotaTesoreriaForm, ConciliacionBancariaForm
 from presupuestos.models import OrdenPago
 from tributario.models import PagoVariosTemp, NoRecibos, TransaccionesIcs, TransaccionesBienesInmuebles, Negocio
+from core.pg_sequence import sync_postgres_serial_to_max_id
 import qrcode
 
 logger = logging.getLogger(__name__)
@@ -235,6 +236,13 @@ def _registrar_resumen_factura(
         f"empresa={empresa}; nombre={nombre}; metodo_pago={metodo_pago}; "
         f"valor_pagado={valor:.2f}; descripcion={descripcion}; comentario={comentario}"
     )
+
+    # Evitar duplicate PK en id tras importaciones (secuencia desfasada respecto a MAX(id)).
+    if connection.vendor == "postgresql":
+        if _table_exists("facturas"):
+            sync_postgres_serial_to_max_id("facturas")
+        if _table_exists("pagos_factura"):
+            sync_postgres_serial_to_max_id("pagos_factura")
 
     if _table_exists("facturas"):
         try:
