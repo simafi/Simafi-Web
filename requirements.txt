@@ -17,5 +17,5 @@ Pillow>=10.0
 qrcode>=7.4
 
 # Opcional según módulos activos (descomentar si hace falta)
-# pyproj>=3.6
+pyproj>=3.6
 # mysqlclient>=2.2
