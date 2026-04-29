@@ -7435,6 +7435,22 @@ def registrar_bien_inmueble(request):
                     messages.success(request, mensaje)
                     logger.info(f"✓✓✓ BIEN INMUEBLE {accion.upper()}: {bien.cocata1} (ID: {bien.id}) ✓✓✓")
                     logger.info(f"Mensaje de éxito: {mensaje}")
+
+                    # Recalcular impuesto siempre en backend antes de actualizar rubros/tasas.
+                    # Esto evita que el rubro de impuesto quede en cero cuando el frontend
+                    # envía un valor desactualizado o vacío.
+                    try:
+                        impuesto_calculado = calcular_impuesto_bdcata1(bien, municipio_codigo_sesion)
+                        bien.impuesto = impuesto_calculado
+                        bien.save(update_fields=['impuesto'])
+                        logger.info(
+                            f"Impuesto recalculado al guardar bien inmueble: "
+                            f"empresa={bien.empresa}, clave={bien.cocata1}, impuesto={impuesto_calculado}"
+                        )
+                    except Exception as e:
+                        logger.warning(
+                            f"No se pudo recalcular/guardar impuesto al registrar bien inmueble: {str(e)}"
+                        )
                     
                     # ========================================================================
                     # CREAR RUBRO EN TASASMUNICIPALES SEGÚN PERÍMETRO (URBANO/RURAL)
@@ -19289,6 +19305,7 @@ def enviar_a_caja_ajax(request):
             from datetime import datetime
             from decimal import Decimal
             from django.http import JsonResponse
+            from django.db import connection, transaction
             from tributario.models import PagoVariosTemp, NoRecibos
             
             # Obtener empresa de la sesión de catastro
@@ -19353,8 +19370,10 @@ def enviar_a_caja_ajax(request):
                         # Obtener usuario de la sesión de catastro
                         usuario = request.session.get('catastro_usuario_nombre', request.session.get('usuario', 'SISTEMA'))
                         
-                        # Crear registro en pagovariostemp con TODOS los campos del modelo
-                        pago_temp = PagoVariosTemp.objects.create(
+                        # Crear registro en pagovariostemp.
+                        # En algunos despliegues de Supabase, la columna `id` puede quedar sin identity
+                        # luego de una migración/importación. Si falla por `id NULL`, aplicamos fallback.
+                        payload = dict(
                             empresa=empresa,
                             recibo=numero_recibo_decimal,
                             codigo=codigo,
@@ -19387,10 +19406,28 @@ def enviar_a_caja_ajax(request):
                             Fechavence=None,
                             direccion=direccion,
                             prima='',
-                            
                             sexo='',
                             rtn=dni
                         )
+                        try:
+                            pago_temp = PagoVariosTemp.objects.create(**payload)
+                        except Exception as create_error:
+                            error_text = str(create_error).lower()
+                            if ('null value' in error_text and 'column id' in error_text) or (
+                                'pagovariostemp_id_seq' in error_text
+                            ):
+                                with transaction.atomic():
+                                    with connection.cursor() as cursor:
+                                        cursor.execute("SELECT COALESCE(MAX(id), 0) + 1 FROM pagovariostemp")
+                                        next_id = cursor.fetchone()[0]
+                                    payload['id'] = int(next_id)
+                                    pago_temp = PagoVariosTemp.objects.create(**payload)
+                                logger.warning(
+                                    "Fallback aplicado en pagovariostemp: id asignado manualmente (%s).",
+                                    payload['id'],
+                                )
+                            else:
+                                raise
                         
                         conceptos_procesados.append({
                             'codigo': codigo,
