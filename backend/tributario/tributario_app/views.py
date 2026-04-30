@@ -547,7 +547,8 @@ def enviar_a_caja_bienes(request):
             
             # Cache de rubros para evitar múltiples queries
             rubros_query = Rubro.objects.filter(empresa=empresa)
-            rubros_cache = {r.codigo: r for r in rubros_query}
+            # Normalizar keys para evitar fallas por espacios/case en producción
+            rubros_cache = {str(r.codigo or "").strip().upper(): r for r in rubros_query}
             
             detalle_recibo = []
 
@@ -594,8 +595,8 @@ def enviar_a_caja_bienes(request):
             }
             for t in transacciones:
                 monto_pagar = monto_map.get(str(t.id), t.monto)
-                rubro_obj = rubros_cache.get(t.rubro)
                 rubro_norm_all = str(t.rubro or '').strip().upper()
+                rubro_obj = rubros_cache.get(rubro_norm_all)
                 es_mora = rubro_norm_all.startswith('R') or rubro_norm_all.startswith('I')
                 try:
                     es_actual = int(t.ano) == int(current_year)
@@ -612,12 +613,14 @@ def enviar_a_caja_bienes(request):
                         breakdown['base_actual' if es_actual else 'base_anteriores'] += monto_bd
 
                 # Regla de Codificación Corriente vs Rezago (por año de la transacción)
+                cuenta_corriente = (getattr(rubro_obj, "cuenta", "") or "").strip() if rubro_obj else ""
+                cuenta_rezago = (getattr(rubro_obj, "cuentarez", "") or "").strip() if rubro_obj else ""
                 if int(t.ano) == current_year:
-                    codigo_contable = rubro_obj.cuenta if rubro_obj and getattr(rubro_obj, 'cuenta', None) else t.rubro
+                    codigo_contable = cuenta_corriente or rubro_norm_all
                 else:
-                    codigo_contable = rubro_obj.cuentarez if rubro_obj and getattr(rubro_obj, 'cuentarez', None) else t.rubro
+                    codigo_contable = cuenta_rezago or rubro_norm_all
 
-                codigo_contable = str(codigo_contable)[:16] if codigo_contable else ''
+                codigo_contable = (str(codigo_contable).strip())[:16] if codigo_contable else ''
 
                 periodo_str = f"{int(t.mes):02d}/{int(t.ano)}"
 
@@ -629,10 +632,11 @@ def enviar_a_caja_bienes(request):
                 es_abono = monto_a_pagar < monto_original
                 
                 if key_base not in grupos:
+                    desc_rubro = (getattr(rubro_obj, "descripcion", "") or "").strip() if rubro_obj else ""
                     grupos[key_base] = {
-                        'rubro': t.rubro,
+                        'rubro': rubro_norm_all,
                         'codigo': codigo_contable,
-                        'descripcion': ((rubro_obj.descripcion or '').strip() if rubro_obj else '') or f"Rubro {t.rubro}",
+                        'descripcion': desc_rubro or f"Rubro {rubro_norm_all}",
                         'monto': Decimal('0.00'),
                         'periodos': [],
                         'es_abono': False
