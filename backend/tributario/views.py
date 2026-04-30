@@ -5683,8 +5683,6 @@ def guardar_transaccion_pago(request):
                 expe_para_pago = str(int(float(str(expe_para_pago).strip())))
             except (ValueError, TypeError):
                 expe_para_pago = str(expe_para_pago).strip()
-            
-            logger.info(f"GuardarTransaccionPago: Creando PagoVariosTemp rubro '{rubro_codigo}' - monto: {monto_total_rubro} - expe: {expe_para_pago}")
         except (TypeError, ValueError):
             expe_decimal = Decimal('0')
         
@@ -5713,6 +5711,8 @@ def guardar_transaccion_pago(request):
                 
                 if valor_decimal == 0:
                     continue
+                
+                logger.info(f"GuardarTransaccionPago: Creando PagoVariosTemp rubro '{rubro_codigo}' - monto: {valor_decimal} - expe: {expe_para_pago}")
                 
                 pago = PagoVariosTemp.objects.create(
                     empresa=empresa_normalizada or None,
