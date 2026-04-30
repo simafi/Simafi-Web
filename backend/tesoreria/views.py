@@ -770,12 +770,11 @@ def caja_cobros(request):
                         if restante <= 0:
                             break
                         saldo = _safe_decimal(tbi.monto)
+                        # En producción/legacy pueden existir filas con `estado='A'` y monto=0 por
+                        # inconsistencias históricas. NO forzamos estado='P' aquí porque puede
+                        # esconder cuotas que necesitan validación; Caja solo debe marcar pagada
+                        # una cuota cuando el cobro la deja exactamente en 0.00.
                         if saldo <= 0:
-                            # Si ya no tiene saldo, marcar como pagada para ocultarla del listado legacy
-                            tbi.estado = "P"
-                            tbi.usuario = (usuario or "SISTEMA")[:50]
-                            tbi.fechasys = datetime.now()
-                            tbi.save(update_fields=["estado", "usuario", "fechasys"])
                             continue
 
                         aplicar = saldo if saldo <= restante else restante
@@ -783,7 +782,8 @@ def caja_cobros(request):
                         tbi.monto = nuevo_saldo
                         tbi.usuario = (usuario or "SISTEMA")[:50]
                         tbi.fechasys = datetime.now()
-                        if nuevo_saldo <= 0:
+                        # Marcar pagada únicamente cuando el saldo queda en 0.00 (no por negativos/rounding)
+                        if nuevo_saldo == Decimal("0.00"):
                             tbi.estado = "P"
                             tbi.save(update_fields=["monto", "estado", "usuario", "fechasys"])
                         else:
