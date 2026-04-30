@@ -13,11 +13,29 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.units import inch
+from django.db.utils import OperationalError, ProgrammingError
 
 class DeclaracionListView(ListView):
     model = DeclaracionPersonal
     template_name = 'impuesto_personal/declaracion_list.html'
     context_object_name = 'declaraciones'
+
+    def get_queryset(self):
+        """
+        En despliegues nuevos (p.ej. Supabase/Vercel) puede ocurrir que las migraciones del módulo
+        `impuesto_personal` aún no se hayan aplicado y la tabla no exista. En ese caso, evitar 500.
+        """
+        try:
+            return super().get_queryset().select_related("contribuyente", "contribuyente__persona").order_by("-id")
+        except (OperationalError, ProgrammingError) as exc:
+            try:
+                messages.error(
+                    self.request,
+                    f"No se pudo cargar Impuesto Personal (tablas/migraciones pendientes). Detalle: {exc}",
+                )
+            except Exception:
+                pass
+            return DeclaracionPersonal.objects.none()
 
 def crear_declaracion(request, identidad):
     persona = get_object_or_404(Identificacion, identidad=identidad)
@@ -106,6 +124,19 @@ class PlanillaListView(ListView):
     model = PlanillaEmpresa
     template_name = 'impuesto_personal/planilla_list.html'
     context_object_name = 'planillas'
+
+    def get_queryset(self):
+        try:
+            return super().get_queryset().order_by("-id")
+        except (OperationalError, ProgrammingError) as exc:
+            try:
+                messages.error(
+                    self.request,
+                    f"No se pudo cargar Planillas (tablas/migraciones pendientes). Detalle: {exc}",
+                )
+            except Exception:
+                pass
+            return PlanillaEmpresa.objects.none()
 
 def generar_pdf_solvencia(request, identidad):
     # 1. Validar mora antes de generar
