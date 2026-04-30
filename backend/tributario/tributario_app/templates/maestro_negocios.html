@@ -2294,8 +2294,8 @@
             // Para botones normales, permitir envío normal
             console.log(`ℹ️ Botón normal: ${botonValue} - Permitiendo envío normal`);
             
-            // Para botones que requieren RTM/Expediente (configuración/declaración/estado), incluir campos deshabilitados
-            if (botonValue === 'configuracion' || botonValue === 'declaracion' || botonValue === 'estado') {
+            // Para botones que requieren RTM/Expediente, incluir campos deshabilitados
+            if (botonValue === 'configuracion' || botonValue === 'declaracion' || botonValue === 'estado' || botonValue === 'historial') {
                 console.log(`🔧 Agregando campos deshabilitados para ${botonValue}`);
                 
                 // Crear inputs ocultos para campos deshabilitados

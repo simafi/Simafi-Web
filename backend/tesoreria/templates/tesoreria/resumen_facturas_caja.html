@@ -93,6 +93,9 @@
                             <tr>
                                 <th>Recibo</th>
                                 <th>Empresa</th>
+                                <th>RTM</th>
+                                <th>EXPE</th>
+                                <th>Clave</th>
                                 <th>Nombre</th>
                                 <th>Método de Pago</th>
                                 <th class="text-end">Valor Pagado</th>
@@ -107,6 +110,9 @@
                                 <tr>
                                     <td>{{ r.numero_recibo }}</td>
                                     <td>{{ r.empresa }}</td>
+                                    <td>{{ r.rtm|default:"-" }}</td>
+                                    <td>{{ r.expe|default:"-" }}</td>
+                                    <td>{{ r.cocata1|default:"-" }}</td>
                                     <td>{{ r.nombre }}</td>
                                     <td>{{ r.metodo_pago }}</td>
                                     <td class="text-end">L. {{ r.valor_pagado|floatformat:2 }}</td>
@@ -117,7 +123,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="9" class="text-center py-4 text-muted">No hay registros para los filtros seleccionados.</td>
+                                    <td colspan="12" class="text-center py-4 text-muted">No hay registros para los filtros seleccionados.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -125,7 +131,7 @@
                             <tr>
                                 <td colspan="4" class="text-end">Total General</td>
                                 <td class="text-end">L. {{ total_general|floatformat:2 }}</td>
-                                <td colspan="4"></td>
+                                <td colspan="7"></td>
                             </tr>
                         </tfoot>
                     </table>

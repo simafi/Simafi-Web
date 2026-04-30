@@ -56,6 +56,9 @@ def estado_cuenta(request):
                 rtm=rtm,
                 expe=expe
             )
+            # Mostrar solo cuotas pendientes: ocultar transacciones ya saldadas (monto <= 0)
+            # Control tributario determina pendiente por `monto__gt=0`.
+            qs = qs.filter(monto__gt=0)
 
             if ano_desde:
                 qs = qs.filter(ano__gte=ano_desde)
@@ -207,6 +210,301 @@ from django.views.decorators.http import require_http_methods
 import json
 from .buscar_identificacion import buscar_identificacion
 
+
+def historial_pagos(request):
+    """
+    Historial de pagos (cobrados en Caja) para un negocio.
+    Se filtra por `teso_cobro_caja.observacion` (guardada al cobrar) para RTM/EXPE.
+    """
+    from tesoreria.models import CobroCaja
+    from django.db import connection
+
+    if request.session.get("user_id") is None:
+        return redirect("modules_core:login_principal")
+
+    empresa_get = (request.GET.get("empresa") or "").strip()
+    municipio_codigo = (
+        request.session.get("municipio_codigo")
+        or request.session.get("empresa")
+        or "0301"
+    )
+    municipio_codigo = str(municipio_codigo).strip() or "0301"
+    empresa = empresa_get or municipio_codigo
+
+    if empresa_get and empresa_get != municipio_codigo:
+        messages.error(
+            request,
+            f"⚠️ Error de seguridad: La empresa especificada ({empresa_get}) no coincide con su sesión ({municipio_codigo}).",
+        )
+        empresa = municipio_codigo
+
+    rtm = (request.GET.get("rtm") or "").strip()
+    expe = (request.GET.get("expe") or "").strip()
+
+    def _parse_obs(texto: str) -> dict:
+        data = {"descripcion": "", "comentario": "", "metodo_pago": "", "rtm": "", "expe": "", "cocata1": "", "tipo": ""}
+        raw = (texto or "").strip()
+        if not raw:
+            return data
+        for chunk in raw.split("|"):
+            for part in chunk.split(";"):
+                if "=" not in part:
+                    continue
+                k, v = part.split("=", 1)
+                k = k.strip()
+                v = v.strip()
+                if k in data:
+                    data[k] = v
+        return data
+
+    pagos = []
+    if empresa and rtm and expe:
+        cobros = []
+        # Preferir vínculo estructurado si existe
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT to_regclass('public.teso_cobro_caja_vinculo')")
+                if cursor.fetchone()[0]:
+                    cursor.execute(
+                        """
+                        SELECT c.id, c.fecha, c.total_cobrado, c.referencia, c.cajero, c.observacion
+                        FROM teso_cobro_caja c
+                        JOIN teso_cobro_caja_vinculo v ON v.cobro_id = c.id
+                        WHERE c.empresa = %s AND c.fuente = 'CAJA' AND c.is_active = true
+                          AND v.tipo = 'N' AND v.rtm = %s AND v.expe = %s
+                        ORDER BY c.fecha DESC, c.id DESC
+                        LIMIT 200
+                        """,
+                        [empresa, rtm, expe],
+                    )
+                    rows = cursor.fetchall()
+                    # map a objetos mínimos compatibles con el resto del código
+                    class _CobroMini:
+                        __slots__ = ("id", "fecha", "total_cobrado", "referencia", "cajero", "observacion", "metodos")
+                    for (cid, fecha, total_cobrado, referencia, cajero, observacion) in rows:
+                        o = _CobroMini()
+                        o.id = cid
+                        o.fecha = fecha
+                        o.total_cobrado = total_cobrado
+                        o.referencia = referencia
+                        o.cajero = cajero
+                        o.observacion = observacion
+                        o.metodos = None
+                        cobros.append(o)
+        except Exception:
+            cobros = []
+
+        # Fallback legacy: búsqueda por observación
+        if not cobros:
+            patron = f"tipo=N;rtm={rtm};expe={expe}"
+            cobros = list(
+                CobroCaja.objects.filter(
+                    empresa=empresa,
+                    fuente="CAJA",
+                    observacion__icontains=patron,
+                )
+                .order_by("-fecha", "-id")[:200]
+            )
+
+        # Traer observaciones del resumen (pagos_factura) si existe
+        refs = [str(c.referencia or "").strip() for c in cobros if c.referencia]
+        obs_pf = {}
+        if refs:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT to_regclass('public.pagos_factura')")
+                    if cursor.fetchone()[0]:
+                        placeholders = ", ".join(["%s"] * len(refs))
+                        cursor.execute(
+                            f"SELECT numero_recibo, observaciones FROM pagos_factura WHERE numero_recibo IN ({placeholders})",
+                            refs,
+                        )
+                        for numero_recibo, observaciones in cursor.fetchall():
+                            obs_pf[str(numero_recibo)] = observaciones or ""
+            except Exception:
+                obs_pf = {}
+
+        # Construir filas para template (igual al resumen de caja)
+        pagos = []
+        for c in cobros:
+            metodos = []
+            try:
+                if getattr(c, "metodos", None) is not None:
+                    metodos = sorted({(m.forma_pago or "").upper() for m in c.metodos.all() if m.forma_pago})
+            except Exception:
+                metodos = []
+            metodo_txt = " + ".join(metodos) if metodos else "EFECTIVO"
+
+            parsed_pf = _parse_obs(obs_pf.get(str(c.referencia or ""), ""))
+            parsed_cobro = _parse_obs(c.observacion or "")
+            merged = {**parsed_pf, **{k: v for k, v in parsed_cobro.items() if v}}
+
+            pagos.append(
+                {
+                    "fecha": c.fecha,
+                    "referencia": c.referencia or "",
+                    "cajero": c.cajero or "",
+                    "total": c.total_cobrado,
+                    "metodo_pago": merged.get("metodo_pago") or metodo_txt,
+                    "descripcion": merged.get("descripcion") or "",
+                    "comentario": merged.get("comentario") or "",
+                }
+            )
+    else:
+        messages.error(request, "⚠️ Empresa, RTM y Expediente son obligatorios para ver el historial de pagos.")
+
+    return render(
+        request,
+        "historial_pagos.html",
+        {"empresa": empresa, "rtm": rtm, "expe": expe, "pagos": pagos},
+    )
+
+
+def historial_pagos_bienes(request):
+    """
+    Historial de pagos (cobrados en Caja) para Bienes Inmuebles.
+    Se filtra por Clave Catastral (cocata1) usando tabla vínculo si existe.
+    """
+    from tesoreria.models import CobroCaja
+    from django.db import connection
+
+    if request.session.get("user_id") is None:
+        return redirect("modules_core:login_principal")
+
+    empresa_get = (request.GET.get("empresa") or "").strip()
+    municipio_codigo = (
+        request.session.get("municipio_codigo")
+        or request.session.get("empresa")
+        or "0301"
+    )
+    municipio_codigo = str(municipio_codigo).strip() or "0301"
+    empresa = empresa_get or municipio_codigo
+
+    if empresa_get and empresa_get != municipio_codigo:
+        messages.error(
+            request,
+            f"⚠️ Error de seguridad: La empresa especificada ({empresa_get}) no coincide con su sesión ({municipio_codigo}).",
+        )
+        empresa = municipio_codigo
+
+    cocata1 = (request.GET.get("cocata1") or "").strip()
+
+    def _parse_obs(texto: str) -> dict:
+        data = {"descripcion": "", "comentario": "", "metodo_pago": "", "rtm": "", "expe": "", "cocata1": "", "tipo": ""}
+        raw = (texto or "").strip()
+        if not raw:
+            return data
+        for chunk in raw.split("|"):
+            for part in chunk.split(";"):
+                if "=" not in part:
+                    continue
+                k, v = part.split("=", 1)
+                k = k.strip()
+                v = v.strip()
+                if k in data:
+                    data[k] = v
+        return data
+
+    pagos = []
+    if empresa and cocata1:
+        cobros = []
+        # Preferir vínculo estructurado si existe
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT to_regclass('public.teso_cobro_caja_vinculo')")
+                if cursor.fetchone()[0]:
+                    cursor.execute(
+                        """
+                        SELECT c.id, c.fecha, c.total_cobrado, c.referencia, c.cajero, c.observacion
+                        FROM teso_cobro_caja c
+                        JOIN teso_cobro_caja_vinculo v ON v.cobro_id = c.id
+                        WHERE c.empresa = %s AND c.fuente = 'CAJA' AND c.is_active = true
+                          AND v.tipo = 'B' AND v.cocata1 = %s
+                        ORDER BY c.fecha DESC, c.id DESC
+                        LIMIT 200
+                        """,
+                        [empresa, cocata1],
+                    )
+                    rows = cursor.fetchall()
+                    class _CobroMini:
+                        __slots__ = ("id", "fecha", "total_cobrado", "referencia", "cajero", "observacion", "metodos")
+                    for (cid, fecha, total_cobrado, referencia, cajero, observacion) in rows:
+                        o = _CobroMini()
+                        o.id = cid
+                        o.fecha = fecha
+                        o.total_cobrado = total_cobrado
+                        o.referencia = referencia
+                        o.cajero = cajero
+                        o.observacion = observacion
+                        o.metodos = None
+                        cobros.append(o)
+        except Exception:
+            cobros = []
+
+        # Fallback legacy: búsqueda por observación
+        if not cobros:
+            patron = f"tipo=B;cocata1={cocata1}"
+            cobros = list(
+                CobroCaja.objects.filter(
+                    empresa=empresa,
+                    fuente="CAJA",
+                    observacion__icontains=patron,
+                )
+                .order_by("-fecha", "-id")[:200]
+            )
+
+        # Traer observaciones del resumen (pagos_factura) si existe
+        refs = [str(c.referencia or "").strip() for c in cobros if c.referencia]
+        obs_pf = {}
+        if refs:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT to_regclass('public.pagos_factura')")
+                    if cursor.fetchone()[0]:
+                        placeholders = ", ".join(["%s"] * len(refs))
+                        cursor.execute(
+                            f"SELECT numero_recibo, observaciones FROM pagos_factura WHERE numero_recibo IN ({placeholders})",
+                            refs,
+                        )
+                        for numero_recibo, observaciones in cursor.fetchall():
+                            obs_pf[str(numero_recibo)] = observaciones or ""
+            except Exception:
+                obs_pf = {}
+
+        pagos = []
+        for c in cobros:
+            metodos = []
+            try:
+                if getattr(c, "metodos", None) is not None:
+                    metodos = sorted({(m.forma_pago or "").upper() for m in c.metodos.all() if m.forma_pago})
+            except Exception:
+                metodos = []
+            metodo_txt = " + ".join(metodos) if metodos else "EFECTIVO"
+
+            parsed_pf = _parse_obs(obs_pf.get(str(c.referencia or ""), ""))
+            parsed_cobro = _parse_obs(c.observacion or "")
+            merged = {**parsed_pf, **{k: v for k, v in parsed_cobro.items() if v}}
+
+            pagos.append(
+                {
+                    "fecha": c.fecha,
+                    "referencia": c.referencia or "",
+                    "cajero": c.cajero or "",
+                    "total": c.total_cobrado,
+                    "metodo_pago": merged.get("metodo_pago") or metodo_txt,
+                    "descripcion": merged.get("descripcion") or "",
+                    "comentario": merged.get("comentario") or "",
+                }
+            )
+    else:
+        messages.error(request, "⚠️ Empresa y Clave Catastral son obligatorios para ver el historial de pagos de Bienes.")
+
+    return render(
+        request,
+        "historial_pagos_bienes.html",
+        {"empresa": empresa, "cocata1": cocata1, "pagos": pagos},
+    )
+
 def tributario_login(request):
     """Vista de login del módulo tributario"""
     # Redirigir directamente al menú general del tributario
@@ -340,10 +638,10 @@ def maestro_negocios(request):
                 rtm = data.get('rtm', '')
                 expe = data.get('expe', '')
                 if rtm and expe:
-                    return JsonResponse({
-                        'exito': True,
-                        'redirect': f'/tributario/configurar-tasas-negocio/?rtm={rtm}&expe={expe}'
-                    })
+                    target = f'/tributario/configurar-tasas-negocio/?rtm={rtm}&expe={expe}'
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'exito': True, 'redirect': target})
+                    return redirect(target)
                 else:
                     return JsonResponse({
                         'exito': False,
@@ -353,15 +651,35 @@ def maestro_negocios(request):
                 rtm = data.get('rtm', '')
                 expe = data.get('expe', '')
                 if rtm and expe:
-                    return JsonResponse({
-                        'exito': True,
-                        'redirect': f'/tributario/declaraciones/?rtm={rtm}&expe={expe}'
-                    })
+                    target = f'/tributario/declaraciones/?rtm={rtm}&expe={expe}'
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'exito': True, 'redirect': target})
+                    return redirect(target)
                 else:
                     return JsonResponse({
                         'exito': False,
                         'mensaje': 'RTM y Expediente son requeridos para declaración de volumen'
                     })
+            elif accion == 'estado':
+                rtm = data.get('rtm', '')
+                expe = data.get('expe', '')
+                empre = data.get('empresa', '') or request.session.get('municipio_codigo') or request.session.get('empresa') or ''
+                if rtm and expe:
+                    target = f'/tributario/estado-cuenta/?empresa={empre}&rtm={rtm}&expe={expe}'
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'exito': True, 'redirect': target})
+                    return redirect(target)
+                return JsonResponse({'exito': False, 'mensaje': 'RTM y Expediente son obligatorios para estado de cuenta'})
+            elif accion == 'historial':
+                rtm = data.get('rtm', '')
+                expe = data.get('expe', '')
+                empre = data.get('empresa', '') or request.session.get('municipio_codigo') or request.session.get('empresa') or ''
+                if rtm and expe:
+                    target = f'/tributario/historial-pagos/?empresa={empre}&rtm={rtm}&expe={expe}'
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'exito': True, 'redirect': target})
+                    return redirect(target)
+                return JsonResponse({'exito': False, 'mensaje': 'RTM y Expediente son obligatorios para historial'})
             else:
                 logger.error(f"⚠️ Acción no válida: {accion}")
                 print(f"⚠️ Acción no válida: {accion}", file=sys.stderr)

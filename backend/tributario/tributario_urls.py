@@ -43,6 +43,8 @@ urlpatterns = [
     path('api/buscar-declaracion/', simple_views.buscar_declaracion_existente, name='buscar_declaracion_existente'),
     path('reportes/', views.informes, name='informes'),
     path('estado-cuenta/', views.estado_cuenta, name='estado_cuenta'),
+    path('historial-pagos/', views.historial_pagos, name='historial_pagos'),
+    path('historial-pagos-bienes/', views.historial_pagos_bienes, name='historial_pagos_bienes'),
     
     # URLs adicionales requeridas por el template
     path('cierre-anual/', views.cierre_anual, name='cierre_anual'),

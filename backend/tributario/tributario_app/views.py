@@ -384,6 +384,9 @@ def gestionar_mora_bienes(request):
                 cocata1=cocata1,
                 estado='A'
             )
+            # Ocultar cuotas ya saldadas: si el saldo queda en 0, no debe mostrarse en talonario/listado.
+            # (Algunos datos legacy pueden quedar con estado='A' aunque monto=0; este filtro lo corrige.)
+            qs = qs.filter(monto__gt=0)
 
             if ano_desde and mes_desde:
                 qs = qs.filter(ano__gte=ano_desde)
@@ -875,7 +878,8 @@ def enviar_a_caja_bienes(request):
                     usuario=usuario,
                     referencia='',
                     banco='',
-                    Tipofa=' ',
+                    # Identifica que el recibo pertenece a Bienes Inmuebles (Caja debe aplicarlo a transaccionesbienesinmuebles)
+                    Tipofa='B',
                     Rtm=cocata1,
                     expe='0',
                     pagodia=0,
