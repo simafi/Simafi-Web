@@ -26,7 +26,14 @@ def main() -> None:
         or (os.environ.get("DJANGO_RUN_MIGRATIONS") or "").strip().lower() in ("1", "true", "yes", "on")
     )
     if run_migrations:
-        print("Vercel build: running migrate --noinput")
+        # En Supabase, es común usar PgBouncer/pooler para runtime (DATABASE_URL con ?pgbouncer=true),
+        # pero para migraciones conviene una conexión directa (sin pooler) para evitar errores.
+        direct_url = (os.environ.get("DIRECT_URL") or "").strip()
+        if direct_url:
+            os.environ["DATABASE_URL"] = direct_url
+            print("Vercel build: running migrate --noinput (using DIRECT_URL)")
+        else:
+            print("Vercel build: running migrate --noinput")
         call_command("migrate", "--noinput")
     else:
         print("Vercel build: skipping migrate (set DJANGO_RUN_MIGRATIONS=1 to force)")
