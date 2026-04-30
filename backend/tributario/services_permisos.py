@@ -126,6 +126,11 @@ def generar_permiso_pdf(negocio, ano):
     from reportlab.lib.units import inch
     from reportlab.lib.styles import getSampleStyleSheet
     
+    def _safe_text(value, default=""):
+        if value is None:
+            return default
+        return str(value).strip()
+    
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
@@ -157,15 +162,15 @@ def generar_permiso_pdf(negocio, ano):
     y -= line_height * 1.5
     
     p.setFont("Helvetica-Bold", 12)
-    p.drawString(1*inch, y, f"NOMBRE DEL NEGOCIO: {negocio.nombrenego.strip()}")
+    p.drawString(1*inch, y, f"NOMBRE DEL NEGOCIO: {_safe_text(getattr(negocio, 'nombrenego', None), 'N/D')}")
     y -= line_height
     p.drawString(1*inch, y, f"RTM / EXPEDIENTE: {negocio.rtm} / {negocio.expe}")
     y -= line_height
-    p.drawString(1*inch, y, f"PROPIETARIO: {negocio.comerciante.strip()}")
+    p.drawString(1*inch, y, f"PROPIETARIO: {_safe_text(getattr(negocio, 'comerciante', None), 'N/D')}")
     y -= line_height
-    p.drawString(1*inch, y, f"DIRECCIÓN: {negocio.direccion.strip()}")
+    p.drawString(1*inch, y, f"DIRECCIÓN: {_safe_text(getattr(negocio, 'direccion', None), 'N/D')}")
     y -= line_height
-    p.drawString(1*inch, y, f"ACTIVIDAD ECONÓMICA: {negocio.descriactividad.strip()}")
+    p.drawString(1*inch, y, f"ACTIVIDAD ECONÓMICA: {_safe_text(getattr(negocio, 'descriactividad', None), 'N/D')}")
     y -= line_height * 2
     
     p.setFont("Helvetica", 11)
