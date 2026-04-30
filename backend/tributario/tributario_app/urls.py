@@ -43,6 +43,7 @@ urlpatterns = [
     path('menu-general/', menu_general, name='menu_general'),
     # Alias para acceder a Servicios Públicos desde /tributario/
     path('servicios-publicos/', include('servicios_publicos.urls', namespace='servicios_publicos')),
+    path('impuesto-personal/', include('tributario.impuesto_personal.urls', namespace='impuesto_personal')),
     path('bienes-inmuebles/', bienes_inmuebles, name='bienes_inmuebles'),
     path('gestionar-mora-bienes/', gestionar_mora_bienes, name='gestionar_mora_bienes'),
     path('industria-comercio-servicios/', industria_comercio_servicios, name='industria_comercio_servicios'),

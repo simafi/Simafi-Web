@@ -154,6 +154,7 @@ INSTALLED_APPS = [
     # 'api',
     # 'tributario',  # COMENTADO - Causa conflicto de registro de modelos. Los modelos se importan directamente.
     'tributario_app',
+    'tributario.impuesto_personal',
     
     # Aplicación administrativo
     'administrativo_app',

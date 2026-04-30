@@ -189,6 +189,24 @@
         </div>
     </div>
 
+    <!-- Impuesto Personal (NUEVO) -->
+    <div class="col-md-6">
+        <div class="dash-module">
+            <button type="button" class="dash-module-toggle" data-dash-toggle="personal" aria-expanded="false">
+                <div class="module-icon module-purple"><i class="fas fa-user-tie"></i></div>
+                <div class="module-body">
+                    <h3>Impuesto Personal</h3>
+                    <p>Declaraciones de ingresos, retenciones y solvencia municipal.</p>
+                </div>
+                <i class="fas fa-chevron-down module-arrow"></i>
+            </button>
+            <div class="dash-submenu" data-dash-menu="personal">
+                <a href="{% url 'tributario:impuesto_personal:declaracion_list' %}"><i class="fas fa-file-invoice"></i> Declaraciones</a>
+                <a href="{% url 'tributario:impuesto_personal:planilla_list' %}"><i class="fas fa-users-cog"></i> Planillas de Empresas</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Facturación Misceláneos (módulo principal) -->
     <div class="col-md-6">
         <div class="dash-module">

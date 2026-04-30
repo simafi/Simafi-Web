@@ -1,0 +1,71 @@
+{% extends "base_tributario.html" %}
+
+{% block title %}Planillas de Empresas{% endblock %}
+{% block breadcrumb %}Impuesto Personal / Planillas{% endblock %}
+
+{% block content %}
+<div class="glass-card animate-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 mb-1">Carga de Planillas</h2>
+            <p class="text-muted small">Historial de archivos de planilla importados por las empresas</p>
+        </div>
+        <a href="{% url 'impuesto_personal:importar_planilla' %}" class="btn btn-primary">
+            <i class="fas fa-upload me-2"></i> Nueva Importación
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Empresa</th>
+                    <th>Período</th>
+                    <th>Archivo</th>
+                    <th>Fecha Carga</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for planilla in planillas %}
+                <tr>
+                    <td>
+                        <strong>{{ planilla.empresa.nombre }}</strong><br>
+                        <small class="text-muted">RTM: {{ planilla.empresa.rtm }}</small>
+                    </td>
+                    <td>{{ planilla.mes }}/{{ planilla.ano }}</td>
+                    <td><i class="fas fa-file-excel text-success me-2"></i> {{ planilla.archivo.name|truncatechars:30 }}</td>
+                    <td>{{ planilla.fecha_carga|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if planilla.procesado %}
+                        <span class="badge bg-success">Procesado</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-list"></i> Detalles</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No se han cargado planillas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        padding: 20px;
+    }
+</style>
+{% endblock %}

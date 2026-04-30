@@ -1,0 +1,149 @@
+{% extends "base_tributario.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Nueva Declaración - {{ persona.nombres }}{% endblock %}
+{% block breadcrumb %}Impuesto Personal / Nueva Declaración{% endblock %}
+
+{% block extra_head %}
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        padding: 30px;
+    }
+    .summary-card {
+        background: rgba(59, 130, 246, 0.05);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px dashed rgba(59, 130, 246, 0.3);
+    }
+    .val-label { font-size: 0.85rem; color: #64748b; margin-bottom: 2px; }
+    .val-amount { font-size: 1.1rem; font-weight: 700; color: #1e293b; }
+    .val-total { font-size: 1.5rem; color: #059669; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="glass-card animate-in">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2 class="h3">Declaración Personal de Ingresos</h2>
+                    <p class="text-muted">Formulario para el registro de ingresos anuales y cálculo de impuestos.</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="badge bg-primary p-2">Año Fiscal {{ form.ano_fiscal.value }}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Información del Contribuyente -->
+                <div class="col-md-12 mb-4">
+                    <div class="p-3 bg-light rounded-3 d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-white p-3 shadow-sm">
+                            <i class="fas fa-user-tie fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ persona.nombres }} {{ persona.apellidos }}</h5>
+                            <p class="mb-0 text-muted small">DNI: {{ persona.identidad }} | RTN: {{ contribuyente.rtn|default:"N/A" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" class="row">
+                    {% csrf_token %}
+                    {{ form.contribuyente }}
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Año Fiscal</label>
+                            {% render_field form.ano_fiscal class="form-control" %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Renta Bruta Anual (L.)</label>
+                            {% render_field form.renta_bruta class="form-control form-control-lg" placeholder="0.00" %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Deducciones Permitidas (L.)</label>
+                            {% render_field form.deducciones class="form-control" placeholder="0.00" %}
+                            <small class="text-muted">Gastos médicos, tercera edad, etc. según ley.</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="summary-card">
+                            <h5 class="mb-3">Resumen de Cálculo</h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="val-label">Renta Neta Gravable</div>
+                                    <div id="res_renta_neta" class="val-amount">L. 0.00</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="val-label">Impuesto Base</div>
+                                    <div id="res_impuesto" class="val-amount">L. 0.00</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="val-label">Multas (Tardía)</div>
+                                    <div id="res_multa" class="val-amount text-danger">L. 0.00</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="val-label">Recargos/Intereses</div>
+                                    <div id="res_recargo" class="val-amount text-danger">L. 0.00</div>
+                                </div>
+                                <div class="col-12 mt-4 pt-3 border-top">
+                                    <div class="val-label">TOTAL A PAGAR</div>
+                                    <div id="res_total" class="val-total">L. 0.00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 pt-4 border-top text-end">
+                        <a href="{% url 'impuesto_personal:declaracion_list' %}" class="btn btn-link text-muted me-3">Cancelar</a>
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-save me-2"></i> Presentar Declaración
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Lógica para actualizar el resumen en tiempo real
+    const rentaInput = document.querySelector('input[name="renta_bruta"]');
+    const deducInput = document.querySelector('input[name="deducciones"]');
+    
+    function updateSummary() {
+        const renta = parseFloat(rentaInput.value) || 0;
+        const deduc = parseFloat(deducInput.value) || 0;
+        const ano = {{ form.ano_fiscal.value }};
+        
+        // Simulación del cálculo en JS para feedback inmediato
+        // El cálculo real se hace en el servidor al guardar
+        let rentaNeta = Math.max(0, renta - deduc);
+        let impuesto = 0;
+        
+        // Simular escalas (ejemplo Honduras simplificado)
+        if (rentaNeta > 40000) {
+            impuesto = (rentaNeta - 40000) * 0.02; // Ejemplo: 2% sobre exceso
+        }
+        
+        document.getElementById('res_renta_neta').innerText = 'L. ' + rentaNeta.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('res_impuesto').innerText = 'L. ' + impuesto.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('res_total').innerText = 'L. ' + impuesto.toLocaleString(undefined, {minimumFractionDigits: 2});
+    }
+
+    rentaInput.addEventListener('input', updateSummary);
+    deducInput.addEventListener('input', updateSummary);
+    
+    // Inicializar
+    updateSummary();
+</script>
+{% endblock %}

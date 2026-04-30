@@ -1,0 +1,130 @@
+{% extends "base_tributario.html" %}
+
+{% block title %}Declaraciones de Impuesto Personal{% endblock %}
+{% block breadcrumb %}Impuesto Personal / Declaraciones{% endblock %}
+
+{% block extra_head %}
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .table-container {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .table thead {
+        background: rgba(59, 130, 246, 0.1);
+    }
+    .badge-presentada { background-color: #3b82f6; color: white; }
+    .badge-pagada { background-color: #10b981; color: white; }
+    .badge-borrador { background-color: #6b7280; color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass-card animate-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 mb-1">Declaraciones de Impuesto Personal</h2>
+            <p class="text-muted small">Listado de declaraciones presentadas por contribuyentes</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'impuesto_personal:importar_planilla' %}" class="btn btn-outline-primary">
+                <i class="fas fa-file-import me-2"></i> Importar Planilla
+            </a>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevaDeclaracion">
+                <i class="fas fa-plus me-2"></i> Nueva Declaración
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Contribuyente</th>
+                    <th>Identidad</th>
+                    <th>Año Fiscal</th>
+                    <th>Renta Bruta</th>
+                    <th>Impuesto</th>
+                    <th>Total a Pagar</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dec in declaraciones %}
+                <tr>
+                    <td><strong>{{ dec.contribuyente.persona.nombres }} {{ dec.contribuyente.persona.apellidos }}</strong></td>
+                    <td>{{ dec.contribuyente.persona.identidad }}</td>
+                    <td>{{ dec.ano_fiscal }}</td>
+                    <td>L. {{ dec.renta_bruta|floatformat:2 }}</td>
+                    <td>L. {{ dec.impuesto_calculado|floatformat:2 }}</td>
+                    <td><strong>L. {{ dec.total_pagar|floatformat:2 }}</strong></td>
+                    <td>
+                        <span class="badge badge-{{ dec.estado }}">
+                            {{ dec.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" title="Ver Detalles">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <a href="{% url 'impuesto_personal:verificar_solvencia' dec.contribuyente.persona.identidad %}" class="btn btn-sm btn-outline-info" title="Verificar Solvencia (JSON)">
+                            <i class="fas fa-search"></i>
+                        </a>
+                        <a href="{% url 'impuesto_personal:generar_pdf_solvencia' dec.contribuyente.persona.identidad %}" class="btn btn-sm btn-outline-success" title="Imprimir Solvencia PDF">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">No se encontraron declaraciones.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal para buscar contribuyente por DNI -->
+<div class="modal fade" id="modalNuevaDeclaracion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card p-0" style="background: white;">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title">Iniciar Nueva Declaración</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small">Ingrese la identidad del contribuyente para comenzar.</p>
+                <form id="formBusquedaIdentidad">
+                    <div class="mb-3">
+                        <label class="form-label">Número de Identidad (DNI)</label>
+                        <input type="text" id="inputDNI" class="form-control form-control-lg" placeholder="0000-0000-00000" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="fas fa-search me-2"></i> Buscar y Continuar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('formBusquedaIdentidad').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const dni = document.getElementById('inputDNI').value;
+        if (dni) {
+            window.location.href = `/tributario/impuesto-personal/declaraciones/nueva/${dni}/`;
+        }
+    });
+</script>
+{% endblock %}

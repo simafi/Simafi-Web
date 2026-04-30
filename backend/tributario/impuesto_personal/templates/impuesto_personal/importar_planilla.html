@@ -1,0 +1,69 @@
+{% extends "base_tributario.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Importar Planilla{% endblock %}
+{% block breadcrumb %}Impuesto Personal / Importar Planilla{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="glass-card animate-in">
+            <h2 class="h3 mb-4">Importación de Planilla de Empleados</h2>
+            
+            <div class="alert alert-info border-0 shadow-sm mb-4">
+                <div class="d-flex gap-3">
+                    <i class="fas fa-info-circle fa-2x"></i>
+                    <div>
+                        <strong>Instrucciones:</strong> El archivo debe ser un Excel (.xlsx) o CSV con las columnas: 
+                        <em>Identidad, Nombre Completo, Sueldo Bruto, Impuesto Retenido</em>.
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label class="form-label">Seleccionar Empresa</label>
+                    {% render_field form.empresa class="form-control" %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Año</label>
+                        {% render_field form.ano class="form-control" %}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Mes</label>
+                        {% render_field form.mes class="form-control" %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Archivo de Planilla</label>
+                    {% render_field form.archivo class="form-control" %}
+                    <div class="form-text">Tamaño máximo: 5MB</div>
+                </div>
+
+                <div class="d-grid mt-5">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-cloud-upload-alt me-2"></i> Iniciar Importación
+                    </button>
+                    <a href="{% url 'impuesto_personal:planilla_list' %}" class="btn btn-link mt-2 text-muted">Volver al listado</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        padding: 40px;
+    }
+</style>
+{% endblock %}

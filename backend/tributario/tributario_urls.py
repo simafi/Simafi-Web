@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 # Importación ABSOLUTA para evitar que Django registre modelos como tributario.tributario_app
 from tributario_app import views as tributario_app_views
@@ -119,4 +119,7 @@ urlpatterns = [
     
     # Configuración de Parámetros Tributarios (Amnistías, Descuentos, etc)
     path('parametros-tributarios/', views.parametros_tributarios_crud, name='parametros_tributarios'),
+    
+    # Impuesto Personal
+    path('impuesto-personal/', include('tributario.impuesto_personal.urls', namespace='impuesto_personal')),
 ]

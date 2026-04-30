@@ -1,0 +1,14 @@
+- [x] Crear app `impuesto_personal`
+- [x] Definir modelos de base de datos
+- [x] Implementar lógica de cálculo de impuestos, multas y recargos
+- [x] Crear vistas y formularios de declaración
+- [x] Implementar validación de solvencia municipal (bloqueo por mora)
+- [x] Desarrollar interfaz premium (Glassmorphism)
+- [x] Implementar importación de planillas (Excel/CSV)
+- [x] Generación de Solvencia en PDF
+- [x] Integración final con dashboard
+- [ ] Update base navigation to include Personal Tax link.
+- [ ] Write unit tests for models, services, views.
+- [ ] Verify background Celery task for payroll import.
+- [ ] Ensure SEO meta tags and SEO‑friendly URLs.
+- [ ] Manual QA: tax calculation, late‑filing penalty, interest, solvency blocking.
