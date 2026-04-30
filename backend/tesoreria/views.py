@@ -12,6 +12,8 @@ from django.db.models import Q, Sum, IntegerField
 from django.db.models.functions import Trim, Cast
 from django.db import transaction, connection
 
+logger = logging.getLogger(__name__)
+
 from contabilidad.models import CuentaContable
 from .models import (
     CuentaTesoreria,

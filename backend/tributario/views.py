@@ -5244,6 +5244,8 @@ def calcular_transaccion_pago(request):
 @csrf_exempt
 def guardar_transaccion_pago(request):
     """Vista AJAX para guardar transacción de pago que puede ser cobrada en módulo de caja"""
+    import logging
+    logger = logging.getLogger(__name__)
     from django.http import JsonResponse
     from tributario.models import TransaccionesIcs, Rubro, TasasDecla, Actividad, NoRecibos, PagoVariosTemp, ParametrosTributarios
     from decimal import Decimal
