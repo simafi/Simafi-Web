@@ -7,36 +7,47 @@ def verificar_requisitos_permiso(negocio, ano):
     Verifica si un negocio cumple con todos los requisitos para emitir el Permiso de Operación.
     Retorna un diccionario con el estado de cada requisito.
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    from django.db.models.functions import Cast, Trim
+    from django.db.models import IntegerField, Q
+    
     empresa = negocio.empresa
     rtm = negocio.rtm
     expe = negocio.expe
     
+    logger.info(f"📋 Verificando requisitos permiso para RTM: {rtm}, EXPE: {expe}, Año: {ano}")
+    
     # 1. Estatus Activo
-    estatus_ok = negocio.estatus == 'A'
+    estatus_ok = (negocio.estatus == 'A')
     
     # 2. Solvencia Municipal (No debe tener mora en ICS hasta el mes actual)
+    # Según petición del usuario: controlar hasta el mes que se está emitiendo, no todo el año.
     current_date = datetime.now()
-    current_month_str = f"{current_date.month:02d}"
-    
-    from django.db.models import Q
+    current_month = current_date.month
     
     # Filtramos transacciones con monto > 0 que:
     # a) Sean de años anteriores
-    # b) Sean del año actual pero de meses anteriores o el actual
-    mora_ics = TransaccionesIcs.objects.filter(
+    # b) Sean del año actual pero de meses anteriores o el actual (comparación numérica)
+    mora_ics_qs = TransaccionesIcs.objects.filter(
         empresa=empresa,
         rtm=rtm,
         expe=expe,
-        monto__gt=0
+        monto__gt=0.01 # Tolerancia mínima
+    ).annotate(
+        mes_num=Cast(Trim('mes'), IntegerField())
     ).filter(
         Q(ano__lt=ano) | 
-        Q(ano=ano, mes__lte=current_month_str)
-    ).aggregate(total=Sum('monto'))['total'] or 0
+        Q(ano=ano, mes_num__lte=current_month)
+    )
     
-    solvencia_ok = (mora_ics <= 0)
+    mora_ics = mora_ics_qs.aggregate(total=Sum('monto'))['total'] or 0
+    solvencia_ok = (mora_ics <= 0.05) # Pequeño margen de tolerancia
+    
+    if not solvencia_ok:
+        logger.warning(f"❌ Mora detectada: L. {mora_ics} para RTM: {rtm}")
     
     # 3. Declaración Jurada del año corriente
-    # La declaración de volumen de ventas para el año fiscal actual
     declara_ok = DeclaracionVolumen.objects.filter(
         empresa=empresa,
         rtm=rtm,
@@ -44,16 +55,24 @@ def verificar_requisitos_permiso(negocio, ano):
         ano=ano
     ).exists()
     
-    # 4. Pago de Tasa de Permiso (Rubro C0002)
-    # Verificamos si existe el cargo del permiso para el año y si su monto pendiente es 0
+    if not declara_ok:
+        logger.warning(f"❌ Falta declaración {ano} para RTM: {rtm}")
+    
+    # 4. Pago de Tasa de Permiso (Rubro C0002 o similares)
+    # Verificamos si existe el cargo del permiso para el año y si su monto pendiente es <= 0
     pago_permiso_ok = TransaccionesIcs.objects.filter(
         empresa=empresa,
         rtm=rtm,
         expe=expe,
-        rubro__icontains='C0002',
+        rubro__icontains='C0002', # O usar rubro__startswith='C' si es genérico
         ano=ano,
-        monto__lte=0
+        monto__lte=0.05
     ).exists()
+    
+    # Si no existe el rubro C0002, tal vez no se ha cargado. 
+    # Consideramos pendiente si no existe registro de cobro para ese rubro en el año.
+    if not pago_permiso_ok:
+        logger.warning(f"❌ Tasa de Permiso (C0002) no pagada o no cargada para RTM: {rtm}")
     
     # 5. Requisitos Manuales (Bomberos, Salud, etc.)
     requisitos_manuales = PermisoOperacionRequisito.objects.filter(
@@ -69,11 +88,17 @@ def verificar_requisitos_permiso(negocio, ano):
             requisitos_manuales.ambiente
         )
     
-    return {
-        'exito': estatus_ok and solvencia_ok and declara_ok and pago_permiso_ok and manual_ok,
+    if not manual_ok:
+        logger.warning(f"❌ Requisitos manuales incompletos para RTM: {rtm}")
+    
+    # Construir respuesta detallada
+    exito = estatus_ok and solvencia_ok and declara_ok and pago_permiso_ok and manual_ok
+    
+    res = {
+        'exito': exito,
         'detalles': {
             'estatus': {'ok': estatus_ok, 'mensaje': 'Negocio Activo' if estatus_ok else 'Negocio Inactivo/Cancelado'},
-            'solvencia': {'ok': solvencia_ok, 'mensaje': f'Solvente hasta {get_mes_nombre(current_date.month)} (Mora: L. {mora_ics:,.2f})' if solvencia_ok else f'Tiene Mora hasta {get_mes_nombre(current_date.month)} (L. {mora_ics:,.2f})'},
+            'solvencia': {'ok': solvencia_ok, 'mensaje': f'Solvente hasta {get_mes_nombre(current_month)} (Mora: L. {mora_ics:,.2f})' if solvencia_ok else f'Tiene Mora hasta {get_mes_nombre(current_month)} (L. {mora_ics:,.2f})'},
             'declaracion': {'ok': declara_ok, 'mensaje': f'Declaración {ano} presentada' if declara_ok else f'Falta declaración {ano}'},
             'pago_permiso': {'ok': pago_permiso_ok, 'mensaje': 'Tasa de Permiso Pagada' if pago_permiso_ok else 'Tasa de Permiso Pendiente (Rubro C0002)'},
             'manuales': {
@@ -86,6 +111,9 @@ def verificar_requisitos_permiso(negocio, ano):
         },
         'requisitos_id': requisitos_manuales.id if requisitos_manuales else None
     }
+    
+    logger.info(f"✅ Resultado verificación para {rtm}: {exito}")
+    return res
 
 def generar_permiso_pdf(negocio, ano):
     """
