@@ -107,31 +107,35 @@ def _ensure_cobro_vinculo_table():
     """
     if _table_exists("teso_cobro_caja_vinculo"):
         return
+    # IMPORTANTE (Postgres): si un cursor.execute falla dentro de un transaction.atomic()
+    # y atrapamos la excepción, la transacción queda "abortada" y rompe consultas posteriores.
+    # Usamos un savepoint (inner atomic) para que el fallo no contamine el cobro.
     try:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS teso_cobro_caja_vinculo (
-                  id BIGSERIAL PRIMARY KEY,
-                  cobro_id BIGINT NOT NULL,
-                  empresa VARCHAR(10) NOT NULL,
-                  tipo CHAR(1) NOT NULL,
-                  rtm VARCHAR(20) NULL,
-                  expe VARCHAR(12) NULL,
-                  cocata1 VARCHAR(20) NULL,
-                  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS teso_cobro_caja_vinculo (
+                      id BIGSERIAL PRIMARY KEY,
+                      cobro_id BIGINT NOT NULL,
+                      empresa VARCHAR(10) NOT NULL,
+                      tipo CHAR(1) NOT NULL,
+                      rtm VARCHAR(20) NULL,
+                      expe VARCHAR(12) NULL,
+                      cocata1 VARCHAR(20) NULL,
+                      created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """
                 )
-                """
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_teso_cobro_vinculo_negocio ON teso_cobro_caja_vinculo (empresa, tipo, rtm, expe)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_teso_cobro_vinculo_bienes ON teso_cobro_caja_vinculo (empresa, tipo, cocata1)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_teso_cobro_vinculo_cobro ON teso_cobro_caja_vinculo (cobro_id)"
-            )
+                cursor.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_teso_cobro_vinculo_negocio ON teso_cobro_caja_vinculo (empresa, tipo, rtm, expe)"
+                )
+                cursor.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_teso_cobro_vinculo_bienes ON teso_cobro_caja_vinculo (empresa, tipo, cocata1)"
+                )
+                cursor.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_teso_cobro_vinculo_cobro ON teso_cobro_caja_vinculo (cobro_id)"
+                )
     except Exception:
         # Si falla por permisos/DB, no bloquear cobro
         return
@@ -673,27 +677,29 @@ def caja_cobros(request):
                 pass
 
             # Insertar vínculo estructurado (si la DB lo permite)
+            # Si falla el SQL, no debe abortar la transacción del cobro (usar savepoint).
             try:
                 if _table_exists("teso_cobro_caja") and "cobro" in locals() and cobro:
                     _ensure_cobro_vinculo_table()
                     if _table_exists("teso_cobro_caja_vinculo"):
-                        with connection.cursor() as cursor:
-                            if es_recibo_negocio and negocio_rtm and negocio_expe:
-                                cursor.execute(
-                                    """
-                                    INSERT INTO teso_cobro_caja_vinculo (cobro_id, empresa, tipo, rtm, expe)
-                                    VALUES (%s, %s, %s, %s, %s)
-                                    """,
-                                    [cobro.id, empresa, "N", negocio_rtm[:20], str(negocio_expe)[:12]],
-                                )
-                            if es_recibo_bienes and clave_catastral:
-                                cursor.execute(
-                                    """
-                                    INSERT INTO teso_cobro_caja_vinculo (cobro_id, empresa, tipo, cocata1)
-                                    VALUES (%s, %s, %s, %s)
-                                    """,
-                                    [cobro.id, empresa, "B", str(clave_catastral)[:20]],
-                                )
+                        with transaction.atomic():
+                            with connection.cursor() as cursor:
+                                if es_recibo_negocio and negocio_rtm and negocio_expe:
+                                    cursor.execute(
+                                        """
+                                        INSERT INTO teso_cobro_caja_vinculo (cobro_id, empresa, tipo, rtm, expe)
+                                        VALUES (%s, %s, %s, %s, %s)
+                                        """,
+                                        [cobro.id, empresa, "N", negocio_rtm[:20], str(negocio_expe)[:12]],
+                                    )
+                                if es_recibo_bienes and clave_catastral:
+                                    cursor.execute(
+                                        """
+                                        INSERT INTO teso_cobro_caja_vinculo (cobro_id, empresa, tipo, cocata1)
+                                        VALUES (%s, %s, %s, %s)
+                                        """,
+                                        [cobro.id, empresa, "B", str(clave_catastral)[:20]],
+                                    )
             except Exception:
                 pass
 
