@@ -467,7 +467,9 @@ def enviar_a_caja_bienes(request):
             # Procesar datos
             data = json.loads(request.body)
             cocata1 = data.get('cocata1', '').strip()
-            empresa = data.get('empresa', '').strip()
+            # Normalizar empresa a 4 chars (tablas legacy: rubros/transacciones usan empresa CHAR(4))
+            empresa = (data.get('empresa', '') or '').strip()
+            empresa = str(empresa)[:4].strip()
             pago_items = data.get('pago_items', []) # Lista de {id: X, monto_pagar: Y}
             identidad_pago = data.get('identidad_pago', '').strip()
             nombre_pago = data.get('nombre_pago', '').strip()
@@ -521,6 +523,7 @@ def enviar_a_caja_bienes(request):
                 or request.session.get('empresa')
             )
             empresa_sesion = (str(empresa_sesion).strip() if empresa_sesion is not None else '')
+            empresa_sesion = empresa_sesion[:4].strip()
             if empresa_sesion and empresa and empresa != empresa_sesion:
                 return JsonResponse({
                     'exito': False,
@@ -629,7 +632,7 @@ def enviar_a_caja_bienes(request):
                     grupos[key_base] = {
                         'rubro': t.rubro,
                         'codigo': codigo_contable,
-                        'descripcion': (rubro_obj.descripcion if rubro_obj else t.rubro),
+                        'descripcion': ((rubro_obj.descripcion or '').strip() if rubro_obj else '') or f"Rubro {t.rubro}",
                         'monto': Decimal('0.00'),
                         'periodos': [],
                         'es_abono': False

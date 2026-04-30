@@ -1031,7 +1031,8 @@
                         },
                         body: JSON.stringify({
                             cocata1: '{{ cocata1 }}',
-                            empresa: '{{ municipio_codigo }}',
+                            // En producción algunos flujos traen empresa con formatos distintos; usamos el código normalizado.
+                            empresa: '{{ empresa }}',
                             pago_items: items,
                             identidad_pago: identidad,
                             nombre_pago: nombre,
