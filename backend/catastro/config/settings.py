@@ -135,7 +135,8 @@ else:
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'bdsimafipy',
             'USER': 'root',
-            'PASSWORD': 'sandres',
+            # No hardcodear credenciales en el repo. Use variables de entorno en su entorno local.
+            'PASSWORD': os.environ.get('DJANGO_MYSQL_DB_PASSWORD', ''),
             'HOST': 'localhost',
             'PORT': '3307',
             'OPTIONS': {

@@ -6,18 +6,23 @@ from . import simple_views
 from . import ajax_views
 import traceback
 from django.http import HttpResponse
+from django.conf import settings
 
 def debug_maestro_negocios(request):
     try:
         return views.maestro_negocios(request)
     except Exception as e:
-        return HttpResponse(f"<h1>SIMAFI VERCEL DEBUG ERROR</h1><pre>{traceback.format_exc()}</pre>", status=500)
+        if getattr(settings, "DEBUG", False):
+            return HttpResponse(f"<h1>SIMAFI DEBUG ERROR</h1><pre>{traceback.format_exc()}</pre>", status=500)
+        return HttpResponse("Error interno del servidor.", status=500)
 
 def debug_gestionar_mora_bienes(request):
     try:
         return tributario_app_views.gestionar_mora_bienes(request)
     except Exception as e:
-        return HttpResponse(f"<h1>SIMAFI VERCEL DEBUG ERROR</h1><pre>{traceback.format_exc()}</pre>", status=500)
+        if getattr(settings, "DEBUG", False):
+            return HttpResponse(f"<h1>SIMAFI DEBUG ERROR</h1><pre>{traceback.format_exc()}</pre>", status=500)
+        return HttpResponse("Error interno del servidor.", status=500)
 
 app_name = 'tributario'
 

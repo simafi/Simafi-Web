@@ -51,6 +51,11 @@ try:
 except Exception:
     error_traceback = traceback.format_exc()
     print(f"CRITICAL: Django initialization failed:\n{error_traceback}", file=sys.stderr)
-    app = _create_error_handler(f"SIMAFI Startup Error\n\n{error_traceback}")
+    # No exponer tracebacks al público en producción.
+    debug = (os.environ.get("DJANGO_DEBUG") or "").strip().lower() in ("1", "true", "yes", "on")
+    if debug:
+        app = _create_error_handler(f"SIMAFI Startup Error\n\n{error_traceback}")
+    else:
+        app = _create_error_handler("SIMAFI Startup Error\n\nContacte al administrador.")
 
 application = app
