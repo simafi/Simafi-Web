@@ -100,6 +100,7 @@
                 <form method="post" id="form-cobro">
                     {% csrf_token %}
                     <input type="hidden" name="accion" id="accion" value="cobrar">
+                    <input type="hidden" name="motivo_eliminacion" id="motivo_eliminacion_hidden" value="">
                     <div class="table-responsive">
                         <table class="table table-striped table-hover table-sm align-middle">
                             <thead class="table-light">
@@ -303,6 +304,7 @@
         const btnEliminar = document.getElementById('btn-eliminar-transacciones');
         const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
         const motivoEliminacion = document.getElementById('motivo_eliminacion');
+        const motivoEliminacionHidden = document.getElementById('motivo_eliminacion_hidden');
         const formasContainer = document.getElementById('formas-pago-container');
         const btnAgregarForma = document.getElementById('btn-agregar-forma');
 
@@ -520,6 +522,9 @@
             if (!motivo) {
                 alert('Debe indicar un motivo para la eliminación.');
                 return;
+            }
+            if (motivoEliminacionHidden) {
+                motivoEliminacionHidden.value = motivo;
             }
             accionInput.value = 'eliminar';
             document.getElementById('form-cobro').submit();
