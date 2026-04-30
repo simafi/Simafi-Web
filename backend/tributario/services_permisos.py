@@ -14,13 +14,23 @@ def verificar_requisitos_permiso(negocio, ano):
     # 1. Estatus Activo
     estatus_ok = negocio.estatus == 'A'
     
-    # 2. Solvencia Municipal (No debe tener mora en ICS)
-    # Sumamos todos los montos pendientes en transaccionesics
+    # 2. Solvencia Municipal (No debe tener mora en ICS hasta el mes actual)
+    current_date = datetime.now()
+    current_month_str = f"{current_date.month:02d}"
+    
+    from django.db.models import Q
+    
+    # Filtramos transacciones con monto > 0 que:
+    # a) Sean de años anteriores
+    # b) Sean del año actual pero de meses anteriores o el actual
     mora_ics = TransaccionesIcs.objects.filter(
         empresa=empresa,
         rtm=rtm,
         expe=expe,
         monto__gt=0
+    ).filter(
+        Q(ano__lt=ano) | 
+        Q(ano=ano, mes__lte=current_month_str)
     ).aggregate(total=Sum('monto'))['total'] or 0
     
     solvencia_ok = (mora_ics <= 0)
@@ -63,7 +73,7 @@ def verificar_requisitos_permiso(negocio, ano):
         'exito': estatus_ok and solvencia_ok and declara_ok and pago_permiso_ok and manual_ok,
         'detalles': {
             'estatus': {'ok': estatus_ok, 'mensaje': 'Negocio Activo' if estatus_ok else 'Negocio Inactivo/Cancelado'},
-            'solvencia': {'ok': solvencia_ok, 'mensaje': f'Solvente (Mora: L. {mora_ics:,.2f})' if solvencia_ok else f'Tiene Mora (L. {mora_ics:,.2f})'},
+            'solvencia': {'ok': solvencia_ok, 'mensaje': f'Solvente hasta {get_mes_nombre(current_date.month)} (Mora: L. {mora_ics:,.2f})' if solvencia_ok else f'Tiene Mora hasta {get_mes_nombre(current_date.month)} (L. {mora_ics:,.2f})'},
             'declaracion': {'ok': declara_ok, 'mensaje': f'Declaración {ano} presentada' if declara_ok else f'Falta declaración {ano}'},
             'pago_permiso': {'ok': pago_permiso_ok, 'mensaje': 'Tasa de Permiso Pagada' if pago_permiso_ok else 'Tasa de Permiso Pendiente (Rubro C0002)'},
             'manuales': {
