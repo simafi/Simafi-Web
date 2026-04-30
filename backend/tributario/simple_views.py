@@ -315,7 +315,7 @@ def declaracion_volumen(request):
                                     tasa_impuesto.nodecla = nodecla
                                     tasa_impuesto.idneg = idneg  # Actualizar idneg también
                                     tasa_impuesto.save()
-                                    print(f"[DEBUG] Tasa C0001 actualizada: {impuesto}, idneg={idneg}")
+                                    print(f"[DEBUG] Tasa C0001 actualizada: {impuesto_val}, idneg={idneg}")
                                 except TasasDecla.DoesNotExist:
                                     # Crear nuevo registro
                                     tasa_impuesto = TasasDecla.objects.create(
@@ -933,8 +933,8 @@ def declaracion_volumen(request):
                             return JsonResponse({
                                 'exito': True,
                                 'mensaje': mensaje_final,
-                                'impuesto': impuesto,
-                                'multa': multa,
+                                'impuesto': impuesto_val,
+                                'multa': multa_val,
                                 'tasas_actualizadas': tasas_actualizadas,
                                 'tasas_creadas': tasas_creadas,  # Nuevas tasas creadas
                                 'tasas_calculadas': tasas_calculadas,  # Tasas actualizadas desde plan/tarifas
