@@ -18,6 +18,10 @@ SCRIPTS_DIR = BASE_DIR.parent
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
+# También asegurar que BASE_DIR esté en sys.path para importar 'tributario_app' correctamente
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 # En este repo, `SCRIPTS_DIR` apunta a `.../backend`; el root real es su padre.
 REPO_ROOT = SCRIPTS_DIR.parent
 

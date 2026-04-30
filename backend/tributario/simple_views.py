@@ -94,7 +94,7 @@ def declaracion_volumen(request):
                     print(f"[DEBUG] Datos originales: {form_data}")
                     # Limpiar valores con separadores de miles (comas) antes de validar
                     datos_limpiados = form_data.copy()
-                    campos_numericos = ['ano', 'ventai', 'ventac', 'ventas', 'valorexcento', 'controlado', 'factor', 'ajuste', 'impuesto', 'multadecla']
+                    campos_numericos = ['ano', 'ventai', 'ventac', 'ventas', 'valorexcento', 'controlado', 'factor', 'ajuste', 'impuesto', 'multadecla', 'ajuste_interanual', 'unidad']
                     for campo in campos_numericos:
                         if campo in datos_limpiados:
                             valor = datos_limpiados[campo]
@@ -106,14 +106,21 @@ def declaracion_volumen(request):
                                 # Convertir cadenas vacías a 0 para campos numéricos
                                 datos_limpiados[campo] = '0'
                     
-                    # SIEMPRE recalcular valor_base para AJAX
-                    ventai = float(datos_limpiados.get('ventai', 0) or 0)
-                    ventac = float(datos_limpiados.get('ventac', 0) or 0)
-                    ventas = float(datos_limpiados.get('ventas', 0) or 0)
-                    valorexcento = float(datos_limpiados.get('valorexcento', 0) or 0)
-                    controlado = float(datos_limpiados.get('controlado', 0) or 0)
+                    # SIEMPRE recalcular valor_base para AJAX utilizando safe_decimal para mayor precisión
+                    from decimal import Decimal
+                    def quick_decimal(val):
+                        try:
+                            return Decimal(str(val).replace(',', '').strip() or '0')
+                        except:
+                            return Decimal('0')
+
+                    ventai = quick_decimal(datos_limpiados.get('ventai', 0))
+                    ventac = quick_decimal(datos_limpiados.get('ventac', 0))
+                    ventas = quick_decimal(datos_limpiados.get('ventas', 0))
+                    valorexcento = quick_decimal(datos_limpiados.get('valorexcento', 0))
+                    controlado = quick_decimal(datos_limpiados.get('controlado', 0))
                     valor_base_calculado = ventai + ventac + ventas + valorexcento + controlado
-                    datos_limpiados['valor_base'] = valor_base_calculado
+                    datos_limpiados['valor_base'] = str(valor_base_calculado)
                     print(f"[DEBUG] Valor base calculado para AJAX: {valor_base_calculado}")
                     print(f"[DEBUG] Valores individuales: ventai={ventai}, ventac={ventac}, ventas={ventas}, valorexcento={valorexcento}, controlado={controlado}")
                     
@@ -283,15 +290,15 @@ def declaracion_volumen(request):
                             # SEGUNDO: Guardar en la tabla TasasDecla
                             print(f"[DEBUG] Guardando en tabla TasasDecla...")
                             
-                            impuesto = float(datos_limpiados.get('impuesto', 0))
-                            multa = float(datos_limpiados.get('multadecla', 0))
+                            impuesto_val = safe_decimal(datos_limpiados.get('impuesto', 0))
+                            multa_val = safe_decimal(datos_limpiados.get('multadecla', 0))
                             
                             print(f"[DEBUG] Guardando tasas - Empresa: {empresa}, RTM: {rtm}, EXPE: {expe}, Año: {ano}")
                             print(f"[DEBUG] Número de declaración: {nodecla}")
-                            print(f"[DEBUG] Impuesto: {impuesto}, Multa: {multa}")
+                            print(f"[DEBUG] Impuesto: {impuesto_val}, Multa: {multa_val}")
                             
                             # Guardar C0001 - Impuesto
-                            if impuesto > 0:
+                            if impuesto_val > 0:
                                 # Convertir ano a Decimal para la consulta
                                 ano_decimal_c0001 = Decimal(str(ano)) if ano else Decimal('0')
                                 # Buscar registro existente sin nodecla para evitar conflictos
@@ -304,7 +311,7 @@ def declaracion_volumen(request):
                                         rubro='C0001'
                                     )
                                     # Actualizar registro existente
-                                    tasa_impuesto.valor = safe_decimal(impuesto)
+                                    tasa_impuesto.valor = safe_decimal(impuesto_val)
                                     tasa_impuesto.nodecla = nodecla
                                     tasa_impuesto.idneg = idneg  # Actualizar idneg también
                                     tasa_impuesto.save()
@@ -321,12 +328,12 @@ def declaracion_volumen(request):
                                         nodecla=nodecla,
                                         cod_tarifa='C001',
                                         frecuencia='M',  # Mensual
-                                        valor=safe_decimal(impuesto),
+                                        valor=safe_decimal(impuesto_val),
                                         cuenta='11.7.1.01.09.00',
                                         cuentarez='11.7.1.98.01.00',
                                         tipota='F'  # Fijo
                                     )
-                                    print(f"[DEBUG] Tasa C0001 creada: {impuesto}, idneg={idneg}")
+                                    print(f"[DEBUG] Tasa C0001 creada: {impuesto_val}, idneg={idneg}")
                             
                             # Guardar C0003 - Multa Declaración Tardía (SIEMPRE actualizar, incluso si es 0)
                             # Convertir ano a Decimal para la consulta
@@ -366,17 +373,17 @@ def declaracion_volumen(request):
                                     rubro='C0003'
                                 )
                                 # Actualizar registro existente (incluso si multa es 0)
-                                tasa_multa.valor = safe_decimal(multa)
+                                tasa_multa.valor = safe_decimal(multa_val)
                                 tasa_multa.nodecla = nodecla
                                 tasa_multa.idneg = idneg  # Actualizar idneg también
                                 # Actualizar cuenta y cuentarez desde TarifasICS
                                 tasa_multa.cuenta = cuenta_c0003
                                 tasa_multa.cuentarez = cuentarez_c0003
                                 tasa_multa.save()
-                                print(f"[DEBUG] Tasa C0003 actualizada: {multa}, idneg={idneg}, cuenta={cuenta_c0003}")
+                                print(f"[DEBUG] Tasa C0003 actualizada: {multa_val}, idneg={idneg}, cuenta={cuenta_c0003}")
                             except TasasDecla.DoesNotExist:
                                 # Crear nuevo registro solo si multa > 0
-                                if multa > 0:
+                                if multa_val > 0:
                                     tasa_multa = TasasDecla.objects.create(
                                         empresa=empresa,
                                         idneg=idneg,  # Guardar id del negocio
@@ -387,12 +394,12 @@ def declaracion_volumen(request):
                                         nodecla=nodecla,
                                         cod_tarifa='C003',
                                         frecuencia='A',  # Anual
-                                        valor=safe_decimal(multa),
+                                        valor=safe_decimal(multa_val),
                                         cuenta=cuenta_c0003,  # Cuenta desde TarifasICS
                                         cuentarez=cuentarez_c0003,  # Cuenta rezago desde TarifasICS
                                         tipota='F'  # Fijo
                                     )
-                                    print(f"[DEBUG] Tasa C0003 creada: {multa}, idneg={idneg}, cuenta={cuenta_c0003}")
+                                    print(f"[DEBUG] Tasa C0003 creada: {multa_val}, idneg={idneg}, cuenta={cuenta_c0003}")
                                 else:
                                     print(f"[DEBUG] Tasa C0003 no creada (valor 0 y no existe registro previo)")
                             

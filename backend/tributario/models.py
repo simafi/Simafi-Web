@@ -7,9 +7,9 @@ class Identificacion(models.Model):
     """
     Modelo de identificación de contribuyentes - Estructura alineada con la tabla real de la base de datos
     """
-    identidad = models.CharField(max_length=18, unique=True, verbose_name="Identidad", db_collation='latin1_swedish_ci')
-    nombres = models.CharField(max_length=30, null=True, blank=True, verbose_name="Nombres", db_collation='latin1_swedish_ci')
-    apellidos = models.CharField(max_length=30, null=True, blank=True, verbose_name="Apellidos", db_collation='latin1_swedish_ci')
+    identidad = models.CharField(max_length=18, unique=True, verbose_name="Identidad")
+    nombres = models.CharField(max_length=30, null=True, blank=True, verbose_name="Nombres")
+    apellidos = models.CharField(max_length=30, null=True, blank=True, verbose_name="Apellidos")
     fechanac = models.DateField(null=True, blank=True, verbose_name="Fecha de Nacimiento")
     
     def __str__(self):
@@ -39,12 +39,12 @@ class Actividad(models.Model):
       UNIQUE KEY `actividad_empresa_codigo_4b4f70db_uniq` USING BTREE (`empresa`, `codigo`)
     ) ENGINE=MyISAM
     """
-    empresa = models.CharField(max_length=4, default='', verbose_name="Empresa", db_collation='utf8mb4_0900_ai_ci')
-    codigo = models.CharField(max_length=20, default='', verbose_name="Código", db_collation='utf8mb4_0900_ai_ci')
-    cuentarez = models.CharField(max_length=20, default='', verbose_name="Cuenta Rezago", db_collation='utf8mb4_0900_ai_ci')
-    cuentarec = models.CharField(max_length=20, blank=True, default='', verbose_name="Cuenta Recargos", db_collation='utf8mb4_0900_ai_ci')
-    cuentaint = models.CharField(max_length=20, blank=True, default='', verbose_name="Cuenta Intereses", db_collation='utf8mb4_0900_ai_ci')
-    descripcion = models.CharField(max_length=200, blank=True, default='', verbose_name="Descripción", db_collation='utf8mb4_0900_ai_ci')
+    empresa = models.CharField(max_length=4, default='', verbose_name="Empresa")
+    codigo = models.CharField(max_length=20, default='', verbose_name="Código")
+    cuentarez = models.CharField(max_length=20, default='', verbose_name="Cuenta Rezago")
+    cuentarec = models.CharField(max_length=20, blank=True, default='', verbose_name="Cuenta Recargos")
+    cuentaint = models.CharField(max_length=20, blank=True, default='', verbose_name="Cuenta Intereses")
+    descripcion = models.CharField(max_length=200, blank=True, default='', verbose_name="Descripción")
     
     def __str__(self):
         return f"{self.codigo} - {self.descripcion}"
@@ -61,9 +61,9 @@ class Oficina(models.Model):
     """
     Modelo de oficinas - Estructura alineada con la tabla real de la base de datos
     """
-    empresa = models.CharField(max_length=4, verbose_name="Empresa", db_collation='utf8mb4_0900_ai_ci')
-    codigo = models.CharField(max_length=20, verbose_name="Código", db_collation='utf8mb4_0900_ai_ci')
-    descripcion = models.CharField(max_length=200, blank=True, null=True, verbose_name="Descripción", db_collation='utf8mb4_0900_ai_ci')
+    empresa = models.CharField(max_length=4, verbose_name="Empresa")
+    codigo = models.CharField(max_length=20, verbose_name="Código")
+    descripcion = models.CharField(max_length=200, blank=True, null=True, verbose_name="Descripción")
     
     def __str__(self):
         return f"{self.codigo} - {self.descripcion}"
@@ -112,32 +112,32 @@ class Negocio(models.Model):
       `cy` DECIMAL(12,2) DEFAULT 0.00
     )
     """
-    empresa = models.CharField(max_length=4, verbose_name="Empresa", db_collation='latin1_swedish_ci')
-    rtm = models.CharField(max_length=16, verbose_name="RTM", db_collation='latin1_swedish_ci')
-    expe = models.CharField(max_length=12, verbose_name="Expediente", db_collation='latin1_swedish_ci')
-    nombrenego = models.CharField(max_length=100, default=' ', verbose_name="Nombre Negocio", db_collation='latin1_swedish_ci')
-    comerciante = models.CharField(max_length=100, default=' ', verbose_name="Comerciante", db_collation='latin1_swedish_ci')
-    identidad = models.CharField(max_length=20, verbose_name="Identidad", db_collation='latin1_swedish_ci')
-    rtnpersonal = models.CharField(max_length=20, default=' ', verbose_name="RTN Personal", db_collation='latin1_swedish_ci')
-    rtnnego = models.CharField(max_length=19, default=' ', verbose_name="RTN Negocio", db_collation='latin1_swedish_ci')
-    catastral = models.CharField(max_length=17, verbose_name="Catastral", db_collation='latin1_swedish_ci')
-    identidadrep = models.CharField(max_length=20, default=' ', verbose_name="Identidad Representante", db_collation='latin1_swedish_ci')
-    representante = models.CharField(max_length=100, default=' ', verbose_name="Representante", db_collation='latin1_swedish_ci')
-    direccion = models.CharField(max_length=100, default=' ', verbose_name="Dirección", db_collation='latin1_swedish_ci')
-    actividad = models.CharField(max_length=20, default=' ', verbose_name="Actividad", db_collation='latin1_swedish_ci')
-    estatus = models.CharField(max_length=1, verbose_name="Estatus", db_collation='latin1_swedish_ci')
-    descriestatus = models.CharField(max_length=50, default=' ', verbose_name="Descripción Estatus", db_collation='latin1_swedish_ci')
+    empresa = models.CharField(max_length=4, verbose_name="Empresa")
+    rtm = models.CharField(max_length=16, verbose_name="RTM")
+    expe = models.CharField(max_length=12, verbose_name="Expediente")
+    nombrenego = models.CharField(max_length=100, default=' ', verbose_name="Nombre Negocio")
+    comerciante = models.CharField(max_length=100, default=' ', verbose_name="Comerciante")
+    identidad = models.CharField(max_length=20, verbose_name="Identidad")
+    rtnpersonal = models.CharField(max_length=20, default=' ', verbose_name="RTN Personal")
+    rtnnego = models.CharField(max_length=19, default=' ', verbose_name="RTN Negocio")
+    catastral = models.CharField(max_length=17, verbose_name="Catastral")
+    identidadrep = models.CharField(max_length=20, default=' ', verbose_name="Identidad Representante")
+    representante = models.CharField(max_length=100, default=' ', verbose_name="Representante")
+    direccion = models.CharField(max_length=100, default=' ', verbose_name="Dirección")
+    actividad = models.CharField(max_length=20, default=' ', verbose_name="Actividad")
+    estatus = models.CharField(max_length=1, verbose_name="Estatus")
+    descriestatus = models.CharField(max_length=50, default=' ', verbose_name="Descripción Estatus")
     fecha_ini = models.DateField(null=True, blank=True, verbose_name="Fecha Inicio")
     fecha_can = models.DateField(null=True, blank=True, verbose_name="Fecha Cancelación")
     fecha_nacimiento = models.DateField(null=True, blank=True, verbose_name="Fecha de Nacimiento")
-    telefono = models.CharField(max_length=20, default=' ', verbose_name="Teléfono", db_collation='latin1_swedish_ci')
-    celular = models.CharField(max_length=20, default=' ', verbose_name="Celular", db_collation='latin1_swedish_ci')
-    socios = models.CharField(max_length=250, verbose_name="Socios", db_collation='latin1_swedish_ci')
-    correo = models.CharField(max_length=35, default=' ', verbose_name="Correo", db_collation='latin1_swedish_ci')
-    pagweb = models.CharField(max_length=40, default=' ', verbose_name="Página Web", db_collation='latin1_swedish_ci')
-    comentario = models.TextField(null=True, blank=True, verbose_name="Comentario", db_collation='latin1_swedish_ci')
-    descriactividad = models.CharField(max_length=100, default=' ', verbose_name="Descripción Actividad", db_collation='latin1_swedish_ci')
-    usuario = models.CharField(max_length=10, default=' ', verbose_name="Usuario", db_collation='latin1_swedish_ci')
+    telefono = models.CharField(max_length=20, default=' ', verbose_name="Teléfono")
+    celular = models.CharField(max_length=20, default=' ', verbose_name="Celular")
+    socios = models.CharField(max_length=250, verbose_name="Socios")
+    correo = models.CharField(max_length=35, default=' ', verbose_name="Correo")
+    pagweb = models.CharField(max_length=40, default=' ', verbose_name="Página Web")
+    comentario = models.TextField(null=True, blank=True, verbose_name="Comentario")
+    descriactividad = models.CharField(max_length=100, default=' ', verbose_name="Descripción Actividad")
+    usuario = models.CharField(max_length=10, default=' ', verbose_name="Usuario")
     fechasys = models.DateTimeField(null=True, blank=True, verbose_name="Fecha Sistema")
     cx = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Coordenada X (UTM)")
     cy = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Coordenada Y (UTM)")
@@ -181,42 +181,42 @@ class PagoVariosTemp(models.Model):
     Modelo temporal de pagos varios - Estructura exacta según CREATE TABLE
     """
     id = models.BigAutoField(primary_key=True, verbose_name="ID")
-    empresa = models.CharField(max_length=6, null=True, blank=True, verbose_name="Empresa", db_collation='latin1_swedish_ci')
+    empresa = models.CharField(max_length=6, null=True, blank=True, verbose_name="Empresa")
     recibo = models.DecimalField(max_digits=12, decimal_places=0, verbose_name="Recibo")
-    rubro = models.CharField(max_length=6, default='', blank=True, verbose_name="Rubro", db_collation='latin1_swedish_ci')
-    codigo = models.CharField(max_length=16, verbose_name="Código", db_collation='latin1_swedish_ci')
+    rubro = models.CharField(max_length=6, default='', blank=True, verbose_name="Rubro")
+    codigo = models.CharField(max_length=16, verbose_name="Código")
     fecha = models.DateField(null=True, blank=True, verbose_name="Fecha")
-    identidad = models.CharField(max_length=31, null=True, blank=True, verbose_name="Identidad", db_collation='latin1_swedish_ci')
-    nombre = models.CharField(max_length=150, null=True, blank=True, verbose_name="Nombre", db_collation='latin1_swedish_ci')
-    descripcion = models.CharField(max_length=200, null=True, blank=True, verbose_name="Descripción", db_collation='latin1_swedish_ci')
+    identidad = models.CharField(max_length=31, null=True, blank=True, verbose_name="Identidad")
+    nombre = models.CharField(max_length=150, null=True, blank=True, verbose_name="Nombre")
+    descripcion = models.CharField(max_length=200, null=True, blank=True, verbose_name="Descripción")
     valor = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Valor")
-    comentario = models.CharField(max_length=500, null=True, blank=True, verbose_name="Comentario", db_collation='latin1_swedish_ci')
-    oficina = models.CharField(max_length=20, null=True, blank=True, verbose_name="Oficina", db_collation='latin1_swedish_ci')
-    facturadora = models.CharField(max_length=45, null=True, blank=True, verbose_name="Facturadora", db_collation='latin1_swedish_ci')
-    aplicado = models.CharField(max_length=1, default='0', verbose_name="Aplicado", db_collation='latin1_swedish_ci')
-    traslado = models.CharField(max_length=1, default='0', verbose_name="Traslado", db_collation='latin1_swedish_ci')
+    comentario = models.CharField(max_length=500, null=True, blank=True, verbose_name="Comentario")
+    oficina = models.CharField(max_length=20, null=True, blank=True, verbose_name="Oficina")
+    facturadora = models.CharField(max_length=45, null=True, blank=True, verbose_name="Facturadora")
+    aplicado = models.CharField(max_length=1, default='0', verbose_name="Aplicado")
+    traslado = models.CharField(max_length=1, default='0', verbose_name="Traslado")
     solvencia = models.DecimalField(max_digits=15, decimal_places=0, default=0, verbose_name="Solvencia")
     fecha_solv = models.DateField(null=True, blank=True, verbose_name="Fecha Solvencia")
     cantidad = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Cantidad")
     vl_unit = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Valor Unitario")
     deposito = models.DecimalField(max_digits=1, decimal_places=0, default=0, verbose_name="Depósito")
-    cajero = models.CharField(max_length=20, null=True, blank=True, verbose_name="Cajero", db_collation='latin1_swedish_ci')
-    usuario = models.CharField(max_length=30, null=True, blank=True, verbose_name="Usuario", db_collation='latin1_swedish_ci')
-    referencia = models.CharField(max_length=20, null=True, blank=True, verbose_name="Referencia", db_collation='latin1_swedish_ci')
-    banco = models.CharField(max_length=3, null=True, blank=True, verbose_name="Banco", db_collation='latin1_swedish_ci')
-    Tipofa = models.CharField(max_length=1, default=' ', verbose_name="Tipo de Factura", db_collation='latin1_swedish_ci')
-    Rtm = models.CharField(max_length=20, default=' ', verbose_name="RTM", db_collation='latin1_swedish_ci')
-    expe = models.CharField(max_length=12, default='0', verbose_name='Expediente', db_collation='latin1_swedish_ci')
+    cajero = models.CharField(max_length=20, null=True, blank=True, verbose_name="Cajero")
+    usuario = models.CharField(max_length=30, null=True, blank=True, verbose_name="Usuario")
+    referencia = models.CharField(max_length=20, null=True, blank=True, verbose_name="Referencia")
+    banco = models.CharField(max_length=3, null=True, blank=True, verbose_name="Banco")
+    Tipofa = models.CharField(max_length=1, default=' ', verbose_name="Tipo de Factura")
+    Rtm = models.CharField(max_length=20, default=' ', verbose_name="RTM")
+    expe = models.CharField(max_length=12, default='0', verbose_name='Expediente')
     pagodia = models.DecimalField(max_digits=12, decimal_places=0, default=0, verbose_name="Pago del Día")
     rcaja = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Recibo de Caja")
     Rfechapag = models.DateField(null=True, blank=True, verbose_name="Fecha de Pago Real")
     permiso = models.DecimalField(max_digits=12, decimal_places=0, default=0, verbose_name="Permiso")
     Fechavence = models.DateField(null=True, blank=True, verbose_name="Fecha de Vencimiento")
-    direccion = models.CharField(max_length=100, default=' ', verbose_name="Dirección", db_collation='latin1_swedish_ci')
-    prima = models.CharField(max_length=1, default='', verbose_name="Prima", db_collation='latin1_swedish_ci')
-    categoria = models.CharField(max_length=2, default='', verbose_name="Categoría", db_collation='latin1_swedish_ci')
-    sexo = models.CharField(max_length=1, default='', verbose_name="Sexo", db_collation='latin1_swedish_ci')
-    rtn = models.CharField(max_length=20, null=True, blank=True, verbose_name="RTN", db_collation='latin1_swedish_ci')
+    direccion = models.CharField(max_length=100, default=' ', verbose_name="Dirección")
+    prima = models.CharField(max_length=1, default='', verbose_name="Prima")
+    categoria = models.CharField(max_length=2, default='', verbose_name="Categoría")
+    sexo = models.CharField(max_length=1, default='', verbose_name="Sexo")
+    rtn = models.CharField(max_length=20, null=True, blank=True, verbose_name="RTN")
     
     def __str__(self):
         return f"ID: {self.id} - Recibo {self.recibo} - {self.nombre} - ${self.valor}"
@@ -266,7 +266,7 @@ class NoRecibos(models.Model):
     Modelo de números de recibos - Estructura exacta según CREATE TABLE
     """
     id = models.AutoField(primary_key=True, verbose_name="ID")
-    empresa = models.CharField(max_length=6, null=True, blank=True, default=None, verbose_name="Empresa", db_collation='latin1_swedish_ci')
+    empresa = models.CharField(max_length=6, null=True, blank=True, default=None, verbose_name="Empresa")
     numero = models.DecimalField(max_digits=12, decimal_places=0, null=True, blank=True, verbose_name="Número")
     solvencia = models.DecimalField(max_digits=12, decimal_places=0, default=0, verbose_name="Solvencia")
     
@@ -331,12 +331,12 @@ class Rubro(models.Model):
     Estructura alineada exactamente con la tabla real de la base de datos.
     """
     id = models.AutoField(primary_key=True, verbose_name="ID")
-    empresa = models.CharField(max_length=4, verbose_name="Empresa", db_collation='utf8mb4_0900_ai_ci', default='')
-    codigo = models.CharField(max_length=6, verbose_name="Código", db_collation='utf8mb4_0900_ai_ci', default='')
-    descripcion = models.CharField(max_length=200, blank=True, verbose_name="Descripción", db_collation='utf8mb4_0900_ai_ci', default='')
-    cuenta = models.CharField(max_length=20, blank=True, verbose_name="Cuenta", db_collation='utf8mb4_0900_ai_ci', default='')
-    cuentarez = models.CharField(max_length=20, blank=True, verbose_name="Cuenta Rezago", db_collation='utf8mb4_0900_ai_ci', default='')
-    tipo = models.CharField(max_length=1, blank=True, verbose_name="Tipo", db_collation='utf8mb4_0900_ai_ci', default='')
+    empresa = models.CharField(max_length=4, verbose_name="Empresa", default='')
+    codigo = models.CharField(max_length=6, verbose_name="Código", default='')
+    descripcion = models.CharField(max_length=200, blank=True, verbose_name="Descripción", default='')
+    cuenta = models.CharField(max_length=20, blank=True, verbose_name="Cuenta", default='')
+    cuentarez = models.CharField(max_length=20, blank=True, verbose_name="Cuenta Rezago", default='')
+    tipo = models.CharField(max_length=1, blank=True, verbose_name="Tipo", default='')
 
     def __str__(self):
         return f"{self.codigo} - {self.descripcion}"
@@ -425,13 +425,13 @@ class RubroMoratorioConfig(models.Model):
     ]
 
     id = models.AutoField(primary_key=True)
-    empresa = models.CharField(max_length=4, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name="Empresa")
+    empresa = models.CharField(max_length=4, default='', verbose_name="Empresa")
 
     # Rubro que se cobrará como mora (recargo/interés)
-    rubro_codigo = models.CharField(max_length=6, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name="Rubro Moratorio")
+    rubro_codigo = models.CharField(max_length=6, default='', verbose_name="Rubro Moratorio")
 
     # Rubro base que genera la mora
-    rubro_padre_codigo = models.CharField(max_length=6, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name="Rubro Padre")
+    rubro_padre_codigo = models.CharField(max_length=6, default='', verbose_name="Rubro Padre")
 
     # Tasas mensuales en porcentaje (ej: 2.50 = 2.5%)
     tasa_recargo_mensual = models.DecimalField(max_digits=7, decimal_places=4, default=Decimal('0.0000'), verbose_name="Tasa Recargo Mensual (%)")
@@ -440,9 +440,9 @@ class RubroMoratorioConfig(models.Model):
     aplica_modulo = models.CharField(max_length=5, choices=MODULO_CHOICES, default='AMBOS', verbose_name="Aplica a")
     activo = models.BooleanField(default=True, verbose_name="Activo")
 
-    usuario_crea = models.CharField(max_length=50, default='', blank=True, db_collation='latin1_swedish_ci', verbose_name="Usuario crea")
+    usuario_crea = models.CharField(max_length=50, default='', blank=True, verbose_name="Usuario crea")
     fecha_crea = models.DateTimeField(auto_now_add=True)
-    usuario_modifica = models.CharField(max_length=50, default='', blank=True, db_collation='latin1_swedish_ci', verbose_name="Usuario modifica")
+    usuario_modifica = models.CharField(max_length=50, default='', blank=True, verbose_name="Usuario modifica")
     fecha_modifica = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -491,13 +491,13 @@ class PlanArbitrio(models.Model):
     AUTO_INCREMENT=249 ROW_FORMAT=FIXED CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci';
     """
     id = models.AutoField(primary_key=True, verbose_name='ID')
-    empresa = models.CharField(max_length=4, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name='Empresa')
-    rubro = models.CharField(max_length=6, blank=True, null=True, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name='Rubro')
-    cod_tarifa = models.CharField(max_length=4, blank=True, null=True, db_collation='utf8mb4_0900_ai_ci', verbose_name='Código de Tarifa')
-    tipocat = models.CharField(max_length=1, default='', blank=True, null=False, db_collation='utf8mb4_0900_ai_ci', verbose_name='Tipo de Categoría')
+    empresa = models.CharField(max_length=4, default='', verbose_name='Empresa')
+    rubro = models.CharField(max_length=6, blank=True, null=True, default='', verbose_name='Rubro')
+    cod_tarifa = models.CharField(max_length=4, blank=True, null=True, verbose_name='Código de Tarifa')
+    tipocat = models.CharField(max_length=1, default='', blank=True, null=False, verbose_name='Tipo de Categoría')
     ano = models.DecimalField(max_digits=4, decimal_places=0, verbose_name='Año')
-    codigo = models.CharField(max_length=20, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name='Código')
-    descripcion = models.CharField(max_length=200, blank=True, null=True, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name='Descripción')
+    codigo = models.CharField(max_length=20, default='', verbose_name='Código')
+    descripcion = models.CharField(max_length=200, blank=True, null=True, default='', verbose_name='Descripción')
     minimo = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name='Valor Mínimo')
     maximo = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name='Valor Máximo')
     valor = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name='Valor')
@@ -528,15 +528,15 @@ class Tarifas(models.Model):
     Estructura alineada exactamente con la tabla real de la base de datos.
     """
     id = models.AutoField(primary_key=True, verbose_name='ID')
-    empresa = models.CharField(max_length=4, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name='Empresa')
-    rubro = models.CharField(max_length=6, blank=True, null=True, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name='Rubro')
-    cod_tarifa = models.CharField(max_length=20, blank=True, null=True, db_collation='utf8mb4_0900_ai_ci', verbose_name='Código de Tarifa')
+    empresa = models.CharField(max_length=4, default='', verbose_name='Empresa')
+    rubro = models.CharField(max_length=6, blank=True, null=True, default='', verbose_name='Rubro')
+    cod_tarifa = models.CharField(max_length=20, blank=True, null=True, verbose_name='Código de Tarifa')
     ano = models.DecimalField(max_digits=4, decimal_places=0, verbose_name='Año')
-    descripcion = models.CharField(max_length=200, blank=True, null=True, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name='Descripción')
+    descripcion = models.CharField(max_length=200, blank=True, null=True, default='', verbose_name='Descripción')
     valor = models.DecimalField(max_digits=12, decimal_places=2, default=0.0, verbose_name='Valor')
-    frecuencia = models.CharField(max_length=1, blank=True, null=True, db_collation='utf8mb4_0900_ai_ci', verbose_name='Frecuencia')
-    tipo = models.CharField(max_length=1, blank=True, null=True, db_collation='utf8mb4_0900_ai_ci', verbose_name='Tipo')
-    tipomodulo = models.CharField(max_length=1, blank=True, null=True, db_collation='utf8mb4_0900_ai_ci', default='', verbose_name='Tipo Módulo')
+    frecuencia = models.CharField(max_length=1, blank=True, null=True, verbose_name='Frecuencia')
+    tipo = models.CharField(max_length=1, blank=True, null=True, verbose_name='Tipo')
+    tipomodulo = models.CharField(max_length=1, blank=True, null=True, default='', verbose_name='Tipo Módulo')
 
     def __str__(self):
         return f"{self.cod_tarifa} - {self.descripcion}"
@@ -558,8 +558,8 @@ class TarifasImptoics(models.Model):
     Incluye tarifas escalonadas por categoría (1=general, 2=productos controlados)
     """
     id = models.AutoField(primary_key=True, verbose_name="ID")
-    categoria = models.CharField(max_length=1, blank=True, null=True, default='', verbose_name="Categoría", db_collation='utf8mb4_0900_ai_ci')
-    descripcion = models.CharField(max_length=200, blank=True, null=True, default='', verbose_name="Descripción", db_collation='utf8mb4_0900_ai_ci')
+    categoria = models.CharField(max_length=1, blank=True, null=True, default='', verbose_name="Categoría")
+    descripcion = models.CharField(max_length=200, blank=True, null=True, default='', verbose_name="Descripción")
     codigo = models.DecimalField(max_digits=1, decimal_places=0, blank=True, null=True, default=0, verbose_name="Código")
     rango1 = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Rango 1")
     rango2 = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Rango 2")
@@ -581,11 +581,11 @@ class DeclaracionVolumen(models.Model):
     Modelo para la tabla declara - Declaraciones de volumen de ventas
     """
     id = models.AutoField(primary_key=True, verbose_name="ID")
-    nodecla = models.CharField(max_length=20, default='', verbose_name="Número de Declaración", db_collation='latin1_swedish_ci')
-    empresa = models.CharField(max_length=4, blank=True, null=True, verbose_name="Empresa", db_collation='latin1_swedish_ci')
+    nodecla = models.CharField(max_length=20, default='', verbose_name="Número de Declaración")
+    empresa = models.CharField(max_length=4, blank=True, null=True, verbose_name="Empresa")
     idneg = models.IntegerField(default=0, verbose_name="ID Negocio")
-    rtm = models.CharField(max_length=20, default='', verbose_name="RTM", db_collation='latin1_swedish_ci')
-    expe = models.CharField(max_length=10, default='', verbose_name="Expediente", db_collation='latin1_swedish_ci')
+    rtm = models.CharField(max_length=20, default='', verbose_name="RTM")
+    expe = models.CharField(max_length=10, default='', verbose_name="Expediente")
     ano = models.DecimalField(max_digits=4, decimal_places=0, default=0, verbose_name="Año")
     tipo = models.DecimalField(max_digits=1, decimal_places=0, default=0, verbose_name="Tipo")
     mes = models.DecimalField(max_digits=2, decimal_places=0, default=0, verbose_name="Mes")
@@ -603,7 +603,7 @@ class DeclaracionVolumen(models.Model):
     impuesto = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Impuesto")
     ajuste = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Ajuste")
     fechssys = models.DateTimeField(blank=True, null=True, verbose_name="Fecha Sistema")
-    usuario = models.CharField(max_length=50, default='', verbose_name="Usuario", db_collation='latin1_swedish_ci')
+    usuario = models.CharField(max_length=50, default='', verbose_name="Usuario")
     
     class Meta:
         db_table = 'declara'
@@ -638,7 +638,7 @@ class AnoEmpreNu(models.Model):
     Modelo para la tabla anoemprenu - Control de números de declaraciones, permisos y planes por empresa y año
     """
     id = models.AutoField(primary_key=True, verbose_name="ID")
-    empresa = models.CharField(max_length=6, blank=True, null=True, verbose_name="Empresa", db_collation='latin1_swedish_ci')
+    empresa = models.CharField(max_length=6, blank=True, null=True, verbose_name="Empresa")
     ano = models.DecimalField(max_digits=4, decimal_places=0, blank=True, null=True, verbose_name="Año")
     nudecla = models.DecimalField(max_digits=11, decimal_places=0, default=0, verbose_name="Número de Declaración")
     nopermiso = models.DecimalField(max_digits=12, decimal_places=0, blank=True, null=True, verbose_name="Número de Permiso de Operación")
@@ -660,19 +660,19 @@ class TasasDecla(models.Model):
     Modelo para la tabla tasasdecla - Tasas vinculadas a declaraciones
     """
     id = models.AutoField(primary_key=True, verbose_name="ID")
-    empresa = models.CharField(max_length=4, blank=True, null=True, verbose_name="Empresa", db_collation='latin1_swedish_ci')
+    empresa = models.CharField(max_length=4, blank=True, null=True, verbose_name="Empresa")
     idneg = models.IntegerField(default=0, verbose_name="ID Negocio")
-    rtm = models.CharField(max_length=20, default='', verbose_name="RTM", db_collation='latin1_swedish_ci')
-    expe = models.CharField(max_length=10, default='', verbose_name="Expediente", db_collation='latin1_swedish_ci')
-    nodecla = models.CharField(max_length=20, default='', verbose_name="Número de Declaración", db_collation='latin1_swedish_ci')
+    rtm = models.CharField(max_length=20, default='', verbose_name="RTM")
+    expe = models.CharField(max_length=10, default='', verbose_name="Expediente")
+    nodecla = models.CharField(max_length=20, default='', verbose_name="Número de Declaración")
     ano = models.DecimalField(max_digits=4, decimal_places=0, default=0, verbose_name="Año")
-    rubro = models.CharField(max_length=6, default='', verbose_name="Rubro", db_collation='latin1_swedish_ci')
-    cod_tarifa = models.CharField(max_length=4, blank=True, null=True, verbose_name="Código de Tarifa", db_collation='latin1_swedish_ci')
-    frecuencia = models.CharField(max_length=1, default='', verbose_name="Frecuencia", db_collation='latin1_swedish_ci')
+    rubro = models.CharField(max_length=6, default='', verbose_name="Rubro")
+    cod_tarifa = models.CharField(max_length=4, blank=True, null=True, verbose_name="Código de Tarifa")
+    frecuencia = models.CharField(max_length=1, default='', verbose_name="Frecuencia")
     valor = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Valor")
-    cuenta = models.CharField(max_length=20, default='', verbose_name="Cuenta", db_collation='latin1_swedish_ci')
-    cuentarez = models.CharField(max_length=20, default='', verbose_name="Cuenta Rezago", db_collation='latin1_swedish_ci')
-    tipota = models.CharField(max_length=1, default='', verbose_name="Tipo Tasa", db_collation='latin1_swedish_ci', db_column='tipota')
+    cuenta = models.CharField(max_length=20, default='', verbose_name="Cuenta")
+    cuentarez = models.CharField(max_length=20, default='', verbose_name="Cuenta Rezago")
+    tipota = models.CharField(max_length=1, default='', verbose_name="Tipo Tasa", db_column='tipota')
     
     def __str__(self):
         return f"Tasa {self.rtm}/{self.expe} - Rubro {self.rubro}"
@@ -699,20 +699,20 @@ class TarifasICS(models.Model):
     Estructura alineada exactamente con la tabla real de la base de datos.
     """
     id = models.AutoField(primary_key=True, verbose_name="ID")
-    empresa = models.CharField(max_length=4, blank=True, null=True, verbose_name="Empresa", db_collation='latin1_swedish_ci')
+    empresa = models.CharField(max_length=4, blank=True, null=True, verbose_name="Empresa")
     idneg = models.IntegerField(verbose_name="ID Negocio", default=0)
-    rtm = models.CharField(max_length=20, verbose_name="RTM", db_collation='latin1_swedish_ci', default='')
-    expe = models.CharField(max_length=10, blank=True, null=True, verbose_name="Expediente", db_collation='latin1_swedish_ci', default='')
-    rubro = models.CharField(max_length=6, blank=True, null=True, verbose_name="Rubro", db_collation='latin1_swedish_ci', default='')
-    cod_tarifa = models.CharField(max_length=4, blank=True, null=True, verbose_name="Código de Tarifa", db_collation='latin1_swedish_ci', default='')
+    rtm = models.CharField(max_length=20, verbose_name="RTM", default='')
+    expe = models.CharField(max_length=10, blank=True, null=True, verbose_name="Expediente", default='')
+    rubro = models.CharField(max_length=6, blank=True, null=True, verbose_name="Rubro", default='')
+    cod_tarifa = models.CharField(max_length=4, blank=True, null=True, verbose_name="Código de Tarifa", default='')
     valor = models.DecimalField(
         max_digits=12, 
         decimal_places=2, 
         verbose_name="Valor", 
         default=0.00
     )
-    cuenta = models.CharField(max_length=20, blank=True, default='', verbose_name="Cuenta", db_collation='latin1_swedish_ci')
-    cuentarez = models.CharField(max_length=20, blank=True, default='', verbose_name="Cuenta Rezago", db_collation='latin1_swedish_ci')
+    cuenta = models.CharField(max_length=20, blank=True, default='', verbose_name="Cuenta")
+    cuentarez = models.CharField(max_length=20, blank=True, default='', verbose_name="Cuenta Rezago")
 
     class Meta:
         db_table = 'tarifasics'
@@ -789,19 +789,19 @@ class TransaccionesIcs(models.Model):
     """
     id = models.AutoField(primary_key=True, verbose_name="ID")
     idneg = models.IntegerField(default=0, verbose_name="ID Negocio")
-    nodeclara = models.CharField(max_length=20, blank=True, default='', db_collation='latin1_swedish_ci', verbose_name="No. Declaración")
-    empresa = models.CharField(max_length=4, blank=True, null=True, default=None, db_collation='latin1_swedish_ci', verbose_name="Empresa")
-    rtm = models.CharField(max_length=16, blank=False, default='', db_collation='latin1_swedish_ci', verbose_name="RTM")
-    expe = models.CharField(max_length=12, blank=True, default='', db_collation='latin1_swedish_ci', verbose_name="Expediente")
+    nodeclara = models.CharField(max_length=20, blank=True, default='', verbose_name="No. Declaración")
+    empresa = models.CharField(max_length=4, blank=True, null=True, default=None, verbose_name="Empresa")
+    rtm = models.CharField(max_length=16, blank=False, default='', verbose_name="RTM")
+    expe = models.CharField(max_length=12, blank=True, default='', verbose_name="Expediente")
     ano = models.DecimalField(max_digits=4, decimal_places=0, default=0, verbose_name="Año")
-    mes = models.CharField(max_length=2, blank=True, default='', db_collation='latin1_swedish_ci', verbose_name="Mes")
-    operacion = models.CharField(max_length=1, blank=True, default='', db_collation='latin1_swedish_ci', verbose_name="Operación")
-    rubro = models.CharField(max_length=6, blank=False, default='', db_collation='latin1_swedish_ci', verbose_name="Rubro")
+    mes = models.CharField(max_length=2, blank=True, default='', verbose_name="Mes")
+    operacion = models.CharField(max_length=1, blank=True, default='', verbose_name="Operación")
+    rubro = models.CharField(max_length=6, blank=False, default='', verbose_name="Rubro")
     fecha = models.DateField(blank=True, null=True, verbose_name="Fecha")
     vencimiento = models.DateField(blank=True, null=True, verbose_name="Vencimiento")
     monto = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Monto")
     tasa = models.DecimalField(max_digits=7, decimal_places=2, default=0.00, verbose_name="Tasa")
-    usuario = models.CharField(max_length=50, blank=True, default='', db_collation='latin1_swedish_ci', verbose_name="Usuario")
+    usuario = models.CharField(max_length=50, blank=True, default='', verbose_name="Usuario")
     fechasys = models.DateTimeField(blank=True, null=True, verbose_name="Fecha Sistema")
 
     class Meta:
@@ -886,8 +886,8 @@ class TipoCategoria(models.Model):
     AUTO_INCREMENT=10 ROW_FORMAT=FIXED CHARACTER SET 'latin1' COLLATE 'latin1_swedish_ci';
     """
     id = models.AutoField(primary_key=True, verbose_name="ID")
-    codigo = models.CharField(max_length=1, unique=True, verbose_name="Código", db_collation='latin1_swedish_ci')
-    descripcion = models.CharField(max_length=50, verbose_name="Descripción", db_collation='latin1_swedish_ci')
+    codigo = models.CharField(max_length=1, unique=True, verbose_name="Código")
+    descripcion = models.CharField(max_length=50, verbose_name="Descripción")
     
     def __str__(self):
         return f"{self.codigo} - {self.descripcion}"
@@ -907,21 +907,21 @@ class TipoCategoria(models.Model):
 
 class TransaccionesBienesInmuebles(models.Model):
     id = models.AutoField(primary_key=True)
-    empresa = models.CharField(max_length=4, null=True, blank=True, verbose_name='Empresa', db_collation='latin1_swedish_ci')
-    cocata1 = models.CharField(max_length=20, default='', verbose_name='Clave Catastral', db_collation='latin1_swedish_ci')
-    rubro = models.CharField(max_length=6, verbose_name='Rubro', db_collation='latin1_swedish_ci')
+    empresa = models.CharField(max_length=4, null=True, blank=True, verbose_name='Empresa')
+    cocata1 = models.CharField(max_length=20, default='', verbose_name='Clave Catastral')
+    rubro = models.CharField(max_length=6, verbose_name='Rubro')
     ano = models.DecimalField(max_digits=4, decimal_places=0, verbose_name='Año')
     mes = models.DecimalField(max_digits=2, decimal_places=0, verbose_name='Mes')
-    operacion = models.CharField(max_length=1, default='F', verbose_name='Operación', db_collation='latin1_swedish_ci')
+    operacion = models.CharField(max_length=1, default='F', verbose_name='Operación')
     monto = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name='Monto')
     fecha = models.DateField(null=True, blank=True, verbose_name='Fecha')
     vencimiento = models.DateField(null=True, blank=True, verbose_name='Vencimiento')
-    usuario = models.CharField(max_length=50, null=True, blank=True, verbose_name='Usuario', db_collation='latin1_swedish_ci')
+    usuario = models.CharField(max_length=50, null=True, blank=True, verbose_name='Usuario')
     fechasys = models.DateTimeField(null=True, blank=True, verbose_name='Fecha Sistema')
-    estado = models.CharField(max_length=1, default='A', verbose_name='Estado', db_collation='latin1_swedish_ci')
+    estado = models.CharField(max_length=1, default='A', verbose_name='Estado')
     
     class Meta:
-        app_label = 'tributario'
+        app_label = 'tributario_app'
         db_table = 'transaccionesbienesinmuebles'
         verbose_name = 'Transacción Bienes Inmuebles'
         verbose_name_plural = 'Transacciones Bienes Inmuebles'
