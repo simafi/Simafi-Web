@@ -122,4 +122,7 @@ urlpatterns = [
     
     # Impuesto Personal
     path('impuesto-personal/', include('tributario.impuesto_personal.urls', namespace='impuesto_personal')),
+    
+    # Permiso de Operación
+    path('descargar-permiso-pdf/', views.descargar_permiso_pdf, name='descargar_permiso_pdf'),
 ]

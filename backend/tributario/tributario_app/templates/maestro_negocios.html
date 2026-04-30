@@ -1394,6 +1394,9 @@
             <button type="submit" name="accion" value="estado" class="btn btn-secondary">
                 <i class="fas fa-file-invoice"></i> Estado de Cuenta
             </button>
+            <button type="button" id="btn-permiso" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); width: 100%; margin-top: 10px;">
+                <i class="fas fa-certificate"></i> Permiso de Operación
+            </button>
         </div>
             </form>
         </div>
@@ -2868,6 +2871,202 @@
             });
             
             console.log('✅ Select2 inicializado en el campo de Actividad Económica');
+        });
+    </script>
+    <!-- Modal de Requisitos de Permiso de Operación -->
+    <div id="modal-permiso" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);">
+        <div style="background: white; margin: 5% auto; padding: 30px; border-radius: 15px; width: 50%; max-width: 600px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">
+                <h2 style="color: #1e40af; margin: 0;"><i class="fas fa-certificate"></i> Requisitos de Permiso {{ current_year }}</h2>
+                <span id="close-modal-permiso" style="cursor: pointer; font-size: 24px; color: #9ca3af;">&times;</span>
+            </div>
+            
+            <div id="permiso-content">
+                <p>Verificando requisitos legales para <strong><span id="permiso-negocio-nombre"></span></strong>...</p>
+                
+                <div style="margin-top: 20px;">
+                    <div class="requisito-item" id="req-estatus" style="padding: 10px; margin-bottom: 8px; border-radius: 8px; background: #f9fafb; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-circle-notch fa-spin"></i> <span>Estatus del Negocio</span>
+                    </div>
+                    <div class="requisito-item" id="req-solvencia" style="padding: 10px; margin-bottom: 8px; border-radius: 8px; background: #f9fafb; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-circle-notch fa-spin"></i> <span>Solvencia Municipal</span>
+                    </div>
+                    <div class="requisito-item" id="req-declaracion" style="padding: 10px; margin-bottom: 8px; border-radius: 8px; background: #f9fafb; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-circle-notch fa-spin"></i> <span>Declaración Jurada</span>
+                    </div>
+                    <div class="requisito-item" id="req-pago" style="padding: 10px; margin-bottom: 20px; border-radius: 8px; background: #f9fafb; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-circle-notch fa-spin"></i> <span>Pago Tasa de Permiso</span>
+                    </div>
+                    
+                    <h3 style="font-size: 1rem; color: #4b5563; margin-bottom: 15px; border-top: 1px solid #e5e7eb; pt: 15px;">Constancias Institucionales (Honduras)</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: #eff6ff; padding: 10px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                            <input type="checkbox" id="check-bomberos" class="permiso-check"> Bomberos
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: #ecfdf5; padding: 10px; border-radius: 8px; border-left: 4px solid #10b981;">
+                            <input type="checkbox" id="check-salud" class="permiso-check"> Salud
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: #fffbeb; padding: 10px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <input type="checkbox" id="check-ambiente" class="permiso-check"> Ambiente
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f9fafb; padding: 10px; border-radius: 8px; border-left: 4px solid #6b7280;">
+                            <input type="checkbox" id="check-otros" class="permiso-check" checked disabled> Otros
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="permiso-footer" style="margin-top: 30px; text-align: center; display: none;">
+                    <div id="permiso-error-msg" style="color: #ef4444; margin-bottom: 15px; font-weight: 600;"></div>
+                    <button type="button" id="btn-imprimir-permiso" class="btn btn-success" style="width: 100%; padding: 15px; font-size: 1.1rem;">
+                        <i class="fas fa-print"></i> IMPRIMIR PERMISO DE OPERACIÓN
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnPermiso = document.getElementById('btn-permiso');
+            const modal = document.getElementById('modal-permiso');
+            const closeModal = document.getElementById('close-modal-permiso');
+            const checks = document.querySelectorAll('.permiso-check');
+            const btnImprimir = document.getElementById('btn-imprimir-permiso');
+            
+            if (btnPermiso) {
+                btnPermiso.addEventListener('click', function() {
+                    const rtm = document.getElementById('id_rtm').value;
+                    const expe = document.getElementById('id_expe').value;
+                    const nombre = document.getElementById('id_nombrenego').value;
+                    
+                    if (!rtm || !expe) {
+                        alert('Por favor, busque un negocio primero.');
+                        return;
+                    }
+                    
+                    document.getElementById('permiso-negocio-nombre').textContent = nombre || rtm;
+                    modal.style.display = 'block';
+                    verificarPermiso();
+                });
+            }
+            
+            closeModal.addEventListener('click', () => modal.style.display = 'none');
+            
+            checks.forEach(check => {
+                check.addEventListener('change', () => {
+                    guardarYVerificar();
+                });
+            });
+            
+            function verificarPermiso() {
+                const rtm = document.getElementById('id_rtm').value;
+                const expe = document.getElementById('id_expe').value;
+                const empresa = document.getElementById('id_empresa').value;
+                
+                fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: JSON.stringify({
+                        accion: 'verificar_permiso',
+                        rtm: rtm,
+                        expe: expe,
+                        empresa: empresa,
+                        ano: new Date().getFullYear()
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    actualizarUIRequisitos(data);
+                });
+            }
+            
+            function guardarYVerificar() {
+                const rtm = document.getElementById('id_rtm').value;
+                const expe = document.getElementById('id_expe').value;
+                const empresa = document.getElementById('id_empresa').value;
+                
+                fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: JSON.stringify({
+                        accion: 'guardar_requisitos',
+                        rtm: rtm,
+                        expe: expe,
+                        empresa: empresa,
+                        ano: new Date().getFullYear(),
+                        bomberos: document.getElementById('check-bomberos').checked,
+                        salud: document.getElementById('check-salud').checked,
+                        ambiente: document.getElementById('check-ambiente').checked
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    actualizarUIRequisitos(data);
+                });
+            }
+            
+            function actualizarUIRequisitos(data) {
+                const det = data.detalles;
+                
+                updateItem('req-estatus', det.estatus);
+                updateItem('req-solvencia', det.solvencia);
+                updateItem('req-declaracion', det.declaracion);
+                updateItem('req-pago', det.pago_permiso);
+                
+                // Actualizar checks manuales si vienen de DB
+                if (data.requisitos_id) {
+                    document.getElementById('check-bomberos').checked = det.manuales.bomberos;
+                    document.getElementById('check-salud').checked = det.manuales.salud;
+                    document.getElementById('check-ambiente').checked = det.manuales.ambiente;
+                }
+                
+                const footer = document.getElementById('permiso-footer');
+                const errorMsg = document.getElementById('permiso-error-msg');
+                
+                footer.style.display = 'block';
+                if (data.exito) {
+                    btnImprimir.disabled = false;
+                    btnImprimir.style.opacity = '1';
+                    btnImprimir.style.cursor = 'pointer';
+                    errorMsg.textContent = '✅ El negocio cumple con todos los requisitos.';
+                    errorMsg.style.color = '#10b981';
+                } else {
+                    btnImprimir.disabled = true;
+                    btnImprimir.style.opacity = '0.5';
+                    btnImprimir.style.cursor = 'not-allowed';
+                    errorMsg.textContent = '❌ No se puede emitir el permiso hasta cumplir todos los requisitos.';
+                    errorMsg.style.color = '#ef4444';
+                }
+            }
+            
+            function updateItem(id, info) {
+                const el = document.getElementById(id);
+                const icon = el.querySelector('i');
+                const span = el.querySelector('span');
+                
+                span.textContent = info.mensaje;
+                if (info.ok) {
+                    el.style.background = '#f0fdf4';
+                    el.style.color = '#166534';
+                    icon.className = 'fas fa-check-circle';
+                    icon.style.color = '#10b981';
+                } else {
+                    el.style.background = '#fef2f2';
+                    el.style.color = '#991b1b';
+                    icon.className = 'fas fa-times-circle';
+                    icon.style.color = '#ef4444';
+                }
+            }
+            
+            btnImprimir.addEventListener('click', function() {
+                const rtm = document.getElementById('id_rtm').value;
+                const expe = document.getElementById('id_expe').value;
+                const empresa = document.getElementById('id_empresa').value;
+                const ano = new Date().getFullYear();
+                
+                window.open(`/tributario/descargar-permiso-pdf/?rtm=${rtm}&expe=${expe}&empresa=${empresa}&ano=${ano}`, '_blank');
+            });
         });
     </script>
 </body>

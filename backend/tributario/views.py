@@ -680,6 +680,44 @@ def maestro_negocios(request):
                         return JsonResponse({'exito': True, 'redirect': target})
                     return redirect(target)
                 return JsonResponse({'exito': False, 'mensaje': 'RTM y Expediente son obligatorios para historial'})
+            elif accion == 'verificar_permiso':
+                from .services_permisos import verificar_requisitos_permiso
+                from .models import Negocio
+                rtm = data.get('rtm', '')
+                expe = data.get('expe', '')
+                empre = data.get('empresa', '') or request.session.get('municipio_codigo') or request.session.get('empresa', '0301')
+                ano = int(data.get('ano') or datetime.now().year)
+                
+                negocio = Negocio.objects.filter(empresa=empre, rtm=rtm, expe=expe).first()
+                if not negocio:
+                    return JsonResponse({'exito': False, 'mensaje': 'Negocio no encontrado'})
+                
+                res = verificar_requisitos_permiso(negocio, ano)
+                return JsonResponse(res)
+            elif accion == 'guardar_requisitos':
+                from .models import Negocio, PermisoOperacionRequisito
+                from .services_permisos import verificar_requisitos_permiso
+                rtm = data.get('rtm', '')
+                expe = data.get('expe', '')
+                empre = data.get('empresa', '') or request.session.get('municipio_codigo') or request.session.get('empresa', '0301')
+                ano = int(data.get('ano') or datetime.now().year)
+                
+                negocio = Negocio.objects.filter(empresa=empre, rtm=rtm, expe=expe).first()
+                if not negocio:
+                    return JsonResponse({'exito': False, 'mensaje': 'Negocio no encontrado'})
+                
+                requisitos, created = PermisoOperacionRequisito.objects.get_or_create(
+                    negocio=negocio,
+                    ano=ano
+                )
+                requisitos.bomberos = data.get('bomberos') == 'true' or data.get('bomberos') is True
+                requisitos.salud = data.get('salud') == 'true' or data.get('salud') is True
+                requisitos.ambiente = data.get('ambiente') == 'true' or data.get('ambiente') is True
+                requisitos.usuario = request.session.get('usuario', 'admin')
+                requisitos.save()
+                
+                res = verificar_requisitos_permiso(negocio, ano)
+                return JsonResponse(res)
             else:
                 logger.error(f"⚠️ Acción no válida: {accion}")
                 print(f"⚠️ Acción no válida: {accion}", file=sys.stderr)
@@ -5903,4 +5941,36 @@ def parametros_tributarios_crud(request):
         'tipo_choices': ParametrosTributarios.TIPO_CHOICES
     }
     return render(request, 'parametros_tributarios.html', context)
+
+from django.http import FileResponse, HttpResponse
+from .services_permisos import verificar_requisitos_permiso, generar_permiso_pdf
+from .models import Negocio
+import datetime
+
+def descargar_permiso_pdf(request):
+    """
+    Vista para descargar el Permiso de Operación en PDF tras validar requisitos.
+    """
+    rtm = request.GET.get('rtm')
+    expe = request.GET.get('expe')
+    empresa = request.GET.get('empresa') or request.session.get('municipio_codigo') or request.session.get('empresa', '0301')
+    ano = int(request.GET.get('ano') or datetime.datetime.now().year)
+    
+    if not rtm or not expe:
+        return HttpResponse("RTM y Expediente son requeridos", status=400)
+        
+    negocio = Negocio.objects.filter(empresa=empresa, rtm=rtm, expe=expe).first()
+    if not negocio:
+        return HttpResponse("Negocio no encontrado", status=404)
+        
+    # Verificar requisitos antes de emitir
+    res = verificar_requisitos_permiso(negocio, ano)
+    if not res['exito']:
+        return HttpResponse(f"No cumple con los requisitos legales para el año {ano}. Detalles: {res['detalles']}", status=403)
+        
+    # Generar PDF
+    pdf_buffer = generar_permiso_pdf(negocio, ano)
+    
+    filename = f"Permiso_Operacion_{rtm}_{ano}.pdf"
+    return FileResponse(pdf_buffer, as_attachment=True, filename=filename)
 

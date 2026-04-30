@@ -1173,3 +1173,26 @@ class ParametrosTributarios(models.Model):
         if cuotas <= 0:
             return 0, 0, Decimal('0.00')
         return cuotas, mes_inicio, param.porcentaje_descuento_anual
+
+class PermisoOperacionRequisito(models.Model):
+    """
+    Modelo para registrar el cumplimiento de requisitos manuales para el Permiso de Operación.
+    """
+    negocio = models.ForeignKey(Negocio, on_delete=models.CASCADE, related_name='requisitos_permiso')
+    ano = models.IntegerField(verbose_name="Año")
+    bomberos = models.BooleanField(default=False, verbose_name="Cuerpo de Bomberos")
+    salud = models.BooleanField(default=False, verbose_name="Salud Pública")
+    ambiente = models.BooleanField(default=False, verbose_name="Ambiente")
+    otros = models.BooleanField(default=False, verbose_name="Otros")
+    usuario = models.CharField(max_length=50, blank=True, verbose_name="Usuario verificador")
+    fecha_verificacion = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'permiso_operacion_requisito'
+        verbose_name = "Requisito de Permiso"
+        verbose_name_plural = "Requisitos de Permisos"
+        unique_together = ('negocio', 'ano')
+        app_label = 'tributario_app'
+
+    def __str__(self):
+        return f"Requisitos {self.negocio.nombrenego} - {self.ano}"
