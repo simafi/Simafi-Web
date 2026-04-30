@@ -324,7 +324,61 @@ def verificar_sesion(request):
 
 def get_empresa(request):
     """Obtiene la empresa del usuario en sesión."""
-    return request.session.get("empresa", "")
+    # En producción pueden existir distintas llaves de sesión según el flujo/login.
+    # Normalizamos para que Caja aplique BI/ICS al municipio correcto.
+    return (
+        request.session.get("municipio_codigo")
+        or request.session.get("catastro_empresa")
+        or request.session.get("empresa")
+        or ""
+    )
+
+
+def _infer_cocata1_from_pago(pago) -> str:
+    """
+    En BI, normalmente la clave catastral viene en `PagoVariosTemp.Rtm`.
+    En algunos esquemas/producción puede venir vacía o venir embebida en texto.
+    """
+    try:
+        raw_rtm = (getattr(pago, "Rtm", None) or "").strip()
+    except Exception:
+        raw_rtm = ""
+    if raw_rtm:
+        return raw_rtm
+
+    # Fallback: intentar extraer de comentario/descripcion
+    import re
+
+    candidates = []
+    for attr in ("comentario", "descripcion", "referencia"):
+        try:
+            candidates.append(str(getattr(pago, attr, "") or ""))
+        except Exception:
+            continue
+
+    for text in candidates:
+        t = (text or "").strip()
+        if not t:
+            continue
+        # Patrones comunes que ya usamos en otros módulos/observaciones:
+        # - cocata1=XXXX
+        # - catastral=XXXX
+        m = re.search(r"\b(?:cocata1|catastral|clave[_\s-]*catastral)\s*=\s*([A-Za-z0-9\-\/\.]{6,25})\b", t, re.I)
+        if m:
+            return (m.group(1) or "").strip()
+        # Si el texto completo parece una clave (sin etiquetas)
+        if 6 <= len(t) <= 20 and re.fullmatch(r"[A-Za-z0-9\-\/\.]+", t):
+            return t
+
+    # Último fallback: algunas integraciones podrían mandar la clave en solvencia
+    try:
+        solv = str(getattr(pago, "solvencia", "") or "").strip()
+        if 6 <= len(solv) <= 20 and solv != "0":
+            return solv
+    except Exception:
+        pass
+
+    return ""
 
 
 def tesoreria_login(request):
@@ -567,8 +621,9 @@ def caja_cobros(request):
                 elif tipofa == "B":
                     es_recibo_bienes = True
                     # Para BI, el flujo envía `cocata1` normalmente en Rtm.
-                    if not clave_catastral and rtm:
-                        clave_catastral = str(rtm).strip()
+                    if not clave_catastral:
+                        # En producción, a veces Rtm viene vacío o la clave se manda en comentario/descripcion.
+                        clave_catastral = _infer_cocata1_from_pago(pago) or ""
                     if not propietario and pago.nombre:
                         propietario = (pago.nombre or "").strip()
                     if not direccion_inmueble and pago.direccion:
