@@ -15,10 +15,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tributario_app.settings")
 
 
 def main() -> None:
-    import django
-    django.setup()
-    from django.core.management import call_command
-
+    # IMPORTANTE: si vamos a cambiar DATABASE_URL para migraciones (DIRECT_URL),
+    # debe hacerse ANTES de inicializar Django, porque settings/DB se cargan en django.setup().
     run_migrations = (
         (os.environ.get("VERCEL") or "").strip().lower() in ("1", "true", "yes", "on")
         or (os.environ.get("DJANGO_VERCEL") or "").strip().lower() in ("1", "true", "yes", "on")
@@ -31,9 +29,14 @@ def main() -> None:
         direct_url = (os.environ.get("DIRECT_URL") or "").strip()
         if direct_url:
             os.environ["DATABASE_URL"] = direct_url
-            print("Vercel build: running migrate --noinput (using DIRECT_URL)")
-        else:
-            print("Vercel build: running migrate --noinput")
+            print("Vercel build: migrations will use DIRECT_URL")
+
+    import django
+    django.setup()
+    from django.core.management import call_command
+
+    if run_migrations:
+        print("Vercel build: running migrate --noinput")
         call_command("migrate", "--noinput")
     else:
         print("Vercel build: skipping migrate (set DJANGO_RUN_MIGRATIONS=1 to force)")
