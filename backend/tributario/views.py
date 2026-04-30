@@ -5339,9 +5339,17 @@ def guardar_transaccion_pago(request):
         periodos_a_pagar = []
         
         if tipo == 'cuota':
-            cuota_hasta = int(data.get('cuota_hasta', 1))
+            # Intentar obtener cuota_hasta de varias formas para mayor compatibilidad
+            cuota_hasta = data.get('cuota_hasta') or data.get('cuotaHasta') or 1
+            try:
+                cuota_hasta = int(cuota_hasta)
+            except (ValueError, TypeError):
+                cuota_hasta = 1
+                
             if cuota_hasta < 1:
                 cuota_hasta = 1
+            
+            logger.info(f"GuardarTransaccionPago: Calculando pago por cuotas. cuota_hasta_final={cuota_hasta}")
             
             # Tomar los primeros N periodos (cada periodo = 1 cuota = 1 mes)
             # Cada periodo incluye TODOS los rubros de ese mes
@@ -5668,7 +5676,13 @@ def guardar_transaccion_pago(request):
         rtn_negocio = (negocio.rtnnego or '').strip() if negocio and getattr(negocio, 'rtnnego', None) else ''
         expe_para_pago = negocio.expe if negocio and getattr(negocio, 'expe', None) else expe
         try:
-            expe_decimal = Decimal(str(int(float(str(expe_para_pago).strip()))))
+            # Normalizar expe para evitar .0 en el CharField
+            try:
+                expe_para_pago = str(int(float(str(expe_para_pago).strip())))
+            except (ValueError, TypeError):
+                expe_para_pago = str(expe_para_pago).strip()
+            
+            logger.info(f"GuardarTransaccionPago: Creando PagoVariosTemp rubro '{rubro_codigo}' - monto: {monto_total_rubro} - expe: {expe_para_pago}")
         except (TypeError, ValueError):
             expe_decimal = Decimal('0')
         
@@ -5724,7 +5738,7 @@ def guardar_transaccion_pago(request):
                     banco='',
                     Tipofa='N',
                     Rtm=(rtm or '')[:20],
-                    expe=expe_decimal,
+                    expe=expe_para_pago,
                     pagodia=Decimal('0'),
                     rcaja=Decimal('0.00'),
                     Rfechapag=None,

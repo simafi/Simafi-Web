@@ -1319,7 +1319,7 @@
                     alert('Por favor ingrese un número de cuota válido');
                     return;
                 }
-                solicitud.cuotaHasta = cuotaHastaNumero;
+                solicitud.cuota_hasta = cuotaHastaNumero;
                 url += `&tipo=cuota&cuota_hasta=${encodeURIComponent(cuotaHastaNumero)}`;
             } else {
                 const montoAbono = document.getElementById('montoAbono').value;
@@ -1411,6 +1411,30 @@
                 maximumFractionDigits: 2
             });
         }
+
+        // Función para invalidar el cálculo actual si cambian los parámetros
+        function invalidarCalculoPago() {
+            ultimaSolicitudPago = null;
+            ultimaRespuestaPago = null;
+            
+            const contenedorResultado = document.getElementById('resultadoPago');
+            if (contenedorResultado) {
+                contenedorResultado.style.display = 'none';
+            }
+            
+            const btnEnviar = document.getElementById('btnEnviarCaja');
+            if (btnEnviar) {
+                btnEnviar.disabled = true;
+                btnEnviar.innerHTML = '<i class="fas fa-paper-plane"></i> Confirmar y Enviar a Caja';
+            }
+        }
+
+        // Registrar eventos para detectar cambios en los inputs del modal
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('tipoPago')?.addEventListener('change', invalidarCalculoPago);
+            document.getElementById('cuotaHasta')?.addEventListener('input', invalidarCalculoPago);
+            document.getElementById('montoAbono')?.addEventListener('input', invalidarCalculoPago);
+        });
 
         function formatearPeriodoLista(periodos) {
             if (!Array.isArray(periodos) || periodos.length === 0) {
@@ -1524,7 +1548,7 @@
             }
 
             if (solicitud.tipo === 'cuota') {
-                partes.push(`Pago hasta la cuota número ${solicitud.cuotaHasta || 1}.`);
+                partes.push(`Pago hasta la cuota número ${solicitud.cuota_hasta || 1}.`);
             } else {
                 partes.push(`Abono parcial por un monto de ${formatearLempiras(solicitud.monto || 0)}.`);
             }
@@ -1590,7 +1614,7 @@
             const tipoPagoSpan = document.getElementById('reciboTipoPago');
             if (tipoPagoSpan) {
                 tipoPagoSpan.textContent = solicitud.tipo === 'cuota'
-                    ? `Pago completo hasta la cuota ${solicitud.cuotaHasta}`
+                    ? `Pago completo hasta la cuota ${solicitud.cuota_hasta}`
                     : `Abono parcial por ${formatearLempiras(solicitud.monto || 0)}`;
             }
 
@@ -1611,6 +1635,12 @@
             if (botonEnviarCaja) {
                 botonEnviarCaja.disabled = false;
                 botonEnviarCaja.innerHTML = textoBotonEnviarCaja;
+            }
+            
+            // Asegurar que ultimaSolicitudPago tenga el comentario actual
+            if (ultimaSolicitudPago) {
+                const comentarioInput = document.getElementById('comentarioPago');
+                ultimaSolicitudPago.comentario = comentarioInput ? comentarioInput.value.trim() : '';
             }
         }
 

@@ -8,9 +8,8 @@ import csv
 import io
 import base64
 import logging
-from django.db.models import Q
-from django.db.models import Sum
-from django.db.models.functions import Trim
+from django.db.models import Q, Sum, IntegerField
+from django.db.models.functions import Trim, Cast
 from django.db import transaction, connection
 
 from contabilidad.models import CuentaContable
@@ -49,6 +48,14 @@ def _empresa_codigo_transacciones(empresa: str) -> str:
 
 def _norm_rubro_caja(rubro: str) -> str:
     return (rubro or "").strip().upper()[:6]
+
+
+def _norm_expe_caja(expe: str) -> str:
+    """Normaliza el expediente: remueve espacios y el sufijo .0 si existe."""
+    e = str(expe or "").strip()
+    if e.endswith(".0"):
+        e = e[:-2]
+    return e[:12]
 
 
 def _table_exists(table_name):
@@ -702,47 +709,56 @@ def caja_cobros(request):
                                     )
             except Exception:
                 pass
-
             # Reflejar cobro en Control Tributario: rebajar saldo en `transaccionesics` (monto__gt=0)
             emp_trib = _empresa_codigo_transacciones(empresa)
             if es_recibo_negocio and negocio_rtm and negocio_expe and ics_por_rubro and emp_trib:
+                # Pre-normalizamos los valores de búsqueda para ser consistentes
+                _rtm_t_val = str(negocio_rtm).strip()[:16]
+                _ex_t_val = _norm_expe_caja(negocio_expe)
                 for rubro_codigo, monto_rubro in ics_por_rubro.items():
                     restante = (monto_rubro or Decimal("0.00")).quantize(Decimal("0.01"))
-                    if restante <= 0:
-                        continue
-
-                    trans_qs = (
-                        TransaccionesIcs.objects.annotate(
-                            _rtm_t=Trim("rtm"),
-                            _ex_t=Trim("expe"),
-                            _rb_t=Trim("rubro"),
-                        )
-                        .filter(
-                            empresa=emp_trib,
-                            _rtm_t=negocio_rtm[:16].strip(),
-                            _ex_t=str(negocio_expe)[:12].strip(),
-                            _rb_t=_norm_rubro_caja(rubro_codigo),
-                            monto__gt=0,
-                        )
-                        .order_by("ano", "mes", "id")
-                    )
-                    for trans in trans_qs:
-                        if restante <= 0:
-                            break
-                        saldo = _safe_decimal(trans.monto)
-                        if saldo <= 0:
-                            continue
-                        aplicar = saldo if saldo <= restante else restante
-                        trans.monto = (saldo - aplicar).quantize(Decimal("0.01"))
-                        trans.usuario = (usuario or "SISTEMA")[:50]
-                        trans.fechasys = datetime.now()
-                        trans.save(update_fields=["monto", "usuario", "fechasys"])
-                        restante = (restante - aplicar).quantize(Decimal("0.01"))
-
                     if restante > 0:
-                        warnings.append(
-                            f"No se pudo aplicar el pago completo del rubro {rubro_codigo}. Pendiente: L. {restante:.2f}"
+                        # Buscamos deudas para este rubro con ordenamiento FIFO (Año y Mes numérico)
+                        # Aplicamos Trim para evitar fallos por espacios en blanco en rtm, expe o rubro
+                        trans_qs = (
+                            TransaccionesIcs.objects.annotate(
+                                _rtm_t=Trim("rtm"),
+                                _ex_t=Trim("expe"),
+                                _rb_t=Trim("rubro"),
+                                _mes_n=Cast(Trim("mes"), IntegerField()),
+                            )
+                            .filter(
+                                empresa=emp_trib,
+                                _rtm_t=_rtm_t_val,
+                                _ex_t=_ex_t_val,
+                                _rb_t=_norm_rubro_caja(rubro_codigo),
+                                monto__gt=0,
+                            )
+                            .order_by("ano", "_mes_n", "id")
                         )
+
+                        logger.info(f"CajaCobros: Aplicando L. {restante} al rubro '{rubro_codigo}' para RTM: {negocio_rtm}, EXPE: {negocio_expe}")
+
+                        for trans in trans_qs:
+                            if restante <= 0:
+                                break
+                            saldo = _safe_decimal(trans.monto)
+                            if saldo <= 0:
+                                continue
+                            aplicar = saldo if saldo <= restante else restante
+                            
+                            logger.debug(f"CajaCobros: Rebajando Trans ID {trans.id} ({trans.ano}-{trans.mes}): Saldo {saldo} -> Aplicando {aplicar}")
+                            
+                            trans.monto = (saldo - aplicar).quantize(Decimal("0.01"))
+                            trans.usuario = (usuario or "SISTEMA")[:50]
+                            trans.fechasys = datetime.now()
+                            trans.save(update_fields=["monto", "usuario", "fechasys"])
+                            restante = (restante - aplicar).quantize(Decimal("0.01"))
+
+                        if restante > 0:
+                            msg_warn = f"No se pudo aplicar el pago completo del rubro {rubro_codigo}. Pendiente: L. {restante:.2f} (Posible desajuste entre PagoVariosTemp y TransaccionesIcs)"
+                            logger.warning(f"CajaCobros: {msg_warn}")
+                            warnings.append(msg_warn)
 
             # Reflejar cobro en Bienes Inmuebles: rebajar cuotas reales en `transaccionesbienesinmuebles`
             # La pantalla de BI lista `estado='A'`, así que si una cuota queda en 0 se marca como pagada.
