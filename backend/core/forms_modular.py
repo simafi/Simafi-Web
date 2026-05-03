@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.db.models import Q
 
 from core.models import Municipio
 from core.module_access import MODULOS_SISTEMA
@@ -34,7 +35,16 @@ class RolForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['permisos'].queryset = Permiso.objects.filter(is_active=True).order_by('modulo', 'nombre')
+        # Incluir permisos inactivos ya vinculados al rol; si no, al guardar falla la
+        # validación («opción no disponible») cuando el catálogo desactivó un permiso.
+        if self.instance.pk:
+            asignados = list(self.instance.permisos.values_list('pk', flat=True))
+            qs = Permiso.objects.filter(Q(is_active=True) | Q(pk__in=asignados)).order_by(
+                'modulo', 'nombre'
+            )
+        else:
+            qs = Permiso.objects.filter(is_active=True).order_by('modulo', 'nombre')
+        self.fields['permisos'].queryset = qs
         self.fields['permisos'].required = False
 
 
@@ -115,6 +125,14 @@ class UsuarioSistemaForm(forms.Form):
                 is_active=True,
             ).values_list('rol_id', flat=True)
             self.initial['roles'] = list(ids)
+            # Incluir roles inactivos ya asignados; si no, al grabar falla la validación
+            # si el catálogo desactivó un rol que el usuario aún tiene en UsuarioRol.
+            rid = list(ids)
+            self.fields['roles'].queryset = (
+                Rol.objects.filter(Q(is_active=True) | Q(pk__in=rid))
+                .distinct()
+                .order_by('nombre')
+            )
 
     def clean_usuario(self):
         u = (self.cleaned_data.get('usuario') or '').strip()
