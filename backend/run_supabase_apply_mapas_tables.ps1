@@ -45,7 +45,8 @@ Write-Host "  SQL: $sql" -ForegroundColor Gray
 Write-Host ""
 
 if (-not $urlSet) {
-    Write-Host "No hay DATABASE_URL (ni DIRECT_URL, etc.) en el entorno." -ForegroundColor Yellow
+    # Usar comillas simples: en comillas dobles "(ni ..." puede ejecutar el alias ni = New-Item.
+    Write-Host 'No hay DATABASE_URL ni DIRECT_URL (u otras URLs de BD) en el entorno.' -ForegroundColor Yellow
     Write-Host 'Define por ejemplo: $env:DATABASE_URL = "postgresql://..."' -ForegroundColor Yellow
     Write-Host ""
 }
