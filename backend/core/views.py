@@ -276,11 +276,43 @@ def usuarios_sistema_list(request):
         'object_list': qs,
         'usuario': request.session.get('nombre'),
         'empresa': request.session.get('empresa'),
+        'session_user_id': request.session.get('user_id'),
         'puede_crear_usuario': (not _hay_superusuario_en_bd())
         or bool(request.session.get('es_superusuario')),
     }
     ctx.update(_ctx_config_inicial())
     return render(request, 'core/usuarios_sistema_list.html', ctx)
+
+
+def usuarios_sistema_delete(request, pk):
+    """Elimina un usuario del sistema (p. ej. creado por error). POST únicamente."""
+    redir = _requiere_acceso_admin_usuarios(request)
+    if redir:
+        return redir
+    if request.method != 'POST':
+        messages.error(request, 'Use el botón eliminar en el listado de usuarios.')
+        return redirect('modules_core:usuarios_sistema_list')
+    victim = get_object_or_404(Usuario, pk=pk)
+    uid = request.session.get('user_id')
+    if uid is not None and int(uid) == int(victim.pk):
+        messages.error(request, 'No puede eliminar su propio usuario.')
+        return redirect('modules_core:usuarios_sistema_list')
+    if victim.es_superusuario and victim.is_active:
+        otros_sup = (
+            Usuario.objects.filter(es_superusuario=True, is_active=True)
+            .exclude(pk=victim.pk)
+            .exists()
+        )
+        if not otros_sup:
+            messages.error(
+                request,
+                'No puede eliminar el único superusuario activo del sistema.',
+            )
+            return redirect('modules_core:usuarios_sistema_list')
+    etiqueta = victim.nombre or victim.usuario
+    victim.delete()
+    messages.success(request, f'Usuario «{etiqueta}» eliminado correctamente.')
+    return redirect('modules_core:usuarios_sistema_list')
 
 
 def usuarios_sistema_create(request):
