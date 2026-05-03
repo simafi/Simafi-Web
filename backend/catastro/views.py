@@ -10556,7 +10556,7 @@ def costos_list(request):
     """
     Lista de costos básicos unitarios agrupados por uso
     """
-    empresa_codigo = request.session.get('catastro_empresa', '')
+    empresa_codigo = (request.session.get('catastro_empresa') or request.session.get('empresa') or '').strip()
     
     costos = _costos_por_municipio_qs(request).order_by('uso', 'clase', 'calidad')
     
@@ -10625,6 +10625,7 @@ def costos_list(request):
         'total_registros': costos.count(),
         'suma_costo': suma_costo,
         'empresa': empresa_codigo,
+        'municipio_descripcion': (request.session.get('catastro_municipio_descripcion') or '').strip(),
     }
     
     return render(request, 'costos_list.html', context)
@@ -10636,7 +10637,7 @@ def costo_create(request):
     Si ya existe un registro con la misma combinación (empresa, uso, clase, calidad),
     muestra los datos existentes para permitir modificarlos
     """
-    empresa_codigo = request.session.get('catastro_empresa', '')
+    empresa_codigo = (request.session.get('catastro_empresa') or request.session.get('empresa') or '').strip()
     
     if request.method == 'POST':
         editar_existente = request.POST.get('editar_existente', '') == '1'
@@ -10712,7 +10713,7 @@ def costo_update(request, pk):
     """
     Actualizar costo básico unitario
     """
-    empresa_codigo = request.session.get('catastro_empresa', '')
+    empresa_codigo = (request.session.get('catastro_empresa') or request.session.get('empresa') or '').strip()
     costo = get_object_or_404(_costos_por_municipio_qs(request), pk=pk)
     
     if request.method == 'POST':
@@ -10747,7 +10748,7 @@ def costos_clasificacion_pesos(request, uso, clase):
     """
     Vista para la clasificación de pesos por uso y clase
     """
-    empresa_codigo = request.session.get('catastro_empresa', '')
+    empresa_codigo = (request.session.get('catastro_empresa') or request.session.get('empresa') or '').strip()
     
     try:
         
@@ -10843,7 +10844,7 @@ def costo_delete(request, pk):
     """
     Eliminar costo básico unitario
     """
-    empresa_codigo = request.session.get('catastro_empresa', '')
+    empresa_codigo = (request.session.get('catastro_empresa') or request.session.get('empresa') or '').strip()
     
     costo = get_object_or_404(_costos_por_municipio_qs(request), pk=pk)
     

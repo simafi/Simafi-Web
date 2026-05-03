@@ -93,16 +93,23 @@
 					{% endfor %}
 				{% endif %}
 
-				<!-- Información del registro -->
+				<!-- Municipio en sesión: los costos listados son solo de este código (tabla costos.empresa) -->
 				<div class="alert alert-info mb-4">
-					<div class="row">
+					<div class="row align-items-center">
 						<div class="col-md-6">
-							<strong>Empresa:</strong> {{ empresa }}
+							<strong>Municipio (código empresa):</strong>
+							<span class="badge bg-primary ms-1">{{ empresa|default:"—" }}</span>
+							{% if municipio_descripcion %}
+								<br><small class="text-muted">{{ municipio_descripcion }}</small>
+							{% endif %}
 						</div>
 						<div class="col-md-6">
-							<strong>Total de registros:</strong> {{ total_registros }}
+							<strong>Total de registros (este municipio):</strong> {{ total_registros }}
 						</div>
 					</div>
+					{% if not empresa %}
+					<p class="mb-0 mt-2 small text-danger"><i class="fas fa-exclamation-triangle me-1"></i>No hay código de municipio en la sesión de Catastro. Cierre sesión y entre de nuevo eligiendo el municipio correcto en el login modular.</p>
+					{% endif %}
 				</div>
 
 				<!-- Búsqueda -->
@@ -265,7 +272,7 @@
 				</div>
 				{% else %}
 				<div class="alert alert-warning">
-					<i class="fas fa-info-circle me-2"></i>No hay costos básicos unitarios registrados para esta empresa.
+					<i class="fas fa-info-circle me-2"></i>No hay costos básicos unitarios registrados para el municipio <strong>{{ empresa|default:"—" }}</strong>. Los registros se cargan por código de municipio; si vienen de otro municipio (p. ej. 0301), no se muestran aquí.
 				</div>
 				{% endif %}
 			</div>
