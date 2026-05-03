@@ -13,7 +13,7 @@ try:
         test_transformer = Transformer.from_crs("EPSG:4326", "EPSG:32616", always_xy=True)
         test_result = test_transformer.transform(-87.0, 15.0)
         if logger:
-            logger.info("pyproj está disponible y funcionando correctamente")
+            logger.debug("pyproj está disponible y funcionando correctamente")
     except Exception as test_err:
         if logger:
             logger.warning(f"Error al verificar Transformer: {test_err}")
