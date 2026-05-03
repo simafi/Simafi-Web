@@ -14,6 +14,7 @@ from django.db.models import Prefetch
 from core.models import Municipio
 from core.module_access import (
     MODULO_CODES,
+    codigos_empresa_equivalentes,
     limpiar_accesos_modulo_en_sesion,
     sincronizar_privilegios_modular_desde_bd,
     sincronizar_sesion_catastro,
@@ -73,16 +74,13 @@ def login_principal(request):
                     err = 'Municipio no válido'
                 else:
                     codigo_mun = (municipio.codigo or '').strip()
-                    # Compatibilidad Postgres/MySQL: algunos códigos vienen sin ceros a la izquierda
-                    # pero el usuario se guardó con 4 dígitos (p.ej. "301" vs "0301").
-                    codigo_candidates = {codigo_mun}
-                    if codigo_mun.isdigit():
-                        codigo_candidates.add(codigo_mun.zfill(4))
+                    # Compatibilidad: municipio 0502 vs usuario.empresa 502 (y viceversa).
+                    codigo_candidates = codigos_empresa_equivalentes(codigo_mun)
 
                     user = (
                         Usuario.objects.filter(
                             usuario__iexact=usuario,
-                            empresa__in=list(codigo_candidates),
+                            empresa__in=codigo_candidates,
                             is_active=True,
                         ).first()
                     )
@@ -302,7 +300,10 @@ def usuarios_sistema_create(request):
             elif municipio_id:
                 try:
                     mun = Municipio.objects.get(pk=municipio_id)
-                    inst = Usuario.objects.filter(empresa=mun.codigo, usuario=usuario_str).first()
+                    inst = Usuario.objects.filter(
+                        usuario__iexact=usuario_str,
+                        empresa__in=codigos_empresa_equivalentes(mun.codigo),
+                    ).first()
                 except Municipio.DoesNotExist:
                     pass
                     

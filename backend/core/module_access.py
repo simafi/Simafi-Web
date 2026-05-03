@@ -8,9 +8,41 @@ from urllib.parse import quote
 
 from django.db import DatabaseError, OperationalError, ProgrammingError
 
-from usuarios.models import Usuario, UsuarioAccesoModulo
+from usuarios.models import Permiso, Rol, Usuario, UsuarioAccesoModulo
 
 logger = logging.getLogger(__name__)
+
+
+def codigos_empresa_equivalentes(codigo_municipio):
+    """
+    Variantes de Municipio.codigo para comparar con Usuario.empresa (login, búsquedas).
+    Evita credenciales «incorrectas» cuando el catálogo tiene 0502 y el usuario se guardó como 502.
+    """
+    c = (codigo_municipio or '').strip()
+    if not c:
+        return []
+    out = {c}
+    if c.isdigit():
+        out.add(c.zfill(4))
+        short = c.lstrip('0') or '0'
+        out.add(short)
+        out.add(short.zfill(4))
+    return list(out)
+
+
+def canon_empresa_desde_municipio(municipio):
+    """Formato estable al guardar Usuario.empresa (códigos numéricos en 4 dígitos)."""
+    if not municipio:
+        return ''
+    c = (getattr(municipio, 'codigo', None) or '').strip()
+    if c.isdigit():
+        return c.zfill(4)
+    return c
+
+
+def catalogo_modulo_tiene_permisos(codigo):
+    """True si existe al menos un permiso activo del módulo (columna `modulo`)."""
+    return Permiso.objects.filter(modulo=codigo, is_active=True).exists()
 
 # Orden mostrado en formularios de administración
 MODULOS_SISTEMA = (
@@ -84,7 +116,11 @@ def modulo_desde_ruta(path):
 def usuario_puede_acceso_modulo(request, codigo):
     """
     True si el usuario de la sesión modular puede usar ese módulo.
-    Superusuario: todos. Resto: fila activa en UsuarioAccesoModulo para ese código.
+    - Superusuario: todos.
+    - Fila activa en UsuarioAccesoModulo (checkbox + clave por módulo en «Usuarios del sistema»).
+    - O rol(es) con algún Permiso cuyo campo `modulo` coincide con el código del módulo.
+    - Si el módulo no tiene permisos en catálogo, mismo criterio amplio que `usuario_tiene_permiso`
+      (acceso a pantallas del módulo sin bloquear por middleware).
     """
     if codigo not in MODULO_CODES:
         return True
@@ -94,14 +130,33 @@ def usuario_puede_acceso_modulo(request, codigo):
     if request.session.get('es_superusuario'):
         return True
     try:
-        return UsuarioAccesoModulo.objects.filter(
+        if UsuarioAccesoModulo.objects.filter(
             usuario_id=uid,
             codigo_modulo=codigo,
             is_active=True,
-        ).exists()
+        ).exists():
+            return True
     except (ProgrammingError, OperationalError, DatabaseError) as exc:
         logger.warning("No se pudo verificar acceso al módulo (¿migraciones pendientes?): %s", exc)
         return False
+
+    try:
+        if Rol.objects.filter(
+            is_active=True,
+            permisos__modulo=codigo,
+            permisos__is_active=True,
+            usuarios_asignados__usuario_id=uid,
+            usuarios_asignados__is_active=True,
+        ).exists():
+            return True
+    except (ProgrammingError, OperationalError, DatabaseError) as exc:
+        logger.warning("No se pudo verificar acceso por rol al módulo: %s", exc)
+        return False
+
+    if not catalogo_modulo_tiene_permisos(codigo):
+        return True
+
+    return False
 
 
 def session_key_modulo(codigo):

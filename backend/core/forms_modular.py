@@ -3,8 +3,37 @@ from django import forms
 from django.db.models import Q
 
 from core.models import Municipio
-from core.module_access import MODULOS_SISTEMA
+from core.module_access import (
+    MODULO_CODES,
+    MODULOS_SISTEMA,
+    canon_empresa_desde_municipio,
+    codigos_empresa_equivalentes,
+)
 from usuarios.models import Usuario, UsuarioAccesoModulo, UsuarioRol, Rol, Permiso
+
+
+def _roles_cubren_modulo(roles_seleccionados, codigo_modulo):
+    """True si algún rol marcado incluye un permiso activo de ese módulo (campo Permiso.modulo)."""
+    if not roles_seleccionados:
+        return False
+    return Rol.objects.filter(
+        pk__in=[r.pk for r in roles_seleccionados],
+        is_active=True,
+        permisos__modulo=codigo_modulo,
+        permisos__is_active=True,
+    ).exists()
+
+
+def _roles_cubren_algún_modulo_catalogo(roles_seleccionados):
+    """True si algún rol tiene permisos de aplicación en algún módulo del sistema."""
+    if not roles_seleccionados:
+        return False
+    return Rol.objects.filter(
+        pk__in=[r.pk for r in roles_seleccionados],
+        is_active=True,
+        permisos__modulo__in=MODULO_CODES,
+        permisos__is_active=True,
+    ).exists()
 
 
 _WIDGET_TEXT = forms.TextInput(attrs={'class': 'form-control'})
@@ -183,7 +212,14 @@ class UsuarioSistemaForm(forms.Form):
                     raise forms.ValidationError(
                         'Ya existe un superusuario global con ese nombre de usuario.'
                     )
-            elif mun and usu and Usuario.objects.filter(empresa=mun.codigo, usuario=usu).exists():
+            elif (
+                mun
+                and usu
+                and Usuario.objects.filter(
+                    empresa__in=codigos_empresa_equivalentes(mun.codigo),
+                    usuario__iexact=usu,
+                ).exists()
+            ):
                 raise forms.ValidationError('Ya existe un usuario con ese nombre en el municipio seleccionado.')
         else:
             if es_sup and not mun:
@@ -192,11 +228,15 @@ class UsuarioSistemaForm(forms.Form):
                         'Ya existe otro superusuario global con ese nombre de usuario.'
                     )
             elif mun and usu:
-                if Usuario.objects.filter(empresa=mun.codigo, usuario=usu).exclude(pk=self.instance.pk).exists():
+                if Usuario.objects.filter(
+                    empresa__in=codigos_empresa_equivalentes(mun.codigo),
+                    usuario__iexact=usu,
+                ).exclude(pk=self.instance.pk).exists():
                     raise forms.ValidationError('Ya existe otro usuario con ese nombre en el municipio seleccionado.')
 
         if es_sup:
             return cleaned
+        roles_sel = list(cleaned.get('roles') or [])
         ok = False
         for code, _lbl in MODULOS_SISTEMA:
             if cleaned.get(f'modulo_{code}'):
@@ -211,17 +251,24 @@ class UsuarioSistemaForm(forms.Form):
                     ).exists()
                     if exists:
                         ok = True
+                    elif _roles_cubren_modulo(roles_sel, code):
+                        ok = True
                     else:
                         raise forms.ValidationError(
                             f'Indique contraseña para el módulo {code} o desmarque el acceso.'
                         )
+                elif _roles_cubren_modulo(roles_sel, code):
+                    ok = True
                 else:
                     raise forms.ValidationError(
                         f'Indique contraseña para el módulo {code} o desmarque el acceso.'
                     )
+        if not ok and _roles_cubren_algún_modulo_catalogo(roles_sel):
+            ok = True
         if not ok:
             raise forms.ValidationError(
-                'Un usuario que no es superusuario debe tener al menos un módulo con contraseña definida.'
+                'Un usuario que no es superusuario debe tener al menos un módulo con contraseña definida '
+                'o un rol con permisos de aplicación en algún módulo.'
             )
         return cleaned
 
@@ -261,7 +308,7 @@ class UsuarioSistemaForm(forms.Form):
             emp = ''
         else:
             mun_fk = municipio
-            emp = municipio.codigo if municipio else ''
+            emp = canon_empresa_desde_municipio(municipio) if municipio else ''
 
         if self.instance:
             user = self.instance
