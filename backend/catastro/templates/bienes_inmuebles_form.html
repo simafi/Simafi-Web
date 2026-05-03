@@ -569,13 +569,21 @@
                                     <div class="section-subtitle">Gestiona las variables del terreno y sus componentes de valoración.</div>
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
-                                <button type="button" id="btn-valor-declarado" class="btn btn-info btn-sm">
-                                    <i class="fas fa-coins me-1"></i> Valor Declarado
-                                </button>
-                                <div class="badge rounded-pill bg-light text-primary fw-semibold shadow-sm px-3 py-2">
-                                    <i class="fas fa-city me-1"></i> Ficha urbana
+                            <div class="d-flex flex-column align-items-end gap-1 mt-3 mt-lg-0">
+                                <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                                    <button type="button" id="btn-valor-declarado" class="btn btn-info btn-sm"
+                                            aria-describedby="ayuda-valor-declarado-toolbar">
+                                        <i class="fas fa-coins me-1"></i> Valor Declarado
+                                    </button>
+                                    <div class="badge rounded-pill bg-light text-primary fw-semibold shadow-sm px-3 py-2">
+                                        <i class="fas fa-city me-1"></i> Ficha urbana
+                                    </div>
                                 </div>
+                                <small id="ayuda-valor-declarado-toolbar" class="text-muted text-end" style="max-width: 26rem; font-size: 0.75rem;">
+                                    El valor declarado queda aplicado al <strong>formulario del bien inmueble</strong> al usar el modal;
+                                    la <strong>persistencia en base de datos</strong> (tabla <strong>bdcata1</strong>, campo <strong>declarado</strong>)
+                                    ocurre solo al <strong>grabar el registro</strong> con el botón <strong>Guardar bien inmueble</strong>.
+                                </small>
                             </div>
                         </div>
                             <div class="section-card">
@@ -803,12 +811,18 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        <div class="avaluo-summary-row">
-                                            <span>Valor declarado</span>
-                                            <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                <strong id="avaluo-summary-declarado">0.00</strong>
-                                                {{ form.declarado }}
+                                        <div class="avaluo-summary-row flex-column align-items-stretch gap-1">
+                                            <div class="d-flex w-100 justify-content-between align-items-center gap-2">
+                                                <span>Valor declarado</span>
+                                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                    <strong id="avaluo-summary-declarado">0.00</strong>
+                                                    {{ form.declarado }}
+                                                </div>
                                             </div>
+                                            <small class="avaluo-summary-note d-block" style="font-size: 0.75rem; line-height: 1.35; margin-top: 4px;">
+                                                Cambio en pantalla: hasta pulsar <strong>Guardar bien inmueble</strong> el valor no se escribe en el registro
+                                                (<strong>bdcata1.declarado</strong>).
+                                            </small>
                                             {% if form.declarado.errors %}
                                                 <div class="text-danger small">{{ form.declarado.errors }}</div>
                                             {% endif %}
@@ -1086,10 +1100,20 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="alert alert-light border small mb-3" role="note">
+                        <div class="fw-semibold mb-1"><i class="fas fa-info-circle me-1"></i> Alcance técnico del cambio</div>
+                        <ul class="mb-0 ps-3 small">
+                            <li><strong>Usar valor</strong> actualiza el campo oculto <code>declarado</code> del formulario del bien inmueble y el resumen de avalúo en esta pantalla (estado del navegador).</li>
+                            <li>El valor forma parte del avalúo total y del cálculo de impuesto <strong>solo después</strong> de confirmarse en el servidor.</li>
+                            <li>La <strong>persistencia</strong> en base de datos —tabla <strong>bdcata1</strong>, campo <strong>declarado</strong>— se produce únicamente al enviar el formulario principal con el botón <strong>Guardar bien inmueble</strong> (grabación del registro).</li>
+                            <li>Hasta ese momento, otros usuarios o consultas externas no ven el cambio.</li>
+                        </ul>
+                    </div>
                     <label for="modal-valor-declarado-input" class="form-label">Ingrese el valor declarado (L.)</label>
-                    <input type="number" class="form-control" id="modal-valor-declarado-input" step="0.01" min="0" placeholder="0.00">
-                    <div class="form-text mt-2">
-                        Este valor se guardará en el campo <strong>Declarado</strong> y se incluirá en el cálculo del impuesto.
+                    <input type="number" class="form-control" id="modal-valor-declarado-input" step="0.01" min="0" placeholder="0.00"
+                           aria-describedby="modal-valor-declarado-ayuda">
+                    <div id="modal-valor-declarado-ayuda" class="form-text mt-2">
+                        Al confirmar con <strong>Usar valor</strong> solo se actualiza el formulario; para efectos tributarios y en BD debe <strong>grabarse el bien inmueble</strong>.
                     </div>
                 </div>
                 <div class="modal-footer">
