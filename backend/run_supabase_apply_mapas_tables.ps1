@@ -7,7 +7,7 @@
 #   $env:DATABASE_URL = "postgresql://postgres.xxxx:TU_CLAVE@aws-0-xxx.pooler.supabase.com:6543/postgres?sslmode=require"
 #   .\run_supabase_apply_mapas_tables.ps1
 #
-# Opción sin Python: Supabase Dashboard → SQL Editor → pegar contenido de:
+# Opcion sin Python: Supabase Dashboard -> SQL Editor -> pegar contenido de:
 #   catastro/sql/mapas_simafi_supabase.sql
 
 $ErrorActionPreference = "Stop"
@@ -40,7 +40,7 @@ $urlSet =
     (Test-EnvNonEmpty "SUPABASE_DATABASE_URL")
 
 Write-Host ""
-Write-Host "Tablas Mapas Simafi — aplicar SQL en PostgreSQL/Supabase" -ForegroundColor Cyan
+Write-Host "Tablas Mapas Simafi - aplicar SQL en PostgreSQL/Supabase" -ForegroundColor Cyan
 Write-Host "  SQL: $sql" -ForegroundColor Gray
 Write-Host ""
 
@@ -58,12 +58,12 @@ if ($urlSet) {
     exit 0
 }
 
-Write-Host "Sin URL: opciones manuales —" -ForegroundColor Yellow
-Write-Host "  A) Supabase → SQL Editor → pegar el contenido del archivo .sql y Run" -ForegroundColor White
+Write-Host "Sin URL: opciones manuales -" -ForegroundColor Yellow
+Write-Host "  A) Supabase -> SQL Editor -> pegar el contenido del archivo .sql y Run" -ForegroundColor White
 Write-Host "  B) Instalar cliente Postgres y usar psql (opcional)" -ForegroundColor White
 Write-Host ""
 
-$open = Read-Host "¿Abrir el archivo SQL en el editor? (s/N)"
+$open = Read-Host 'Abrir el archivo SQL en el editor? (s/N)'
 if ($open -eq "s" -or $open -eq "S") {
     Invoke-Item $sql
 }
