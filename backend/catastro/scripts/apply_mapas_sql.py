@@ -2,12 +2,14 @@
 """
 Aplica backend/catastro/sql/mapas_simafi_supabase.sql vía psycopg (sin psql).
 
-Uso (desde la carpeta backend/):
-  set DATABASE_URL=postgresql://...
-  python catastro/scripts/apply_mapas_sql.py
+Uso un solo paso (carpeta backend/):
+  1) En la raíz del repo, archivo .env.supabase_prod o .env con DATABASE_URL=postgresql://...
+  2)  python catastro/scripts/apply_mapas_sql.py
 
-Variables aceptadas (la primera con valor gana): DATABASE_URL, DJANGO_DATABASE_URL,
-SUPABASE_DATABASE_URL, DIRECT_URL (útil con Supabase: conexión directa para DDL).
+O defina la URL en el entorno (PowerShell: $env:DATABASE_URL = "postgresql://...").
+
+Variables (la primera con valor gana): DIRECT_URL, DATABASE_URL, DJANGO_DATABASE_URL,
+SUPABASE_DATABASE_URL. En Supabase, si el pooler falla al crear tablas, use URI directa (puerto 5432).
 """
 from __future__ import annotations
 
@@ -17,12 +19,32 @@ import sys
 from pathlib import Path
 
 _SQL_FILE = Path(__file__).resolve().parent.parent / "sql" / "mapas_simafi_supabase.sql"
+# apply_mapas_sql.py -> scripts -> catastro -> backend
+_BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+_REPO_ROOT = _BACKEND_DIR.parent
 _URL_KEYS = (
     "DIRECT_URL",
     "DATABASE_URL",
     "DJANGO_DATABASE_URL",
     "SUPABASE_DATABASE_URL",
 )
+
+
+def _try_load_dotenv() -> None:
+    """Carga DATABASE_URL desde archivos .env en la raíz del repo (sin pisar variables ya definidas)."""
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return
+    for name in (
+        ".env",
+        ".env.local",
+        ".env.supabase_dev",
+        ".env.supabase_prod",
+    ):
+        path = _REPO_ROOT / name
+        if path.is_file():
+            load_dotenv(path, override=False)
 
 
 def _database_url() -> str:
@@ -57,6 +79,8 @@ def _load_statements(sql_path: Path) -> list[str]:
 
 
 def main() -> None:
+    _try_load_dotenv()
+
     if not _SQL_FILE.is_file():
         print(f"No existe {_SQL_FILE}", file=sys.stderr)
         sys.exit(1)

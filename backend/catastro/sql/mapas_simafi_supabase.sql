@@ -1,9 +1,13 @@
 -- =============================================================================
--- Mapas Simafi — tablas en PostgreSQL / Supabase (equivalente a migración Django
--- catastro 0020_mapas_simafi).
+-- Mapas Simafi: tablas PostgreSQL / Supabase (equiv. Django catastro 0020_mapas_simafi).
 --
--- Uso: Supabase → SQL Editor → pegar todo → Run.
--- Requisito: no deben existir ya las tablas con otro esquema incompatible.
+-- Un solo paso en Supabase: Dashboard -> SQL Editor -> pegar ESTE archivo completo -> Run.
+--
+-- O desde PC (carpeta backend): DATABASE_URL en .env.supabase_prod (raiz repo) y:
+--   python catastro/scripts/apply_mapas_sql.py
+--   .\crear_tablas_mapas_supabase.ps1
+--
+-- Requisito: no deben existir ya estas tablas con otro esquema incompatible.
 -- =============================================================================
 
 BEGIN;

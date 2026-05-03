@@ -9,6 +9,8 @@
 #
 # Opcion sin Python: Supabase Dashboard -> SQL Editor -> pegar contenido de:
 #   catastro/sql/mapas_simafi_supabase.sql
+#
+# Atajo un solo paso (crea tablas): .\crear_tablas_mapas_supabase.ps1 (con DATABASE_URL en .env)
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot

@@ -12,10 +12,11 @@
         <div class="card shadow">
             <div class="card-body p-4">
                 <h1 class="h4 mb-3"><i class="fas fa-database text-warning me-2"></i>Tablas de Mapas Simafi no disponibles</h1>
-                <p class="mb-3">En la base de datos de este entorno aún no se aplicó la migración que crea las tablas del submódulo (por ejemplo <code>catastro_mapa_proyecto</code>).</p>
-                <p class="small text-muted mb-4">Quien despliegue debe ejecutar contra la misma base que usa la aplicación:</p>
-                <pre class="bg-dark text-white p-3 rounded small mb-4">python manage.py migrate catastro</pre>
-                <p class="small mb-0">Migración esperada: <code>catastro 0020_mapas_simafi</code>.</p>
+                <p class="mb-3">En la base de datos de este entorno aún no existen las tablas del submódulo (por ejemplo <code>catastro_mapa_proyecto</code>).</p>
+                <p class="mb-2"><strong>Supabase (recomendado):</strong> SQL Editor, pegar y ejecutar <code>backend/catastro/sql/mapas_simafi_supabase.sql</code>.</p>
+                <p class="mb-2"><strong>PC con Python:</strong> <code>DATABASE_URL</code> en <code>.env.supabase_prod</code> (raíz del repo) y, desde <code>backend</code>:</p>
+                <pre class="bg-dark text-white p-3 rounded small mb-3">python catastro/scripts/apply_mapas_sql.py</pre>
+                <p class="small text-muted mb-0">Solo si la app tiene <code>catastro</code> en <code>INSTALLED_APPS</code>: <code>python manage.py migrate catastro</code> (migración <code>0020_mapas_simafi</code>).</p>
                 <hr>
                 <a href="{% url 'catastro:mapas_simafi_list' %}" class="btn btn-outline-primary btn-sm">Volver al listado</a>
                 <a href="{% url 'catastro:catastro_menu_principal' %}" class="btn btn-outline-secondary btn-sm">Menú Catastro</a>

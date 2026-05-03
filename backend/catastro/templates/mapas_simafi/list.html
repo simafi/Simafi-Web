@@ -27,8 +27,14 @@
         {% if migracion_pendiente %}
         <div class="alert alert-danger panel">
             <strong><i class="fas fa-database me-1"></i>Faltan tablas en la base de datos.</strong>
-            Ejecute en el servidor (misma BD que usa esta app): <code class="text-dark">python manage.py migrate catastro</code>
-            — migración <code>catastro 0020_mapas_simafi</code>.
+            <p class="mb-2"><strong>Supabase (un solo paso):</strong> en el dashboard, <strong>SQL Editor</strong>, pegue y ejecute el archivo
+            <code class="text-dark">backend/catastro/sql/mapas_simafi_supabase.sql</code> (mismo contenido que la migración
+            <code>0020_mapas_simafi</code>).</p>
+            <p class="mb-2"><strong>Desde su PC:</strong> en la raíz del repo, cree <code class="text-dark">.env.supabase_prod</code> con
+            <code class="text-dark">DATABASE_URL=postgresql://...</code>; luego, en la carpeta <code class="text-dark">backend</code>:
+            <code class="text-dark">python catastro/scripts/apply_mapas_sql.py</code></p>
+            <p class="mb-0 small text-muted">Alternativa con Django (solo si <code>catastro</code> está en <code>INSTALLED_APPS</code> y apunta a esta BD):
+            <code class="text-dark">python manage.py migrate catastro</code></p>
         </div>
         {% endif %}
         {% if not empresa %}
