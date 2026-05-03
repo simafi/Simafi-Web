@@ -266,6 +266,7 @@ urlpatterns = [
     path('api/soporte/<str:numero_recibo>/', views.ver_soporte, name='ver_soporte'),
     
     # AJAX para Tasas Municipales
+    path('ajax/sync-impuesto-rubro-bienes/', views.ajax_sync_impuesto_rubro_bienes, name='ajax_sync_impuesto_rubro_bienes'),
     path('ajax/tasas-municipales/', views.ajax_tasas_municipales, name='ajax_tasas_municipales'),
     path('ajax/guardar-tasa-municipal/', views.ajax_guardar_tasa_municipal, name='ajax_guardar_tasa_municipal'),
     path('ajax/calcular-tasas-municipales/', views.ajax_calcular_tasas_municipales, name='ajax_calcular_tasas_municipales'),

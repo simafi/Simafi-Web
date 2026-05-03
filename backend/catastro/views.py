@@ -330,6 +330,119 @@ def actualizar_impuesto_tasas_municipales(bdcata1, impuesto_valor, empresa_codig
         logger.error(f"Error en actualizar_impuesto_tasas_municipales: {str(e)}", exc_info=True)
         return False
 
+
+def _ficha_entero_desde_valor(ficha_raw):
+    """1 = urbano (B0001), 2 = rural (B0002). Acepta valores tipo select Django «2 - Rural»."""
+    if ficha_raw is None:
+        return 1
+    s = str(ficha_raw).strip()
+    if not s:
+        return 1
+    head = s.split('-')[0].strip()
+    try:
+        v = int(float(head))
+        return 2 if v == 2 else 1
+    except (ValueError, TypeError):
+        return 1
+
+
+def sincronizar_impuesto_rubro_tasas_desde_sesion(empresa_session, cocata1, impuesto_valor, ficha_raw=None):
+    """
+    Persiste el impuesto de bienes inmuebles en tasasmunicipales:
+    rubro B0001 si ficha urbana (1), B0002 si rural (2). Elimina el rubro opuesto.
+    Usado al guardar el formulario y desde AJAX mientras el usuario edita el impuesto.
+    """
+    try:
+        from .models import TasasMunicipales
+    except ImportError:
+        TasasMunicipales = globals().get('TasasMunicipales')
+        if not TasasMunicipales:
+            logger.warning('sincronizar_impuesto_rubro_tasas: TasasMunicipales no disponible')
+            return False
+
+    empresas = codigos_empresa_equivalentes(empresa_session) if empresa_session else []
+    if not empresas or not cocata1:
+        return False
+
+    fv = _ficha_entero_desde_valor(ficha_raw)
+    if fv == 1:
+        codigo_rubro, codigo_opuesto = 'B0001', 'B0002'
+    else:
+        codigo_rubro, codigo_opuesto = 'B0002', 'B0001'
+
+    try:
+        iv = Decimal(str(impuesto_valor or 0)).quantize(Decimal('0.01'))
+    except (InvalidOperation, TypeError, ValueError):
+        iv = Decimal('0.00')
+
+    empresa_grabar = (empresa_session or '').strip()
+    if empresa_grabar.isdigit():
+        empresa_grabar = empresa_grabar.zfill(4)
+
+    try:
+        TasasMunicipales.objects.filter(
+            empresa__in=empresas,
+            clave=cocata1,
+            rubro=codigo_opuesto,
+        ).delete()
+
+        tasa = TasasMunicipales.objects.filter(
+            empresa__in=empresas,
+            clave=cocata1,
+            rubro=codigo_rubro,
+        ).first()
+
+        cuenta_rubro = ''
+        cuentarez_rubro = ''
+        try:
+            from tributario.models import Rubro
+
+            ro = Rubro.objects.filter(empresa__in=empresas, codigo=codigo_rubro).first()
+            if ro:
+                cuenta_rubro = ro.cuenta or ''
+                cuentarez_rubro = ro.cuentarez or ''
+        except Exception:
+            pass
+
+        if tasa:
+            tasa.valor = iv
+            tasa.cod_tarifa = tasa.cod_tarifa or '01'
+            if cuenta_rubro:
+                tasa.cuenta = cuenta_rubro
+            if cuentarez_rubro:
+                tasa.cuentarez = cuentarez_rubro
+            tasa.save()
+            logger.info(
+                '✓ Impuesto rubro %s actualizado (tasasmunicipales): empresa=%s clave=%s valor=%s',
+                codigo_rubro,
+                tasa.empresa,
+                cocata1,
+                iv,
+            )
+            return True
+
+        TasasMunicipales.objects.create(
+            empresa=empresa_grabar,
+            clave=cocata1,
+            rubro=codigo_rubro,
+            cod_tarifa='01',
+            valor=iv,
+            cuenta=cuenta_rubro or '',
+            cuentarez=cuentarez_rubro or '',
+        )
+        logger.info(
+            '✓ Impuesto rubro %s creado (tasasmunicipales): empresa=%s clave=%s valor=%s',
+            codigo_rubro,
+            empresa_grabar,
+            cocata1,
+            iv,
+        )
+        return True
+    except Exception as e:
+        logger.error('sincronizar_impuesto_rubro_tasas_desde_sesion: %s', e, exc_info=True)
+        return False
+
+
 def calcular_tasas_municipales_automatico(bdcata1, empresa_codigo):
     """
     Calcula automáticamente las tasas municipales (rubros que empiezan con T) 
@@ -19622,6 +19735,49 @@ obtener_tarifas_rubro_bienes = catastro_require_auth(_obtener_tarifas_rubro_bien
 # ============================================================================
 # VISTAS AJAX PARA TASAS MUNICIPALES
 # ============================================================================
+
+@catastro_require_auth
+@require_http_methods(['POST'])
+def ajax_sync_impuesto_rubro_bienes(request):
+    """
+    Persiste el impuesto actual en tasasmunicipales (rubro B0001 urbano / B0002 rural).
+    Se invoca en segundo plano desde el formulario de bienes cuando cambia el impuesto o la ficha.
+    """
+    try:
+        empresa_session = (request.session.get('catastro_empresa') or request.session.get('empresa') or '').strip()
+        cocata1 = (request.POST.get('cocata1') or request.POST.get('clave') or '').strip()
+        impuesto_raw = request.POST.get('impuesto', '0')
+        ficha_raw = request.POST.get('ficha')
+
+        if not empresa_session or not cocata1:
+            return JsonResponse(
+                {'success': False, 'message': 'Sesión sin municipio o sin clave catastral.'},
+                status=400,
+            )
+
+        try:
+            impuesto_val = Decimal(str(impuesto_raw).replace(',', '').strip())
+        except (InvalidOperation, ValueError, TypeError):
+            impuesto_val = Decimal('0')
+
+        ok = sincronizar_impuesto_rubro_tasas_desde_sesion(
+            empresa_session,
+            cocata1,
+            impuesto_val,
+            ficha_raw=ficha_raw,
+        )
+        fv = _ficha_entero_desde_valor(ficha_raw)
+        rubro = 'B0001' if fv == 1 else 'B0002'
+        return JsonResponse({
+            'success': ok,
+            'rubro': rubro,
+            'valor': str(impuesto_val.quantize(Decimal('0.01'))),
+            'message': 'Rubro de impuesto actualizado.' if ok else 'No se pudo actualizar el rubro.',
+        })
+    except Exception as e:
+        logger.exception('ajax_sync_impuesto_rubro_bienes')
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
 
 @catastro_require_auth
 def ajax_tasas_municipales(request):

@@ -1701,9 +1701,58 @@
                 return coincidencia ? coincidencia[1] : '1';
             }
 
-            // Sincroniza el valor del rubro B0001/B0002 en la tabla con el impuesto calculado en pantalla.
+            /** Debounce: guarda en BD el rubro B0001 (urbano) / B0002 (rural) con el impuesto actual */
+            let syncImpuestoRubroAjaxTimer = null;
+            function programarSincronizarImpuestoRubroBackend() {
+                if (syncImpuestoRubroAjaxTimer) {
+                    clearTimeout(syncImpuestoRubroAjaxTimer);
+                }
+                syncImpuestoRubroAjaxTimer = setTimeout(() => void sincronizarImpuestoRubroConBd(), 550);
+            }
+
+            async function sincronizarImpuestoRubroConBd() {
+                const cocataEl = document.getElementById('id_cocata1');
+                const cocataValor = cocataEl ? cocataEl.value.trim() : '';
+                const empresaSes = '{{ request.session.catastro_empresa|default:"" }}';
+                if (!cocataValor || !empresaSes) {
+                    return;
+                }
+                const impuestoValor = impuestoInput ? parseAmount(impuestoInput.value ?? 0) : 0;
+                const fichaElement = document.getElementById('id_ficha') ||
+                    document.querySelector('select[name="ficha"]') ||
+                    document.querySelector('input[name="ficha"]');
+                const fichaVal = fichaElement ? (fichaElement.value || '').trim() : '';
+                const tokenInput = document.querySelector('input[name=csrfmiddlewaretoken]');
+                const token = tokenInput ? tokenInput.value : '';
+                if (!token) {
+                    return;
+                }
+                try {
+                    const fd = new FormData();
+                    fd.append('cocata1', cocataValor);
+                    fd.append('impuesto', impuestoValor.toFixed(2));
+                    fd.append('ficha', fichaVal);
+                    fd.append('csrfmiddlewaretoken', token);
+                    const res = await fetch('{% url "catastro:ajax_sync_impuesto_rubro_bienes" %}', {
+                        method: 'POST',
+                        body: fd,
+                        credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        console.log('[impuesto] Rubro', data.rubro, 'en tasasmunicipales =', data.valor);
+                    }
+                } catch (e) {
+                    console.warn('[impuesto] Sync rubro BD:', e);
+                }
+            }
+
+            // Sincroniza el valor del rubro B0001/B0002 en la tabla con el impuesto calculado en pantalla
+            // y programa guardado automático en tasasmunicipales (mismo criterio que al guardar el formulario).
             function actualizarRubroImpuestoMunicipal() {
                 if (!impuestoInput) {
+                    programarSincronizarImpuestoRubroBackend();
                     return;
                 }
 
@@ -1712,17 +1761,16 @@
                 const rubroObjetivo = fichaActual === '2' ? 'B0002' : 'B0001';
                 const filas = document.querySelectorAll(`#tasas-municipales-tbody tr[data-rubro="${rubroObjetivo}"]`);
 
-                if (!filas || filas.length === 0) {
-                    return;
+                if (filas && filas.length > 0) {
+                    const textoValor = `L. ${impuestoValor.toFixed(2)}`;
+                    filas.forEach((fila) => {
+                        const spanValor = fila.querySelector('.rubro-valor');
+                        if (spanValor) {
+                            spanValor.textContent = textoValor;
+                        }
+                    });
                 }
-
-                const textoValor = `L. ${impuestoValor.toFixed(2)}`;
-                filas.forEach((fila) => {
-                    const spanValor = fila.querySelector('.rubro-valor');
-                    if (spanValor) {
-                        spanValor.textContent = textoValor;
-                    }
-                });
+                programarSincronizarImpuestoRubroBackend();
             }
 
             function updateAvaluoSummary() {
@@ -2179,6 +2227,8 @@
                 // Agregar listener para actualizar tasa impositiva
                 fichaSelect.addEventListener('change', actualizarTasaImpositiva);
                 fichaSelect.addEventListener('input', actualizarTasaImpositiva);
+                // Urbano/rural: rubro B0001/B0002 debe seguir al impuesto al cambiar ficha
+                fichaSelect.addEventListener('change', actualizarRubroImpuestoMunicipal);
             }
             
             // Ejecutar al cargar la página si ya hay un valor de ficha
