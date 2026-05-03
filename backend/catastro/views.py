@@ -7295,16 +7295,25 @@ def registrar_bien_inmueble(request):
                 try:
                     bien = form.save(commit=False)
 
-                    # Valor declarado: asegurar persistencia de 0 (POST explícito o clave omitida por input number vacío).
+                    # Valor declarado: parsear una vez (0 = limpiar). Último valor si hay duplicados; quitar comas de miles.
                     if 'declarado' in request.POST:
-                        raw_decl = (request.POST.get('declarado') or '').strip()
+                        lista_decl = request.POST.getlist('declarado')
+                        raw_src = (lista_decl[-1] if lista_decl else '') or ''
+                        raw_decl = (
+                            str(raw_src)
+                            .strip()
+                            .replace(',', '')
+                            .replace(' ', '')
+                            .replace('\xa0', '')
+                        )
                         try:
-                            bien.declarado = Decimal(raw_decl) if raw_decl else Decimal('0')
+                            declarado_post = Decimal(raw_decl) if raw_decl else Decimal('0')
                         except (InvalidOperation, ValueError, TypeError):
                             cd_decl = form.cleaned_data.get('declarado')
-                            bien.declarado = cd_decl if cd_decl is not None else Decimal('0')
+                            declarado_post = cd_decl if cd_decl is not None else Decimal('0')
                     else:
-                        bien.declarado = Decimal('0')
+                        declarado_post = Decimal('0')
+                    bien.declarado = declarado_post
                     
                     # Validar nuevamente que cocata1 no esté vacío antes de guardar
                     if not bien.cocata1 or bien.cocata1.strip() == '' or bien.cocata1.strip() == '-':
@@ -7469,6 +7478,9 @@ def registrar_bien_inmueble(request):
                             defaults=defaults_dict
                         )
                         bien = bien_guardado
+                        # Refuerzo: el ORM a veces no persiste 0 en campos con default si el widget omitió el valor.
+                        BDCata1.objects.filter(pk=bien.id).update(declarado=declarado_post)
+                        bien.declarado = declarado_post
                         logger.info("=" * 100)
                         logger.info(f"✓✓✓ BIEN INMUEBLE {'CREADO' if creado else 'ACTUALIZADO'} EXITOSAMENTE - ID: {bien.id} ✓✓✓")
                         logger.info(f"  cocata1: {bien.cocata1}")
@@ -7484,6 +7496,9 @@ def registrar_bien_inmueble(request):
                             # Verificar si es nuevo o existente antes de guardar
                             es_nuevo = bien.pk is None
                             bien.save()
+                            if bien.pk:
+                                BDCata1.objects.filter(pk=bien.id).update(declarado=declarado_post)
+                                bien.declarado = declarado_post
                             registro_creado = es_nuevo
                             logger.info("=" * 100)
                             logger.info(f"✓✓✓ GUARDADO EXITOSO (método alternativo) - ID: {bien.id} ✓✓✓")

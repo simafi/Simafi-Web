@@ -127,7 +127,8 @@ class BDCata1Form(forms.ModelForm):
             'impuesto': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'grabable': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'cultivo': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001'}),
-            'declarado': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            # HiddenInput: type="number" a veces no envía 0 correctamente; el modal/resumen controlan el valor.
+            'declarado': forms.HiddenInput(attrs={}),
             'exencion': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'condetalle': forms.NumberInput(attrs={'class': 'form-control'}),
             'st': forms.Select(attrs={'class': 'form-select'}),
@@ -422,10 +423,18 @@ class BDCata1Form(forms.ModelForm):
         if 'bexenc' not in cleaned_data or cleaned_data['bexenc'] is None or cleaned_data['bexenc'] == '':
             cleaned_data['bexenc'] = Decimal('0.00')
 
-        # Valor declarado: <input type="number"> vacío no envía clave; 0 debe persistir (no dejar el valor anterior).
+        # Valor declarado: hidden siempre envía clave; normalizar miles (1,000,000.00) y persistir 0.
         if getattr(self, 'data', None) is not None and self.is_bound:
             if 'declarado' in self.data:
-                raw = (self.data.get('declarado') or '').strip()
+                lista = self.data.getlist('declarado')
+                raw_src = (lista[-1] if lista else '') or ''
+                raw = (
+                    str(raw_src)
+                    .strip()
+                    .replace(',', '')
+                    .replace(' ', '')
+                    .replace('\xa0', '')
+                )
                 try:
                     cleaned_data['declarado'] = Decimal(raw) if raw else Decimal('0.00')
                 except (InvalidOperation, ValueError, TypeError):
