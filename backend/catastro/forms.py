@@ -368,7 +368,7 @@ class BDCata1Form(forms.ModelForm):
     
     def clean(self):
         """Asignar valores por defecto a todos los campos vacíos para evitar errores de validación"""
-        from decimal import Decimal
+        from decimal import Decimal, InvalidOperation
         cleaned_data = super().clean()
         
         # Campos numéricos con sus valores por defecto
@@ -421,7 +421,18 @@ class BDCata1Form(forms.ModelForm):
         # Asegurar que bexenc tenga un valor por defecto si está vacío (ya está en campos_numericos_defaults, pero lo verificamos explícitamente)
         if 'bexenc' not in cleaned_data or cleaned_data['bexenc'] is None or cleaned_data['bexenc'] == '':
             cleaned_data['bexenc'] = Decimal('0.00')
-        
+
+        # Valor declarado: <input type="number"> vacío no envía clave; 0 debe persistir (no dejar el valor anterior).
+        if getattr(self, 'data', None) is not None and self.is_bound:
+            if 'declarado' in self.data:
+                raw = (self.data.get('declarado') or '').strip()
+                try:
+                    cleaned_data['declarado'] = Decimal(raw) if raw else Decimal('0.00')
+                except (InvalidOperation, ValueError, TypeError):
+                    cleaned_data['declarado'] = Decimal('0.00')
+            else:
+                cleaned_data['declarado'] = Decimal('0.00')
+
         return cleaned_data
     
     def clean_ficha(self):

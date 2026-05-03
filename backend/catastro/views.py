@@ -7294,6 +7294,17 @@ def registrar_bien_inmueble(request):
                 
                 try:
                     bien = form.save(commit=False)
+
+                    # Valor declarado: asegurar persistencia de 0 (POST explícito o clave omitida por input number vacío).
+                    if 'declarado' in request.POST:
+                        raw_decl = (request.POST.get('declarado') or '').strip()
+                        try:
+                            bien.declarado = Decimal(raw_decl) if raw_decl else Decimal('0')
+                        except (InvalidOperation, ValueError, TypeError):
+                            cd_decl = form.cleaned_data.get('declarado')
+                            bien.declarado = cd_decl if cd_decl is not None else Decimal('0')
+                    else:
+                        bien.declarado = Decimal('0')
                     
                     # Validar nuevamente que cocata1 no esté vacío antes de guardar
                     if not bien.cocata1 or bien.cocata1.strip() == '' or bien.cocata1.strip() == '-':
@@ -7912,7 +7923,7 @@ def api_buscar_bien_inmueble(request):
                 'impuesto': str(bien.impuesto) if bien.impuesto else '',
                 'grabable': str(bien.grabable) if bien.grabable else '',
                 'cultivo': str(bien.cultivo) if bien.cultivo else '',
-                'declarado': str(bien.declarado) if bien.declarado else '',
+                'declarado': str(bien.declarado) if bien.declarado is not None else '',
                 'exencion': str(bien.exencion) if bien.exencion else '',
                 'condetalle': str(bien.condetalle) if bien.condetalle else '',
                 'st': bien.st or '',
