@@ -4,6 +4,15 @@ from django.utils import timezone
 from core.models import BaseModel, Municipio
 
 
+def _datetime_para_comparar(dt):
+    """Convierte naive→aware según la zona activa; evita TypeError con USE_TZ=True."""
+    if dt is None:
+        return None
+    if timezone.is_naive(dt):
+        return timezone.make_aware(dt, timezone.get_current_timezone())
+    return dt
+
+
 class Usuario(BaseModel):
     """
     Modelo de usuario del sistema
@@ -42,7 +51,8 @@ class Usuario(BaseModel):
 
     def is_locked(self):
         """Verifica si el usuario está bloqueado"""
-        if self.locked_until and self.locked_until > timezone.now():
+        lu = _datetime_para_comparar(self.locked_until)
+        if lu and lu > timezone.now():
             return True
         return False
 
