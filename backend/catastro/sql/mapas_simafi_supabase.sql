@@ -9,6 +9,13 @@
 --
 -- Requisito: no deben existir ya estas tablas con otro esquema incompatible.
 -- =============================================================================
+--
+-- ATENCION (error "syntax error at or near backend"):
+-- En Supabase NO pegue la ruta "backend/catastro/sql/..." ni frases explicativas.
+-- Debe pegar el CONTENIDO de este archivo: en VS Code o Bloc de notas abra
+-- mapas_simafi_supabase.sql, Ctrl+A, Copiar, y pegue en SQL Editor. Valid SQL starts below with BEGIN;
+--
+-- =============================================================================
 
 BEGIN;
 
