@@ -27,6 +27,7 @@ from catastro.permisos_codigos import (
     CATASTRO_PERM_MENU_VER,
 )
 from core.models import Municipio
+from core.module_access import codigos_empresa_equivalentes
 from .models import *
 from .forms import CatastroLoginForm, EdificacionForm, EdificacionEspecialForm, CostosForm, DetalleAdicionalesForm, BarriosForm, TopografiaForm, UsosPredioForm, ConfiTipologiaForm, EspecificacionesForm, TipoMaterialForm, DetEspecificacionForm, ComentariosCatastroForm
 from .models import TipoDetalle, Barrios, UsoEdifica
@@ -35,6 +36,21 @@ from .models import TipoDetalle, Barrios, UsoEdifica
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+
+
+def _costos_por_municipio_qs(request):
+    """
+    Costos básicos unitarios (tabla `costos`) del municipio de la sesión.
+    Usa variantes de código (p. ej. 0502 / 502) como en el login modular.
+    """
+    cod = (request.session.get('catastro_empresa') or request.session.get('empresa') or '').strip()
+    if not cod:
+        return Costos.objects.none()
+    empresas = codigos_empresa_equivalentes(cod)
+    if not empresas:
+        return Costos.objects.none()
+    return Costos.objects.filter(empresa__in=empresas)
+
 
 # Importar utilidades de conversión de coordenadas
 # Inicializar variables globales
@@ -10542,8 +10558,7 @@ def costos_list(request):
     """
     empresa_codigo = request.session.get('catastro_empresa', '')
     
-    # Obtener todos los costos (sin filtro de empresa según nueva estructura)
-    costos = Costos.objects.all().order_by('uso', 'clase', 'calidad')
+    costos = _costos_por_municipio_qs(request).order_by('uso', 'clase', 'calidad')
     
     # Búsqueda
     search = request.GET.get('search', '')
@@ -10636,12 +10651,13 @@ def costo_create(request):
         if form.is_valid():
             # Verificar si ya existe un registro con la misma combinación
             if not editar_existente:
+                emp_dup = codigos_empresa_equivalentes(empresa_codigo) or ([empresa_codigo] if empresa_codigo else [])
                 costo_duplicado = Costos.objects.filter(
-                    empresa=empresa_codigo,
+                    empresa__in=emp_dup,
                     uso=uso[:2] if len(uso) >= 2 else uso,
                     clase=clase[:1] if len(clase) >= 1 else clase,
                     calidad=calidad[:3] if len(calidad) >= 3 else calidad
-                ).first()
+                ).first() if emp_dup else None
                 
                 if costo_duplicado:
                     # Si existe, actualizar el registro existente con los nuevos valores
@@ -10697,8 +10713,7 @@ def costo_update(request, pk):
     Actualizar costo básico unitario
     """
     empresa_codigo = request.session.get('catastro_empresa', '')
-    
-    costo = get_object_or_404(Costos, pk=pk, empresa=empresa_codigo)
+    costo = get_object_or_404(_costos_por_municipio_qs(request), pk=pk)
     
     if request.method == 'POST':
         form = CostosForm(request.POST, instance=costo)
@@ -10736,9 +10751,8 @@ def costos_clasificacion_pesos(request, uso, clase):
     
     try:
         
-        # Obtener todos los costos para este uso y clase
-        costos = Costos.objects.filter(
-            empresa=empresa_codigo,
+        # Costos del municipio en sesión para este uso y clase
+        costos = _costos_por_municipio_qs(request).filter(
             uso=uso,
             clase=clase
         ).order_by('calidad')
@@ -10831,7 +10845,7 @@ def costo_delete(request, pk):
     """
     empresa_codigo = request.session.get('catastro_empresa', '')
     
-    costo = get_object_or_404(Costos, pk=pk, empresa=empresa_codigo)
+    costo = get_object_or_404(_costos_por_municipio_qs(request), pk=pk)
     
     if request.method == 'POST':
         costo.delete()
@@ -10860,8 +10874,7 @@ def costos_export_excel(request):
     
     empresa_codigo = request.session.get('catastro_empresa', '')
     
-    # Obtener todos los costos
-    costos = Costos.objects.all().order_by('uso', 'clase', 'calidad')
+    costos = _costos_por_municipio_qs(request).order_by('uso', 'clase', 'calidad')
     
     # Búsqueda
     search = request.GET.get('search', '')
@@ -11060,8 +11073,7 @@ def costos_export_pdf(request):
     
     empresa_codigo = request.session.get('catastro_empresa', '')
     
-    # Obtener todos los costos
-    costos = Costos.objects.all().order_by('uso', 'clase', 'calidad')
+    costos = _costos_por_municipio_qs(request).order_by('uso', 'clase', 'calidad')
     
     # Búsqueda
     search = request.GET.get('search', '')
@@ -11585,8 +11597,11 @@ def api_buscar_costo(request):
         })
     
     try:
+        empresas_mun = codigos_empresa_equivalentes(empresa)
+        if not empresas_mun:
+            empresas_mun = [empresa]
         costo_obj = Costos.objects.filter(
-            empresa=empresa,
+            empresa__in=empresas_mun,
             uso=uso,
             clase=clase,
             calidad=calidad
@@ -14621,9 +14636,18 @@ def api_calcular_calidad(request):
     try:
         from decimal import Decimal
         
+        empresa_codigo_api = (request.session.get('catastro_empresa') or request.session.get('empresa') or '').strip()
+        empresas_buscar = codigos_empresa_equivalentes(empresa_codigo_api) if empresa_codigo_api else []
+        
         uso = request.GET.get('uso', '').strip()
         clase = request.GET.get('clase', '').strip()
         pesos_total = request.GET.get('pesos_total', '').strip()
+        
+        if not empresa_codigo_api:
+            return JsonResponse({
+                'calidad': None,
+                'mensaje': 'No hay código de municipio en sesión (empresa).'
+            })
         
         if not uso or not clase:
             return JsonResponse({
@@ -14645,14 +14669,15 @@ def api_calcular_calidad(request):
                 'mensaje': f'Pesos totales inválido: {pesos_total}'
             })
         
-        # Buscar en costos donde Pesos Totales >= rango1 AND Pesos Totales <= rango2
-        # Filtro: uso, clase y rango de pesos
-        costo = Costos.objects.filter(
+        # Buscar en costos del municipio en sesión donde Pesos Totales está entre rango1 y rango2
+        qs_calidad = Costos.objects.filter(
+            empresa__in=empresas_buscar,
             uso=uso,
             clase=clase,
             rango1__lte=pesos_total_decimal,
             rango2__gte=pesos_total_decimal
-        ).first()
+        )
+        costo = qs_calidad.first()
         
         if costo:
             logger.info(f"Calidad encontrada en costos: {costo.calidad} para uso={uso}, clase={clase}, pesos={pesos_total_decimal} (rango: {costo.rango1}-{costo.rango2})")
@@ -14785,14 +14810,14 @@ def especificaciones_calcular_calidad(request):
                         'clave': clave,
                     })
                 
-                # Buscar en costos donde Pesos Totales >= rango1 AND Pesos Totales <= rango2
-                # Filtro: uso, clase y rango de pesos
+                emp_buscar = codigos_empresa_equivalentes(empresa_codigo) if empresa_codigo else []
                 costo = Costos.objects.filter(
+                    empresa__in=emp_buscar,
                     uso=uso,
                     clase=clase,
                     rango1__lte=pesos_total,
                     rango2__gte=pesos_total
-                ).first()
+                ).first() if emp_buscar else None
                 
                 if costo:
                     especificacion.calidad = costo.calidad
@@ -14999,14 +15024,15 @@ def especificaciones_update(request, pk):
                     messages.error(request, 'Uso y Clase son requeridos para calcular la calidad.')
                     return redirect('catastro:especificaciones_list')
                 
-                # Buscar en costos donde Pesos Totales >= rango1 AND Pesos Totales <= rango2
-                # Filtro: uso, clase y rango de pesos
+                empresa_ed = (request.session.get('catastro_empresa') or request.session.get('empresa') or '').strip()
+                emp_ed = codigos_empresa_equivalentes(empresa_ed) if empresa_ed else []
                 costo = Costos.objects.filter(
+                    empresa__in=emp_ed,
                     uso=especificacion.uso,
                     clase=especificacion.clase,
                     rango1__lte=pesos_total,
                     rango2__gte=pesos_total
-                ).first()
+                ).first() if emp_ed else None
                 
                 if costo:
                     especificacion.calidad = costo.calidad
