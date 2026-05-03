@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapas Simafi — configuración</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5" style="max-width: 640px;">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-3"><i class="fas fa-database text-warning me-2"></i>Tablas de Mapas Simafi no disponibles</h1>
+                <p class="mb-3">En la base de datos de este entorno aún no se aplicó la migración que crea las tablas del submódulo (por ejemplo <code>catastro_mapa_proyecto</code>).</p>
+                <p class="small text-muted mb-4">Quien despliegue debe ejecutar contra la misma base que usa la aplicación:</p>
+                <pre class="bg-dark text-white p-3 rounded small mb-4">python manage.py migrate catastro</pre>
+                <p class="small mb-0">Migración esperada: <code>catastro 0020_mapas_simafi</code>.</p>
+                <hr>
+                <a href="{% url 'catastro:mapas_simafi_list' %}" class="btn btn-outline-primary btn-sm">Volver al listado</a>
+                <a href="{% url 'catastro:catastro_menu_principal' %}" class="btn btn-outline-secondary btn-sm">Menú Catastro</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

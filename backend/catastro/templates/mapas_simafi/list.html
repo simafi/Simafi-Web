@@ -24,9 +24,17 @@
             <p class="mb-0 opacity-75">{{ modulo }} — {{ municipio_descripcion }}</p>
         </div>
 
+        {% if migracion_pendiente %}
+        <div class="alert alert-danger panel">
+            <strong><i class="fas fa-database me-1"></i>Faltan tablas en la base de datos.</strong>
+            Ejecute en el servidor (misma BD que usa esta app): <code class="text-dark">python manage.py migrate catastro</code>
+            — migración <code>catastro 0020_mapas_simafi</code>.
+        </div>
+        {% endif %}
         {% if not empresa %}
         <div class="alert alert-warning panel">No hay municipio en sesión. Vuelva a iniciar sesión en Catastro.</div>
         {% else %}
+        {% if not migracion_pendiente %}
         <div class="panel p-4 mb-4">
             <h2 class="h5 mb-3">Nuevo proyecto de mapa</h2>
             <form method="post" class="row g-3 align-items-end">
@@ -44,6 +52,7 @@
                 </div>
             </form>
         </div>
+        {% endif %}
 
         <div class="panel p-4">
             <h2 class="h5 mb-3">Proyectos</h2>
@@ -67,7 +76,11 @@
                 </table>
             </div>
             {% else %}
+            {% if migracion_pendiente %}
+            <p class="text-muted mb-0">Tras aplicar la migración podrá crear proyectos aquí.</p>
+            {% else %}
             <p class="text-muted mb-0">No hay proyectos aún. Cree uno arriba para digitalizar polígonos, líneas y puntos.</p>
+            {% endif %}
             {% endif %}
         </div>
         {% endif %}

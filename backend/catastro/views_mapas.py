@@ -3,6 +3,7 @@
 import json
 import logging
 
+from django.db import connection
 from django.db.models import Max
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -14,6 +15,19 @@ from catastro.permisos_codigos import CATASTRO_PERM_MAPA_VER
 from catastro.views import catastro_require_auth
 
 logger = logging.getLogger(__name__)
+
+# Tabla física definida en models_mapas.MapaProyecto.Meta.db_table
+_TABLA_MAPA_PROYECTO = 'catastro_mapa_proyecto'
+
+
+def _tablas_mapas_simafi_listas():
+    """True si las migraciones de mapas ya crearon las tablas en esta BD."""
+    try:
+        names = connection.introspection.table_names()
+    except Exception as e:
+        logger.warning('No se pudo comprobar tablas Mapas Simafi: %s', e)
+        return False
+    return _TABLA_MAPA_PROYECTO in names
 
 
 def _empresa_session(request):
@@ -29,11 +43,12 @@ def _usuario_nombre(request):
 def mapas_simafi_list(request):
     """Listado de proyectos de mapa del municipio en sesión."""
     empresa = _empresa_session(request)
+    migracion_pendiente = not _tablas_mapas_simafi_listas()
     proyectos = []
-    if empresa:
+    if empresa and not migracion_pendiente:
         proyectos = MapaProyecto.objects.filter(empresa=empresa, activo=True).order_by('-actualizado_en')
 
-    if request.method == 'POST' and empresa:
+    if request.method == 'POST' and empresa and not migracion_pendiente:
         nombre = (request.POST.get('nombre') or '').strip()
         if nombre:
             MapaProyecto.objects.create(
@@ -49,6 +64,7 @@ def mapas_simafi_list(request):
         'modulo': 'Catastro — Mapas',
         'empresa': empresa,
         'proyectos': proyectos,
+        'migracion_pendiente': migracion_pendiente,
         'usuario_nombre': _usuario_nombre(request),
         'municipio_descripcion': request.session.get('catastro_municipio_descripcion', ''),
     }
@@ -59,6 +75,12 @@ def mapas_simafi_list(request):
 @catastro_require_permiso(CATASTRO_PERM_MAPA_VER)
 def mapas_simafi_editor(request, proyecto_id):
     """Editor Leaflet: dibuja y guarda elementos GeoJSON por capa."""
+    if not _tablas_mapas_simafi_listas():
+        return render(
+            request,
+            'mapas_simafi/migracion_pendiente.html',
+            {'titulo': 'Mapas Simafi'},
+        )
     empresa = _empresa_session(request)
     proyecto = get_object_or_404(MapaProyecto, pk=proyecto_id, empresa=empresa, activo=True)
     capas = proyecto.capas.all().order_by('orden', 'id')
@@ -105,6 +127,11 @@ def _feature_collection(proyecto):
 @catastro_require_auth
 @catastro_require_permiso(CATASTRO_PERM_MAPA_VER)
 def api_mapas_geojson(request, proyecto_id):
+    if not _tablas_mapas_simafi_listas():
+        return JsonResponse(
+            {'ok': False, 'error': 'Migración pendiente: ejecute python manage.py migrate catastro'},
+            status=503,
+        )
     empresa = _empresa_session(request)
     proyecto = get_object_or_404(MapaProyecto, pk=proyecto_id, empresa=empresa, activo=True)
     return JsonResponse(_feature_collection(proyecto))
@@ -114,6 +141,11 @@ def api_mapas_geojson(request, proyecto_id):
 @catastro_require_permiso(CATASTRO_PERM_MAPA_VER)
 @require_http_methods(['POST'])
 def api_mapas_elemento_guardar(request, proyecto_id):
+    if not _tablas_mapas_simafi_listas():
+        return JsonResponse(
+            {'ok': False, 'error': 'Migración pendiente: ejecute python manage.py migrate catastro'},
+            status=503,
+        )
     empresa = _empresa_session(request)
     proyecto = get_object_or_404(MapaProyecto, pk=proyecto_id, empresa=empresa, activo=True)
     try:
@@ -172,6 +204,11 @@ def api_mapas_elemento_guardar(request, proyecto_id):
 @catastro_require_permiso(CATASTRO_PERM_MAPA_VER)
 @require_http_methods(['POST'])
 def api_mapas_elemento_eliminar(request, proyecto_id):
+    if not _tablas_mapas_simafi_listas():
+        return JsonResponse(
+            {'ok': False, 'error': 'Migración pendiente: ejecute python manage.py migrate catastro'},
+            status=503,
+        )
     empresa = _empresa_session(request)
     proyecto = get_object_or_404(MapaProyecto, pk=proyecto_id, empresa=empresa, activo=True)
     try:
@@ -189,6 +226,11 @@ def api_mapas_elemento_eliminar(request, proyecto_id):
 @catastro_require_permiso(CATASTRO_PERM_MAPA_VER)
 @require_http_methods(['POST'])
 def api_mapas_capa_crear(request, proyecto_id):
+    if not _tablas_mapas_simafi_listas():
+        return JsonResponse(
+            {'ok': False, 'error': 'Migración pendiente: ejecute python manage.py migrate catastro'},
+            status=503,
+        )
     empresa = _empresa_session(request)
     proyecto = get_object_or_404(MapaProyecto, pk=proyecto_id, empresa=empresa, activo=True)
     try:
