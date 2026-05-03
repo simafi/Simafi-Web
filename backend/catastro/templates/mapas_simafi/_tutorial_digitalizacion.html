@@ -1,0 +1,22 @@
+{% comment %} compact: true = texto breve para modal en editor {% endcomment %}
+{% if compact %}
+<p class="small mb-2"><strong>Pasos:</strong> elija <strong>capa activa</strong>, dibuje con la barra del mapa (poligono, linea, punto). Cada figura se guarda en la base al terminarla.</p>
+<p class="small mb-2"><strong>Catastro:</strong> los dibujos quedan en PostgreSQL (GeoJSON) por municipio de sesion; puede usar capas para parcelas, vias, etc., y en el futuro vincular clave catastral en propiedades del elemento.</p>
+<p class="small text-muted mb-0"><a href="{% url 'catastro:mapas_simafi_list' %}">Guia completa en la lista de proyectos</a></p>
+{% else %}
+<h6 class="text-primary mt-1"><i class="fas fa-flag-checkered me-1"></i>Como comenzar la digitalizacion</h6>
+<ol class="small mb-3 ps-3">
+    <li class="mb-2"><strong>Crear un proyecto</strong> con nombre y descripcion clara (por ejemplo sector o plano de referencia).</li>
+    <li class="mb-2"><strong>Abrir el editor</strong> y definir <strong>capas</strong>: use el boton "Nueva capa" para separar temas (parcelas, edificaciones simbolicas, vias, limites).</li>
+    <li class="mb-2"><strong>Elegir la capa activa</strong> en el desplegable antes de dibujar; todo lo nuevo se asocia a esa capa.</li>
+    <li class="mb-2"><strong>Dibujar en el mapa</strong> con las herramientas de la izquierda (marcador, polilinea, poligono, rectangulo). Acerque el zoom para mayor precision en los vertices.</li>
+    <li class="mb-2"><strong>Editar o borrar:</strong> use el modo edicion de la barra de herramientas para mover vertices o eliminar figuras; los cambios se guardan en la base de datos.</li>
+</ol>
+<h6 class="text-primary"><i class="fas fa-database me-1"></i>Integracion con la base de datos de Catastro</h6>
+<ul class="small mb-0 ps-3">
+    <li class="mb-2">Los mapas digitales se almacenan en las tablas <code>catastro_mapa_proyecto</code>, <code>catastro_mapa_capa</code> y <code>catastro_mapa_elemento</code>, en la <strong>misma base PostgreSQL</strong> que usa el modulo Catastro, filtrados por <strong>municipio de la sesion</strong> (empresa).</li>
+    <li class="mb-2">Las geometrias se guardan en formato <strong>GeoJSON</strong>, alineado con el estandar que PostgreSQL/PostGIS puede consultar (por ejemplo <code>ST_GeomFromGeoJSON</code>) para analisis espacial o cruces con otros padrones.</li>
+    <li class="mb-2">La integracion con el <strong>padron catastral</strong> (predios en <code>bdcata1</code>, clave catastral, mapa georreferenciado) puede hacerse por consultas en servidor: mismas coordenadas SRID 4326 (WGS84) que usa el visor, y por <strong>identificadores</strong> en las propiedades de cada elemento cuando se incorporen en formularios o procesos de enlace.</li>
+    <li class="mb-0"><strong>Mapa georreferenciado</strong> muestra bienes oficiales; <strong>Mapas Simafi</strong> complementa la digitalizacion de planos y capas de trabajo que pueden contrastarse o alinearse con ese padron en la misma infraestructura de datos.</li>
+</ul>
+{% endif %}

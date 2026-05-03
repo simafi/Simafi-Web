@@ -30,10 +30,13 @@
                     {% for c in capas %}
                     <option value="{{ c.id }}">{{ c.nombre }}</option>
                     {% empty %}
-                    <option value="">— se creará al guardar —</option>
+                    <option value="">(se creara al guardar)</option>
                     {% endfor %}
                 </select>
                 <button type="button" id="btnNuevaCapa" class="btn btn-sm btn-outline-light">Nueva capa</button>
+                <button type="button" class="btn btn-sm btn-info text-dark" data-bs-toggle="modal" data-bs-target="#modalTutorialMapas" title="Como digitalizar e integrar con Catastro">
+                    <i class="fas fa-book-reader me-1"></i>Guia
+                </button>
                 <span class="text-white-50 small"><i class="fas fa-user"></i> {{ usuario_nombre }}</span>
             </div>
         </div>
@@ -41,6 +44,25 @@
     <div id="map"></div>
 </div>
 
+<div class="modal fade" id="modalTutorialMapas" tabindex="-1" aria-labelledby="modalTutorialMapasLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="modalTutorialMapasLabel"><i class="fas fa-book-reader me-2"></i>Digitalizacion e integracion con Catastro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                {% include "mapas_simafi/_tutorial_digitalizacion.html" with compact=False %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{% url 'catastro:mapas_simafi_list' %}" class="btn btn-primary">Lista de proyectos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 <script>

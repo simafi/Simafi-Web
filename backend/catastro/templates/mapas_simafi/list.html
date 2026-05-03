@@ -9,6 +9,7 @@
     <style>
         body { background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); min-height: 100vh; }
         .panel { background: #fff; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,.12); }
+        #tutorialMapas .accordion-button:not(.collapsed) { background: rgba(13, 148, 136, 0.12); color: #0f766e; }
     </style>
 </head>
 <body>
@@ -40,9 +41,26 @@
         {% if not empresa %}
         <div class="alert alert-warning panel">No hay municipio en sesión. Vuelva a iniciar sesión en Catastro.</div>
         {% else %}
-        {% if not migracion_pendiente %}
         <div class="panel p-4 mb-4">
+            <div class="accordion mb-0" id="tutorialMapas">
+                <div class="accordion-item border rounded overflow-hidden">
+                    <h2 class="accordion-header" id="headingTutorialMapas">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTutorialMapas" aria-expanded="true" aria-controls="collapseTutorialMapas">
+                            <i class="fas fa-book-reader me-2"></i>Tutorial: como comenzar la digitalizacion e integracion con Catastro
+                        </button>
+                    </h2>
+                    <div id="collapseTutorialMapas" class="accordion-collapse collapse show" aria-labelledby="headingTutorialMapas" data-bs-parent="#tutorialMapas">
+                        <div class="accordion-body border-top bg-light">
+                            {% include "mapas_simafi/_tutorial_digitalizacion.html" with compact=False %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if not migracion_pendiente %}
+            <hr class="my-4">
             <h2 class="h5 mb-3">Nuevo proyecto de mapa</h2>
+            <p class="text-muted small mb-3">Defina un nombre de trabajo; luego abra el editor para dibujar capas (parcelas, vias, puntos) almacenadas en la base de datos de Catastro.</p>
             <form method="post" class="row g-3 align-items-end">
                 {% csrf_token %}
                 <div class="col-md-5">
@@ -57,8 +75,10 @@
                     <button type="submit" class="btn btn-success w-100"><i class="fas fa-plus me-1"></i>Crear</button>
                 </div>
             </form>
+            {% else %}
+            <p class="small text-muted mb-0 mt-3"><i class="fas fa-info-circle me-1"></i>Cuando las tablas esten creadas en la base de datos, podra usar el formulario de arriba para crear proyectos.</p>
+            {% endif %}
         </div>
-        {% endif %}
 
         <div class="panel p-4">
             <h2 class="h5 mb-3">Proyectos</h2>
