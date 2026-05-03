@@ -1769,8 +1769,33 @@
                 }
             }
 
+            /**
+             * Tras una consulta sin registros en tasasmunicipales (empresa|clave), no repetir
+             * fetch por avalúo, vivienda/cuartos, autocalcular ni búsqueda bien hasta cambiar
+             * la clave o pulsar «Actualizar» (forzar nueva consulta).
+             */
+            let tasasSinRegistrosParaClave = null;
+
+            function _claveConsultaTasasActual() {
+                const cocataInputLocal = document.getElementById('id_cocata1');
+                const cocataValor = cocataInputLocal ? cocataInputLocal.value.trim() : '';
+                const empresa = '{{ request.session.catastro_empresa|default:"" }}';
+                if (!cocataValor || !empresa) {
+                    return '';
+                }
+                return `${empresa}|${cocataValor}`;
+            }
+
+            function debeOmitirBusquedaTasas() {
+                const key = _claveConsultaTasasActual();
+                return Boolean(key && tasasSinRegistrosParaClave === key);
+            }
+
             // Recalcula tasas municipales si la función de carga está disponible
             async function recargarTasasMunicipalesSilencioso() {
+                if (debeOmitirBusquedaTasas()) {
+                    return;
+                }
                 try {
                     if (typeof cargarTasasMunicipales === 'function') {
                         await cargarTasasMunicipales();
@@ -1798,6 +1823,11 @@
                     return;
                 }
 
+                if (debeOmitirBusquedaTasas()) {
+                    console.warn('[AUTOCALCULO] Omitido: sin tasas municipales en catálogo para esta clave.');
+                    return;
+                }
+
                 try {
                     const response = await fetch(`/catastro/ajax/calcular-tasas-municipales/?${calcularParams.toString()}`, {
                         method: 'GET',
@@ -1819,8 +1849,11 @@
             }
 
             async function calcularYRecargarTasasMunicipales() {
+                if (debeOmitirBusquedaTasas()) {
+                    return;
+                }
                 await calcularTasasMunicipalesAutomatica();
-                cargarTasasMunicipales();
+                await cargarTasasMunicipales();
             }
 
             function programarActualizacionAutomaticaTasas() {
@@ -2369,29 +2402,57 @@
                 });
             }
             
-            // Función para cargar tasas municipales
-            function cargarTasasMunicipales() {
+            // Función para cargar tasas municipales (forceReload=true: botón Actualizar tras cargar tasas en BD)
+            function cargarTasasMunicipales(forceReload = false) {
                 const cocataInputLocal = document.getElementById('id_cocata1');
                 const cocataValor = cocataInputLocal ? cocataInputLocal.value.trim() : '';
                 const empresa = '{{ request.session.catastro_empresa|default:"" }}';
                 const tbody = document.getElementById('tasas-municipales-tbody');
                 const emptyDiv = document.getElementById('tasas-municipales-empty');
                 const totalCount = document.getElementById('tasas-total-count');
-                
+
+                if (forceReload) {
+                    tasasSinRegistrosParaClave = null;
+                }
+
                 if (!cocataValor) {
+                    tasasSinRegistrosParaClave = null;
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Ingrese un código catastral para ver las tasas municipales</td></tr>';
                     emptyDiv.style.display = 'none';
                     totalCount.textContent = 'Total: 0 registros';
-                    return;
+                    return Promise.resolve();
                 }
-                
+
                 if (!empresa) {
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">No se ha seleccionado un municipio</td></tr>';
                     emptyDiv.style.display = 'none';
                     totalCount.textContent = 'Total: 0 registros';
-                    return;
+                    return Promise.resolve();
                 }
-                
+
+                const keyConsulta = `${empresa}|${cocataValor}`;
+                if (!forceReload && tasasSinRegistrosParaClave === keyConsulta) {
+                    tbody.innerHTML = '';
+                    emptyDiv.style.display = 'block';
+                    emptyDiv.innerHTML = `
+                        <i class="fas fa-info-circle fa-3x text-warning mb-3"></i>
+                        <p class="text-muted mb-2"><strong>No se encontraron tasas municipales</strong></p>
+                        <p class="text-muted small">No existen registros en la tabla tasasmunicipales para la clave catastral: <strong>${cocataValor}</strong></p>
+                        <p class="text-muted small">El proceso está detenido hasta que ingrese tasas en el sistema o pulse <strong>Actualizar</strong> para volver a consultar.</p>
+                    `;
+                    totalCount.textContent = 'Total: 0 registros';
+                    const btnCalcularTasas = document.getElementById('btn-calcular-tasas');
+                    const btnAgregarTasa = document.getElementById('btn-agregar-tasa');
+                    if (btnCalcularTasas) {
+                        btnCalcularTasas.disabled = true;
+                        btnCalcularTasas.title = 'No hay tasas municipales para esta clave catastral';
+                    }
+                    if (btnAgregarTasa) {
+                        btnAgregarTasa.disabled = false;
+                    }
+                    return Promise.resolve();
+                }
+
                 // Mostrar loading
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin me-2"></i>Cargando tasas municipales...</td></tr>';
                 emptyDiv.style.display = 'none';
@@ -2416,7 +2477,8 @@
                             totalCount.textContent = `Total: ${tasas.length} registros`;
                             
                             if (tasas.length === 0) {
-                                // NO HAY TASAS - Detener cualquier proceso adicional
+                                // NO HAY TASAS — bloquear nuevas consultas repetidas hasta nueva clave o Actualizar
+                                tasasSinRegistrosParaClave = keyConsulta;
                                 tbody.innerHTML = '';
                                 emptyDiv.style.display = 'block';
                                 emptyDiv.innerHTML = `
@@ -2442,6 +2504,7 @@
                                 return; // DETENER EL PROCESO - No continuar
                             } else {
                                 // HAY TASAS - Continuar normalmente
+                                tasasSinRegistrosParaClave = null;
                                 emptyDiv.style.display = 'none';
                                 
                                 // Habilitar botones si hay tasas
@@ -2502,7 +2565,7 @@
             const btnRefreshTasas = document.getElementById('btn-refresh-tasas');
             if (btnRefreshTasas) {
                 btnRefreshTasas.addEventListener('click', function() {
-                    cargarTasasMunicipales();
+                    cargarTasasMunicipales(true);
                 });
             }
             
@@ -3268,8 +3331,9 @@
                 updateAvaluoSummary();
                 
                 // Cargar tasas municipales automáticamente después de aplicar los datos
+                tasasSinRegistrosParaClave = null;
                 setTimeout(() => {
-                    cargarTasasMunicipales();
+                    cargarTasasMunicipales(true);
                 }, 600);
             }
 
@@ -3319,17 +3383,18 @@
                         if (data.encontrado) {
                             aplicarDatosBien(data.campos);
                             setCocataStatus(data.mensaje || '✓ Registro encontrado y cargado', 'success');
-                            // Cargar tasas municipales automáticamente después de cargar los datos del bien
+                            tasasSinRegistrosParaClave = null;
                             setTimeout(() => {
-                                cargarTasasMunicipales();
+                                cargarTasasMunicipales(true);
                             }, 300);
                         } else {
                             updateAvaluoSummary();
                             setCocataStatus(data.mensaje || '⚠ No se encontró registro con este código', 'warning');
-                            // Aún así, intentar cargar tasas si hay un código ingresado
-                            setTimeout(() => {
-                                cargarTasasMunicipales();
-                            }, 300);
+                            if (!debeOmitirBusquedaTasas()) {
+                                setTimeout(() => {
+                                    cargarTasasMunicipales();
+                                }, 300);
+                            }
                         }
                     })
                     .catch((error) => {
