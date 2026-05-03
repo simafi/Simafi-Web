@@ -161,6 +161,23 @@
                         </div>
                     </div>
                 </div>
+                <!-- Mapas Simafi — digitalización -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card menu-card h-100">
+                        <div class="card-body">
+                            <div class="menu-icon">
+                                <i class="fas fa-draw-polygon"></i>
+                            </div>
+                            <div class="menu-title">Mapas Simafi</div>
+                            <div class="menu-description">
+                                Crear y editar mapas vectoriales (capas GeoJSON, compatible con PostgreSQL/PostGIS)
+                            </div>
+                            <a href="{% url 'catastro:mapas_simafi_list' %}" class="btn btn-menu">
+                                <i class="fas fa-arrow-right"></i> Acceder
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 {% endif %}
 
                 {% if perm_catastro_misc %}

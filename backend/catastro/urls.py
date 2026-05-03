@@ -1,6 +1,7 @@
 from django.urls import path
 from django.views.generic import RedirectView
 from . import views
+from . import views_mapas
 
 app_name = 'catastro'
 
@@ -23,6 +24,14 @@ urlpatterns = [
     path('bienes-inmuebles/buscar/exportar/excel/', views.buscar_bien_inmueble_export_excel, name='buscar_bien_inmueble_export_excel'),
     path('bienes-inmuebles/buscar/exportar/pdf/', views.buscar_bien_inmueble_export_pdf, name='buscar_bien_inmueble_export_pdf'),
     path('mapa-georreferenciado/', views.mapa_georreferenciado_view, name='mapa_georreferenciado_view'),
+
+    # Mapas Simafi — digitalización vectorial (GeoJSON / compatible PostGIS)
+    path('mapas-simafi/', views_mapas.mapas_simafi_list, name='mapas_simafi_list'),
+    path('mapas-simafi/proyecto/<int:proyecto_id>/', views_mapas.mapas_simafi_editor, name='mapas_simafi_editor'),
+    path('mapas-simafi/api/proyecto/<int:proyecto_id>/geojson/', views_mapas.api_mapas_geojson, name='api_mapas_geojson'),
+    path('mapas-simafi/api/proyecto/<int:proyecto_id>/elemento/', views_mapas.api_mapas_elemento_guardar, name='api_mapas_elemento_guardar'),
+    path('mapas-simafi/api/proyecto/<int:proyecto_id>/elemento/eliminar/', views_mapas.api_mapas_elemento_eliminar, name='api_mapas_elemento_eliminar'),
+    path('mapas-simafi/api/proyecto/<int:proyecto_id>/capa/', views_mapas.api_mapas_capa_crear, name='api_mapas_capa_crear'),
     # Redirección de vehiculos/ a miscelaneoscat/ para mantener compatibilidad
     path('vehiculos/', RedirectView.as_view(pattern_name='catastro:catastro_miscelaneos', permanent=False), name='catastro_vehiculos_redirect'),
     path('miscelaneoscat/', views.catastro_miscelaneos, name='catastro_miscelaneos'),

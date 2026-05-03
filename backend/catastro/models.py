@@ -2098,3 +2098,7 @@ class TasasMunicipales(models.Model):
 
     def __str__(self):
         return f"{self.clave} - {self.rubro} - {self.cod_tarifa} - {self.valor}"
+
+
+# Mapas digitales (proyecto / capa / GeoJSON) — ver models_mapas.py
+from .models_mapas import MapaCapa, MapaElemento, MapaProyecto  # noqa: E402, F401
