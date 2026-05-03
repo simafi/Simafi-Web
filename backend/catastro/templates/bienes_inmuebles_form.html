@@ -579,10 +579,9 @@
                                         <i class="fas fa-city me-1"></i> Ficha urbana
                                     </div>
                                 </div>
-                                <small id="ayuda-valor-declarado-toolbar" class="text-muted text-end" style="max-width: 26rem; font-size: 0.75rem;">
-                                    El valor declarado queda aplicado al <strong>formulario del bien inmueble</strong> al usar el modal;
-                                    la <strong>persistencia en base de datos</strong> (tabla <strong>bdcata1</strong>, campo <strong>declarado</strong>)
-                                    ocurre solo al <strong>grabar el registro</strong> con el botón <strong>Guardar bien inmueble</strong>.
+                                <small id="ayuda-valor-declarado-toolbar" class="text-muted text-end" style="max-width: 28rem; font-size: 0.8rem;">
+                                    El cambio del valor declarado <strong>solo surte efecto al grabar</strong>: use <strong>Grabar</strong>
+                                    en el mismo cuadro donde ingresa el monto, o <strong>Guardar bien inmueble</strong> al final del formulario.
                                 </small>
                             </div>
                         </div>
@@ -820,8 +819,7 @@
                                                 </div>
                                             </div>
                                             <small class="avaluo-summary-note d-block" style="font-size: 0.75rem; line-height: 1.35; margin-top: 4px;">
-                                                Cambio en pantalla: hasta pulsar <strong>Guardar bien inmueble</strong> el valor no se escribe en el registro
-                                                (<strong>bdcata1.declarado</strong>).
+                                                El valor declarado queda firme cuando pulse <strong>Grabar</strong> en el cuadro de ingreso o <strong>Guardar bien inmueble</strong> abajo; antes solo verá el cambio en esta pantalla.
                                             </small>
                                             {% if form.declarado.errors %}
                                                 <div class="text-danger small">{{ form.declarado.errors }}</div>
@@ -885,7 +883,7 @@
                                                            value="{{ municipio_por_concer_str|default:'0.00' }}"
                                                            readonly
                                                            disabled
-                                                           title="Valor tomado automáticamente del municipio (por_concer) - No se guarda en bdcata1">
+                                                           title="Referencia del municipio; no forma parte del guardado del predio">
                                                 </span>
                                             </div>
                                         </div>
@@ -1101,25 +1099,27 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-light border small mb-3" role="note">
-                        <div class="fw-semibold mb-1"><i class="fas fa-info-circle me-1"></i> Alcance técnico del cambio</div>
+                        <div class="fw-semibold mb-2"><i class="fas fa-info-circle me-1"></i> Antes de ingresar el monto</div>
                         <ul class="mb-0 ps-3 small">
-                            <li><strong>Usar valor</strong> actualiza el campo oculto <code>declarado</code> del formulario del bien inmueble y el resumen de avalúo en esta pantalla (estado del navegador).</li>
-                            <li>El valor forma parte del avalúo total y del cálculo de impuesto <strong>solo después</strong> de confirmarse en el servidor.</li>
-                            <li>La <strong>persistencia</strong> en base de datos —tabla <strong>bdcata1</strong>, campo <strong>declarado</strong>— se produce únicamente al enviar el formulario principal con el botón <strong>Guardar bien inmueble</strong> (grabación del registro).</li>
-                            <li>Hasta ese momento, otros usuarios o consultas externas no ven el cambio.</li>
+                            <li><strong>Grabar</strong> guarda el predio con el valor que escriba (igual que el botón <strong>Guardar bien inmueble</strong> del formulario).</li>
+                            <li><strong>Solo aplicar</strong> muestra el monto en el resumen; si no graba después, al salir o volver a abrir el predio puede perder ese cambio.</li>
+                            <li>El valor declarado queda definitivo <strong>solo después de grabar</strong>.</li>
                         </ul>
                     </div>
-                    <label for="modal-valor-declarado-input" class="form-label">Ingrese el valor declarado (L.)</label>
+                    <label for="modal-valor-declarado-input" class="form-label">Valor declarado (Lempiras)</label>
                     <input type="number" class="form-control" id="modal-valor-declarado-input" step="0.01" min="0" placeholder="0.00"
                            aria-describedby="modal-valor-declarado-ayuda">
                     <div id="modal-valor-declarado-ayuda" class="form-text mt-2">
-                        Al confirmar con <strong>Usar valor</strong> solo se actualiza el formulario; para efectos tributarios y en BD debe <strong>grabarse el bien inmueble</strong>.
+                        Elija <strong>Grabar</strong> para confirmar el valor en el predio, o <strong>Solo aplicar</strong> si aún va a revisar otros datos antes de guardar.
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-info" id="btn-guardar-valor-declarado-modal">
-                        <i class="fas fa-check"></i> Usar valor
+                <div class="modal-footer flex-wrap gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-outline-info" id="btn-guardar-valor-declarado-modal" title="Actualiza el resumen sin guardar el predio todavía">
+                        <i class="fas fa-eye"></i> Solo aplicar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-grabar-valor-declarado-modal" title="Guarda el bien inmueble con este valor declarado">
+                        <i class="fas fa-save"></i> Grabar
                     </button>
                 </div>
             </div>
@@ -1600,6 +1600,7 @@
             const modalValorDeclaradoEl = document.getElementById('modal-valor-declarado');
             const modalValorDeclaradoInput = document.getElementById('modal-valor-declarado-input');
             const btnGuardarValorDeclaradoModal = document.getElementById('btn-guardar-valor-declarado-modal');
+            const btnGrabarValorDeclaradoModal = document.getElementById('btn-grabar-valor-declarado-modal');
 
             const summaryElements = {
                 valorTierra: document.getElementById('avaluo-summary-valor-tierra'),
@@ -2008,7 +2009,19 @@
                 });
             });
 
-            // Modal y botón para capturar valor declarado manualmente
+            function aplicarValorDeclaradoDesdeModal() {
+                const valor = parseAmount(modalValorDeclaradoInput.value);
+                if (declaradoInput) {
+                    declaradoInput.value = valor.toFixed(2);
+                    declaradoInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    declaradoInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                updateAvaluoSummary();
+                void recalcularImpuestoSilencioso();
+                void recargarTasasMunicipalesSilencioso();
+            }
+
+            // Modal valor declarado: Solo aplicar (pantalla) o Grabar (envía el formulario del predio)
             if (btnValorDeclarado && modalValorDeclaradoEl && modalValorDeclaradoInput) {
                 const modalValorDeclarado = new bootstrap.Modal(modalValorDeclaradoEl);
 
@@ -2020,17 +2033,31 @@
 
                 if (btnGuardarValorDeclaradoModal) {
                     btnGuardarValorDeclaradoModal.addEventListener('click', () => {
-                        const valor = parseAmount(modalValorDeclaradoInput.value);
-                        if (declaradoInput) {
-                            declaradoInput.value = valor.toFixed(2);
-                            // Disparar eventos para que otros listeners se activen
-                            declaradoInput.dispatchEvent(new Event('input', { bubbles: true }));
-                            declaradoInput.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-                        updateAvaluoSummary();
-                        void recalcularImpuestoSilencioso();
-                        void recargarTasasMunicipalesSilencioso();
+                        aplicarValorDeclaradoDesdeModal();
                         modalValorDeclarado.hide();
+                    });
+                }
+
+                if (btnGrabarValorDeclaradoModal) {
+                    btnGrabarValorDeclaradoModal.addEventListener('click', () => {
+                        aplicarValorDeclaradoDesdeModal();
+                        modalValorDeclarado.hide();
+                        if (typeof window.syncDeclaradoAntesDeEnviar === 'function') {
+                            window.syncDeclaradoAntesDeEnviar();
+                        }
+                        const formPrincipal = document.getElementById('form-bien-inmueble');
+                        if (formPrincipal) {
+                            if (typeof formPrincipal.requestSubmit === 'function') {
+                                formPrincipal.requestSubmit();
+                            } else {
+                                const btnGuardarForm = document.getElementById('btn-guardar-bien-inmueble');
+                                if (btnGuardarForm) {
+                                    btnGuardarForm.click();
+                                } else {
+                                    formPrincipal.submit();
+                                }
+                            }
+                        }
                     });
                 }
             }
