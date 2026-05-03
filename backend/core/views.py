@@ -290,12 +290,30 @@ def usuarios_sistema_create(request):
     if redir:
         return redir
     if request.method == 'POST':
-        form = UsuarioSistemaForm(request.POST)
+        # Check if user already exists based on form data
+        usuario_str = request.POST.get('usuario', '').strip()
+        municipio_id = request.POST.get('municipio')
+        es_sup = request.POST.get('es_superusuario') == 'on' or request.POST.get('es_superusuario') == 'True'
+        
+        inst = None
+        if usuario_str:
+            if es_sup and not municipio_id:
+                inst = Usuario.objects.filter(empresa='', usuario=usuario_str).first()
+            elif municipio_id:
+                try:
+                    mun = Municipio.objects.get(pk=municipio_id)
+                    inst = Usuario.objects.filter(empresa=mun.codigo, usuario=usuario_str).first()
+                except Municipio.DoesNotExist:
+                    pass
+                    
+        form = UsuarioSistemaForm(request.POST, instance=inst) if inst else UsuarioSistemaForm(request.POST)
+        
         if form.is_valid():
             editor = get_object_or_404(Usuario, pk=request.session['user_id'])
             user = form.save(asignado_por=editor)
             _sincronizar_superusuario_sesion(request, user)
-            messages.success(request, 'Usuario creado correctamente.')
+            msg = 'Usuario actualizado correctamente (ya existía).' if inst else 'Usuario creado correctamente.'
+            messages.success(request, msg)
             return redirect('modules_core:usuarios_sistema_list')
     else:
         form = UsuarioSistemaForm()
