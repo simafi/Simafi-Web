@@ -28,10 +28,13 @@ class Municipio(models.Model):
         default=Decimal('0.00'), verbose_name="Factor esquina", db_column='fesqui',
     )
     por_concer = models.DecimalField(
-        max_digits=7, decimal_places=2, default=Decimal('0.00'),
+        max_digits=7, decimal_places=2, null=True, blank=True, default=Decimal('0.00'),
         verbose_name="Porcentaje de concertación", db_column='por_concer',
     )
-    vl_exento = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Valor exento", db_column='vl_exento')
+    vl_exento = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True, default=Decimal('0.00'), 
+        verbose_name="Valor exento", db_column='vl_exento'
+    )
     tasau = models.DecimalField(
         max_digits=7, decimal_places=2, null=True, blank=True,
         default=Decimal('0.00'), verbose_name="Tasa urbana", db_column='tasau',
